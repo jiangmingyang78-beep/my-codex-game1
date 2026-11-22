@@ -1,0 +1,155 @@
+{
+  "recipes": [
+    {
+      "id": "smelt_iron",
+      "name": "熔炼铁锭",
+      "stationId": "main_campfire",
+      "minCampLevel": 2,
+      "inputs": {
+        "ore": 2,
+        "wood": 1
+      },
+      "output": {
+        "type": "item",
+        "id": "ingot",
+        "count": 1
+      }
+    },
+    {
+      "id": "cook_ration",
+      "name": "烤制莓饼",
+      "stationId": "main_campfire",
+      "minCampLevel": 1,
+      "inputs": {
+        "berry": 2,
+        "wood": 1
+      },
+      "output": {
+        "type": "item",
+        "id": "ration",
+        "count": 1
+      }
+    },
+    {
+      "id": "cook_stew",
+      "name": "烹煮霜菇暖汤",
+      "stationId": "main_campfire",
+      "minCampLevel": 2,
+      "inputs": {
+        "frostcap": 1,
+        "berry": 1,
+        "wood": 1
+      },
+      "output": {
+        "type": "item",
+        "id": "warm_stew",
+        "count": 1
+      }
+    },
+    {
+      "id": "make_bandage",
+      "name": "制作绷带",
+      "stationId": "main_campfire",
+      "minCampLevel": 1,
+      "inputs": {
+        "fiber": 2
+      },
+      "output": {
+        "type": "item",
+        "id": "bandage",
+        "count": 1
+      }
+    },
+    {
+      "id": "make_lantern",
+      "name": "制作铁罩提灯",
+      "stationId": "main_campfire",
+      "minCampLevel": 2,
+      "inputs": {
+        "ingot": 1,
+        "fiber": 1,
+        "wood": 1
+      },
+      "output": {
+        "type": "item",
+        "id": "lantern",
+        "count": 1
+      },
+      "constraints": {
+        "uniqueOutput": true
+      }
+    },
+    {
+      "id": "make_spear",
+      "name": "制作铁矛",
+      "stationId": "main_campfire",
+      "minCampLevel": 2,
+      "inputs": {
+        "ingot": 2,
+        "wood": 1
+      },
+      "output": {
+        "type": "item",
+        "id": "iron_spear",
+        "count": 1
+      },
+      "constraints": {
+        "uniqueOutput": true
+      }
+    },
+    {
+      "id": "make_relay",
+      "name": "制作接力火盆",
+      "stationId": "main_campfire",
+      "minCampLevel": 2,
+      "inputs": {
+        "wood": 3,
+        "stone": 2,
+        "ingot": 1
+      },
+      "output": {
+        "type": "item",
+        "id": "relay_kit",
+        "count": 1
+      },
+      "constraints": {
+        "inventoryCapSource": "unlit_relay_socket_count"
+      }
+    },
+    {
+      "id": "raise_camp_2",
+      "name": "升级二级营火",
+      "stationId": "main_campfire",
+      "minCampLevel": 1,
+      "inputs": {
+        "wood": 6,
+        "stone": 4
+      },
+      "output": {
+        "type": "camp_level",
+        "level": 2
+      },
+      "constraints": {
+        "exactCampLevel": 1
+      }
+    },
+    {
+      "id": "raise_camp_3",
+      "name": "升级三级营火",
+      "stationId": "main_campfire",
+      "minCampLevel": 2,
+      "inputs": {
+        "wood": 6,
+        "stone": 4,
+        "ingot": 1
+      },
+      "output": {
+        "type": "camp_level",
+        "level": 3
+      },
+      "constraints": {
+        "exactCampLevel": 2
+      }
+    }
+  ]
+}

@@ -1,0 +1,201 @@
+{
+  "items": [
+    {
+      "id": "wood",
+      "name": "木材",
+      "type": "material",
+      "maxStack": 99,
+      "effects": [],
+      "description": "从枯枝拾取，用于营火升级、制作、熔炼和烹饪。"
+    },
+    {
+      "id": "stone",
+      "name": "石料",
+      "type": "material",
+      "maxStack": 99,
+      "effects": [],
+      "description": "从碎石堆拾取，用于营火升级和制作接力火盆。"
+    },
+    {
+      "id": "fiber",
+      "name": "粗纤维",
+      "type": "material",
+      "maxStack": 99,
+      "effects": [],
+      "description": "从枯草采集，用于制作绷带和铁罩提灯。"
+    },
+    {
+      "id": "berry",
+      "name": "红莓",
+      "type": "food",
+      "maxStack": 30,
+      "effects": [
+        {
+          "trigger": "use",
+          "type": "restore_stat",
+          "stat": "hunger",
+          "amount": 12
+        }
+      ],
+      "description": "从红莓灌木采集，可直接食用，也可做成烤莓饼或暖汤。"
+    },
+    {
+      "id": "frostcap",
+      "name": "霜菇",
+      "type": "material",
+      "maxStack": 30,
+      "effects": [],
+      "description": "生长在废磨坊背阴处和冰峡，是霜菇暖汤的材料。"
+    },
+    {
+      "id": "ore",
+      "name": "铁矿",
+      "type": "material",
+      "maxStack": 99,
+      "effects": [],
+      "description": "从废磨坊和冰峡的矿点采集，每两份可熔炼成一块铁锭。"
+    },
+    {
+      "id": "ingot",
+      "name": "铁锭",
+      "type": "material",
+      "maxStack": 99,
+      "effects": [],
+      "description": "由铁矿熔炼而成，用于装备、接力火盆和三级营火。"
+    },
+    {
+      "id": "ration",
+      "name": "烤莓饼",
+      "type": "food",
+      "maxStack": 20,
+      "effects": [
+        {
+          "trigger": "use",
+          "type": "restore_stat",
+          "stat": "hunger",
+          "amount": 36
+        }
+      ],
+      "description": "便于携带的烤制口粮，食用后恢复 36 点饱食。"
+    },
+    {
+      "id": "warm_stew",
+      "name": "霜菇暖汤",
+      "type": "food",
+      "maxStack": 10,
+      "effects": [
+        {
+          "trigger": "use",
+          "type": "restore_stat",
+          "stat": "hunger",
+          "amount": 24
+        },
+        {
+          "trigger": "use",
+          "type": "night_light_drain_multiplier",
+          "multiplier": 0.5,
+          "durationSec": 90,
+          "reapply": "refresh_duration"
+        }
+      ],
+      "description": "恢复 24 点饱食，90 秒内使夜间火光消耗减半，可与铁罩提灯乘算。"
+    },
+    {
+      "id": "bandage",
+      "name": "绷带",
+      "type": "medicine",
+      "maxStack": 10,
+      "effects": [
+        {
+          "trigger": "use",
+          "type": "restore_stat",
+          "stat": "hp",
+          "amount": 2,
+          "requiresBelowMax": true
+        }
+      ],
+      "description": "恢复 2 点生命，满生命时无法使用。"
+    },
+    {
+      "id": "lantern",
+      "name": "铁罩提灯",
+      "type": "equipment",
+      "maxStack": 1,
+      "effects": [
+        {
+          "trigger": "owned",
+          "type": "night_light_drain_multiplier",
+          "multiplier": 0.75
+        }
+      ],
+      "description": "持有后自动生效，夜间火光消耗降至原来的 75%。"
+    },
+    {
+      "id": "iron_spear",
+      "name": "铁矛",
+      "type": "equipment",
+      "maxStack": 1,
+      "effects": [
+        {
+          "trigger": "owned",
+          "type": "set_combat_stat",
+          "stat": "attackDamage",
+          "value": 2
+        },
+        {
+          "trigger": "owned",
+          "type": "set_combat_stat",
+          "stat": "attackRangeTiles",
+          "value": 1.75
+        }
+      ],
+      "description": "持有后自动生效，攻击伤害提高到 2，攻击距离提高到 1.75 格。"
+    },
+    {
+      "id": "relay_kit",
+      "name": "接力火盆",
+      "type": "camp_kit",
+      "maxStack": 2,
+      "effects": [
+        {
+          "trigger": "place",
+          "type": "ignite_relay",
+          "targetType": "unlit_relay_socket",
+          "radiusTiles": 5,
+          "consumeCount": 1
+        }
+      ],
+      "description": "在废磨坊或冰峡的未点亮火站使用，永久提供半径 5 格的火圈。"
+    },
+    {
+      "id": "ember_seal",
+      "name": "炉印",
+      "type": "quest",
+      "maxStack": 2,
+      "effects": [
+        {
+          "trigger": "owned",
+          "type": "quest_requirement",
+          "targetId": "beacon_gate",
+          "requiredCount": 2
+        }
+      ],
+      "description": "废磨坊和冰峡的驻守战各奖励一枚。持两枚炉印并达到三级营火即可进入烽台。"
+    },
+    {
+      "id": "beacon_heart",
+      "name": "烽芯",
+      "type": "quest",
+      "maxStack": 1,
+      "effects": [
+        {
+          "trigger": "interact",
+          "type": "ignite_beacon",
+          "targetId": "final_beacon",
+          "requiredCount": 1
+        }
+      ],
+      "description": "烽台守卫掉落。带着烽芯与最终烽台互动，即可完成当局。"
+    }
+  ]
+}

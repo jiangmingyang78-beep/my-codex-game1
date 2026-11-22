@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "spec": {
+    "id": "start-new-game",
+    "kind": "interactive",
+    "goal": "Open the title screen and start a new game in one click",
+    "requirementIndexes": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13
+    ],
+    "acceptanceCriteriaIndexes": [
+      0,
+      1,
+      5,
+      9,
+      10,
+      11
+    ],
+    "steps": [
+      "Press the 新游戏 button"
+    ],
+    "checks": [
+      {
+        "afterStep": 0,
+        "expectNoText": "新游戏"
+      }
+    ]
+  }
+}

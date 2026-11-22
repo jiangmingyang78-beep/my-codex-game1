@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "itemIds": [
+    "wood",
+    "stone",
+    "fiber",
+    "berry",
+    "frostcap",
+    "ore",
+    "ingot",
+    "ration",
+    "warm_stew",
+    "bandage",
+    "lantern",
+    "iron_spear",
+    "relay_kit",
+    "ember_seal",
+    "beacon_heart"
+  ],
+  "recipeIds": [
+    "smelt_iron",
+    "cook_ration",
+    "cook_stew",
+    "make_bandage",
+    "make_lantern",
+    "make_spear",
+    "make_relay",
+    "raise_camp_2",
+    "raise_camp_3"
+  ],
+  "enemyIds": [
+    "snow_weasel",
+    "mill_spider",
+    "ice_ram",
+    "coal_shade",
+    "beacon_keeper"
+  ],
+  "regionIds": ["camp_edge", "old_mill", "ice_gorge", "beacon"],
+  "legacyAssetReferences": [
+    {
+      "itemId": "wood",
+      "legacyContentId": "cailiao-0001",
+      "legacyKey": "wood"
+    },
+    {
+      "itemId": "stone",
+      "legacyContentId": "cailiao-0002",
+      "legacyKey": "stone"
+    },
+    {
+      "itemId": "bandage",
+      "legacyContentId": "zhiliao-0001",
+      "legacyKey": "bandage"
+    }
+  ]
+}

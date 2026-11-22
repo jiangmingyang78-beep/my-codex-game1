@@ -1,0 +1,147 @@
+{
+  "regions": [
+    {
+      "id": "camp_edge",
+      "name": "炉边雪林",
+      "entry": {
+        "gateId": null,
+        "minCampLevel": 1,
+        "requiredPickupIds": []
+      },
+      "encounterId": null,
+      "relaySocketId": null,
+      "minimumStartingSupply": {
+        "wood": 12,
+        "stone": 9,
+        "fiber": 6,
+        "berry": 6
+      },
+      "residentSpawns": [
+        {
+          "spawnId": "camp_edge_weasel",
+          "enemyId": "snow_weasel"
+        }
+      ],
+      "nightSpawns": [
+        {
+          "spawnId": "camp_edge_night_a",
+          "enemyId": "snow_weasel"
+        },
+        {
+          "spawnId": "camp_edge_night_b",
+          "enemyId": "snow_weasel"
+        }
+      ]
+    },
+    {
+      "id": "old_mill",
+      "name": "废磨坊",
+      "entry": {
+        "gateId": "old_mill_gate",
+        "minCampLevel": 2,
+        "requiredPickupIds": []
+      },
+      "encounterId": "old_mill_guards",
+      "relaySocketId": "old_mill_relay",
+      "minimumStartingSupply": {
+        "ore": 8,
+        "stone": 4,
+        "frostcap": 4
+      },
+      "residentSpawns": [
+        {
+          "spawnId": "old_mill_weasel",
+          "enemyId": "snow_weasel"
+        },
+        {
+          "spawnId": "old_mill_spider",
+          "enemyId": "mill_spider"
+        }
+      ],
+      "nightSpawns": [
+        {
+          "spawnId": "old_mill_night_a",
+          "enemyId": "snow_weasel"
+        },
+        {
+          "spawnId": "old_mill_night_b",
+          "enemyId": "mill_spider"
+        }
+      ]
+    },
+    {
+      "id": "ice_gorge",
+      "name": "冰峡",
+      "entry": {
+        "gateId": "ice_gorge_gate",
+        "minCampLevel": 2,
+        "requiredPickupIds": ["old_mill_ember_seal"]
+      },
+      "encounterId": "ice_gorge_guards",
+      "relaySocketId": "ice_gorge_relay",
+      "minimumStartingSupply": {
+        "ore": 8,
+        "stone": 4,
+        "frostcap": 4
+      },
+      "residentSpawns": [
+        {
+          "spawnId": "ice_gorge_ram",
+          "enemyId": "ice_ram"
+        },
+        {
+          "spawnId": "ice_gorge_shade",
+          "enemyId": "coal_shade"
+        }
+      ],
+      "nightSpawns": [
+        {
+          "spawnId": "ice_gorge_night_a",
+          "enemyId": "ice_ram"
+        },
+        {
+          "spawnId": "ice_gorge_night_b",
+          "enemyId": "coal_shade"
+        }
+      ]
+    },
+    {
+      "id": "beacon",
+      "name": "山脊烽台",
+      "entry": {
+        "gateId": "beacon_gate",
+        "minCampLevel": 3,
+        "requiredPickupIds": ["old_mill_ember_seal", "ice_gorge_ember_seal"]
+      },
+      "encounterId": null,
+      "relaySocketId": null,
+      "minimumStartingSupply": {},
+      "residentSpawns": [
+        {
+          "spawnId": "beacon_keeper_spawn",
+          "enemyId": "beacon_keeper"
+        }
+      ],
+      "nightSpawns": [],
+      "bossTrigger": {
+        "objectId": "beacon_keeper_trigger",
+        "spawnId": "beacon_keeper_spawn",
+        "lightZoneId": "beacon_arena_light"
+      }
+    }
+  ],
+  "worldObjects": {
+    "heroSpawnId": "hero_start",
+    "mainCampfireId": "main_campfire",
+    "finalBeaconId": "final_beacon",
+    "renewableWoodNodeIds": [
+      "camp_dawn_wood_1",
+      "camp_dawn_wood_2",
+      "camp_dawn_wood_3",
+      "camp_dawn_wood_4"
+    ]
+  },
+  "dawnRenewal": {
+    "renewableItemIds": ["berry", "frostcap"]
+  }
+}

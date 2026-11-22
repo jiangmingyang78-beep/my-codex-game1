@@ -1,0 +1,46 @@
+{
+  "version": 1,
+  "spec": {
+    "id": "reload-returns-to-title",
+    "kind": "interactive",
+    "goal": "After starting a game and reloading the page the title screen shows the game name",
+    "requirementIndexes": [
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27
+    ],
+    "acceptanceCriteriaIndexes": [
+      2,
+      3,
+      4,
+      6,
+      7,
+      8
+    ],
+    "steps": [
+      "Press the 新游戏 button",
+      "Reload the page"
+    ],
+    "checks": [
+      {
+        "afterStep": 0,
+        "expectNoText": "新游戏"
+      },
+      {
+        "afterStep": 1,
+        "expectText": "余烬林：最后一炬"
+      }
+    ]
+  }
+}

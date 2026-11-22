@@ -1,0 +1,92 @@
+import {
+  type GameEvent,
+  type RunState,
+  type Systems,
+  particleBudget,
+  toVfxEvent,
+} from "@/core";
+import { TILE } from "@/systems";
+import { createEffects } from "@/vfx/particles";
+import type Phaser from "phaser";
+import { DEPTH } from "../config";
+import type { TextureGenerator } from "../textures/registerTextures";
+import { CampFires, type Effects } from "./CampFires";
+import { NightOverlay } from "./NightOverlay";
+import { WorldView } from "./WorldView";
+
+/** vfx biome index for snow: drives the falling-flake ambience. -1 means no ambience. */
+const SNOW_BIOME = 4;
+
+export function prefersReducedMotion(): boolean {
+  return (
+    globalThis.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false
+  );
+}
+
+/** The living backdrop shared by the title and game scenes: world art, fires, snow and night tint. */
+export class Scenery {
+  readonly fx: Effects;
+  readonly overlay: NightOverlay;
+  private readonly view: WorldView;
+  private readonly fires: CampFires;
+  private darkness = 0;
+
+  constructor(
+    scene: Phaser.Scene,
+    sys: Systems,
+    gen: TextureGenerator,
+    state: RunState,
+  ) {
+    const { world, data } = sys;
+    const reduced = prefersReducedMotion();
+    this.view = new WorldView(scene, sys, gen);
+    // ambientAt is optional in the plain-JS adapter but missing from its inferred option type.
+    const options = {
+      maxParticles: particleBudget(data, reduced),
+      reducedMotion: reduced,
+      textureGenerator: gen,
+      tileSize: data.tileSize,
+      bodyDepth: DEPTH.fxBody,
+      glowDepth: DEPTH.fxGlow,
+      lightStrength: () => 0.2 + 0.8 * Math.min(1, this.darkness / 0.6),
+      ambientAt: (tx: number, ty: number) => {
+        const tile = world.tiles[ty * world.widthTiles + tx];
+        return tx >= 0 &&
+          ty >= 0 &&
+          tx < world.widthTiles &&
+          (tile === TILE.snow || tile === TILE.path)
+          ? SNOW_BIOME
+          : -1;
+      },
+    } as Parameters<typeof createEffects>[1];
+    this.fx = createEffects(scene, options);
+    this.fires = new CampFires(this.fx, sys, state);
+    this.overlay = new NightOverlay(
+      scene,
+      scene.cameras.main,
+      gen.halo("#ffffff"),
+      (visit) => this.fx.forEachCampLight(visit),
+    );
+  }
+
+  update(state: RunState, sec: number, darkness: number): void {
+    this.darkness = darkness;
+    this.overlay.darkness = darkness;
+    this.view.sync(state);
+    this.fires.sync(state);
+    this.fx.update(sec);
+  }
+
+  /** Forwards gather, hit and camp events to the vfx adapter. */
+  emit(events: readonly GameEvent[]): void {
+    for (const event of events) {
+      const vfx = toVfxEvent(event);
+      if (vfx) this.fx.emit(vfx);
+    }
+  }
+
+  destroy(): void {
+    this.overlay.destroy();
+    this.fx.destroy();
+  }
+}

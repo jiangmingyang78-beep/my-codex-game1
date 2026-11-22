@@ -1,0 +1,89 @@
+{
+  "schemaVersion": 1,
+  "world": {
+    "mapKey": "snowland",
+    "widthTiles": 96,
+    "heightTiles": 64,
+    "tileSizePx": 16,
+    "logicalWidthPx": 384,
+    "logicalHeightPx": 224
+  },
+  "clock": {
+    "daySec": 300,
+    "nightSec": 150,
+    "runLimitSec": 4500,
+    "maxStepSec": 0.05
+  },
+  "starting": {
+    "regionId": "camp_edge",
+    "campLevel": 1,
+    "inventory": {
+      "wood": 2,
+      "stone": 1
+    }
+  },
+  "stats": {
+    "hp": {
+      "initial": 6,
+      "max": 6,
+      "damageImmunitySec": 0.65
+    },
+    "hunger": {
+      "initial": 80,
+      "max": 100,
+      "dayDrainPerMinute": 4,
+      "nightDrainPerMinute": 6,
+      "zeroDamage": 1,
+      "zeroDamageIntervalSec": 20
+    },
+    "light": {
+      "initial": 100,
+      "max": 100,
+      "nightDrainPerSec": 0.8,
+      "inFireRegenPerSec": 10,
+      "zeroDamage": 1,
+      "zeroDamageIntervalSec": 5
+    }
+  },
+  "hero": {
+    "moveSpeedPxPerSec": 80,
+    "interactRangeTiles": 1.5,
+    "attackDamage": 1,
+    "attackRangeTiles": 1.25,
+    "attackArcDegrees": 100,
+    "attackCooldownSec": 0.42,
+    "quickUseItemIds": ["berry", "ration", "warm_stew", "bandage"]
+  },
+  "camp": {
+    "radiiTilesByLevel": {
+      "1": 4,
+      "2": 6,
+      "3": 9
+    },
+    "relayRadiusTiles": 5
+  },
+  "storage": {
+    "runKey": "emberwood-torch:run:v1",
+    "runBackupKey": "emberwood-torch:run:v1:backup",
+    "metaKey": "emberwood-torch:meta:v1",
+    "autosaveIntervalSec": 10
+  },
+  "limits": {
+    "activeEnemies": 8,
+    "activeProjectiles": 12,
+    "maxParticles": 120,
+    "reducedMotionMaxParticles": 30
+  },
+  "meta": {
+    "notes": [
+      {
+        "id": "first_ember_seal",
+        "trigger": "first_seal_collected"
+      },
+      {
+        "id": "beacon_restored",
+        "trigger": "run_won"
+      }
+    ]
+  }
+}
