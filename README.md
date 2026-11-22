@@ -4,8 +4,8 @@
 
 ## 版本
 
-- **第一版** · [在 Caffeine 试玩](https://emberwood-visual-effects-m6k.caffeine.xyz/)
-- **第二版** · 本仓库包含 Phaser 3.90.0 + Vite 项目的源码。第二版的 MVP 覆盖炉边雪林和废磨坊，进度保存在浏览器的 `localStorage`。
+- **第一版 v1.9.0** · 《余烬林 · 像素冒险》的单文件 HTML 版。[发行版](https://github.com/jiangmingyang78-beep/my-codex-game1/releases/tag/v1.9.0) · [源码分支](https://github.com/jiangmingyang78-beep/my-codex-game1/tree/v1) · [在 Caffeine 试玩](https://emberwood-visual-effects-m6k.caffeine.xyz/)
+- **第二版 v2.0.0** · 《余烬林：最后一炬》的 Phaser 3.90.0 + Vite 版，在 `main` 上开发。当前 MVP 覆盖炉边雪林和废磨坊，进度保存在浏览器的 `localStorage`。[发行版](https://github.com/jiangmingyang78-beep/my-codex-game1/releases/tag/v2.0.0)
 
 ## 本地运行
 
