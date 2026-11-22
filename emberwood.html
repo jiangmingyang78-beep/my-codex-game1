@@ -186,7 +186,8 @@ button:active{transform:translateY(1px)}
 <li>左键长按可采植物、收割作物、拾取 5 格内的掉落物或拆除建筑。短按可播种、开门和操作设施。</li>
 <li>手持材料后选择配方，右键放置，长按右键拖过空格可连续放置。触屏点按空格可放置。</li>
 <li>空手右键开垦，触屏空手长按空地开垦。</li>
-<li>用水壶浇水，在水井或池边补水。</li>
+<li>手持水壶，按住左键拖过作物可连续浇水。在水井或池边补水。</li>
+<li>手持种子，按住右键拖过空耕地可连续播种。</li>
 <li>喂鸡和羊吃小麦，之后可收蛋和剪羊毛。</li>
 <li>靠近篝火可烤面包，天黑后小心夜行怪。</li>
 <li>用手采野生植物，拿当地植物喂野生动物。矿脉可以长按采集。</li>
@@ -228,7 +229,7 @@ button:active{transform:translateY(1px)}
 <script>
 "use strict";
 const $ = id => document.getElementById(id);
-const GAME_VERSION="1.9.0";
+const GAME_VERSION="1.11.0";
 $("version").textContent="v"+GAME_VERSION;
 const catalogDefinitions = /* catalog:start */ {
   "树木": [
@@ -635,7 +636,7 @@ function applyLighting(){
     if(lit.has(a.sealId))lamps.push({...point(a.x,a.y),radius:47,color:i===0?[119,255,173]:i===1?[255,171,85]:[125,199,255],strength:.83});
   });
   if(mode==="survival"&&survival){
-    for(const [id,kind] of Object.entries(survival.builds)){
+    for(const [id,kind] of visibleSurvivalCells().builds){
       if(kind==="torch"||kind==="brazier"){
         const at=tilePoint(id);
         if(inView(at.x,at.y))lamps.push({...at,radius:kind==="brazier"?77:44,color:[255,183,92],strength:.92,fire:true});
@@ -1371,7 +1372,7 @@ function pixelArt(pattern,palette,anchorX=0,anchorY=0,size=0,refine=true){
   const image=document.createElement("canvas");
   image.width=(size||width)+pad*2;
   image.height=(size||rows.length)+pad*2;
-  const painter=image.getContext("2d");
+  const painter=image.getContext("2d",{willReadFrequently:Boolean(refine)});
   const offsetX=Math.floor((image.width-width)/2);
   const offsetY=Math.floor((image.height-rows.length)/2);
   const outlineMap=new Uint8Array(image.width*image.height);
@@ -2466,23 +2467,42 @@ function drawEnemy(e){
     rect("#ed927a",x-w/2,y-(boss?25:20),Math.round(w*e.hp/e.max),2);
   }
 }
-function drawMini(){
-  const colors=["#101e28","#3d674f","#7f835b","#6a6257","#3c7080","#20435c","#423943","#69536e"];
-  const playerX=Math.floor(player.x/SIZE),playerY=Math.floor(player.y/SIZE);
-  const left=mode==="survival"?clamp(playerX-Math.floor(WIDTH/2),WORLD_MIN,WORLD_MAX-WIDTH):0;
-  const top=mode==="survival"?clamp(playerY-Math.floor(HEIGHT/2),WORLD_MIN,WORLD_MAX-HEIGHT):0;
+const miniColors=["#101e28","#3d674f","#7f835b","#6a6257","#3c7080","#20435c","#423943","#69536e"];
+const miniLayer=makeCanvas(WIDTH*3,HEIGHT*3),miniLayerCtx=miniLayer.getContext("2d");
+let miniOrigin=null;
+function updateMiniLayer(left,top){
+  if(miniOrigin?.left===left&&miniOrigin.top===top)return;
+  const previous=miniOrigin;
+  const overlap=previous&&Math.abs(previous.left-left)<WIDTH&&Math.abs(previous.top-top)<HEIGHT;
+  if(overlap)miniLayerCtx.drawImage(miniLayer,(previous.left-left)*3,(previous.top-top)*3);
   for(let y=0;y<HEIGHT;y++)for(let x=0;x<WIDTH;x++){
-    const type=terrainTile(left+x,top+y),biome=biomeAt(left+x,top+y);
-    mini.fillStyle=type===5?colors[5]:type===COAL_VEIN?"#423648":biome?.map??colors[type];
-    mini.fillRect(x*3,y*3,3,3);
+    const tx=left+x,ty=top+y;
+    if(overlap&&tx>=previous.left&&tx<previous.left+WIDTH&&ty>=previous.top&&ty<previous.top+HEIGHT)continue;
+    const type=terrainTile(tx,ty),biome=biomeAt(tx,ty);
+    miniLayerCtx.fillStyle=type===5?miniColors[5]:type===COAL_VEIN?"#423648":biome?.map??miniColors[type];
+    miniLayerCtx.fillRect(x*3,y*3,3,3);
     if(biome&&(type===0||type===6)){
-      const ore=veinAt(left+x,top+y,type,biome);
-      mini.fillStyle=ore?oreTypes[ore].color:type===0?"#263f35":"#6b5954";mini.fillRect(x*3+1,y*3+1,2,2);
+      const ore=veinAt(tx,ty,type,biome);
+      miniLayerCtx.fillStyle=ore?oreTypes[ore].color:type===0?"#263f35":"#6b5954";
+      miniLayerCtx.fillRect(x*3+1,y*3+1,2,2);
+    }
+    if(mode==="survival"&&survival){
+      const id=cellKey(tx,ty),kind=survival.builds[id];
+      const marker=tx===camp.x&&ty===camp.y?"#f1b46d":tx===well.x&&ty===well.y?"#78b0b7":
+        survival.plots[id]?"#c59f63":kind==="torch"||kind==="brazier"?"#e5a964":kind==="researchDesk"?"#a6e0c3":kind?"#a28261":null;
+      if(marker){miniLayerCtx.fillStyle=marker;miniLayerCtx.fillRect(x*3,y*3,3,3);}
     }
   }
+  miniOrigin={left,top};
+}
+function drawMini(){
+  const {x:playerX,y:playerY}=worldCell(player);
+  const left=mode==="survival"?clamp(playerX-Math.floor(WIDTH/2),WORLD_MIN,WORLD_MAX-WIDTH):0;
+  const top=mode==="survival"?clamp(playerY-Math.floor(HEIGHT/2),WORLD_MIN,WORLD_MAX-HEIGHT):0;
+  updateMiniLayer(left,top);
+  mini.drawImage(miniLayer,0,0);
   if(mode==="survival"&&survival){
     $("mapCoordinates").textContent=playerX+", "+playerY;
-    renderMiniSurvival(left,top);
   }
   else{
   for(let i=0;i<altars.length;i++){
@@ -2705,7 +2725,7 @@ const wildAnimalArt=Object.fromEntries(Object.values(wildSpecies).map(animal=>[
 ]));
 const wildSpeciesById=new Map(Object.values(wildSpecies).map(animal=>[animal.contentId,animal]));
 let biomeGrid=null,survivalBaseTerrain=null;
-const CHUNK_SIZE=16, WORLD_MIN=-512, WORLD_MAX=512, CHUNK_RADIUS=2;
+const CHUNK_SIZE=16, WORLD_MIN=-2048, WORLD_MAX=2048, CHUNK_RADIUS=2;
 const chunks=new Map(),removedResources=new Set();
 let activeChunk=null,nightSpawnOrigin=null,wildlife=[],wildlifeSector="";
 const inOriginalMap=(x,y)=>x>=0&&x<WIDTH&&y>=0&&y<HEIGHT;
@@ -3014,6 +3034,7 @@ function openWorldPicker(){
 }
 function resetTerrain(sandbox){
   biomeGrid=null;survivalBaseTerrain=null;chunks.clear();removedResources.clear();activeChunk=null;nightSpawnOrigin=null;
+  edgeCache.clear();miniOrigin=null;visibleCells=null;
   wildlife=[];wildlifeSector="";
   if(sandbox&&survival.seed!==null){
     const generated=generateSurvivalTerrain(survival.seed);
@@ -3108,8 +3129,8 @@ function selectQuickSlot(index){
   activeQuickSlot=index;
   const item=heldQuickItem(),material=heldMaterial(),tool=heldTool();
   if(material)setMessage(item.name+"在手。右键放置，按住右键移动可连续放置。");
-  else if(tool==="seed")setMessage("选中种子，在空耕地点击或按 E 播种。");
-  else if(tool==="water")setMessage("选中水壶，可浇水或在水井、池边补水。");
+  else if(tool==="seed")setMessage("选中种子。点击空耕地播种，按住右键拖动可连播。");
+  else if(tool==="water")setMessage("选中水壶。点击作物浇水，按住左键拖动可连续浇水。");
   else if(item&&provisions[item.key])setMessage(item.name+"在手。右键使用。");
   else setMessage(item?item.name+"在手。左键长按可采集或拆除。":"左键长按可采集或拆除，空手右键可开垦。");
   sound("cue");survivalHud();
@@ -3251,12 +3272,14 @@ const terrainResources={
 };
 const harvestResource=type=>terrainResources[terrainContent[type]?.id];
 const harvestable=type=>Boolean(harvestResource(type));
+const dropMotion=new WeakMap();
 function dropGroundItems(at,items){
   const id=cellKey(Math.floor(at.x/SIZE),Math.floor(at.y/SIZE));
+  if(!survival.groundItems[id])visibleCells=null;
   const pile=survival.groundItems[id]??={items:{},landsAt:0};
   for(const [item,count] of Object.entries(items))pile.items[item]=(pile.items[item]??0)+count;
   pile.landsAt=survival.age+DROP_TIME;
-  pile.fromX=at.x;pile.fromY=at.y-8;pile.startAge=survival.age;
+  dropMotion.set(pile,{x:at.x,y:at.y-8,age:survival.age});
 }
 function paintPickupBar(){
   $("pickupBar").hidden=pickupNotices.size===0;
@@ -3278,21 +3301,27 @@ function updatePickupBar(receipts){
 }
 function collectGroundItems(targetId){
   const piles=survival.groundItems;
-  const automatic=targetId===undefined;
-  const candidates=automatic?Object.entries(piles):[[targetId,piles[targetId]]];
-  const reach=automatic?PICKUP_REACH:INTERACT_REACH;
   const received={};
-  for(const [key,pile] of candidates){
-    if(!pile||survival.age<pile.landsAt||distance(player,tilePoint(key))>reach)continue;
+  function collect(key,at,reach){
+    const pile=piles[key];
+    if(!pile||survival.age<pile.landsAt||distance(player,at)>reach)return;
     for(const [id,count] of Object.entries(pile.items)){
       survival.stock[id]+=count;
       received[id]=(received[id]??0)+count;
     }
     delete piles[key];
   }
+  if(targetId===undefined){
+    const {x,y}=worldCell(player),radius=PICKUP_REACH/SIZE;
+    for(let ty=y-radius;ty<=y+radius;ty++)for(let tx=x-radius;tx<=x+radius;tx++){
+      const id=cellKey(tx,ty);
+      if(piles[id])collect(id,point(tx,ty),PICKUP_REACH);
+    }
+  }else if(piles[targetId])collect(targetId,tilePoint(targetId),INTERACT_REACH);
   const receipts=Object.entries(received);
   updatePickupBar(receipts);
   if(!receipts.length)return false;
+  visibleCells=null;
   sparks(player.x,player.y-4,"#dfd69d",5,"magic");
   sound("cue");
   return true;
@@ -3589,6 +3618,7 @@ function heldTerrainAction(press,cell,id){
     const action=secondaryTerrainAction();
     return action==="hoe"&&!tillable(cell)?null:action;
   }
+  if(press.tool==="water"&&!press.touch)return "water";
   if(survival.builds[id])return "salvage";
   if(press.tool!=="hand")return press.tool;
   const {x,y}=cell;
@@ -3604,7 +3634,10 @@ function holdTerrain(press,cell,id){
   // Keep the action on this cell through the gesture even when it changes the tile.
   press.terrainAction=action;
   if(tick<nextWork)return;
-  if(action==="water"||action==="seed"||action==="provision"){
+  const oncePerPress=action==="provision"||
+    (action==="water"&&(press.button!==0||press.touch))||
+    (action==="seed"&&press.button!==2);
+  if(oncePerPress){
     if(press.acted)return;
     press.acted=true;
   }else if(action!=="axe"&&action!=="pickup"){
@@ -3662,6 +3695,7 @@ function actSurvival(cell=interactCell(),tool=heldTool()){
       if(hits<need){naturalHits.set(id,hits);setMessage((ore?oreTypes[ore].name:resource.action)+" "+hits+" / "+need);break;}
       if(inOriginalMap(x,y))world[y][x]=groundTile(x,y);
       else removedResources.add(String(id));
+      miniOrigin=null;edgeCache.delete(foliageKey(x,y));
       survival.removed.push(id);naturalHits.delete(id);
       const loot={[resource.product]:resource.count};
       if(type===0&&hash(x,y,survival.seed??0)>.5)loot.seed=1;
@@ -3673,7 +3707,9 @@ function actSurvival(cell=interactCell(),tool=heldTool()){
       if(!tillable(cell)){say("找一格未占用的肥沃地面开垦。","denied");return;}
       nextWork=tick+TILL_INTERVAL;
       actionAt("dig",at,"hoe");sparks(at.x,at.y,"#a48364",7,"dust");
-      survival.plots[id]={contentId:plotId,crop:null,growth:0,water:0};say("耕地已开垦。短按空耕地播种。","grass");break;
+      survival.plots[id]={contentId:plotId,crop:null,growth:0,water:0};
+      miniOrigin=null;visibleCells=null;
+      say("耕地已开垦。短按空耕地播种。","grass");break;
     case "seed":
       if(!plot||plot.crop||s.seed<=0){say(s.seed<=0?"种子用完了。收获小麦可获得种子。":"种子要播在空耕地。","denied");return;}
       actionAt("reach",at,"hand");sparks(at.x,at.y-1,"#bd8d5d",4,"wood");
@@ -3699,6 +3735,7 @@ function actSurvival(cell=interactCell(),tool=heldTool()){
         .map(([dx,dy])=>point(x+dx,y+dy)).find(p=>clearAt(p.x,p.y,3)):null;
       if(chosenPlan==="coop"&&!roost){say("畜棚旁需要一格可站立的地面。","denied");return;}
       stockPay(cost);survival.builds[id]=chosenPlan;
+      miniOrigin=null;visibleCells=null;
       nextWork=tick+PLACE_INTERVAL;
       if(chosenPlan==="coop")survival.animals.push({kind:henId,...roost,home:at,roost,feed:0,ready:false});
       actionAt("dig",at,"hammer");sparks(at.x,at.y-4,"#c8a778",10,"wood");say("已建造"+plan.name+"。","stone");break;
@@ -3708,6 +3745,7 @@ function actSurvival(cell=interactCell(),tool=heldTool()){
       if(build==="coop"&&survival.animals.some(animal=>distance(animal.home,at)<1)){say("正在使用的畜棚不能拆除。","denied");return;}
       dropGroundItems(at,{wood:Math.ceil(plans[build].cost.wood/2)});
       delete survival.builds[id];delete survival.open[id];
+      miniOrigin=null;visibleCells=null;
       nextWork=tick+HARVEST_INTERVAL;
       wildlifeSector="";
       actionAt("chop",at,"hammer");sparks(at.x,at.y-3,"#c39b6f",10,"wood");
@@ -3862,7 +3900,7 @@ function respawnSurvival(){
   renderHud();writeSave();setMessage("已在营地醒来。农田和建筑仍在，遗失了部分木材。");
 }
 function drawPlots(){
-  for(const [id,plot] of Object.entries(survival.plots)){
+  for(const [id,plot] of visibleSurvivalCells().plots){
     const {x,y}=tilePoint(id);
     if(!inView(x,y))continue;
     rect("#302732",x-8,y-8,16,16);
@@ -3889,6 +3927,21 @@ function drawPlots(){
   }
 }
 function inView(x,y){return x>camera.x-36&&x<camera.x+420&&y>camera.y-36&&y<camera.y+260;}
+let visibleCells=null;
+function visibleSurvivalCells(){
+  const x=Math.floor(camera.x/SIZE),y=Math.floor(camera.y/SIZE);
+  if(visibleCells?.x===x&&visibleCells.y===y)return visibleCells;
+  const builds=[],plots=[],piles=[];
+  // Snap the padded bounds to tiles so sub-tile camera motion can reuse the same list.
+  for(let ty=y-3;ty<=y+17;ty++)for(let tx=x-3;tx<=x+27;tx++){
+    const id=cellKey(tx,ty),kind=survival.builds[id],plot=survival.plots[id],pile=survival.groundItems[id];
+    if(kind)builds.push([id,kind]);
+    if(plot)plots.push([id,plot]);
+    if(pile)piles.push([id,pile]);
+  }
+  visibleCells={x,y,builds,plots,piles};
+  return visibleCells;
+}
 // Thrown item arc: gravity, damped bounces, landing cushion (returns height and squash).
 function bounceArc(t,v0,g=560,restitution=.42){
   let v=v0;
@@ -3901,12 +3954,12 @@ function bounceArc(t,v0,g=560,restitution=.42){
   return {z:0,since:-1};
 }
 function drawGroundItems(){
-  for(const [key,pile] of Object.entries(survival.groundItems)){
+  for(const [key,pile] of visibleSurvivalCells().piles){
     const {x,y}=tilePoint(key);
     if(!inView(x,y))continue;
-    const items=Object.keys(pile.items),age=pile.startAge===undefined?9:survival.age-pile.startAge;
-    const settled=age>=DROP_TIME+.6;
-    const throwT=clamp(age/(DROP_TIME*1.05),0,1),slide=easeOut(throwT);
+    const motion=dropMotion.get(pile),age=motion?survival.age-motion.age:0;
+    const items=Object.keys(pile.items),settled=!motion||age>=DROP_TIME+.6;
+    const slide=easeOut(clamp(age/(DROP_TIME*1.05),0,1));
     const roll=age>DROP_TIME?Math.exp(-(age-DROP_TIME)*9)*Math.sin((age-DROP_TIME)*22)*1.5:0;
     ctx.globalAlpha=.55;
     rect("#0d1618",x-Math.min(7,items.length*3+1),y+3,Math.min(14,items.length*6+2),2);
@@ -3916,7 +3969,7 @@ function drawGroundItems(){
       const dx=(i%3-(columns-1)/2)*8,finalX=x+dx-6,finalY=y-9-row*8;
       let ix=finalX,iy=finalY,sx=1,sy=1;
       if(!settled){
-        const startX=(pile.fromX??x)-6,startY=(pile.fromY??y)-9;
+        const startX=motion.x-6,startY=motion.y-9;
         ix=lerp(startX,finalX,slide)+roll*(i%2?1:-1);iy=lerp(startY,finalY,slide);
         const arc=bounceArc(Math.max(0,age),88+i*6);
         iy-=arc.z;
@@ -4011,13 +4064,13 @@ function addSurvivalActors(actors){
     rect("#acc0b5",x-6,y-7,10,1);rect("#87c1c4",x-3,y-3,4,1);
     rect("#394954",x-7,y+2,14,1);rect("#758287",x-3,y+3,1,2);
   }});
-  for(const [id,kind] of Object.entries(survival.builds)){
+  for(const [id,kind] of visibleSurvivalCells().builds){
     const at=tilePoint(id);
     if(!inView(at.x,at.y))continue;
     if(kind==="floor")drawStructure(kind,id);
     else actors.push({y:at.y,draw:()=>drawStructure(kind,id)});
   }
-  for(const a of survival.animals)actors.push({y:a.y,draw:()=>drawAnimal(a)});
+  for(const a of survival.animals)if(inView(a.x,a.y))actors.push({y:a.y,draw:()=>drawAnimal(a)});
   for(const a of wildlife)if(inView(a.x,a.y))actors.push({y:a.y,draw:()=>drawWildAnimal(a)});
 }
 function drawTileCursor(){
@@ -4047,17 +4100,6 @@ function drawTileCursor(){
       rect(color,x+2,y+12,12*hits/need,2);
     }
   }
-}
-function renderMiniSurvival(left,top){
-  const mark=(x,y,color)=>{
-    if(x<left||x>=left+WIDTH||y<top||y>=top+HEIGHT)return;
-    mini.fillStyle=color;mini.fillRect((x-left)*3,(y-top)*3,3,3);
-  };
-  for(const [id,kind] of Object.entries(survival.builds))
-    mark(...cellCoordinates(id),kind==="torch"||kind==="brazier"?"#e5a964":kind==="researchDesk"?"#a6e0c3":"#a28261");
-  for(const id of Object.keys(survival.plots))mark(...cellCoordinates(id),"#c59f63");
-  mark(well.x,well.y,"#78b0b7");
-  mark(camp.x,camp.y,"#f1b46d");
 }
 const blessings=[
   defineContent("blessing","vigor",{id:"vigor",x:8,y:14,label:"生命上限 +2，并回复 2 点生命",color:"#88dfaa",mods:{health:2}}),
