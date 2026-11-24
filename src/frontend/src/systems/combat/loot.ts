@@ -3,6 +3,7 @@ import { EVT, makeEvent } from "@/core/events";
 import { rollRun } from "@/core/rng";
 import type { EnemyState, GameEvent, RunState, Systems } from "@/core/types";
 import { addItem, canAdd } from "../inventory";
+import { countBeaconSeals } from "../world/beacon";
 
 const PICKUP_RADIUS_PX = 20;
 
@@ -26,10 +27,14 @@ function spawnLoot(
   };
 }
 
-/**
- * Issues a drop table at a position. Each entry rolls independently against its own
- * probability. Fixed drops (pickupId) are issued once per run and tracked in changesByObjectId.
- */
+function fixedDropIssued(state: RunState, pickupId: string): boolean {
+  return (
+    Object.hasOwn(state.groundLoot, pickupId) ||
+    state.collectedPickups.includes(pickupId)
+  );
+}
+
+/** Each entry rolls independently; fixed drops keep the same ID until collected. */
 export function rollDrops(
   state: RunState,
   drops: readonly DropDef[],
@@ -37,16 +42,13 @@ export function rollDrops(
   y: number,
 ): void {
   for (const drop of drops) {
-    if (drop.pickupId && state.changesByObjectId[drop.pickupId]) continue;
+    if (drop.pickupId && fixedDropIssued(state, drop.pickupId)) continue;
     if (
       drop.probability < 1 &&
       !(drop.probability > 0 && rollRun(state) < drop.probability)
     )
       continue;
     spawnLoot(state, drop.itemId, drop.count, x, y, drop.pickupId ?? null);
-    // Issuing and recording the fixed loot happen in the same rules step.
-    if (drop.pickupId)
-      state.changesByObjectId[drop.pickupId] = { loot: "pending" };
   }
 }
 
@@ -72,7 +74,7 @@ function checkEncounter(
   });
   if (!cleared) return;
   const fresh = reward.drops.some(
-    (d) => !d.pickupId || !state.changesByObjectId[d.pickupId],
+    (d) => !d.pickupId || !fixedDropIssued(state, d.pickupId),
   );
   rollDrops(state, reward.drops, x, y);
   if (fresh)
@@ -113,7 +115,7 @@ export function defeatEnemy(
 
 /**
  * Walk-over pickup of ground loot. A full stack leaves the loot on the ground (notified once)
- * until the player makes room. Fixed pickups update seals and changesByObjectId.
+ * until the player makes room. Fixed pickups update collectedPickups and, for seals, seals.
  */
 export function collectGroundLoot(
   state: RunState,
@@ -149,7 +151,7 @@ export function collectGroundLoot(
       }),
     );
     if (loot.pickupId) {
-      state.changesByObjectId[loot.pickupId] = { loot: "picked" };
+      state.collectedPickups.push(loot.pickupId);
       if (
         loot.itemId === "ember_seal" &&
         !state.seals.includes(loot.pickupId)
@@ -158,7 +160,7 @@ export function collectGroundLoot(
         events.push(
           makeEvent(EVT.sealCollected, loot.x, loot.y, {
             pickupId: loot.pickupId,
-            count: state.seals.length,
+            count: countBeaconSeals(state),
           }),
         );
       }

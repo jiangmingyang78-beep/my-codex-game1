@@ -19,6 +19,12 @@ export default defineConfig({
     emptyOutDir: true,
     sourcemap: false,
     minify: false,
+    rollupOptions: {
+      input: {
+        main: fileURLToPath(new URL("./index.html", import.meta.url)),
+        survival: fileURLToPath(new URL("./survival.html", import.meta.url)),
+      },
+    },
   },
   optimizeDeps: {
     rolldownOptions: {

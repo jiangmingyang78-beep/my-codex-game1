@@ -1,76 +1,13 @@
 import type { GameData } from "@/core/dataTypes";
 import { createRng } from "@/core/rng";
-import {
-  CAMP_TILE,
-  GATE_TILES,
-  HERO_START_TILE,
-  MILL_BUILDING,
-  MILL_PILLARS,
-  MILL_RELAY_TILE,
-  NODE_PLANS,
-  REGION_BOUNDS,
-  SPAWN_TILES,
-  WORLD_SEED,
-} from "./worldLayout";
+import { WORLD_LAYOUT, type WorldLayout } from "./worldLayout";
+import { type Grid, at, carveTerrain, tileIndex } from "./worldTerrain";
 import {
   type SpawnPoint,
   TILE,
   type World,
   type WorldObject,
 } from "./worldTypes";
-
-const RENEWABLE_WOOD_OFFSETS = [
-  { x: -4, y: -3 },
-  { x: 4, y: -3 },
-  { x: -4, y: 3 },
-  { x: 4, y: 3 },
-];
-
-interface Grid {
-  w: number;
-  h: number;
-  tiles: Uint8Array;
-}
-
-const at = (g: Grid, x: number, y: number) => y * g.w + x;
-
-function fillRect(
-  g: Grid,
-  x0: number,
-  y0: number,
-  x1: number,
-  y1: number,
-  tile: number,
-): void {
-  for (let y = y0; y <= y1; y++)
-    for (let x = x0; x <= x1; x++) g.tiles[at(g, x, y)] = tile;
-}
-
-function carveTerrain(g: Grid): void {
-  g.tiles.fill(TILE.wall);
-  fillRect(g, 2, 2, 46, 61, TILE.snow);
-  fillRect(g, 49, 2, 93, 45, TILE.snow);
-  // Training loop around the camp and the road to the mill gate.
-  for (let x = 6; x <= 26; x++) {
-    g.tiles[at(g, x, 14)] = TILE.path;
-    g.tiles[at(g, x, 36)] = TILE.path;
-  }
-  for (let y = 14; y <= 36; y++) {
-    g.tiles[at(g, 6, y)] = TILE.path;
-    g.tiles[at(g, 26, y)] = TILE.path;
-  }
-  fillRect(g, 16, 24, 46, 25, TILE.path);
-  fillRect(g, 48, 24, 60, 25, TILE.path);
-  const m = MILL_BUILDING;
-  fillRect(g, m.x0, m.y0, m.x1, m.y1, TILE.wall);
-  fillRect(g, m.x0 + 1, m.y0 + 1, m.x1 - 1, m.y1 - 1, TILE.floor);
-  for (const y of m.openY) g.tiles[at(g, m.x0, y)] = TILE.floor;
-  for (const p of MILL_PILLARS)
-    fillRect(g, p.x, p.y, p.x + 1, p.y + 1, TILE.wall);
-  for (const t of GATE_TILES) g.tiles[at(g, t.x, t.y)] = TILE.door;
-  g.tiles[at(g, CAMP_TILE.x, CAMP_TILE.y)] = TILE.fireBase;
-  g.tiles[at(g, MILL_RELAY_TILE.x, MILL_RELAY_TILE.y)] = TILE.fireBase;
-}
 
 const px = (tile: number, size: number) => (tile + 0.5) * size;
 
@@ -79,32 +16,38 @@ function placeNodes(
   data: GameData,
   g: Grid,
   taken: Set<number>,
+  layout: WorldLayout,
 ): WorldObject[] {
-  const rng = createRng(WORLD_SEED);
+  const rng = createRng(layout.seed);
   const size = data.tileSize;
   const out: WorldObject[] = [];
   const claim = (x: number, y: number) => {
     for (let dy = -1; dy <= 1; dy++)
       for (let dx = -1; dx <= 1; dx++) taken.add(at(g, x + dx, y + dy));
   };
-  data.worldObjects.renewableWoodNodeIds.forEach((id, i) => {
-    const o = RENEWABLE_WOOD_OFFSETS[i % RENEWABLE_WOOD_OFFSETS.length];
-    const x = CAMP_TILE.x + o.x;
-    const y = CAMP_TILE.y + o.y;
+  for (const id of data.worldObjects.renewableWoodNodeIds) {
+    const point = layout.renewableWoodTiles[id];
+    if (!point) throw new Error(`Missing renewable wood tile for ${id}`);
+    const { x, y } = point;
+    tileIndex(g, x, y);
     claim(x, y);
     out.push({
       id,
       kind: "node",
-      regionId: "camp_edge",
+      regionId: data.balance.starting.regionId,
       x: px(x, size),
       y: px(y, size),
       itemId: "wood",
       yield: 1,
       renewable: true,
     });
-  });
-  for (const bounds of REGION_BOUNDS) {
-    for (const plan of NODE_PLANS[bounds.id] ?? []) {
+  }
+  for (const { bounds, nodes, nodeArea } of layout.regions) {
+    for (const plan of nodes ?? []) {
+      if (!data.items.has(plan.itemId))
+        throw new Error(`Unknown resource item ${plan.itemId}`);
+      if (bounds.x1 - bounds.x0 <= 10 || bounds.y1 - bounds.y0 <= 10)
+        throw new Error(`Resource area too small for ${bounds.id}`);
       for (let n = 1; n <= plan.count; n++) {
         for (let attempt = 0; attempt < 400; attempt++) {
           const x =
@@ -117,10 +60,16 @@ function placeNodes(
             taken.has(at(g, x, y))
           )
             continue;
-          const nearCamp = Math.hypot(x - CAMP_TILE.x, y - CAMP_TILE.y);
-          if (bounds.id === "camp_edge" && (nearCamp < 6 || nearCamp > 24))
-            continue;
-          if (bounds.id === "old_mill" && x < 54) continue;
+          if (nodeArea?.minX !== undefined && x < nodeArea.minX) continue;
+          if (plan.maxX !== undefined && x > plan.maxX) continue;
+          if (nodeArea?.campDistance) {
+            const distance = Math.hypot(
+              x - layout.campfire.x,
+              y - layout.campfire.y,
+            );
+            const [min, max] = nodeArea.campDistance;
+            if (distance < min || distance > max) continue;
+          }
           claim(x, y);
           out.push({
             id: `${plan.idPrefix}_${n}`,
@@ -140,19 +89,18 @@ function placeNodes(
   return out;
 }
 
-function scatterTrees(g: Grid, taken: Set<number>): void {
-  const rng = createRng(WORLD_SEED ^ 0x7ee5);
-  for (const b of REGION_BOUNDS) {
-    const density = b.id === "camp_edge" ? 0.14 : 0.06;
+function scatterTrees(g: Grid, taken: Set<number>, layout: WorldLayout): void {
+  const rng = createRng(layout.seed ^ 0x7ee5);
+  for (const { bounds: b, trees } of layout.regions) {
+    if (!trees) continue;
     for (let y = b.y0 + 2; y <= b.y1 - 2; y++) {
-      for (let x = b.x0 + 2; x <= Math.min(b.x1, 93) - 1; x++) {
+      for (let x = b.x0 + 2; x <= Math.min(b.x1, trees.maxX); x++) {
         const i = at(g, x, y);
         if (g.tiles[i] !== TILE.snow || taken.has(i)) continue;
         if (
-          rng() < density ||
-          x === b.x0 + 2 ||
-          y === b.y0 + 2 ||
-          y === b.y1 - 2
+          rng() < trees.density ||
+          (trees.denseEdges !== false &&
+            (x === b.x0 + 2 || y === b.y0 + 2 || y === b.y1 - 2))
         )
           g.tiles[i] = TILE.tree;
       }
@@ -175,95 +123,129 @@ function reserve(
 }
 
 /** Builds the deterministic tile grid, collision data and object table. */
-export function generateWorld(data: GameData): World {
+export function generateWorld(data: GameData, layout = WORLD_LAYOUT): World {
   const { widthTiles: w, heightTiles: h } = data.balance.world;
   const size = data.tileSize;
+  if (!Number.isInteger(w) || !Number.isInteger(h) || w < 1 || h < 1)
+    throw new Error("Invalid world dimensions");
   const g: Grid = { w, h, tiles: new Uint8Array(w * h) };
-  carveTerrain(g);
+  carveTerrain(g, layout);
+  const { campfire, heroStart } = layout;
+  tileIndex(g, heroStart.x, heroStart.y);
   const taken = new Set<number>();
   for (let i = 0; i < g.tiles.length; i++)
     if (g.tiles[i] === TILE.path) taken.add(i);
-  reserve(g, taken, CAMP_TILE.x, CAMP_TILE.y, 3);
-  reserve(g, taken, HERO_START_TILE.x, HERO_START_TILE.y, 2);
-  reserve(g, taken, MILL_RELAY_TILE.x, MILL_RELAY_TILE.y, 2);
-  for (const t of Object.values(SPAWN_TILES)) reserve(g, taken, t.x, t.y, 2);
-  for (const t of GATE_TILES) reserve(g, taken, t.x - 2, t.y, 2);
+  reserve(g, taken, campfire.x, campfire.y, 3);
+  reserve(g, taken, heroStart.x, heroStart.y, 2);
+  for (const t of Object.values(layout.spawns)) {
+    tileIndex(g, t.x, t.y);
+    reserve(g, taken, t.x, t.y, 2);
+  }
+  for (const { gate, relay, beacon } of layout.regions) {
+    if (relay) reserve(g, taken, relay.x, relay.y, 2);
+    if (beacon) reserve(g, taken, beacon.x, beacon.y, 2);
+    for (const t of gate?.tiles ?? [])
+      reserve(
+        g,
+        taken,
+        t.x + (gate?.reserveOffset?.x ?? 0),
+        t.y + (gate?.reserveOffset?.y ?? 0),
+        2,
+      );
+  }
 
-  const nodes = placeNodes(data, g, taken);
-  scatterTrees(g, taken);
+  const nodes = placeNodes(data, g, taken, layout);
+  scatterTrees(g, taken, layout);
 
   const objects = new Map<string, WorldObject>();
-  const add = (o: WorldObject) => objects.set(o.id, o);
+  const add = (o: WorldObject) => {
+    if (objects.has(o.id)) throw new Error(`Duplicate map object ${o.id}`);
+    objects.set(o.id, o);
+  };
+  const position = ({ x, y }: { x: number; y: number }) => ({
+    x: px(x, size),
+    y: px(y, size),
+  });
   add({
     id: data.worldObjects.mainCampfireId,
     kind: "campfire",
-    regionId: "camp_edge",
-    x: px(CAMP_TILE.x, size),
-    y: px(CAMP_TILE.y, size),
+    regionId: data.balance.starting.regionId,
+    ...position(campfire),
   });
-  for (const region of data.regionList) {
-    if (!REGION_BOUNDS.some((b) => b.id === region.id)) continue;
-    if (region.entry.gateId) {
-      const mid = GATE_TILES.reduce((s, t) => s + t.y, 0) / GATE_TILES.length;
+  const gateTiles = new Map<number, string>();
+  const spawns = new Map<string, SpawnPoint>();
+  for (const { bounds, gate, relay, beacon } of layout.regions) {
+    const region = data.regions.get(bounds.id);
+    if (!region) throw new Error(`Unknown map region ${bounds.id}`);
+    const gateId = region.entry.gateId;
+    if (Boolean(gateId) !== Boolean(gate?.tiles.length))
+      throw new Error(`Missing gate id or tiles for ${region.id}`);
+    if (gateId && gate) {
       add({
-        id: region.entry.gateId,
+        id: gateId,
         kind: "gate",
         regionId: region.id,
-        x: px(GATE_TILES[0].x, size),
-        y: px(mid, size),
+        ...position(gate.interactAt),
       });
+      for (const t of gate.tiles) {
+        const index = at(g, t.x, t.y);
+        if (gateTiles.has(index))
+          throw new Error(`Overlapping gate tile (${t.x}, ${t.y})`);
+        gateTiles.set(index, gateId);
+      }
     }
-    if (region.relaySocketId) {
+    if (Boolean(region.relaySocketId) !== Boolean(relay))
+      throw new Error(`Missing relay id or tile for ${region.id}`);
+    if (region.relaySocketId && relay) {
       add({
         id: region.relaySocketId,
         kind: "relay_socket",
         regionId: region.id,
-        x: px(MILL_RELAY_TILE.x, size),
-        y: px(MILL_RELAY_TILE.y, size),
+        ...position(relay),
+      });
+    }
+    if (beacon) {
+      add({
+        id: data.worldObjects.finalBeaconId,
+        kind: "beacon",
+        regionId: region.id,
+        ...position(beacon),
+      });
+    }
+    for (const s of [...region.residentSpawns, ...region.nightSpawns]) {
+      const t = layout.spawns[s.spawnId];
+      if (!t) throw new Error(`Missing spawn tile for ${s.spawnId}`);
+      if (spawns.has(s.spawnId))
+        throw new Error(`Duplicate spawn id ${s.spawnId}`);
+      spawns.set(s.spawnId, {
+        spawnId: s.spawnId,
+        regionId: region.id,
+        ...position(t),
       });
     }
   }
   for (const n of nodes) add(n);
-
-  const spawns = new Map<string, SpawnPoint>();
-  for (const region of data.regionList) {
-    if (!REGION_BOUNDS.some((b) => b.id === region.id)) continue;
-    for (const s of [...region.residentSpawns, ...region.nightSpawns]) {
-      const t = SPAWN_TILES[s.spawnId];
-      if (!t) throw new Error(`Missing spawn tile for ${s.spawnId}`);
-      spawns.set(s.spawnId, {
-        spawnId: s.spawnId,
-        regionId: region.id,
-        x: px(t.x, size),
-        y: px(t.y, size),
-      });
-    }
-  }
-  const gateTiles = new Map<number, string>();
-  const gateId = data.regionList.find((r) => r.id === "old_mill")?.entry.gateId;
-  if (gateId)
-    for (const t of GATE_TILES) gateTiles.set(at(g, t.x, t.y), gateId);
 
   return {
     widthTiles: w,
     heightTiles: h,
     tileSize: size,
     tiles: g.tiles,
-    regions: REGION_BOUNDS,
+    regions: layout.regions.map(({ bounds }) => bounds),
     objects,
     objectList: [...objects.values()].sort((a, b) => (a.id < b.id ? -1 : 1)),
     spawns,
     gateTiles,
-    heroStart: {
-      x: px(HERO_START_TILE.x, size),
-      y: px(HERO_START_TILE.y, size),
-    },
-    campfire: { x: px(CAMP_TILE.x, size), y: px(CAMP_TILE.y, size) },
+    heroStart: position(heroStart),
+    campfire: position(campfire),
   };
 }
 
-let cached: World | null = null;
+const worldsByData = new WeakMap<GameData, World>();
 export function getWorld(data: GameData): World {
-  if (!cached) cached = generateWorld(data);
-  return cached;
+  const cached = worldsByData.get(data);
+  if (cached) return cached;
+  const world = generateWorld(data);
+  worldsByData.set(data, world);
+  return world;
 }

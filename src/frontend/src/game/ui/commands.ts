@@ -1,12 +1,41 @@
 import { beginRun, returnToTitle } from "../session/activeRun";
+import { selectTitleHero } from "./titleInfo";
+
+export interface DevEnemyOption {
+  id: string;
+  name: string;
+}
+
+export interface DevCommands {
+  listEnemies(): DevEnemyOption[];
+  isGodMode(): boolean;
+  grantAllGear(): void;
+  restoreAndReset(): void;
+  simulateHit(): void;
+  togglePhase(): void;
+  toggleGodMode(): boolean;
+  spawnEnemy(enemyId: string): boolean;
+  clearEnemies(): void;
+}
+
+/** Eternal Mode loadout actions, bound by the game scene only during an eternal run. */
+export interface EternalCommands {
+  toggleEquipment(itemId: string): void;
+  setLoadoutMode(mode: "standard" | "free"): void;
+  selectAllEquipment(): void;
+  clearEquipment(): void;
+  startCombat(): void;
+}
 
 /** Actions the React UI can request. Scenes bind the ones they own and unbind on shutdown. */
 export interface GameCommands {
+  selectHero(heroId: string): void;
   newGame(): void;
+  newEternal(): void;
   continueGame(): void;
   pause(): void;
   resume(): void;
-  save(): void;
+  save(): boolean;
   toTitle(): void;
   restart(): void;
   craft(recipeId: string): void;
@@ -15,6 +44,8 @@ export interface GameCommands {
   attack(): void;
   openCraft(): void;
   closeCraft(): void;
+  dev?: DevCommands;
+  eternal?: EternalCommands;
 }
 
 const noop = (): void => undefined;
@@ -22,11 +53,13 @@ const noop = (): void => undefined;
 /** Starting a run and returning to the title are handled by the store, never by a scene. */
 function freshCommands(): GameCommands {
   return {
+    selectHero: selectTitleHero,
     newGame: () => beginRun("new"),
+    newEternal: () => beginRun("eternal"),
     continueGame: () => beginRun("continue"),
     pause: noop,
     resume: noop,
-    save: noop,
+    save: () => false,
     toTitle: returnToTitle,
     restart: noop,
     craft: noop,
@@ -35,6 +68,8 @@ function freshCommands(): GameCommands {
     attack: noop,
     openCraft: noop,
     closeCraft: noop,
+    dev: undefined,
+    eternal: undefined,
   };
 }
 

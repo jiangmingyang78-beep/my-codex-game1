@@ -11,10 +11,20 @@ export function ResultScreen() {
         aria-label="本局结算"
         className="pixel-panel flex w-full max-w-md flex-col gap-4 p-6"
       >
-        <h2 className="font-pixel text-center text-3xl font-bold text-hp text-pixel-shadow">
+        <h2
+          className={`font-pixel text-center text-3xl font-bold text-pixel-shadow ${result.status === "won" ? "text-ember" : "text-hp"}`}
+        >
           {result.title}
         </h2>
-        <p className="text-center text-sm text-foreground">{result.cause}</p>
+        {result.eternal?.newRecord && (
+          <p className="font-pixel text-center text-sm font-bold text-warning">
+            ★ 新纪录 ★
+          </p>
+        )}
+        {result.cause && (
+          <p className="text-center text-sm text-foreground">{result.cause}</p>
+        )}
+        <p className="text-center text-sm text-foreground">{result.epilogue}</p>
         <dl className="pixel-panel-flat grid grid-cols-[1fr_auto] gap-x-4 gap-y-1 px-4 py-3 text-sm">
           {result.stats.map((s) => (
             <div key={s.label} className="contents">
@@ -35,7 +45,7 @@ export function ResultScreen() {
             onClick={() => commands.restart()}
             className="flex-1 py-3"
           >
-            重新开始
+            {result.mode === "eternal" ? "再来一局（永恒）" : "重新开始"}
           </PixelButton>
           <PixelButton
             variant="ghost"

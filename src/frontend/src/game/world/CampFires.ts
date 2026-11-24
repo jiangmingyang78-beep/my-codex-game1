@@ -21,7 +21,10 @@ export class CampFires {
   ) {
     const { world, data } = sys;
     const radius = data.balance.camp.relayRadiusTiles * data.tileSize;
-    for (const id of data.relaySocketIds) {
+    for (const id of [
+      ...data.relaySocketIds,
+      data.worldObjects.finalBeaconId,
+    ]) {
       const o = world.objects.get(id);
       if (!o) continue;
       const lit = state.changesByObjectId[id]?.lit === true;

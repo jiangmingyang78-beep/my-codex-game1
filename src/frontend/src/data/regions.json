@@ -20,6 +20,14 @@
         {
           "spawnId": "camp_edge_weasel",
           "enemyId": "snow_weasel"
+        },
+        {
+          "spawnId": "camp_frost_rat",
+          "enemyId": "frost_rat"
+        },
+        {
+          "spawnId": "camp_woodcutter",
+          "enemyId": "rotted_woodcutter"
         }
       ],
       "nightSpawns": [
@@ -41,7 +49,7 @@
         "minCampLevel": 2,
         "requiredPickupIds": []
       },
-      "encounterId": "old_mill_guards",
+      "encounterId": null,
       "relaySocketId": "old_mill_relay",
       "minimumStartingSupply": {
         "ore": 8,
@@ -56,6 +64,22 @@
         {
           "spawnId": "old_mill_spider",
           "enemyId": "mill_spider"
+        },
+        {
+          "spawnId": "mill_overseer_spawn",
+          "enemyId": "mill_overseer"
+        },
+        {
+          "spawnId": "mill_frost_crow",
+          "enemyId": "frost_crow"
+        },
+        {
+          "spawnId": "mill_ash_wolf",
+          "enemyId": "ash_wolf"
+        },
+        {
+          "spawnId": "mill_cinder_husk",
+          "enemyId": "cinder_husk"
         }
       ],
       "nightSpawns": [
@@ -128,6 +152,59 @@
         "spawnId": "beacon_keeper_spawn",
         "lightZoneId": "beacon_arena_light"
       }
+    },
+    {
+      "id": "deep_woods",
+      "name": "密林深处",
+      "entry": {
+        "gateId": null,
+        "minCampLevel": 2,
+        "requiredPickupIds": []
+      },
+      "encounterId": null,
+      "relaySocketId": null,
+      "minimumStartingSupply": {},
+      "residentSpawns": [
+        {
+          "spawnId": "deep_shadow_lynx",
+          "enemyId": "shadow_lynx"
+        },
+        {
+          "spawnId": "deep_bog_spitter",
+          "enemyId": "bog_spitter"
+        },
+        {
+          "spawnId": "deep_ember_wisp",
+          "enemyId": "ember_wisp"
+        }
+      ],
+      "nightSpawns": [
+        { "spawnId": "deep_woods_night_wolf", "enemyId": "ash_wolf" },
+        { "spawnId": "deep_woods_night_lynx", "enemyId": "shadow_lynx" }
+      ]
+    },
+    {
+      "id": "frost_ridge",
+      "name": "霜渊山脊",
+      "entry": {
+        "gateId": "frost_ridge_gate",
+        "minCampLevel": 2,
+        "requiredPickupIds": ["old_mill_ember_seal"]
+      },
+      "encounterId": null,
+      "relaySocketId": null,
+      "minimumStartingSupply": {},
+      "residentSpawns": [
+        {
+          "spawnId": "ridge_frozen_guard",
+          "enemyId": "frozen_guard"
+        },
+        {
+          "spawnId": "ridge_warden",
+          "enemyId": "summit_pyre_warden"
+        }
+      ],
+      "nightSpawns": []
     }
   ],
   "worldObjects": {
@@ -142,6 +219,6 @@
     ]
   },
   "dawnRenewal": {
-    "renewableItemIds": ["berry", "frostcap"]
+    "renewableItemIds": ["berry", "frostcap", "fiber", "herb"]
   }
 }

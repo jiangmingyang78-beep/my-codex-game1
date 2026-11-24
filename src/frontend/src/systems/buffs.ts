@@ -1,3 +1,4 @@
+import { getHero } from "@/core/gameData";
 import type { RunState, Systems } from "@/core/types";
 
 export function setNightLightBuff(
@@ -27,7 +28,7 @@ export function tickBuffs(state: RunState, sec: number): void {
  * multiply together, e.g. 0.5 x 0.75 = 0.375.
  */
 export function lightDrainMultiplier(state: RunState, sys: Systems): number {
-  let m = 1;
+  let m = getHero(sys.data, state.heroId).traits.lightDrainMult ?? 1;
   for (const item of sys.data.itemList) {
     if ((state.inventory[item.id] ?? 0) <= 0) continue;
     for (const effect of item.effects) {

@@ -1,7 +1,17 @@
 import { Flame, X } from "lucide-react";
+import { useState } from "react";
 import { PixelButton } from "./PixelButton";
 import { commands } from "./commands";
-import { type RecipeRow, useUi } from "./store";
+import { type RecipeCategory, type RecipeRow, useUi } from "./store";
+
+type CraftFilter = "all" | RecipeCategory;
+
+const FILTERS: readonly { id: CraftFilter; label: string }[] = [
+  { id: "all", label: "全部" },
+  { id: "equipment", label: "装备" },
+  { id: "supply", label: "补给" },
+  { id: "camp", label: "营火与材料" },
+];
 
 function RecipeCard({ row }: { row: RecipeRow }) {
   const disabled = row.blockedReason !== null || row.shortfallText !== null;
@@ -54,7 +64,12 @@ function RecipeCard({ row }: { row: RecipeRow }) {
 
 export function CraftPanel() {
   const craft = useUi((s) => s.craft);
+  const [filter, setFilter] = useState<CraftFilter>("all");
   if (!craft) return null;
+  const rows =
+    filter === "all"
+      ? craft.rows
+      : craft.rows.filter((row) => row.category === filter);
   return (
     <div className="pointer-events-auto absolute inset-0 flex items-center justify-center bg-night/60 p-3">
       <section
@@ -80,8 +95,33 @@ export function CraftPanel() {
             <X size={16} />
           </PixelButton>
         </header>
+        <div
+          role="tablist"
+          aria-label="配方分类"
+          className="flex flex-wrap gap-1.5"
+        >
+          {FILTERS.map((tab) => {
+            const active = filter === tab.id;
+            return (
+              <button
+                key={tab.id}
+                type="button"
+                role="tab"
+                aria-selected={active}
+                onClick={() => setFilter(tab.id)}
+                className={`font-pixel border-2 px-2.5 py-1 text-xs focus-visible:outline-2 focus-visible:outline-frost ${
+                  active
+                    ? "border-ember bg-ember/15 text-ember"
+                    : "border-border bg-muted text-foreground hover:border-frost"
+                }`}
+              >
+                {tab.label}
+              </button>
+            );
+          })}
+        </div>
         <ul className="grid min-h-0 flex-1 grid-cols-1 gap-3 overflow-y-auto pr-1 md:grid-cols-2 lg:grid-cols-3">
-          {craft.rows.map((row) => (
+          {rows.map((row) => (
             <RecipeCard key={row.id} row={row} />
           ))}
         </ul>

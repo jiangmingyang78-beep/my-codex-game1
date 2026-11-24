@@ -4,7 +4,7 @@ import type {
   StepInputState,
   Systems,
 } from "@/core/types";
-import { updateEnemies } from "./enemyAi";
+import { updateEnemies } from "../EnemyManager.js";
 import { heroAttack } from "./heroAttack";
 import { collectGroundLoot } from "./loot";
 

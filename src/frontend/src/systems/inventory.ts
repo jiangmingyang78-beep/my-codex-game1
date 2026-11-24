@@ -1,5 +1,6 @@
 import type { GameData } from "@/core/dataTypes";
 import { EVT, makeEvent } from "@/core/events";
+import { getHero } from "@/core/gameData";
 import { reasonMessage } from "@/core/messages";
 import type {
   ActionResult,
@@ -9,6 +10,7 @@ import type {
   Systems,
 } from "@/core/types";
 import { setNightLightBuff } from "./buffs";
+import { heroMaxHp } from "./itemEffects";
 
 export function countOf(inventory: Inventory, itemId: string): number {
   return inventory[itemId] ?? 0;
@@ -100,7 +102,7 @@ export function quickUseItemId(data: GameData, slot: number): string | null {
   return data.balance.hero.quickUseItemIds[slot - 1] ?? null;
 }
 
-/** Consumes one usable item (berry, ration, warm stew, bandage). Validates before writing. */
+/** Consumes one usable item after validating its effects and inventory count. */
 export function consumeItem(
   state: RunState,
   sys: Systems,
@@ -124,21 +126,26 @@ export function consumeItem(
   const effects = item.effects.filter((e) => e.trigger === "use");
   if (effects.length === 0) return fail("not_usable");
   if (countOf(state.inventory, itemId) < 1) return fail("not_owned");
+  const maxHp = heroMaxHp(data, state.inventory, state.heroId);
+  const statMax = (stat: "hp" | "hunger" | "light") =>
+    stat === "hp" ? maxHp : data.balance.stats[stat].max;
   for (const e of effects) {
     if (
       e.type === "restore_stat" &&
       e.requiresBelowMax &&
-      hero[e.stat] >= data.balance.stats[e.stat].max
+      hero[e.stat] >= statMax(e.stat)
     ) {
       return fail("stat_full");
     }
   }
   removeItems(state.inventory, { [itemId]: 1 });
+  const { healBonus = 0 } = getHero(data, state.heroId).traits;
   for (const e of effects) {
     if (e.type === "restore_stat") {
-      hero[e.stat] = Math.min(
-        data.balance.stats[e.stat].max,
-        hero[e.stat] + e.amount,
+      const bonus = e.stat === "hp" && e.amount > 0 ? healBonus : 0;
+      hero[e.stat] = Math.max(
+        0,
+        Math.min(statMax(e.stat), hero[e.stat] + e.amount + bonus),
       );
       if (e.stat === "hunger" && hero.hunger > 0) hero.hungerDamageSec = 0;
     } else if (e.type === "night_light_drain_multiplier" && e.durationSec) {

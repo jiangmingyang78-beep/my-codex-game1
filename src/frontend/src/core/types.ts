@@ -21,14 +21,13 @@ export interface HeroState {
   inFire: boolean;
 }
 
-/** Per-object persistent changes (gathered, opened, lit, fixed loot). */
+/** Per-object persistent changes (gathered, opened, lit, defeated). */
 export interface ObjectChange {
   gathered?: boolean;
   renewals?: number;
   opened?: boolean;
   lit?: boolean;
   defeated?: boolean;
-  loot?: "pending" | "picked";
 }
 
 export type EnemyPhase = "idle" | "chase" | "windup" | "attack" | "recovery";
@@ -50,6 +49,13 @@ export interface EnemyState {
   moveIndex: number;
   hitDone: boolean;
   nightRound: number | null;
+  aimX?: number;
+  aimY?: number;
+  wardenPhase?: number;
+  hurtTimer?: number;
+  knockbackTimer?: number;
+  knockbackVx?: number;
+  knockbackVy?: number;
 }
 
 export interface Projectile {
@@ -94,10 +100,13 @@ export interface RunState {
   phase: DayPhase;
   day: number;
   regionId: string;
+  heroId: string;
   hero: HeroState;
   inventory: Inventory;
   campLevel: number;
   seals: string[];
+  /** Fixed pickup IDs already claimed. Pending fixed drops are in groundLoot. */
+  collectedPickups: string[];
   changesByObjectId: Record<string, ObjectChange>;
   enemiesById: Record<string, EnemyState>;
   projectiles: Projectile[];
@@ -123,6 +132,8 @@ export interface StepInputState {
   interactPressed: boolean;
   itemId: string | null;
   pausePressed: boolean;
+  /** Shift edge: starts the short dash (tracked outside RunState). */
+  dashPressed?: boolean;
 }
 
 /** Read-only snapshot supplied by the scene when Arcade physics owns hero movement. */
@@ -150,6 +161,7 @@ export interface Systems {
 }
 
 export interface RunConfig {
+  heroId?: string;
   systems?: Systems;
   seed?: number;
   runId?: string;

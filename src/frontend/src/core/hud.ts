@@ -1,5 +1,19 @@
+import type { EternalHud } from "@/systems/eternal/eternalTypes";
+import { bucklerBlockCooldown, heroMaxHp } from "@/systems/itemEffects";
+import { getDashCooldownState } from "@/systems/movement";
+import { getBucklerCooldownSec } from "@/systems/survival";
+import { BEACON_SEAL_IDS, countBeaconSeals } from "@/systems/world/beacon";
 import { clockLabel, remainingSec } from "./clock";
 import type { RunState, Systems } from "./types";
+
+export interface HudEquipmentItem {
+  id: string;
+  name: string;
+  description: string;
+  /** null 表示常驻生效，0 表示就绪，正数表示剩余冷却秒数。 */
+  cooldownSec: number | null;
+  maxCooldownSec: number | null;
+}
 
 export interface HudModel {
   hp: number;
@@ -21,9 +35,37 @@ export interface HudModel {
   regionName: string;
   quickSlots: { slot: number; itemId: string; name: string; count: number }[];
   buffSecondsLeft: number;
+  equipment: HudEquipmentItem[];
+  /** Present only in Eternal Mode: replaces the storm clock and objective. */
+  eternal?: EternalHud;
 }
 
-const SEALS_TOTAL = 2;
+function buildEquipment(state: RunState, sys: Systems): HudEquipmentItem[] {
+  return sys.data.itemList
+    .filter(
+      (item) =>
+        item.type === "equipment" && (state.inventory[item.id] ?? 0) > 0,
+    )
+    .map((item): HudEquipmentItem => {
+      const { id, name, description } = item;
+      const view = { id, name, description };
+      if (id === "iron_buckler") {
+        return {
+          ...view,
+          cooldownSec: getBucklerCooldownSec(state, sys),
+          maxCooldownSec: bucklerBlockCooldown(sys.data, state.inventory),
+        };
+      }
+      if (id === "iron_boots") {
+        const { remainingSec, maxSec } = getDashCooldownState(state, sys);
+        return { ...view, cooldownSec: remainingSec, maxCooldownSec: maxSec };
+      }
+      return { ...view, cooldownSec: null, maxCooldownSec: null };
+    })
+    .sort(
+      (a, b) => Number(b.cooldownSec !== null) - Number(a.cooldownSec !== null),
+    );
+}
 
 /** Read-only view data for the HUD (allocates; call at HUD refresh rate, not per physics step). */
 export function buildHudModel(state: RunState, sys: Systems): HudModel {
@@ -34,7 +76,7 @@ export function buildHudModel(state: RunState, sys: Systems): HudModel {
     buff = Math.max(buff, state.buffs[id].remainingSec);
   return {
     hp: state.hero.hp,
-    maxHp: balance.stats.hp.max,
+    maxHp: heroMaxHp(sys.data, state.inventory, state.heroId),
     hunger: state.hero.hunger,
     maxHunger: balance.stats.hunger.max,
     light: state.hero.light,
@@ -46,14 +88,17 @@ export function buildHudModel(state: RunState, sys: Systems): HudModel {
     dayLabel: night ? `第${state.day}夜` : `第${state.day}天`,
     stormRemainingSec: remainingSec(state.elapsedSec, balance),
     campLevel: state.campLevel,
-    sealText: `${state.seals.length}/${SEALS_TOTAL}`,
+    sealText: `${countBeaconSeals(state)}/${BEACON_SEAL_IDS.length}`,
     regionName: sys.data.regions.get(state.regionId)?.name ?? state.regionId,
-    quickSlots: balance.hero.quickUseItemIds.map((itemId, i) => ({
-      slot: i + 1,
-      itemId,
-      name: sys.data.items.get(itemId)?.name ?? itemId,
-      count: state.inventory[itemId] ?? 0,
-    })),
+    quickSlots: balance.hero.quickUseItemIds
+      .map((itemId, i) => ({
+        slot: i + 1,
+        itemId,
+        name: sys.data.items.get(itemId)?.name ?? itemId,
+        count: state.inventory[itemId] ?? 0,
+      }))
+      .filter((slot) => slot.slot <= 4 || slot.count > 0),
     buffSecondsLeft: buff,
+    equipment: buildEquipment(state, sys),
   };
 }

@@ -25,9 +25,16 @@ export function discardPendingRun(): void {
 
 /** Prepares the run. GameScene shows the gameplay UI once its input and rendering are ready. */
 export function beginRun(mode: StartMode): void {
-  if (pending || uiStore.get().screen !== "title" || uiStore.get().error) return;
+  if (pending || uiStore.get().screen !== "title" || uiStore.get().error)
+    return;
   try {
-    pending = new RunSession(mode);
+    const { title } = uiStore.get();
+    const selected = title.heroes.find(
+      ({ definition }) => definition.id === title.selectedHeroId,
+    );
+    if (mode !== "continue" && selected && !selected.unlocked) return;
+    pending = new RunSession(mode, selected?.definition.id);
+    uiStore.set({ screen: "playing" });
     attachTimer = setTimeout(() => {
       reportFailure("游戏画面未能启动，请返回标题后重试。");
     }, SCENE_ATTACH_TIMEOUT_MS);

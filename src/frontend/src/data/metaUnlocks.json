@@ -1,0 +1,49 @@
+[
+  {
+    "id": "unlock_ember_brazier",
+    "sourceMode": "adventure",
+    "targetMode": "survival",
+    "targetType": "plan",
+    "targetKey": "emberBrazier",
+    "title": "余烬火坛蓝图",
+    "condition": {
+      "event": "seal.collected",
+      "pickupId": "old_mill_ember_seal"
+    },
+    "hint": "在冒险模式取得「旧磨坊炉印」解锁"
+  },
+  {
+    "id": "unlock_warden_blade",
+    "sourceMode": "adventure",
+    "targetMode": "survival",
+    "targetType": "recipe",
+    "targetKey": "emberBlade",
+    "title": "淬烬刃配方",
+    "condition": {
+      "event": "enemy.defeated",
+      "enemyId": "mill_overseer"
+    },
+    "hint": "在冒险模式击败「旧磨坊督工」解锁"
+  },
+  {
+    "id": "unlock_summit_beacon",
+    "sourceMode": "adventure",
+    "targetMode": "survival",
+    "targetType": "plan",
+    "targetKey": "miniBeacon",
+    "title": "微型烽火台蓝图",
+    "condition": {
+      "anyOf": [
+        {
+          "event": "seal.collected",
+          "pickupId": "summit_ember_seal"
+        },
+        {
+          "event": "run.ended",
+          "status": "won"
+        }
+      ]
+    },
+    "hint": "在冒险模式取得山顶炉印或通关解锁"
+  }
+]

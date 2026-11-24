@@ -1,0 +1,167 @@
+{
+  "defaultHeroId": "lin_tinder",
+  "heroes": [
+    {
+      "id": "lin_tinder",
+      "name": "凛",
+      "epithet": "末代拾烬人",
+      "roleTag": "拾烬人",
+      "bio": "凛沿着巡火人的旧路寻找幸存者，胸前的橙巾来自上一位守火人。",
+      "quote": "火还在，就还能回家。",
+      "traitName": "余温",
+      "traitDesc": "火圈内火炬恢复速度提高 20%。",
+      "traits": {
+        "inFireRegenMult": 1.2
+      },
+      "startingInventory": {
+        "wood": 2,
+        "stone": 1,
+        "ration": 1
+      },
+      "unlock": {
+        "type": "default"
+      },
+      "palette": {
+        "o": "#18192a",
+        "f": "#ffd0ab",
+        "s": "#f0c8a0",
+        "e": "#29283b",
+        "p": "#43628e",
+        "b": "#ff7a2f",
+        "d": "#79483a"
+      }
+    },
+    {
+      "id": "gale_smith",
+      "name": "格雷",
+      "epithet": "磨坊老铁匠",
+      "roleTag": "铁匠",
+      "bio": "格雷曾在磨坊为巡火人修工具。风暴过后，他一直等着有人把督工从磨坊里带出来。",
+      "quote": "铁凉了，也能再烧红。",
+      "traitName": "炉锤",
+      "traitDesc": "生命上限 +2，攻击伤害 +1，移动速度降低 6%，夜间耗光增加 5%。",
+      "traits": {
+        "maxHpDelta": 2,
+        "attackDamageDelta": 1,
+        "moveSpeedMult": 0.94,
+        "lightDrainMult": 1.05
+      },
+      "startingInventory": {
+        "wood": 1,
+        "iron_scrap": 2,
+        "charcoal": 1
+      },
+      "unlock": {
+        "type": "boss_defeated",
+        "enemyId": "mill_overseer"
+      },
+      "palette": {
+        "o": "#181821",
+        "f": "#d6a485",
+        "s": "#bb856d",
+        "e": "#302733",
+        "p": "#8d6356",
+        "b": "#e0b25b",
+        "d": "#918076"
+      }
+    },
+    {
+      "id": "suheng_herb",
+      "name": "素蘅",
+      "epithet": "冻沼采药人",
+      "roleTag": "采药人",
+      "bio": "素蘅在冻沼里辨认草药，也沿路为失散的人留下包扎伤口的药。",
+      "quote": "霜盖住了叶脉，根还活着。",
+      "traitName": "回春",
+      "traitDesc": "使用物品恢复生命时额外恢复 1 点。",
+      "traits": {
+        "healBonus": 1
+      },
+      "startingInventory": {
+        "wood": 2,
+        "herb": 2,
+        "resin": 1
+      },
+      "unlock": {
+        "type": "consumables_crafted",
+        "count": 5
+      },
+      "palette": {
+        "o": "#161f27",
+        "f": "#f0c4a8",
+        "s": "#dca88c",
+        "e": "#223b30",
+        "p": "#3a8478",
+        "b": "#80d79e",
+        "d": "#92749b"
+      }
+    },
+    {
+      "id": "corvus_hunt",
+      "name": "鸦羽",
+      "epithet": "暮色巡猎者",
+      "roleTag": "巡猎者",
+      "bio": "鸦羽在日落前寻找兽径，靠林间的动静判断哪一条路还能走。",
+      "quote": "脚印到这里断了，走另一边。",
+      "traitName": "掠影",
+      "traitDesc": "生命上限 −1，移动速度提高 12%，受伤后无敌时间延长 0.15 秒。",
+      "traits": {
+        "maxHpDelta": -1,
+        "moveSpeedMult": 1.12,
+        "immunityBonusSec": 0.15
+      },
+      "startingInventory": {
+        "wood": 2,
+        "raw_meat": 1,
+        "pelt": 1
+      },
+      "unlock": {
+        "type": "kills",
+        "count": 15
+      },
+      "palette": {
+        "o": "#161626",
+        "f": "#d5b5bf",
+        "s": "#c7969d",
+        "e": "#211d34",
+        "p": "#595283",
+        "b": "#bca2ef",
+        "d": "#756087"
+      }
+    },
+    {
+      "id": "alvin_scribe",
+      "name": "艾尔文",
+      "epithet": "灰烬书吏",
+      "roleTag": "书吏",
+      "bio": "艾尔文把营地里留下的笔记抄进同一本册子，连同行者的名字也一并记下。",
+      "quote": "替我把最后一页留给黎明。",
+      "traitName": "观火",
+      "traitDesc": "生命上限 −1，移动速度提高 2%，光圈扩大 15%，夜间耗光降低 15%。",
+      "traits": {
+        "maxHpDelta": -1,
+        "moveSpeedMult": 1.02,
+        "lightRadiusMult": 1.15,
+        "lightDrainMult": 0.85
+      },
+      "startingInventory": {
+        "wood": 1,
+        "ember_dust": 2,
+        "resin_torch": 1
+      },
+      "unlock": {
+        "type": "camp_notes",
+        "count": 2
+      },
+      "palette": {
+        "o": "#201b31",
+        "f": "#efd5b6",
+        "s": "#e0b392",
+        "e": "#2e2940",
+        "p": "#527393",
+        "b": "#79cde6",
+        "d": "#c49f78"
+      }
+    }
+  ]
+}

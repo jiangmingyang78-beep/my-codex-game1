@@ -6,7 +6,9 @@ export interface PolledInput {
   attackPressed: boolean;
   interactPressed: boolean;
   pausePressed: boolean;
-  /** Quick-use slot 1..4 pressed this frame, else null. */
+  /** Shift pressed this frame (edge). */
+  dashPressed: boolean;
+  /** Quick-use slot 1..9 pressed this frame, else null. */
   slot: number | null;
 }
 
@@ -33,10 +35,19 @@ export class InputController {
       interact: K.E,
       attack: K.SPACE,
       pause: K.ESC,
+      dash: K.SHIFT,
     }) as Record<string, Key>;
-    this.slotKeys = [K.ONE, K.TWO, K.THREE, K.FOUR].map((code) =>
-      kb.addKey(code),
-    );
+    this.slotKeys = [
+      K.ONE,
+      K.TWO,
+      K.THREE,
+      K.FOUR,
+      K.FIVE,
+      K.SIX,
+      K.SEVEN,
+      K.EIGHT,
+      K.NINE,
+    ].map((code) => kb.addKey(code));
   }
 
   /** Movement is level-triggered; actions are consumed once per press. */
@@ -57,6 +68,7 @@ export class InputController {
       attackPressed: k.attack.isDown,
       interactPressed: edge("interact"),
       pausePressed: edge("pause"),
+      dashPressed: edge("dash"),
       slot: slotIndex >= 0 ? slotIndex + 1 : null,
     };
   }

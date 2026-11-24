@@ -1,5 +1,7 @@
+import { DevToolbar } from "../dev/DevToolbar";
 import { CraftPanel } from "./CraftPanel";
 import { ErrorScreen } from "./ErrorScreen";
+import { EternalOverlay } from "./EternalPrepPanel";
 import { Hud } from "./Hud";
 import { PromptBubble, Toasts } from "./Overlays";
 import { PauseMenu } from "./PauseMenu";
@@ -23,6 +25,8 @@ export function GameUi() {
         <>
           <Hud />
           {screen === "playing" && <PromptBubble />}
+          {screen === "playing" && <EternalOverlay />}
+          {import.meta.env.DEV && screen === "playing" && <DevToolbar />}
           <Toasts />
           {screen === "paused" && <PauseMenu />}
           {screen === "craft" && <CraftPanel />}

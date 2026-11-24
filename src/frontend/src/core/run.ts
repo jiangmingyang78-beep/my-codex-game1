@@ -1,10 +1,11 @@
-import { stepCombat } from "@/systems/combat/combat";
 import {
   despawnNightRaid,
   spawnNightRaid,
   spawnResidents,
-} from "@/systems/combat/enemySpawn";
+} from "@/systems/EnemyManager.js";
+import { stepCombat } from "@/systems/combat/combat";
 import { consumeItem } from "@/systems/inventory";
+import { heroMaxHp } from "@/systems/itemEffects";
 import { moveHero } from "@/systems/movement";
 import { tickHeroTimers, tickSurvival } from "@/systems/survival";
 import { regionIdAt } from "@/systems/world/collision";
@@ -13,6 +14,7 @@ import { interact } from "@/systems/world/interact";
 import { clampStep, dayAt, phaseAt } from "./clock";
 import { runCommands } from "./commands";
 import { EVT, makeEvent } from "./events";
+import { getHero } from "./gameData";
 import { RUN_SCHEMA_VERSION, sanitizeRunState } from "./snapshot";
 import { getSystems } from "./systems";
 import type {
@@ -28,7 +30,10 @@ function newRunId(seed: number): string {
 }
 
 function freshState(sys: Systems, config: RunConfig): RunState {
-  const { balance } = sys.data;
+  const { data } = sys;
+  const { balance } = data;
+  const hero = getHero(data, config.heroId);
+  const inventory = { ...hero.startingInventory };
   const seed = (config.seed ?? Math.floor(Math.random() * 4294967296)) >>> 0;
   return {
     schemaVersion: RUN_SCHEMA_VERSION,
@@ -40,12 +45,16 @@ function freshState(sys: Systems, config: RunConfig): RunState {
     phase: "day",
     day: 1,
     regionId: balance.starting.regionId,
+    heroId: hero.id,
     hero: {
       x: sys.world.heroStart.x,
       y: sys.world.heroStart.y,
       facingX: 0,
       facingY: 1,
-      hp: balance.stats.hp.initial,
+      hp: Math.min(
+        heroMaxHp(data, inventory, hero.id),
+        balance.stats.hp.initial + (hero.traits.maxHpDelta ?? 0),
+      ),
       hunger: balance.stats.hunger.initial,
       light: balance.stats.light.initial,
       attackCooldownSec: 0,
@@ -55,9 +64,10 @@ function freshState(sys: Systems, config: RunConfig): RunState {
       darknessDamageSec: 0,
       inFire: true,
     },
-    inventory: { ...balance.starting.inventory },
+    inventory,
     campLevel: balance.starting.campLevel,
     seals: [],
+    collectedPickups: [],
     changesByObjectId: {},
     enemiesById: {},
     projectiles: [],
@@ -148,7 +158,11 @@ export function step(
   moveHero(
     state,
     sys,
-    { moveX: input.moveX ?? 0, moveY: input.moveY ?? 0 },
+    {
+      moveX: input.moveX ?? 0,
+      moveY: input.moveY ?? 0,
+      dashPressed: input.dashPressed === true,
+    },
     sec,
     request.frame?.hero,
   );
@@ -164,7 +178,9 @@ export function step(
   }
 
   runCommands(state, sys, request.commands ?? [], events);
+  if (state.status !== "playing") return events;
   if (input.interactPressed) events.push(...interact(state, sys).events);
+  if (state.status !== "playing") return events;
   if (input.itemId)
     events.push(...consumeItem(state, sys, input.itemId).events);
 

@@ -1,4 +1,5 @@
-import { CAMP_NOTE_TEXT, EVT } from "@/core";
+import { CAMP_NOTE_TEXT, EVT, getHero } from "@/core";
+import { getUnlockDef } from "@/shared/metaUnlocks.js";
 import { uiStore } from "../ui/store";
 import type { Scenery } from "../world/Scenery";
 import type { RunSession, SessionOutput } from "./RunSession";
@@ -29,5 +30,14 @@ export function handleOutput(
   if (out.autosaved) uiStore.toast("已自动存档", "info");
   for (const id of out.unlockedNotes) {
     uiStore.toast(`营地笔记：${CAMP_NOTE_TEXT[id]?.title ?? id}`, "good");
+  }
+  for (const id of out.unlockedHeroes) {
+    const hero = getHero(session.sys.data, id);
+    uiStore.toast(`英雄解锁：${hero.name} · ${hero.epithet}`, "good");
+  }
+  for (const id of out.unlockedCrossMode) {
+    const rule = getUnlockDef(id);
+    if (rule)
+      uiStore.toast(`跨模式解锁：生存模式已开放「${rule.title}」`, "good");
   }
 }

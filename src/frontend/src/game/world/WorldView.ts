@@ -23,9 +23,10 @@ export class WorldView {
     art: TileArt,
   ) {
     const { world } = sys;
-    if (!scene.textures.exists(TEX.world))
-      registerWorldTexture(scene, bakeWorldCanvas(world, art));
-    scene.add.image(0, 0, TEX.world).setOrigin(0).setDepth(-1);
+    const key = world.textureKey ?? TEX.world;
+    if (!scene.textures.exists(key))
+      registerWorldTexture(scene, bakeWorldCanvas(world, art), key);
+    scene.add.image(0, 0, key).setOrigin(0).setDepth(-1);
     this.addTrees();
     this.addGates();
     this.addObjects();
@@ -64,10 +65,11 @@ export class WorldView {
       .setOrigin(0.5, 0.8)
       .setDepth(campfire.y - 1);
     for (const o of objectList) {
-      if (o.kind === "relay_socket") {
+      if (o.kind === "beacon" || o.kind === "relay_socket") {
         this.scene.add
           .image(o.x, o.y + 6, TEX.brazier)
           .setOrigin(0.5, 0.9)
+          .setScale(o.kind === "beacon" ? 1.25 : 1)
           .setDepth(o.y);
       } else if (o.kind === "node") {
         const key = this.scene.textures.exists(TEX.node(o.itemId ?? ""))

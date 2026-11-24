@@ -1,9 +1,10 @@
-import type { EnemyDef } from "@/core/dataTypes";
 import { EVT, makeEvent } from "@/core/events";
+import { getHero } from "@/core/gameData";
 import type { EnemyState, GameEvent, RunState, Systems } from "@/core/types";
+import { hitEnemy } from "../EnemyManager.js";
 import { countOf } from "../inventory";
+import { ownedStatBonus } from "../itemEffects";
 import { ENEMY_RADIUS, inCone } from "./combatMath";
-import { defeatEnemy } from "./loot";
 
 export interface Weapon {
   damage: number;
@@ -30,6 +31,9 @@ export function currentWeapon(state: RunState, sys: Systems): Weapon {
       }
     }
   }
+  w.damage +=
+    ownedStatBonus(sys.data, state.inventory, "attackDamage") +
+    (getHero(sys.data, state.heroId).traits.attackDamageDelta ?? 0);
   return w;
 }
 
@@ -72,29 +76,6 @@ export function heroAttack(
     )
       targets.push(e);
   }
-  for (const e of targets) {
-    const def: EnemyDef | undefined = sys.data.enemies.get(e.enemyId);
-    if (!def) continue;
-    e.hp -= w.damage;
-    const dist = Math.max(1, Math.hypot(e.x - hero.x, e.y - hero.y));
-    const dx = (e.x - hero.x) / dist;
-    const dy = (e.y - hero.y) / dist;
-    const kill = e.hp <= 0;
-    const kind = kill
-      ? def.id === "beacon_keeper"
-        ? "boss"
-        : "finisher"
-      : "strike";
-    events.push(
-      makeEvent(EVT.hit, e.x, e.y, {
-        kind,
-        dx,
-        dy,
-        targetId: e.id,
-        damage: w.damage,
-      }),
-    );
-    if (kill) defeatEnemy(state, sys, e, events);
-  }
+  for (const e of targets) hitEnemy(state, sys, e, w.damage, events);
   return true;
 }

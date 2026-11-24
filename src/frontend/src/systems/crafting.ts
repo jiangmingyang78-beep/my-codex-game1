@@ -2,6 +2,7 @@ import { EVT, makeEvent } from "@/core/events";
 import { reasonMessage } from "@/core/messages";
 import type { ActionResult, GameEvent, RunState, Systems } from "@/core/types";
 import { addItem, countOf, freeSpace, removeItems } from "./inventory";
+import { heroMaxHp } from "./itemEffects";
 
 export interface Shortfall {
   itemId: string;
@@ -127,7 +128,12 @@ export function craft(
   const { hero } = state;
   const events: GameEvent[] = [];
   if (out.type === "item") {
+    const prevMaxHp = heroMaxHp(data, state.inventory, state.heroId);
     addItem(data, state.inventory, out.id, out.count);
+    const nextMaxHp = heroMaxHp(data, state.inventory, state.heroId);
+    if (nextMaxHp > prevMaxHp) {
+      hero.hp = Math.min(nextMaxHp, hero.hp + (nextMaxHp - prevMaxHp));
+    }
   } else {
     state.campLevel = out.level;
     events.push(

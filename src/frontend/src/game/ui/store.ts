@@ -1,4 +1,4 @@
-import type { HudModel } from "@/core";
+import type { HeroDef, HudModel } from "@/core";
 import { useSyncExternalStore } from "react";
 
 export type Screen = "title" | "playing" | "paused" | "craft" | "result";
@@ -17,10 +17,13 @@ export interface MaterialRow {
   have: number;
 }
 
+export type RecipeCategory = "equipment" | "supply" | "camp";
+
 export interface RecipeRow {
   id: string;
   name: string;
   description: string;
+  category: RecipeCategory;
   materials: MaterialRow[];
   /** "营火 Lv.1 → Lv.2" style line for camp level recipes, else null. */
   levelChange: string | null;
@@ -40,15 +43,33 @@ export interface CraftView {
 }
 
 export interface ResultView {
-  status: "dead" | "storm_lost";
+  status: "won" | "dead" | "storm_lost";
+  /** "eternal" for 永恒模式 results; adventure results leave it unset. */
+  mode?: "eternal";
   title: string;
   cause: string;
+  epilogue: string;
   stats: { label: string; value: string }[];
   notes: string[];
+  eternal?: { newRecord: boolean };
+}
+
+export interface TitleHero {
+  definition: HeroDef;
+  unlocked: boolean;
+  unlockText: string;
 }
 
 export interface TitleView {
+  crossModeUnlockCount: number;
+  crossModeUnlockTotal: number;
+  worldTagline: string;
+  heroes: TitleHero[];
+  selectedHeroId: string;
   hasSave: boolean;
+  /** Eternal Mode personal bests (undefined until a run has been settled). */
+  eternalBestSec?: number;
+  eternalBestKills?: number;
   notice: string | null;
   notes: { id: string; title: string; body: string }[];
 }
@@ -83,7 +104,16 @@ const initial: UiState = {
   nearCamp: false,
   toasts: [],
   muted: false,
-  title: { hasSave: false, notice: null, notes: [] },
+  title: {
+    crossModeUnlockCount: 0,
+    crossModeUnlockTotal: 0,
+    hasSave: false,
+    notice: null,
+    notes: [],
+    heroes: [],
+    selectedHeroId: "",
+    worldTagline: "",
+  },
   craft: null,
   result: null,
   error: null,

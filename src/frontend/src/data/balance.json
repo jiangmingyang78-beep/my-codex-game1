@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "world": {
     "mapKey": "snowland",
-    "widthTiles": 96,
+    "widthTiles": 156,
     "heightTiles": 64,
     "tileSizePx": 16,
     "logicalWidthPx": 384,
@@ -16,11 +16,7 @@
   },
   "starting": {
     "regionId": "camp_edge",
-    "campLevel": 1,
-    "inventory": {
-      "wood": 2,
-      "stone": 1
-    }
+    "campLevel": 1
   },
   "stats": {
     "hp": {
@@ -49,10 +45,20 @@
     "moveSpeedPxPerSec": 80,
     "interactRangeTiles": 1.5,
     "attackDamage": 1,
-    "attackRangeTiles": 1.25,
+    "attackRangeTiles": 1.4,
     "attackArcDegrees": 100,
     "attackCooldownSec": 0.42,
-    "quickUseItemIds": ["berry", "ration", "warm_stew", "bandage"]
+    "quickUseItemIds": [
+      "berry",
+      "ration",
+      "warm_stew",
+      "bandage",
+      "roast_meat",
+      "herb_salve",
+      "resin_torch",
+      "raw_meat",
+      "herb"
+    ]
   },
   "camp": {
     "radiiTilesByLevel": {
@@ -79,6 +85,10 @@
       {
         "id": "first_ember_seal",
         "trigger": "first_seal_collected"
+      },
+      {
+        "id": "ember_dust_note",
+        "trigger": "ember_dust_collected"
       },
       {
         "id": "beacon_restored",

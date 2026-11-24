@@ -56,9 +56,14 @@ export function spawnResidents(state: RunState, sys: Systems): void {
   }
 }
 
-export function aliveEnemyCount(state: RunState): number {
+function aliveEnemyCount(state: RunState, sys: Systems): number {
   let n = 0;
-  for (const _ in state.enemiesById) n++;
+  for (const e of Object.values(state.enemiesById))
+    if (
+      e.nightRound !== null ||
+      sys.world.spawns.get(e.spawnId)?.regionId === state.regionId
+    )
+      n++;
   return n;
 }
 
@@ -76,7 +81,8 @@ export function spawnNightRaid(
   const round = state.day;
   const raid = { regionId: region.id, round, spawnedIds: [] as string[] };
   for (const s of region.nightSpawns) {
-    if (aliveEnemyCount(state) >= sys.data.balance.limits.activeEnemies) break;
+    if (aliveEnemyCount(state, sys) >= sys.data.balance.limits.activeEnemies)
+      break;
     const point = sys.world.spawns.get(s.spawnId);
     const def = sys.data.enemies.get(s.enemyId);
     const id = `night${round}_${s.spawnId}`;

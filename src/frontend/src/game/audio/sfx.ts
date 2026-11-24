@@ -6,6 +6,8 @@ export type SfxName =
   | "gather"
   | "craft"
   | "hit"
+  | "block"
+  | "boss_phase"
   | "pickup"
   | "nightfall"
   | "ui";
@@ -52,6 +54,28 @@ const SOUNDS: Record<SfxName, Tone[]> = {
       type: "sawtooth",
       gain: 0.16,
     },
+  ],
+  block: [
+    {
+      freq: 1568,
+      endFreq: 962,
+      start: 0,
+      dur: 0.11,
+      type: "triangle",
+      gain: 0.14,
+    },
+    { freq: 2319, start: 0.012, dur: 0.08, type: "sine", gain: 0.08 },
+  ],
+  boss_phase: [
+    {
+      freq: 116,
+      endFreq: 43,
+      start: 0,
+      dur: 0.42,
+      type: "triangle",
+      gain: 0.2,
+    },
+    { freq: 76, endFreq: 37, start: 0.05, dur: 0.52, type: "sine", gain: 0.15 },
   ],
   pickup: [
     { freq: 660, start: 0, dur: 0.06, type: "square", gain: 0.08 },

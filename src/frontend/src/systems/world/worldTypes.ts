@@ -10,7 +10,12 @@ export const TILE = {
   fireBase: 7,
 } as const;
 
-export type ObjectKind = "campfire" | "node" | "gate" | "relay_socket";
+export type ObjectKind =
+  | "campfire"
+  | "node"
+  | "gate"
+  | "relay_socket"
+  | "beacon";
 
 export interface WorldObject {
   id: string;
@@ -54,4 +59,6 @@ export interface World {
   gateTiles: ReadonlyMap<number, string>;
   heroStart: { x: number; y: number };
   campfire: { x: number; y: number };
+  /** Optional baked-texture key; worlds other than the adventure map use their own. */
+  textureKey?: string;
 }

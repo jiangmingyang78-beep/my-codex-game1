@@ -2,8 +2,10 @@ import { loadGameData } from "./gameData";
 import {
   RUN_SCHEMA_VERSION,
   SnapshotError,
-  sanitizeRunState,
-} from "./snapshot";
+  isRecord,
+  readRunVersion,
+} from "./saveMigration";
+import { sanitizeRunState } from "./snapshot";
 import type { StorageLike } from "./storage";
 import { getSystems } from "./systems";
 import type { RunState, Systems } from "./types";
@@ -25,7 +27,11 @@ export interface LoadResult {
 
 export interface SaveResult {
   ok: boolean;
-  reason?: "storage_unavailable" | "storage_error" | "run_ended";
+  reason?:
+    | "storage_unavailable"
+    | "storage_error"
+    | "run_ended"
+    | "future_version";
 }
 
 interface Envelope {
@@ -39,19 +45,36 @@ function keys() {
   return { run: storage.runKey, backup: storage.runBackupKey };
 }
 
-function parse(raw: string, sys: Systems): RunState {
+function unwrap(raw: string): Record<string, unknown> {
   let envelope: unknown;
   try {
     envelope = JSON.parse(raw);
   } catch {
     throw new SnapshotError("corrupt_json");
   }
-  if (typeof envelope !== "object" || envelope === null)
-    throw new SnapshotError("corrupt_json");
-  const e = envelope as Partial<Envelope>;
-  if (e.schemaVersion !== RUN_SCHEMA_VERSION)
+  if (!isRecord(envelope)) throw new SnapshotError("corrupt_json");
+  const envelopeVersion = readRunVersion(envelope.schemaVersion);
+  if (!Object.hasOwn(envelope, "state")) return envelope;
+  const state = envelope.state;
+  if (!isRecord(state)) throw new SnapshotError("invalid_root");
+  const version = readRunVersion(state.schemaVersion ?? envelope.schemaVersion);
+  if (envelope.schemaVersion !== undefined && envelopeVersion !== version)
     throw new SnapshotError("version_mismatch");
-  return sanitizeRunState(e.state, sys);
+  return { ...state, schemaVersion: version };
+}
+
+function futureSave(error: unknown): boolean {
+  return error instanceof SnapshotError && error.reason === "future_version";
+}
+
+function isFutureSlot(raw: string | null): boolean {
+  if (raw === null) return false;
+  try {
+    unwrap(raw);
+    return false;
+  } catch (error) {
+    return futureSave(error);
+  }
 }
 
 /**
@@ -91,13 +114,20 @@ export function loadRun(
   ] as const) {
     if (raw === null) continue;
     try {
-      const snapshot = parse(raw, systems);
+      const snapshot = sanitizeRunState(unwrap(raw), systems);
       return {
         status: fromBackup ? "recovered_backup" : "ok",
         snapshot,
         notice: fromBackup ? "存档已损坏，已恢复到上一次成功的备份。" : null,
       };
     } catch (error) {
+      if (futureSave(error)) {
+        return {
+          status: "fallback_new",
+          snapshot: null,
+          notice: "此存档来自更新的游戏版本，已保留原档。",
+        };
+      }
       if (!fromBackup && error instanceof SnapshotError) reason = error.reason;
     }
   }
@@ -121,13 +151,16 @@ export function saveRun(
   const { run, backup } = keys();
   try {
     const previous = storage.getItem(run);
-    if (previous !== null) {
+    if (isFutureSlot(previous)) return { ok: false, reason: "future_version" };
+    if (previous !== null && !isFutureSlot(storage.getItem(backup))) {
+      let valid = false;
       try {
-        parse(previous, systems);
-        storage.setItem(backup, previous);
+        sanitizeRunState(unwrap(previous), systems);
+        valid = true;
       } catch {
         // Keep the older backup when the current primary is already unreadable.
       }
+      if (valid) storage.setItem(backup, previous);
     }
     const envelope: Envelope = {
       schemaVersion: RUN_SCHEMA_VERSION,
@@ -146,9 +179,11 @@ export function clearRun(storage: StorageLike | null): boolean {
   if (!storage) return false;
   try {
     const { run, backup } = keys();
-    storage.removeItem(run);
-    storage.removeItem(backup);
-    return true;
+    const protectedRun = isFutureSlot(storage.getItem(run));
+    const protectedBackup = isFutureSlot(storage.getItem(backup));
+    if (!protectedRun) storage.removeItem(run);
+    if (!protectedBackup) storage.removeItem(backup);
+    return !protectedRun && !protectedBackup;
   } catch {
     return false;
   }

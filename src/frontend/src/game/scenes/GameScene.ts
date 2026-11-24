@@ -1,26 +1,25 @@
-import { nearestInteractable } from "@/systems";
+import { heroLightRadiusMultiplier } from "@/systems/itemEffects";
 import Phaser from "phaser";
-import { playSfx, syncMuteState } from "../audio/sfx";
+import { syncMuteState } from "../audio/sfx";
 import { HUD_REFRESH_SEC, REGISTRY, SCENE } from "../config";
 import { InputController } from "../input/InputController";
 import { RunSession, type StartMode } from "../session/RunSession";
-import {
-  reportFailure,
-  returnToTitle,
-  takePendingRun,
-} from "../session/activeRun";
+import { reportFailure, takePendingRun } from "../session/activeRun";
 import { buildCraftView } from "../session/craftView";
 import { handleOutput } from "../session/outputHandler";
+import { watchTab } from "../session/watchTab";
 import type { TextureGenerator } from "../textures/registerTextures";
-import { bindCommands } from "../ui/commands";
-import { type Screen, uiStore } from "../ui/store";
+import { uiStore } from "../ui/store";
 import { currentPrompt, publishHud, publishPrompt } from "../ui/uiSync";
 import { EntityViews } from "../world/EntityViews";
 import { Scenery } from "../world/Scenery";
 import { configureCamera } from "../world/cameraRig";
 import { darknessAt } from "../world/darkness";
-
-type PlayScreen = Exclude<Screen, "title">;
+import {
+  preloadHeroSpritesheets,
+  registerHeroAnimations,
+} from "../world/heroAnimations";
+import { type PlayScreen, bindSceneCommands } from "./bindSceneCommands";
 
 /**
  * The playable scene. Time only advances through `session.advance`, which is called solely
@@ -28,6 +27,7 @@ type PlayScreen = Exclude<Screen, "title">;
  */
 export class GameScene extends Phaser.Scene {
   private mode: StartMode = "new";
+  private heroId?: string;
   private fromTitle = false;
   private session!: RunSession;
   private scenery: Scenery | null = null;
@@ -43,9 +43,14 @@ export class GameScene extends Phaser.Scene {
     super(SCENE.game);
   }
 
-  init(data: { mode?: StartMode; fromTitle?: boolean }): void {
+  init(data: { mode?: StartMode; fromTitle?: boolean; heroId?: string }): void {
     this.mode = data.mode ?? "new";
+    this.heroId = data.heroId;
     this.fromTitle = data.fromTitle ?? false;
+  }
+
+  preload(): void {
+    preloadHeroSpritesheets(this);
   }
 
   create(): void {
@@ -53,6 +58,7 @@ export class GameScene extends Phaser.Scene {
     this.scenery = null;
     this.cleanups = [];
     this.events.once("shutdown", () => this.teardown());
+    registerHeroAnimations(this);
     const attached = takePendingRun();
     if (this.fromTitle && !attached) return;
     try {
@@ -66,19 +72,22 @@ export class GameScene extends Phaser.Scene {
   }
 
   private build(attached: RunSession | null): void {
-    this.session = attached ?? new RunSession(this.mode);
+    this.session = attached ?? new RunSession(this.mode, this.heroId);
     const { state } = this.session;
     const gen = this.registry.get(
       REGISTRY.textureGenerator,
     ) as TextureGenerator;
     this.scenery = new Scenery(this, this.session.sys, gen, state);
-    this.entities = new EntityViews(this, this.session.sys);
+    this.entities = new EntityViews(this, this.session.sys, gen, state.heroId);
     this.keys = new InputController(this);
     this.cleanups.push(
       configureCamera(this, this.session.sys, this.entities.hero),
     );
     this.cameras.main.centerOn(state.hero.x, state.hero.y);
-    this.cleanups.push(this.bindUi(), this.watchTab());
+    this.cleanups.push(
+      this.bindUi(),
+      watchTab(() => this.away()),
+    );
     this.screen = "playing";
     syncMuteState();
     uiStore.set({
@@ -124,6 +133,7 @@ export class GameScene extends Phaser.Scene {
         interactPressed,
         itemId: null,
         pausePressed: false,
+        dashPressed: input.dashPressed,
       },
       undefined,
     );
@@ -142,7 +152,9 @@ export class GameScene extends Phaser.Scene {
     scenery.overlay.heroLight = {
       x: state.hero.x,
       y: state.hero.y - 6,
-      radius: glow,
+      radius:
+        glow *
+        heroLightRadiusMultiplier(sys.data, state.inventory, state.heroId),
       alpha: 0.85,
     };
     if (this.screen === "playing")
@@ -201,60 +213,45 @@ export class GameScene extends Phaser.Scene {
   }
 
   private bindUi(): () => void {
-    return bindCommands({
-      pause: () => this.screen === "playing" && this.setScreen("paused"),
-      resume: () => this.screen === "paused" && this.setScreen("playing"),
-      save: () => {
-        const ok = this.session.save();
-        uiStore.toast(
-          ok ? "进度已保存" : "保存失败：本地存储不可用",
-          ok ? "good" : "warn",
-        );
-        playSfx("ui");
-      },
-      toTitle: () => {
-        this.session.save();
-        returnToTitle();
-        this.scene.start(SCENE.title);
-      },
-      restart: () => this.scene.restart({ mode: "new" }),
-      craft: (id) => {
-        if (this.screen !== "craft") return;
-        this.present(this.session.craft(id));
-        this.refreshCraft();
-      },
+    return bindSceneCommands({
+      session: this.session,
+      getScreen: () => this.screen,
+      setScreen: (s) => this.setScreen(s),
+      openCraft: () => this.openCraft(),
+      closeCraft: () => this.closeCraft(),
+      refreshCraft: () => this.refreshCraft(),
       quickUse: (slot) => this.quickUse(slot),
-      interact: () => {
+      queueInteract: () => {
         this.queued.interact = true;
       },
-      attack: () => {
+      queueAttack: () => {
         this.queued.attack = true;
       },
-      openCraft: () => {
-        const near = nearestInteractable(this.session.state, this.session.sys);
-        if (near?.kind === "campfire") this.openCraft();
-        else uiStore.toast("离营火太远", "warn");
+      present: (out) => this.present(out),
+      syncDevVisuals: () => {
+        this.entities.sync(this.session.state, this.time.now / 1000);
+        this.pushHud();
       },
-      closeCraft: () => this.closeCraft(),
+      pushHud: () => this.pushHud(),
+      toTitleScene: () => {
+        this.scene.start(SCENE.title);
+      },
+      restartScene: (data) => {
+        this.scene.restart(data);
+      },
     });
   }
 
-  /** Saves and pauses when the tab is hidden or the window loses focus. */
-  private watchTab(): () => void {
-    const away = (): void => {
-      if (!this.session.playing) return;
-      this.session.save();
-      if (this.screen === "playing") this.setScreen("paused");
-    };
-    const onVisibility = (): void => {
-      if (document.hidden) away();
-    };
-    document.addEventListener("visibilitychange", onVisibility);
-    window.addEventListener("blur", away);
-    return () => {
-      document.removeEventListener("visibilitychange", onVisibility);
-      window.removeEventListener("blur", away);
-    };
+  private pushHud(): void {
+    const { state, sys } = this.session;
+    publishHud(this.session.hud(), state, sys);
+  }
+
+  /** Pauses (and saves, outside Eternal Mode) when the tab is hidden or the window loses focus. */
+  private away(): void {
+    if (!this.session.playing) return;
+    this.session.save();
+    if (this.screen === "playing") this.setScreen("paused");
   }
 
   private teardown(): void {

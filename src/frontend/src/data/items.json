@@ -29,14 +29,7 @@
       "name": "红莓",
       "type": "food",
       "maxStack": 30,
-      "effects": [
-        {
-          "trigger": "use",
-          "type": "restore_stat",
-          "stat": "hunger",
-          "amount": 12
-        }
-      ],
+      "effects": [{ "trigger": "use", "type": "restore_stat", "stat": "hunger", "amount": 12 }],
       "description": "从红莓灌木采集，可直接食用，也可做成烤莓饼或暖汤。"
     },
     {
@@ -68,14 +61,7 @@
       "name": "烤莓饼",
       "type": "food",
       "maxStack": 20,
-      "effects": [
-        {
-          "trigger": "use",
-          "type": "restore_stat",
-          "stat": "hunger",
-          "amount": 36
-        }
-      ],
+      "effects": [{ "trigger": "use", "type": "restore_stat", "stat": "hunger", "amount": 36 }],
       "description": "便于携带的烤制口粮，食用后恢复 36 点饱食。"
     },
     {
@@ -84,12 +70,7 @@
       "type": "food",
       "maxStack": 10,
       "effects": [
-        {
-          "trigger": "use",
-          "type": "restore_stat",
-          "stat": "hunger",
-          "amount": 24
-        },
+        { "trigger": "use", "type": "restore_stat", "stat": "hunger", "amount": 24 },
         {
           "trigger": "use",
           "type": "night_light_drain_multiplier",
@@ -105,15 +86,7 @@
       "name": "绷带",
       "type": "medicine",
       "maxStack": 10,
-      "effects": [
-        {
-          "trigger": "use",
-          "type": "restore_stat",
-          "stat": "hp",
-          "amount": 2,
-          "requiresBelowMax": true
-        }
-      ],
+      "effects": [{ "trigger": "use", "type": "restore_stat", "stat": "hp", "amount": 2, "requiresBelowMax": true }],
       "description": "恢复 2 点生命，满生命时无法使用。"
     },
     {
@@ -121,13 +94,7 @@
       "name": "铁罩提灯",
       "type": "equipment",
       "maxStack": 1,
-      "effects": [
-        {
-          "trigger": "owned",
-          "type": "night_light_drain_multiplier",
-          "multiplier": 0.75
-        }
-      ],
+      "effects": [{ "trigger": "owned", "type": "night_light_drain_multiplier", "multiplier": 0.75 }],
       "description": "持有后自动生效，夜间火光消耗降至原来的 75%。"
     },
     {
@@ -136,18 +103,8 @@
       "type": "equipment",
       "maxStack": 1,
       "effects": [
-        {
-          "trigger": "owned",
-          "type": "set_combat_stat",
-          "stat": "attackDamage",
-          "value": 2
-        },
-        {
-          "trigger": "owned",
-          "type": "set_combat_stat",
-          "stat": "attackRangeTiles",
-          "value": 1.75
-        }
+        { "trigger": "owned", "type": "set_combat_stat", "stat": "attackDamage", "value": 2 },
+        { "trigger": "owned", "type": "set_combat_stat", "stat": "attackRangeTiles", "value": 1.75 }
       ],
       "description": "持有后自动生效，攻击伤害提高到 2，攻击距离提高到 1.75 格。"
     },
@@ -171,31 +128,207 @@
       "id": "ember_seal",
       "name": "炉印",
       "type": "quest",
-      "maxStack": 2,
-      "effects": [
-        {
-          "trigger": "owned",
-          "type": "quest_requirement",
-          "targetId": "beacon_gate",
-          "requiredCount": 2
-        }
-      ],
-      "description": "废磨坊和冰峡的驻守战各奖励一枚。持两枚炉印并达到三级营火即可进入烽台。"
+      "maxStack": 3,
+      "effects": [{ "trigger": "owned", "type": "quest_requirement", "targetId": "final_beacon", "requiredCount": 2 }],
+      "description": "废磨坊督工与霜渊守炬者各守一枚炉印。持这两枚炉印可点燃东端烽台。"
     },
     {
       "id": "beacon_heart",
       "name": "烽芯",
       "type": "quest",
       "maxStack": 1,
+      "effects": [{ "trigger": "interact", "type": "ignite_beacon", "targetId": "final_beacon", "requiredCount": 1 }],
+      "description": "旧烽台守卫留下的烽芯，是过去巡火人点火时用的火种。"
+    },
+    {
+      "id": "raw_meat",
+      "name": "生肉",
+      "type": "material",
+      "maxStack": 20,
       "effects": [
-        {
-          "trigger": "interact",
-          "type": "ignite_beacon",
-          "targetId": "final_beacon",
-          "requiredCount": 1
-        }
+        { "trigger": "use", "type": "restore_stat", "stat": "hunger", "amount": 8 },
+        { "trigger": "use", "type": "restore_stat", "stat": "hp", "amount": -1 }
       ],
-      "description": "烽台守卫掉落。带着烽芯与最终烽台互动，即可完成当局。"
+      "description": "带着霜气的兽肉，生吃容易伤胃，烤熟后极佳。"
+    },
+    {
+      "id": "pelt",
+      "name": "厚实兽皮",
+      "type": "material",
+      "maxStack": 20,
+      "effects": [],
+      "description": "雪林野兽的毛皮，缝制防寒衣物的好材料。"
+    },
+    {
+      "id": "ember_dust",
+      "name": "余烬尘",
+      "type": "material",
+      "maxStack": 50,
+      "effects": [],
+      "description": "泛着微热的暗红粉尘，蕴含驱散黑雾的微光。"
+    },
+    {
+      "id": "resin",
+      "name": "松脂",
+      "type": "material",
+      "maxStack": 30,
+      "effects": [],
+      "description": "黏稠易燃的树胶，能让火把与营火燃烧更久。"
+    },
+    {
+      "id": "charcoal",
+      "name": "木炭",
+      "type": "material",
+      "maxStack": 50,
+      "effects": [],
+      "description": "烧透的黑炭，极佳的燃料与锻造辅料。"
+    },
+    {
+      "id": "iron_scrap",
+      "name": "废铁片",
+      "type": "material",
+      "maxStack": 30,
+      "effects": [],
+      "description": "旧磨坊与霜甲上剥落的铁件，可重铸为利器。"
+    },
+    {
+      "id": "feather",
+      "name": "寒鸦羽",
+      "type": "material",
+      "maxStack": 30,
+      "effects": [],
+      "description": "轻盈耐寒的深色羽毛，可用于制作轻便装备。"
+    },
+    {
+      "id": "herb",
+      "name": "雪地草药",
+      "type": "material",
+      "maxStack": 20,
+      "effects": [{ "trigger": "use", "type": "restore_stat", "stat": "hp", "amount": 1 }],
+      "description": "在冻土缝隙生长的苦草，捣碎后可止血疗伤。"
+    },
+    {
+      "id": "roast_meat",
+      "name": "炭烤兽肉",
+      "type": "consumable",
+      "maxStack": 10,
+      "effects": [
+        { "trigger": "use", "type": "restore_stat", "stat": "hunger", "amount": 35 },
+        { "trigger": "use", "type": "restore_stat", "stat": "hp", "amount": 2 }
+      ],
+      "description": "焦香滚烫的烤肉，能迅速恢复体力与伤势。"
+    },
+    {
+      "id": "herb_salve",
+      "name": "雪草药膏",
+      "type": "consumable",
+      "maxStack": 10,
+      "effects": [{ "trigger": "use", "type": "restore_stat", "stat": "hp", "amount": 4 }],
+      "description": "草药与松脂调制的药膏，敷上后伤口迅速止痛。"
+    },
+    {
+      "id": "resin_torch",
+      "name": "松脂火把",
+      "type": "consumable",
+      "maxStack": 5,
+      "effects": [{ "trigger": "use", "type": "restore_stat", "stat": "light", "amount": 45 }],
+      "description": "裹满松脂的耐烧火把，大幅补充光明并驱退寒意。"
+    },
+    {
+      "id": "fur_cloak",
+      "name": "兽皮防寒披风",
+      "type": "equipment",
+      "maxStack": 1,
+      "effects": [
+        { "trigger": "owned", "type": "add_owned_stat", "stat": "maxHp", "value": 3 },
+        { "trigger": "owned", "type": "add_owned_stat", "stat": "coldResist", "value": 0.25 }
+      ],
+      "description": "缝入寒鸦羽的厚皮披风，抵御深林刺骨寒风。"
+    },
+    {
+      "id": "iron_blade",
+      "name": "淬炭短刃",
+      "type": "equipment",
+      "maxStack": 1,
+      "effects": [{ "trigger": "owned", "type": "add_owned_stat", "stat": "attackDamage", "value": 2 }],
+      "description": "废铁经木炭重锻的短刃，足以劈开霜甲。"
+    },
+    {
+      "id": "ember_lantern",
+      "name": "余烬提灯",
+      "type": "equipment",
+      "maxStack": 1,
+      "effects": [
+        { "trigger": "owned", "type": "light_radius_multiplier", "multiplier": 1.35 },
+        { "trigger": "owned", "type": "night_light_drain_multiplier", "multiplier": 0.75 }
+      ],
+      "description": "装满余烬尘的铁提灯，在黑雾中维持稳定光圈。"
+    },
+    {
+      "id": "iron_buckler",
+      "name": "锻铁圆盾",
+      "type": "equipment",
+      "maxStack": 1,
+      "effects": [{ "trigger": "owned", "type": "periodic_block", "cooldownSec": 14 }],
+      "description": "持有后每 14 秒蓄满一次格挡，自动抵消下一次敌方攻击。"
+    },
+    {
+      "id": "iron_armor",
+      "name": "锻铁胸甲",
+      "type": "equipment",
+      "maxStack": 1,
+      "effects": [
+        { "trigger": "owned", "type": "add_owned_stat", "stat": "maxHp", "value": 2 },
+        { "trigger": "owned", "type": "add_owned_stat", "stat": "damageReduction", "value": 1 }
+      ],
+      "description": "持有后生命上限 +2，来自敌人的攻击伤害减少 1 点（最低承受 1 点）。"
+    },
+    {
+      "id": "iron_boots",
+      "name": "踏铁雪靴",
+      "type": "equipment",
+      "maxStack": 1,
+      "effects": [
+        { "trigger": "owned", "type": "add_owned_stat", "stat": "moveSpeedBonus", "value": 0.1 },
+        { "trigger": "owned", "type": "add_owned_stat", "stat": "dashCooldownReductionSec", "value": 0.35 }
+      ],
+      "description": "持有后移动速度 +10%，踏雪急步冷却缩短 0.35 秒。"
+    },
+    {
+      "id": "iron_helm",
+      "name": "锻铁重盔",
+      "type": "equipment",
+      "maxStack": 1,
+      "effects": [
+        { "trigger": "owned", "type": "add_owned_stat", "stat": "maxHp", "value": 2 },
+        { "trigger": "owned", "type": "add_owned_stat", "stat": "immunityBonusSec", "value": 0.25 },
+        { "trigger": "owned", "type": "add_owned_stat", "stat": "coldResist", "value": 0.15 }
+      ],
+      "description": "持有后生命上限 +2、受击无敌延长 0.25 秒、抗寒 +15%。"
+    },
+    { "id": "pine_cone", "name": "霜松球果", "type": "material", "maxStack": 30, "effects": [], "description": "种下可长成霜松。" },
+    { "id": "birch_sapling", "name": "灰桦树苗", "type": "material", "maxStack": 30, "effects": [], "description": "种下可长成灰桦。" },
+    { "id": "ember_acorn", "name": "余烬松实", "type": "material", "maxStack": 30, "effects": [], "description": "种下可长成焦炭古松。" },
+    { "id": "berry_cutting", "name": "雪莓插条", "type": "material", "maxStack": 30, "effects": [], "description": "种下可长成雪莓灌木。" },
+    { "id": "grass_tuft", "name": "韧草根簇", "type": "material", "maxStack": 30, "effects": [], "description": "种下可长成冻原韧草。" },
+    { "id": "herb_seed", "name": "苦草种子", "type": "material", "maxStack": 30, "effects": [], "description": "种下可长成雪地草药簇。" },
+    { "id": "reed_root", "name": "冰沼苇根", "type": "material", "maxStack": 30, "effects": [], "description": "在近水处种下可长成冰沼芦苇。" },
+    { "id": "spore_cap", "name": "冷光孢子", "type": "material", "maxStack": 30, "effects": [], "description": "种下可长成微光冻菌。" },
+    {
+      "id": "ash_compost",
+      "name": "灰烬堆肥",
+      "type": "material",
+      "maxStack": 20,
+      "effects": [],
+      "description": "生存中用于立即推进生长，并在 180 秒内加快幼苗生长。"
+    },
+    {
+      "id": "ember_mulch",
+      "name": "余烬暖肥",
+      "type": "material",
+      "maxStack": 15,
+      "effects": [],
+      "description": "生存中用于推进一个阶段，并在 240 秒内加快生长、抵御暴雪。"
     }
   ]
 }

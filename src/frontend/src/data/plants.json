@@ -1,0 +1,170 @@
+{
+  "plants": [
+    {
+      "id": "frost_pine",
+      "name": "霜松",
+      "seedItemId": "pine_cone",
+      "harvestMode": "fell",
+      "solid": true,
+      "chopHp": 4,
+      "stageSec": [75, 110],
+      "allowedTerrain": ["snow", "grass", "soil"],
+      "stumpHp": 2,
+      "preferredWeather": "ember_rain",
+      "heatGrowthBonus": 1.35,
+      "drops": [
+        { "itemId": "wood", "min": 3, "max": 4, "probability": 1 },
+        { "itemId": "resin", "min": 1, "max": 2, "probability": 0.55 },
+        { "itemId": "pine_cone", "min": 1, "max": 2, "probability": 0.85 }
+      ],
+      "stumpDrops": [{ "itemId": "wood", "min": 1, "max": 1, "probability": 1 }]
+    },
+    {
+      "id": "ember_birch",
+      "name": "灰桦",
+      "seedItemId": "birch_sapling",
+      "harvestMode": "fell",
+      "solid": true,
+      "chopHp": 3,
+      "stageSec": [55, 85],
+      "allowedTerrain": ["snow", "grass", "soil"],
+      "stumpHp": 2,
+      "preferredWeather": "clear",
+      "heatGrowthBonus": 1.4,
+      "drops": [
+        { "itemId": "wood", "min": 2, "max": 3, "probability": 1 },
+        { "itemId": "birch_sapling", "min": 1, "max": 2, "probability": 0.9 },
+        { "itemId": "charcoal", "min": 1, "max": 1, "probability": 0.2 }
+      ],
+      "stumpDrops": [{ "itemId": "wood", "min": 1, "max": 1, "probability": 1 }]
+    },
+    {
+      "id": "charred_ancient",
+      "name": "焦炭古松",
+      "seedItemId": "ember_acorn",
+      "harvestMode": "fell",
+      "solid": true,
+      "chopHp": 6,
+      "stageSec": [110, 150],
+      "allowedTerrain": ["snow", "ash", "soil"],
+      "stumpHp": 3,
+      "preferredWeather": "freezing_fog",
+      "heatGrowthBonus": 1.6,
+      "lightRadiusPx": 18,
+      "drops": [
+        { "itemId": "wood", "min": 2, "max": 3, "probability": 1 },
+        { "itemId": "charcoal", "min": 2, "max": 3, "probability": 0.95 },
+        { "itemId": "ember_dust", "min": 1, "max": 1, "probability": 0.4 },
+        { "itemId": "ember_acorn", "min": 1, "max": 1, "probability": 0.75 }
+      ],
+      "stumpDrops": [
+        { "itemId": "charcoal", "min": 1, "max": 2, "probability": 1 }
+      ]
+    },
+    {
+      "id": "snow_berry_bush",
+      "name": "雪莓灌木",
+      "seedItemId": "berry_cutting",
+      "harvestMode": "gather_regrow",
+      "solid": false,
+      "chopHp": 2,
+      "stageSec": [45, 70],
+      "allowedTerrain": ["snow", "grass", "soil", "farmland"],
+      "drops": [
+        { "itemId": "berry", "min": 2, "max": 3, "probability": 1 },
+        { "itemId": "berry_cutting", "min": 1, "max": 1, "probability": 0.2 }
+      ],
+      "digDrops": [
+        { "itemId": "berry_cutting", "min": 1, "max": 1, "probability": 1 },
+        { "itemId": "wood", "min": 1, "max": 1, "probability": 0.5 }
+      ]
+    },
+    {
+      "id": "tundra_grass",
+      "name": "冻原韧草",
+      "seedItemId": "grass_tuft",
+      "harvestMode": "gather_regrow",
+      "solid": false,
+      "chopHp": 1,
+      "stageSec": [35, 50],
+      "allowedTerrain": ["snow", "grass", "soil", "farmland"],
+      "drops": [{ "itemId": "fiber", "min": 2, "max": 3, "probability": 1 }],
+      "digDrops": [
+        { "itemId": "grass_tuft", "min": 1, "max": 1, "probability": 1 }
+      ]
+    },
+    {
+      "id": "frost_herb_cluster",
+      "name": "雪地草药簇",
+      "seedItemId": "herb_seed",
+      "harvestMode": "gather_regrow",
+      "solid": false,
+      "chopHp": 2,
+      "stageSec": [60, 85],
+      "allowedTerrain": ["snow", "soil", "farmland", "swamp"],
+      "preferredWeather": "freezing_fog",
+      "drops": [
+        { "itemId": "herb", "min": 1, "max": 2, "probability": 1 },
+        { "itemId": "herb_seed", "min": 1, "max": 1, "probability": 0.35 }
+      ],
+      "digDrops": [
+        { "itemId": "herb_seed", "min": 1, "max": 1, "probability": 1 }
+      ]
+    },
+    {
+      "id": "mire_reed",
+      "name": "冰沼芦苇",
+      "seedItemId": "reed_root",
+      "harvestMode": "gather_regrow",
+      "solid": false,
+      "chopHp": 2,
+      "stageSec": [50, 75],
+      "allowedTerrain": ["swamp", "shore"],
+      "requiresNearWater": true,
+      "drops": [
+        { "itemId": "fiber", "min": 2, "max": 3, "probability": 1 },
+        { "itemId": "resin", "min": 1, "max": 1, "probability": 0.35 }
+      ],
+      "digDrops": [
+        { "itemId": "reed_root", "min": 1, "max": 1, "probability": 1 }
+      ]
+    },
+    {
+      "id": "glow_cap",
+      "name": "微光冻菌",
+      "seedItemId": "spore_cap",
+      "harvestMode": "gather_regrow",
+      "solid": false,
+      "chopHp": 2,
+      "stageSec": [65, 95],
+      "allowedTerrain": ["swamp", "soil", "snow"],
+      "preferredWeather": "freezing_fog",
+      "heatGrowthBonus": 0.85,
+      "lightRadiusPx": 38,
+      "drops": [
+        { "itemId": "herb", "min": 1, "max": 1, "probability": 0.7 },
+        { "itemId": "ember_dust", "min": 1, "max": 1, "probability": 0.45 },
+        { "itemId": "spore_cap", "min": 1, "max": 1, "probability": 0.3 }
+      ],
+      "digDrops": [
+        { "itemId": "spore_cap", "min": 1, "max": 1, "probability": 1 }
+      ]
+    }
+  ],
+  "fertilizers": {
+    "ash_compost": {
+      "instantGrowthSec": 45,
+      "growthMult": 1.8,
+      "durationSec": 180,
+      "advanceFullStage": false,
+      "frostProofSec": 0
+    },
+    "ember_mulch": {
+      "instantGrowthSec": 90,
+      "growthMult": 2.2,
+      "durationSec": 240,
+      "advanceFullStage": true,
+      "frostProofSec": 240
+    }
+  }
+}

@@ -35,6 +35,16 @@
       }
     }
   },
+  "overrides": [
+    {
+      "include": ["src/data/enemies.json"],
+      "json": { "formatter": { "lineWidth": 115 } }
+    },
+    {
+      "include": ["src/data/items.json"],
+      "json": { "formatter": { "lineWidth": 155 } }
+    }
+  ],
   "javascript": {
     "formatter": {
       "quoteStyle": "double",

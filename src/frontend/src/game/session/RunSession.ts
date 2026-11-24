@@ -1,6 +1,7 @@
 import {
   EVT,
   type GameEvent,
+  type HudModel,
   type MetaState,
   type RunState,
   type StepRequest,
@@ -12,6 +13,7 @@ import {
   createRun,
   getBrowserStorage,
   getSystems,
+  isHeroUnlocked,
   loadMeta,
   loadRun,
   saveMeta,
@@ -19,15 +21,28 @@ import {
   step,
 } from "@/core";
 import { consumeItem, craft as craftRecipe } from "@/systems";
+import {
+  initEternalRun,
+  stepEternalDirector,
+} from "@/systems/eternal/eternalDirector";
+import { buildEternalHud } from "@/systems/eternal/eternalHud";
+import {
+  type EternalRecord,
+  recordEternalBest,
+} from "@/systems/eternal/eternalMeta";
+import { getEternalRuntime } from "@/systems/eternal/eternalRuntime";
+import { createEternalSystems } from "@/systems/eternal/eternalWorld";
 import { buildResultView } from "./resultView";
 
-export type StartMode = "new" | "continue";
+export type StartMode = "new" | "continue" | "eternal";
 
 /** What a rule call produced, for the scene to present (toasts, sounds, particles). */
 export interface SessionOutput {
   events: GameEvent[];
   /** Camp-note ids unlocked by these events. */
   unlockedNotes: string[];
+  unlockedHeroes: string[];
+  unlockedCrossMode: string[];
   /** True when an autosave was written (not for the silent interval save). */
   autosaved: boolean;
 }
@@ -45,28 +60,41 @@ const AUTOSAVE_EVENTS = new Set<string>([
 
 /** Owns one run: the core RunState, persistence, meta notes and run statistics. */
 export class RunSession {
-  readonly sys: Systems = getSystems();
+  readonly sys: Systems;
   readonly storage: StorageLike | null = getBrowserStorage();
   readonly state: RunState;
   readonly meta: MetaState;
+  /** Eternal Mode is a single-run mode: it never reads or writes the adventure save. */
+  readonly eternal: boolean;
   /** Chinese notice from loading (corrupt save, storage unavailable), shown once in game. */
   readonly startNotice: string | null;
   enemiesDefeated = 0;
   lastCause: string | null = null;
+  eternalRecord: EternalRecord | null = null;
 
-  constructor(mode: StartMode) {
+  constructor(mode: StartMode, heroId?: string) {
+    this.eternal = mode === "eternal";
+    this.sys = this.eternal ? createEternalSystems() : getSystems();
     const load = mode === "continue" ? loadRun(this.storage, this.sys) : null;
-    this.state = createRun({ systems: this.sys }, load?.snapshot ?? undefined);
-    this.startNotice = load?.notice ?? null;
     this.meta = loadMeta(this.storage);
+    const selected =
+      heroId && isHeroUnlocked(this.meta, heroId) ? heroId : undefined;
+    this.state = createRun(
+      { systems: this.sys, heroId: selected },
+      load?.snapshot ?? undefined,
+    );
+    if (this.eternal) initEternalRun(this.state, this.sys);
+    this.startNotice = load?.notice ?? null;
   }
 
   get playing(): boolean {
     return this.state.status === "playing";
   }
 
-  hud() {
-    return buildHudModel(this.state, this.sys);
+  hud(): HudModel {
+    const hud = buildHudModel(this.state, this.sys);
+    const eternal = this.eternal ? buildEternalHud(this.state, this.sys) : null;
+    return eternal ? { ...hud, eternal } : hud;
   }
 
   /** Advances game time. Callers never invoke this while paused, hidden or in a panel. */
@@ -76,6 +104,7 @@ export class RunSession {
     commands: StepRequest["commands"],
   ): SessionOutput {
     const events = step(this.state, { sec, input, commands }, this.sys);
+    if (this.eternal) stepEternalDirector(this.state, this.sys, sec, events);
     return this.settle(events);
   }
 
@@ -87,9 +116,9 @@ export class RunSession {
     return this.settle(consumeItem(this.state, this.sys, itemId).events);
   }
 
-  /** Manual or hidden-tab save. Returns false when storage is unavailable or the run has ended. */
+  /** Manual or hidden-tab save. Returns false when storage is unavailable, the run has ended or it is Eternal Mode. */
   save(): boolean {
-    if (!this.playing) return false;
+    if (!this.playing || this.eternal) return false;
     return saveRun(this.storage, this.state, this.sys).ok;
   }
 
@@ -111,17 +140,39 @@ export class RunSession {
         silentSave = true;
       }
     }
-    const unlockedNotes = applyRunEventsToMeta(this.meta, this.state, events);
+    const { unlockedNotes, unlockedHeroes, unlockedCrossMode, changed } =
+      applyRunEventsToMeta(this.meta, this.state, events);
     const ended = events.some((e) => e.type === EVT.runEnded);
-    if (unlockedNotes.length > 0 || ended) saveMeta(this.storage, this.meta);
+    let metaChanged = changed;
+    if (ended && this.eternal) metaChanged = this.settleEternal() || changed;
+    if (metaChanged) saveMeta(this.storage, this.meta);
     let autosaved = false;
     if (ended) {
-      clearRun(this.storage);
-    } else if (wantSave || silentSave) {
+      if (!this.eternal) clearRun(this.storage);
+    } else if (wantSave || silentSave || changed) {
       const ok = this.save();
       autosaved = ok && wantSave;
     }
-    return { events, unlockedNotes, autosaved };
+    return {
+      events,
+      unlockedNotes,
+      unlockedHeroes,
+      unlockedCrossMode,
+      autosaved,
+    };
+  }
+
+  /** Records the Eternal result in the meta document (the only thing it ever persists). */
+  private settleEternal(): boolean {
+    const rt = getEternalRuntime(this.state);
+    if (!rt) return false;
+    const { record, changed } = recordEternalBest(
+      this.meta,
+      rt.combatElapsedSec,
+      rt.kills,
+    );
+    this.eternalRecord = record;
+    return changed;
   }
 
   result() {

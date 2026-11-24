@@ -29,6 +29,7 @@ function launch(parent: HTMLElement, type: number): Phaser.Game {
     antialias: false,
     disableContextMenu: true,
     banner: false,
+    physics: { default: "arcade", arcade: { gravity: { x: 0, y: 0 } } },
     scale: { mode: Phaser.Scale.RESIZE, width: "100%", height: "100%" },
     scene: [BootScene, TitleScene, GameScene],
   });

@@ -11,7 +11,7 @@ import {
   recipeShortfall,
   unlitRelaySlots,
 } from "@/systems";
-import type { CraftView, RecipeRow } from "../ui/store";
+import type { CraftView, RecipeCategory, RecipeRow } from "../ui/store";
 
 function maxCampLevel(sys: Systems): number {
   return Math.max(
@@ -64,6 +64,20 @@ function blockedReason(
   return null;
 }
 
+function categoryFor(sys: Systems, recipe: RecipeDef): RecipeCategory {
+  if (recipe.output.type !== "item") return "camp";
+  const itemType = sys.data.items.get(recipe.output.id)?.type;
+  if (itemType === "equipment") return "equipment";
+  if (
+    itemType === "food" ||
+    itemType === "medicine" ||
+    itemType === "consumable"
+  ) {
+    return "supply";
+  }
+  return "camp";
+}
+
 function rowFor(state: RunState, sys: Systems, recipe: RecipeDef): RecipeRow {
   const out = recipe.output;
   const gaps = recipeShortfall(state, sys, recipe.id);
@@ -75,6 +89,7 @@ function rowFor(state: RunState, sys: Systems, recipe: RecipeDef): RecipeRow {
     id: recipe.id,
     name: recipe.name,
     description,
+    category: categoryFor(sys, recipe),
     materials: Object.entries(recipe.inputs).map(([itemId, need]) => ({
       itemId,
       name: itemName(sys.data, itemId),

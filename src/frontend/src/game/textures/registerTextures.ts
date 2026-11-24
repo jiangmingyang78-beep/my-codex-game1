@@ -1,3 +1,5 @@
+import { loadGameData } from "@/core/gameData";
+import { ENEMY_TEXTURE_DEFS } from "@/shared/monsterCatalog.js";
 import {
   type createTextureGenerator,
   registerCanvasTexture,
@@ -7,25 +9,28 @@ import { PIXEL_SPRITES } from "./spriteArt";
 
 export type TextureGenerator = ReturnType<typeof createTextureGenerator>;
 
+const enemyTextureKeys = new Set(ENEMY_TEXTURE_DEFS.map(({ key }) => key));
+
 export const TEX = {
   world: "world-ground",
   hero: "hero",
+  heroById: (id: string) => `hero:${id}`,
   door: "door",
   slash: "slash",
   projectile: "projectile",
   shadow: "shadow",
   lootOrb: "loot_orb",
+  lootByItem: (id: string) => `loot:${id}`,
   brazier: "brazier",
   campBase: "campfire_base",
   enemyFallback: "enemy_generic",
   tree: (variant: number) => `tree_${variant}`,
   node: (itemId: string) => `node_${itemId}`,
-  enemy: (enemyId: string) =>
-    enemyId === "snow_weasel"
-      ? "weasel"
-      : enemyId === "mill_spider"
-        ? "spider"
-        : "enemy_generic",
+  enemy: (enemyId: string) => {
+    const key = `enemy:${enemyId}`;
+    if (enemyTextureKeys.has(key)) return key;
+    return enemyId === "mill_spider" ? "spider" : "enemy_generic";
+  },
 } as const;
 
 export const TREE_VARIANTS = 4;
@@ -58,8 +63,12 @@ function register(
   anchorX: number,
   anchorY: number,
 ): void {
-  registerCanvasTexture(scene, key, { canvas, anchorX, anchorY });
-  origins.set(key, { x: anchorX / canvas.width, y: anchorY / canvas.height });
+  const { originX, originY } = registerCanvasTexture(scene, key, {
+    canvas,
+    anchorX,
+    anchorY,
+  });
+  origins.set(key, { x: originX, y: originY });
 }
 
 function drawDoor(): HTMLCanvasElement {
@@ -139,6 +148,17 @@ export function registerGameTextures(
       anchorY: sprite.anchorY,
     });
     register(scene, sprite.key, art.canvas, art.anchorX, art.anchorY);
+    if (sprite.key === TEX.hero) {
+      for (const { id, palette } of loadGameData().heroes.values()) {
+        const key = TEX.heroById(id);
+        const skin = gen.generate({ ...sprite, key, palette });
+        register(scene, key, skin.canvas, skin.anchorX, skin.anchorY);
+      }
+    }
+  }
+  for (const def of ENEMY_TEXTURE_DEFS) {
+    const art = gen.generate(def);
+    register(scene, def.key, art.canvas, art.anchorX, art.anchorY);
   }
   for (let v = 0; v < TREE_VARIANTS; v++) {
     register(
@@ -158,6 +178,28 @@ export function registerGameTextures(
 export function registerWorldTexture(
   scene: Phaser.Scene,
   canvas: HTMLCanvasElement,
+  key: string = TEX.world,
 ): void {
-  register(scene, TEX.world, canvas, 0, 0);
+  register(scene, key, canvas, 0, 0);
+}
+
+/** Bakes drop colors into the sprite so Canvas and WebGL display the same palette. */
+export function registerLootTextures(
+  scene: Phaser.Scene,
+  gen: TextureGenerator,
+  tints: Record<string, number>,
+): void {
+  const sprite = PIXEL_SPRITES.find(({ key }) => key === TEX.lootOrb);
+  if (!sprite) throw new Error("Missing loot sprite");
+  for (const [itemId, tint] of Object.entries(tints)) {
+    const key = TEX.lootByItem(itemId);
+    if (scene.textures.exists(key)) continue;
+    const color = `#${tint.toString(16).padStart(6, "0")}`;
+    const art = gen.generate({
+      ...sprite,
+      key,
+      palette: { ...sprite.palette, g: color },
+    });
+    register(scene, key, art.canvas, art.anchorX, art.anchorY);
+  }
 }

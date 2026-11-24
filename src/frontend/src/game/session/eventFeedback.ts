@@ -60,17 +60,62 @@ function describe(e: GameEvent, sys: Systems): Feedback | null {
     case EVT.campUpgraded:
       return { toast: [`营火升到 ${Number(p.level)} 级，火圈变大了`, "good"] };
     case EVT.campLit:
-      return { toast: ["接力火盆已点亮，火圈永久扩展", "good"], sfx: "craft" };
+      return {
+        toast: [
+          p.objectId === sys.data.worldObjects.finalBeaconId
+            ? "山脊烽台已点燃"
+            : "接力火盆已点亮，火圈永久扩展",
+          "good",
+        ],
+        sfx: "craft",
+      };
     case EVT.gateOpened:
-      return { toast: ["废磨坊的大门敞开了", "good"] };
+      return {
+        toast: [
+          `${sys.data.regions.get(text(p.regionId))?.name ?? ""}的大门敞开了`,
+          "good",
+        ],
+      };
+    case EVT.blocked:
+      if (p.targetId === "hero") {
+        return {
+          toast: [text(p.message) || "锻铁圆盾格挡了攻击！", "good"],
+          sfx: "block",
+        };
+      }
+      return {
+        toast: ["攻击被护盾挡住，绕到侧面再出手", "warn"],
+        sfx: "block",
+      };
+    case EVT.enemyPhaseChanged:
+      return Number(p.phaseIndex) > 0
+        ? {
+            toast: [
+              `${sys.data.enemies.get(text(p.enemyId))?.name ?? "守卫"}进入下一阶段`,
+              "warn",
+            ],
+            sfx: "boss_phase",
+          }
+        : { sfx: "boss_phase" };
     case EVT.sealCollected:
       return { toast: [`获得炉印 ${Number(p.count)}/2`, "good"], sfx: "craft" };
-    case EVT.regionEntered:
-      return { toast: [`进入：${text(p.name)}`, "info"] };
+    case EVT.regionEntered: {
+      const ambience = sys.data.lore.regionToasts[text(p.regionId)];
+      return {
+        toast: [
+          [`进入：${text(p.name)}`, ambience].filter(Boolean).join(" · "),
+          "info",
+        ],
+      };
+    }
     case EVT.dusk:
       return { toast: ["夜幕降临，留在火圈里", "warn"], sfx: "nightfall" };
     case EVT.dawn:
       return { toast: ["天亮了，枯枝与浆果重新长出", "good"] };
+    case EVT.notice:
+      return text(p.message)
+        ? { toast: [text(p.message), p.tone === "warn" ? "warn" : "good"] }
+        : null;
     case EVT.hit:
       return p.kind ? { sfx: "hit" } : null;
     default:

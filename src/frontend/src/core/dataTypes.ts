@@ -1,66 +1,14 @@
 /** Types describing the JSON configuration files (the source of truth for rules). */
 
-export type ItemEffect =
-  | {
-      trigger: "use";
-      type: "restore_stat";
-      stat: "hunger" | "hp";
-      amount: number;
-      requiresBelowMax?: boolean;
-    }
-  | {
-      trigger: "use" | "owned";
-      type: "night_light_drain_multiplier";
-      multiplier: number;
-      durationSec?: number;
-      reapply?: "refresh_duration";
-    }
-  | {
-      trigger: "owned";
-      type: "set_combat_stat";
-      stat: "attackDamage" | "attackRangeTiles";
-      value: number;
-    }
-  | {
-      trigger: "place";
-      type: "ignite_relay";
-      targetType: string;
-      radiusTiles: number;
-      consumeCount: number;
-    }
-  | {
-      trigger: "owned" | "interact";
-      type: "quest_requirement" | "ignite_beacon";
-      targetId: string;
-      requiredCount: number;
-    };
+import type { ItemDef, RecipeDef } from "./itemTypes";
 
-export interface ItemDef {
-  id: string;
-  name: string;
-  type: string;
-  maxStack: number;
-  effects: ItemEffect[];
-  description: string;
-}
-
-export type RecipeOutput =
-  | { type: "item"; id: string; count: number }
-  | { type: "camp_level"; level: number };
-
-export interface RecipeDef {
-  id: string;
-  name: string;
-  stationId: string;
-  minCampLevel: number;
-  inputs: Record<string, number>;
-  output: RecipeOutput;
-  constraints?: {
-    uniqueOutput?: boolean;
-    inventoryCapSource?: string;
-    exactCampLevel?: number;
-  };
-}
+export type {
+  ItemDef,
+  ItemEffect,
+  OwnedStatName,
+  RecipeDef,
+  RecipeOutput,
+} from "./itemTypes";
 
 export interface AttackMove {
   type: "lunge" | "projectile" | "charge" | "sweep";
@@ -93,6 +41,8 @@ export interface DropDef {
 }
 
 export interface EnemyDef {
+  specialKey?: string;
+  scope?: "shared" | "adventure_only";
   id: string;
   name: string;
   regionIds: string[];
@@ -101,6 +51,8 @@ export interface EnemyDef {
   moveSpeedPxPerSec: number;
   attack: EnemyAttack;
   drops: DropDef[];
+  seedType?: "lunge" | "stalk_melee" | "ranged_telegraph" | "warden_phase";
+  knockbackSpeed?: number;
 }
 
 export interface EncounterRewardDef {
@@ -167,7 +119,6 @@ export interface BalanceData {
   starting: {
     regionId: string;
     campLevel: number;
-    inventory: Record<string, number>;
   };
   stats: {
     hp: StatDef & { damageImmunitySec: number };
@@ -215,6 +166,48 @@ export interface CatalogDefinitions {
   recipeIds: string[];
   enemyIds: string[];
   regionIds: string[];
+  heroIds: string[];
+  plantIds: string[];
+  weatherIds: string[];
+}
+
+export type HeroUnlock =
+  | { type: "default" }
+  | { type: "boss_defeated"; enemyId: string }
+  | { type: "consumables_crafted" | "kills" | "camp_notes"; count: number };
+
+export interface HeroDef {
+  id: string;
+  name: string;
+  epithet: string;
+  roleTag: string;
+  bio: string;
+  quote: string;
+  traitName: string;
+  traitDesc: string;
+  traits: {
+    maxHpDelta?: number;
+    attackDamageDelta?: number;
+    moveSpeedMult?: number;
+    lightRadiusMult?: number;
+    lightDrainMult?: number;
+    immunityBonusSec?: number;
+    inFireRegenMult?: number;
+    healBonus?: number;
+  };
+  startingInventory: Record<string, number>;
+  unlock: HeroUnlock;
+  palette: Record<"o" | "f" | "s" | "e" | "p" | "b" | "d", string>;
+}
+
+export interface LoreData {
+  worldTagline: string;
+  regionToasts: Record<string, string>;
+  campNotes: Record<string, { title: string; body: string }>;
+  endings: Record<
+    "won" | "dead" | "storm_lost",
+    { title: string; epilogue: string }
+  >;
 }
 
 /** Indexed, read-only game data built once from the JSON files. */
@@ -228,6 +221,9 @@ export interface GameData {
   encounters: ReadonlyMap<string, EncounterRewardDef>;
   regions: ReadonlyMap<string, RegionDef>;
   regionList: readonly RegionDef[];
+  heroes: ReadonlyMap<string, HeroDef>;
+  defaultHeroId: string;
+  lore: LoreData;
   worldObjects: RegionsFile["worldObjects"];
   dawnRenewal: RegionsFile["dawnRenewal"];
   catalog: CatalogDefinitions;

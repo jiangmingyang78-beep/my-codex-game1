@@ -1,3 +1,6 @@
+import loreJson from "@/data/lore.json";
+import type { LoreData } from "./dataTypes";
+
 /** Chinese player-facing text for stable reason codes returned by the rule systems. */
 const REASONS: Record<string, string> = {
   unknown_item: "未知物品",
@@ -34,13 +37,4 @@ export function reasonMessage(
 
 const LEVEL_NAME: Record<number, string> = { 1: "一", 2: "二", 3: "三" };
 
-export const CAMP_NOTE_TEXT: Record<string, { title: string; body: string }> = {
-  first_ember_seal: {
-    title: "笔记：炉印的余温",
-    body: "磨坊蛛吐丝前会停下蓄势，横移一步即可躲开。炉印握在手里，仍带着火的温度。",
-  },
-  beacon_restored: {
-    title: "笔记：烽台重燃",
-    body: "烽台的火光越过雪岭。巡火人记下了守卫的每一次前摇，下一位会走得更稳。",
-  },
-};
+export const CAMP_NOTE_TEXT: LoreData["campNotes"] = loreJson.campNotes;

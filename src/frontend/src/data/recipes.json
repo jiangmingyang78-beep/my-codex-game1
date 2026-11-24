@@ -150,6 +150,175 @@
       "constraints": {
         "exactCampLevel": 2
       }
+    },
+    {
+      "id": "cook_roast_meat",
+      "name": "炭烤兽肉",
+      "stationId": "main_campfire",
+      "minCampLevel": 1,
+      "inputs": {
+        "raw_meat": 1,
+        "wood": 1
+      },
+      "output": {
+        "type": "item",
+        "id": "roast_meat",
+        "count": 1
+      }
+    },
+    {
+      "id": "craft_herb_salve",
+      "name": "雪草药膏",
+      "stationId": "main_campfire",
+      "minCampLevel": 1,
+      "inputs": {
+        "herb": 2,
+        "resin": 1
+      },
+      "output": {
+        "type": "item",
+        "id": "herb_salve",
+        "count": 1
+      }
+    },
+    {
+      "id": "craft_resin_torch",
+      "name": "松脂火把",
+      "stationId": "main_campfire",
+      "minCampLevel": 1,
+      "inputs": {
+        "wood": 2,
+        "resin": 2
+      },
+      "output": {
+        "type": "item",
+        "id": "resin_torch",
+        "count": 1
+      }
+    },
+    {
+      "id": "craft_fur_cloak",
+      "name": "兽皮防寒披风",
+      "stationId": "main_campfire",
+      "minCampLevel": 2,
+      "inputs": {
+        "pelt": 3,
+        "feather": 2
+      },
+      "output": {
+        "type": "item",
+        "id": "fur_cloak",
+        "count": 1
+      },
+      "constraints": {
+        "uniqueOutput": true
+      }
+    },
+    {
+      "id": "craft_iron_blade",
+      "name": "淬炭短刃",
+      "stationId": "main_campfire",
+      "minCampLevel": 2,
+      "inputs": {
+        "iron_scrap": 3,
+        "charcoal": 2,
+        "wood": 1
+      },
+      "output": {
+        "type": "item",
+        "id": "iron_blade",
+        "count": 1
+      },
+      "constraints": {
+        "uniqueOutput": true
+      }
+    },
+    {
+      "id": "craft_ember_lantern",
+      "name": "余烬提灯",
+      "stationId": "main_campfire",
+      "minCampLevel": 3,
+      "inputs": {
+        "iron_scrap": 2,
+        "ember_dust": 4,
+        "resin": 1
+      },
+      "output": {
+        "type": "item",
+        "id": "ember_lantern",
+        "count": 1
+      },
+      "constraints": {
+        "uniqueOutput": true
+      }
+    },
+    {
+      "id": "craft_ash_compost",
+      "name": "调制灰烬堆肥",
+      "stationId": "main_campfire",
+      "minCampLevel": 1,
+      "inputs": { "fiber": 2, "charcoal": 1, "berry": 1 },
+      "output": { "type": "item", "id": "ash_compost", "count": 2 }
+    },
+    {
+      "id": "craft_ember_mulch",
+      "name": "炼制余烬暖肥",
+      "stationId": "main_campfire",
+      "minCampLevel": 2,
+      "inputs": { "ash_compost": 1, "ember_dust": 1, "resin": 1 },
+      "output": { "type": "item", "id": "ember_mulch", "count": 1 }
+    },
+    {
+      "id": "craft_berry_cutting",
+      "name": "雪莓分株育苗",
+      "stationId": "main_campfire",
+      "minCampLevel": 1,
+      "inputs": { "berry": 2, "fiber": 1 },
+      "output": { "type": "item", "id": "berry_cutting", "count": 1 }
+    },
+    {
+      "id": "smelt_scrap",
+      "name": "重熔废铁片",
+      "stationId": "main_campfire",
+      "minCampLevel": 2,
+      "inputs": { "iron_scrap": 2, "charcoal": 1 },
+      "output": { "type": "item", "id": "ingot", "count": 1 }
+    },
+    {
+      "id": "craft_iron_buckler",
+      "name": "锻造锻铁圆盾",
+      "stationId": "main_campfire",
+      "minCampLevel": 2,
+      "inputs": { "ingot": 1, "wood": 2 },
+      "output": { "type": "item", "id": "iron_buckler", "count": 1 },
+      "constraints": { "uniqueOutput": true }
+    },
+    {
+      "id": "craft_iron_armor",
+      "name": "锻造锻铁胸甲",
+      "stationId": "main_campfire",
+      "minCampLevel": 2,
+      "inputs": { "ingot": 2, "fiber": 2 },
+      "output": { "type": "item", "id": "iron_armor", "count": 1 },
+      "constraints": { "uniqueOutput": true }
+    },
+    {
+      "id": "craft_iron_boots",
+      "name": "锻造踏铁雪靴",
+      "stationId": "main_campfire",
+      "minCampLevel": 2,
+      "inputs": { "ingot": 1, "pelt": 2, "fiber": 1 },
+      "output": { "type": "item", "id": "iron_boots", "count": 1 },
+      "constraints": { "uniqueOutput": true }
+    },
+    {
+      "id": "craft_iron_helm",
+      "name": "锻造锻铁重盔",
+      "stationId": "main_campfire",
+      "minCampLevel": 3,
+      "inputs": { "ingot": 2, "iron_scrap": 2, "charcoal": 1 },
+      "output": { "type": "item", "id": "iron_helm", "count": 1 },
+      "constraints": { "uniqueOutput": true }
     }
   ]
 }

@@ -174,6 +174,22 @@ odddDddddddo
 `,
   },
   {
+    key: "node_herb",
+    anchorX: 5,
+    anchorY: 9,
+    palette: { o: "#173a24", g: "#3f8a4e", G: "#82cb95", w: "#e8f4e0" },
+    pattern: `
+..o....o....
+.oGo..oGo.o.
+.oGgo.oGgoGo
+..oGgooGgGgo
+...oGgGggGo.
+....oggGgo..
+.....oggo...
+.....oooo...
+`,
+  },
+  {
     key: "node_frostcap",
     anchorX: 6,
     anchorY: 8,

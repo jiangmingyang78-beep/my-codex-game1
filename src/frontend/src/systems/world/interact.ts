@@ -2,6 +2,7 @@ import { EVT, makeEvent } from "@/core/events";
 import { reasonMessage } from "@/core/messages";
 import type { ActionResult, GameEvent, RunState, Systems } from "@/core/types";
 import { addItem, canAdd, countOf, removeItems } from "../inventory";
+import { BEACON_SEAL_IDS, countBeaconSeals } from "./beacon";
 import { materialFor } from "./materials";
 import type { WorldObject } from "./worldTypes";
 
@@ -113,6 +114,38 @@ function igniteRelay(state: RunState, o: WorldObject): ActionResult {
   };
 }
 
+function igniteBeacon(
+  state: RunState,
+  sys: Systems,
+  o: WorldObject,
+): ActionResult {
+  if (state.status !== "playing" || state.changesByObjectId[o.id]?.lit)
+    return refused(o, EVT.interactRefused, "already_lit");
+  const range = sys.data.balance.hero.interactRangeTiles * sys.data.tileSize;
+  if (Math.hypot(o.x - state.hero.x, o.y - state.hero.y) > range)
+    return refused(o, EVT.interactRefused, "nothing_nearby");
+  if (countBeaconSeals(state) < BEACON_SEAL_IDS.length)
+    return refused(o, EVT.interactRefused, "missing_seal");
+
+  state.changesByObjectId[o.id] = {
+    ...state.changesByObjectId[o.id],
+    lit: true,
+  };
+  state.status = "won";
+  return {
+    ok: true,
+    events: [
+      makeEvent(EVT.campLit, o.x, o.y, { objectId: o.id, count: 12 }),
+      makeEvent(EVT.runEnded, o.x, o.y, {
+        status: state.status,
+        runId: state.runId,
+        day: state.day,
+        elapsedSec: state.elapsedSec,
+      }),
+    ],
+  };
+}
+
 /**
  * Interacts with a target id, or the nearest interactable when omitted.
  * Gathering, opening the gate (camp level gate with a text reason), lighting the relay
@@ -146,6 +179,8 @@ export function interact(
       return openGate(state, sys, o);
     case "relay_socket":
       return igniteRelay(state, o);
+    case "beacon":
+      return igniteBeacon(state, sys, o);
     default:
       return {
         ok: true,

@@ -11,6 +11,7 @@ export function runCommands(
   events: GameEvent[],
 ): void {
   for (const cmd of commands) {
+    if (state.status !== "playing") return;
     if (cmd.type === "craft") events.push(...craft(state, sys, cmd.id).events);
     else if (cmd.type === "use")
       events.push(...consumeItem(state, sys, cmd.id).events);

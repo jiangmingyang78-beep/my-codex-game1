@@ -6,6 +6,7 @@ import { useUi } from "./store";
 
 export function PauseMenu() {
   const muted = useUi((s) => s.muted);
+  const eternal = useUi((s) => Boolean(s.hud?.eternal));
   return (
     <div className="pointer-events-auto absolute inset-0 flex items-center justify-center bg-night/60 p-3">
       <section
@@ -21,13 +22,15 @@ export function PauseMenu() {
         >
           <Play size={16} /> 继续
         </PixelButton>
-        <PixelButton
-          variant="ghost"
-          onClick={() => commands.save()}
-          className="flex items-center justify-center gap-2 py-2.5"
-        >
-          <Save size={16} /> 保存进度
-        </PixelButton>
+        {!eternal && (
+          <PixelButton
+            variant="ghost"
+            onClick={() => commands.save()}
+            className="flex items-center justify-center gap-2 py-2.5"
+          >
+            <Save size={16} /> 保存进度
+          </PixelButton>
+        )}
         <PixelButton
           variant="ghost"
           onClick={toggleMuted}
@@ -43,8 +46,17 @@ export function PauseMenu() {
         >
           <House size={16} /> 返回标题
         </PixelButton>
+        <PixelButton
+          variant="ghost"
+          onClick={() => {
+            if (eternal || commands.save())
+              window.location.assign("./survival.html");
+          }}
+        >
+          前往生存模式
+        </PixelButton>
         <p className="text-center text-xs text-muted-foreground">
-          Esc 也可继续游戏
+          Esc 也可继续游戏 · Shift 踏雪急步（消耗 3 点饱食，短暂无敌）
         </p>
       </section>
     </div>

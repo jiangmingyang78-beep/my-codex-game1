@@ -5,10 +5,11 @@ import { HERO_RADIUS } from "../movement";
 import { damageHero } from "../survival";
 import { type MoveOut, moveWithCollision, solidAt } from "../world/collision";
 import { ENEMY_RADIUS, inCone } from "./combatMath";
+import { attackSeeds } from "./enemySeeds";
 
 const AGGRO_TILES = 8;
 const LEASH_TILES = 16;
-const ACTIVE_TILES = 14;
+
 const CONTACT_PX = ENEMY_RADIUS + HERO_RADIUS + 3;
 const scratch: MoveOut = { x: 0, y: 0 };
 
@@ -139,16 +140,16 @@ function updateAttack(
     }
     e.hitDone = true;
   }
-  if (move.type === "lunge" || move.type === "charge") {
-    const travel = move.travelSec ?? 0.2;
-    const speed = ((move.distanceTiles ?? 2) * tile) / travel;
-    step(e, sys, state, e.dirX * speed * sec, e.dirY * speed * sec);
-    if (!e.hitDone && Math.hypot(hero.x - e.x, hero.y - e.y) <= CONTACT_PX)
-      strikeHero(e, def, move, state, sys, events);
-  }
+  attackSeeds[move.type]?.update(e, sec, hero, {
+    move,
+    tileSize: tile,
+    contactRadiusPx: CONTACT_PX,
+    moveBy: (dx, dy) => step(e, sys, state, dx, dy),
+    strikeHero: () => strikeHero(e, def, move, state, sys, events),
+  });
 }
 
-function updateEnemy(
+export function updateLegacyEnemy(
   e: EnemyState,
   def: EnemyDef,
   sec: number,
@@ -210,40 +211,29 @@ function updateEnemy(
   }
 }
 
-/** Advances enemies near the hero (far idle ones are skipped) and the projectile list. */
-export function updateEnemies(
+export function updateProjectiles(
   state: RunState,
   sys: Systems,
   sec: number,
   events: GameEvent[],
 ): void {
   const tile = sys.data.tileSize;
-  for (const id in state.enemiesById) {
-    const e = state.enemiesById[id];
-    const def = sys.data.enemies.get(e.enemyId);
-    if (!def) continue;
-    if (
-      e.phase === "idle" &&
-      Math.hypot(state.hero.x - e.x, state.hero.y - e.y) > ACTIVE_TILES * tile
-    )
-      continue;
-    updateEnemy(e, def, sec, state, sys, events);
-  }
   const list = state.projectiles;
   for (let i = list.length - 1; i >= 0; i--) {
     const p = list[i];
     p.lifeSec -= sec;
     p.x += p.vx * sec;
     p.y += p.vy * sec;
-    const hit =
-      Math.hypot(state.hero.x - p.x, state.hero.y - p.y) <= HERO_RADIUS + 3;
-    if (hit) damageHero(state, sys, p.damage, events, "projectile");
     const wall = solidAt(
       sys.world,
       state.changesByObjectId,
       Math.floor(p.x / tile),
       Math.floor(p.y / tile),
     );
+    const hit =
+      !wall &&
+      Math.hypot(state.hero.x - p.x, state.hero.y - p.y) <= HERO_RADIUS + 3;
+    if (hit) damageHero(state, sys, p.damage, events, "projectile");
     if (hit || wall || p.lifeSec <= 0) list.splice(i, 1);
   }
 }

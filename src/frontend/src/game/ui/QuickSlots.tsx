@@ -1,5 +1,14 @@
 import type { HudModel } from "@/core";
-import { Bandage, Cherry, Cookie, Heart, Soup } from "lucide-react";
+import {
+  Bandage,
+  Cherry,
+  Cookie,
+  Drumstick,
+  Flame,
+  Heart,
+  Leaf,
+  Soup,
+} from "lucide-react";
 import type { ReactNode } from "react";
 import { commands } from "./commands";
 
@@ -8,11 +17,16 @@ const ICONS: Record<string, ReactNode> = {
   ration: <Cookie size={20} />,
   warm_stew: <Soup size={20} />,
   bandage: <Bandage size={20} />,
+  roast_meat: <Drumstick size={20} />,
+  herb_salve: <Bandage size={20} />,
+  resin_torch: <Flame size={20} />,
+  raw_meat: <Drumstick size={20} />,
+  herb: <Leaf size={20} />,
 };
 
 export function QuickSlots({ slots }: { slots: HudModel["quickSlots"] }) {
   return (
-    <div className="absolute bottom-3 left-1/2 flex -translate-x-1/2 gap-2">
+    <div className="absolute bottom-3 left-1/2 flex w-max max-w-[calc(100%_-_1rem)] -translate-x-1/2 flex-wrap justify-center gap-2">
       {slots.map((slot) => (
         <button
           key={slot.slot}

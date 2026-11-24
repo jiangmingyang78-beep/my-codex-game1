@@ -1,0 +1,148 @@
+{
+  "enemies": [
+    {
+      "id": "mill_spider",
+      "name": "磨坊蛛",
+      "regionIds": ["old_mill"],
+      "maxHp": 3,
+      "attackDamage": 1,
+      "moveSpeedPxPerSec": 43,
+      "attack": {
+        "type": "projectile",
+        "triggerRangeTiles": 6,
+        "windupSec": 0.65,
+        "projectileSpeedPxPerSec": 104,
+        "projectileLifetimeSec": 2,
+        "recoverySec": 0.45,
+        "intervalSec": 1.1
+      },
+      "drops": [
+        {
+          "itemId": "fiber",
+          "count": 1,
+          "probability": 0.2
+        }
+      ]
+    },
+    {
+      "id": "ice_ram",
+      "name": "冰角兽",
+      "regionIds": ["ice_gorge"],
+      "maxHp": 4,
+      "attackDamage": 1,
+      "moveSpeedPxPerSec": 51,
+      "attack": {
+        "type": "charge",
+        "triggerRangeTiles": 4.5,
+        "windupSec": 0.75,
+        "distanceTiles": 4,
+        "travelSec": 0.38,
+        "recoverySec": 1,
+        "intervalSec": 0.8
+      },
+      "drops": [
+        {
+          "itemId": "stone",
+          "count": 1,
+          "probability": 0.15
+        }
+      ]
+    },
+    {
+      "id": "coal_shade",
+      "name": "煤影",
+      "regionIds": ["ice_gorge"],
+      "maxHp": 3,
+      "attackDamage": 1,
+      "moveSpeedPxPerSec": 58,
+      "attack": {
+        "type": "sweep",
+        "triggerRangeTiles": 2,
+        "rangeTiles": 2,
+        "arcDegrees": 100,
+        "windupSec": 0.6,
+        "activeSec": 0.14,
+        "recoverySec": 0.65,
+        "intervalSec": 0.7,
+        "lightDamage": 15
+      },
+      "drops": [
+        {
+          "itemId": "wood",
+          "count": 1,
+          "probability": 0.15
+        }
+      ]
+    },
+    {
+      "id": "beacon_keeper",
+      "name": "烽台守卫",
+      "regionIds": ["beacon"],
+      "maxHp": 18,
+      "attackDamage": 2,
+      "moveSpeedPxPerSec": 50,
+      "attack": {
+        "type": "alternating",
+        "moves": [
+          {
+            "type": "charge",
+            "triggerRangeTiles": 7,
+            "windupSec": 0.85,
+            "distanceTiles": 5,
+            "travelSec": 0.45,
+            "recoverySec": 1
+          },
+          {
+            "type": "sweep",
+            "triggerRangeTiles": 2.75,
+            "rangeTiles": 2.75,
+            "arcDegrees": 150,
+            "windupSec": 0.7,
+            "activeSec": 0.16,
+            "recoverySec": 1
+          }
+        ],
+        "intervalSec": 1.2,
+        "enrage": {
+          "hpRatioAtOrBelow": 0.5,
+          "intervalSec": 0.8
+        }
+      },
+      "drops": [
+        {
+          "itemId": "beacon_heart",
+          "count": 1,
+          "probability": 1,
+          "pickupId": "beacon_heart_drop",
+          "oncePerRun": true
+        }
+      ]
+    }
+  ],
+  "encounterRewards": [
+    {
+      "encounterId": "ice_gorge_guards",
+      "regionId": "ice_gorge",
+      "trigger": "all_members_defeated",
+      "members": [
+        {
+          "enemyId": "ice_ram",
+          "count": 1
+        },
+        {
+          "enemyId": "coal_shade",
+          "count": 1
+        }
+      ],
+      "drops": [
+        {
+          "itemId": "ember_seal",
+          "count": 1,
+          "probability": 1,
+          "pickupId": "ice_gorge_ember_seal",
+          "oncePerRun": true
+        }
+      ]
+    }
+  ]
+}

@@ -18,6 +18,8 @@ function promptText(
       return `E 采集${itemName(sys.data, itemId ?? "")}`;
     case "gate":
       return state.changesByObjectId[id]?.opened ? null : "E 推开大门";
+    case "beacon":
+      return "E 点燃山脊烽台（需 2 枚炉印）";
     case "relay_socket":
       return state.changesByObjectId[id]?.lit
         ? null
@@ -50,7 +52,10 @@ export function currentPrompt(
 
 /** Pushes the 10 Hz HUD model and objective line to the React layer. */
 export function publishHud(hud: HudModel, state: RunState, sys: Systems): void {
-  uiStore.set({ hud, objective: objectiveLine(state, sys) });
+  uiStore.set({
+    hud,
+    objective: hud.eternal?.objective ?? objectiveLine(state, sys),
+  });
 }
 
 /** Per-frame prompt update; only notifies React when the text or rounded position changed. */

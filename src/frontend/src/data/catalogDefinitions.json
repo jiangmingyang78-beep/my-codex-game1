@@ -15,7 +15,35 @@
     "iron_spear",
     "relay_kit",
     "ember_seal",
-    "beacon_heart"
+    "beacon_heart",
+    "raw_meat",
+    "pelt",
+    "ember_dust",
+    "resin",
+    "charcoal",
+    "iron_scrap",
+    "feather",
+    "herb",
+    "roast_meat",
+    "herb_salve",
+    "resin_torch",
+    "fur_cloak",
+    "iron_blade",
+    "ember_lantern",
+    "iron_buckler",
+    "iron_armor",
+    "iron_boots",
+    "iron_helm",
+    "pine_cone",
+    "birch_sapling",
+    "ember_acorn",
+    "berry_cutting",
+    "grass_tuft",
+    "herb_seed",
+    "reed_root",
+    "spore_cap",
+    "ash_compost",
+    "ember_mulch"
   ],
   "recipeIds": [
     "smelt_iron",
@@ -26,16 +54,55 @@
     "make_spear",
     "make_relay",
     "raise_camp_2",
-    "raise_camp_3"
+    "raise_camp_3",
+    "cook_roast_meat",
+    "craft_herb_salve",
+    "craft_resin_torch",
+    "craft_fur_cloak",
+    "craft_iron_blade",
+    "craft_ember_lantern",
+    "craft_ash_compost",
+    "craft_ember_mulch",
+    "craft_berry_cutting",
+    "smelt_scrap",
+    "craft_iron_buckler",
+    "craft_iron_armor",
+    "craft_iron_boots",
+    "craft_iron_helm"
   ],
   "enemyIds": [
     "snow_weasel",
     "mill_spider",
     "ice_ram",
     "coal_shade",
-    "beacon_keeper"
+    "beacon_keeper",
+    "frost_rat",
+    "ash_wolf",
+    "shadow_lynx",
+    "rotted_woodcutter",
+    "cinder_husk",
+    "frozen_guard",
+    "frost_crow",
+    "bog_spitter",
+    "ember_wisp",
+    "mill_overseer",
+    "summit_pyre_warden"
   ],
-  "regionIds": ["camp_edge", "old_mill", "ice_gorge", "beacon"],
+  "heroIds": [
+    "lin_tinder",
+    "gale_smith",
+    "suheng_herb",
+    "corvus_hunt",
+    "alvin_scribe"
+  ],
+  "regionIds": [
+    "camp_edge",
+    "old_mill",
+    "ice_gorge",
+    "beacon",
+    "deep_woods",
+    "frost_ridge"
+  ],
   "legacyAssetReferences": [
     {
       "itemId": "wood",
@@ -52,5 +119,22 @@
       "legacyContentId": "zhiliao-0001",
       "legacyKey": "bandage"
     }
+  ],
+  "plantIds": [
+    "frost_pine",
+    "ember_birch",
+    "charred_ancient",
+    "snow_berry_bush",
+    "tundra_grass",
+    "frost_herb_cluster",
+    "mire_reed",
+    "glow_cap"
+  ],
+  "weatherIds": [
+    "clear",
+    "light_snow",
+    "blizzard",
+    "freezing_fog",
+    "ember_rain"
   ]
 }

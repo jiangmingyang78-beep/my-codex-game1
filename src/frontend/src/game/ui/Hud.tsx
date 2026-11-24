@@ -1,6 +1,7 @@
 import {
   Flame,
   Heart,
+  Infinity as InfinityIcon,
   Moon,
   Pause,
   Sun,
@@ -10,6 +11,7 @@ import {
 } from "lucide-react";
 import type { ReactNode } from "react";
 import { toggleMuted } from "../audio/sfx";
+import { EquipmentRingRail } from "./EquipmentRingRail";
 import { PixelButton } from "./PixelButton";
 import { QuickSlots } from "./QuickSlots";
 import { commands } from "./commands";
@@ -33,7 +35,7 @@ function StatBar({ icon, label, value, max, tone }: BarProps) {
       <div className={`pixel-bar ${tone} min-w-0 flex-1`} aria-hidden="true">
         <span style={{ width: `${pct}%` }} />
       </div>
-      <span className="font-pixel w-[4.5rem] shrink-0 text-right text-xs tabular-nums text-pixel-shadow">
+      <span className="font-pixel w-[3.75rem] shrink-0 text-right text-xs tabular-nums text-pixel-shadow">
         {label} {Math.ceil(value)}
       </span>
     </div>
@@ -54,7 +56,7 @@ export function Hud() {
   const night = hud.phase === "night";
   return (
     <>
-      <div className="absolute left-2 top-2 flex w-[min(15rem,46vw)] flex-col gap-1.5 sm:left-3 sm:top-3 sm:w-64">
+      <div className="absolute left-2 top-2 flex w-[min(11rem,42vw)] flex-col gap-1.5 sm:left-3 sm:top-3 sm:w-48">
         <div className="pixel-panel flex flex-col gap-1.5 p-2.5">
           <StatBar
             icon={<Heart size={14} />}
@@ -90,20 +92,29 @@ export function Hud() {
         <p className="pixel-panel-flat px-2.5 py-1.5 text-xs leading-snug text-foreground">
           {objective}
         </p>
+        {hud.equipment.length > 0 && (
+          <EquipmentRingRail items={hud.equipment} />
+        )}
       </div>
 
-      <div className="pixel-panel absolute left-1/2 top-2 flex -translate-x-1/2 items-center gap-3 px-3 py-1.5 sm:top-3">
-        {night ? (
+      <div className="pixel-panel absolute right-2 top-14 flex max-w-[calc(58vw_-_1.5rem)] items-center gap-2 px-2 py-1.5 sm:left-1/2 sm:right-auto sm:top-3 sm:max-w-none sm:-translate-x-1/2 sm:gap-3 sm:px-3">
+        {hud.eternal ? (
+          <InfinityIcon size={18} className="text-accent" />
+        ) : night ? (
           <Moon size={18} className="text-accent" />
         ) : (
           <Sun size={18} className="text-warning" />
         )}
         <div className="leading-tight">
           <p className="font-pixel text-sm text-pixel-shadow">
-            {hud.dayLabel} · {hud.clock}
+            {hud.eternal
+              ? hud.eternal.clockText
+              : `${hud.dayLabel} · ${hud.clock}`}
           </p>
           <p className="text-[11px] text-muted-foreground">
-            {hud.regionName} · 风暴 {formatStorm(hud.stormRemainingSec)}
+            {hud.eternal
+              ? hud.eternal.threatText
+              : `${hud.regionName} · 风暴 ${formatStorm(hud.stormRemainingSec)}`}
           </p>
         </div>
       </div>

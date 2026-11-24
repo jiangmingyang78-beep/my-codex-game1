@@ -12,6 +12,9 @@ export function makeEvent(
 /** Stable event type names consumed by the scene, HUD, audio and VFX. */
 export const EVT = {
   hit: "combat.hit",
+  blocked: "combat.blocked",
+  enemyAoeDetonated: "enemy.aoe_detonated",
+  enemyPhaseChanged: "enemy.phase_changed",
   swing: "combat.swing",
   windup: "combat.windup",
   enemyDefeated: "enemy.defeated",
