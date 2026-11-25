@@ -1,31 +1,35 @@
-# 余烬林：最后一炬
+# Emberwood: Last Torch
 
-《余烬林：最后一炬》是一款俯视角像素生存冒险浏览器游戏。玩家在雪林里采集资源、升级营火，并前往废磨坊取得炉印。
+Emberwood: Last Torch is a top-down pixel-art survival adventure you can play in your browser. Gather resources in the snowy woods, upgrade your campfire, and venture into the Old Mill to recover the Ember Seal.
 
-## 版本
+## About Me
 
-- **第一版 v1.9.0** · 《余烬林 · 像素冒险》的单文件 HTML 版。[发行版](https://github.com/jiangmingyang78-beep/my-codex-game1/releases/tag/v1.9.0) · [源码分支](https://github.com/jiangmingyang78-beep/my-codex-game1/tree/v1) · [在 Caffeine 试玩](https://emberwood-visual-effects-m6k.caffeine.xyz/)
-- **第二版 v2.0.0** · 《余烬林：最后一炬》的 Phaser 3.90.0 + Vite 版，在 `main` 上开发。当前 MVP 覆盖炉边雪林和废磨坊，进度保存在浏览器的 `localStorage`。[发行版](https://github.com/jiangmingyang78-beep/my-codex-game1/releases/tag/v2.0.0)
-- **第三版 v2.0.0**更新内容
-新增「永恒模式（Eternal Mode）」：32×32 紧凑营火竞技场、20 秒配装准备（标准配额 / 自由配装）、90 秒装备补选、信用点波次递增、120 秒三首领轮换与独立局外最佳成绩纪录。
-英雄多帧动画精灵表管线：新增 heroSprites.json 与混合渲染管线，为「凛」接入 128×128（16 帧）待机/行走/攻击/急步/受击/倒地动画，其余英雄无缝降级程序化贴图。
-接入 5 位英雄 128×128 像素半身像：采用最近邻插值保留锐利像素，支持已解锁彩色 / 未解锁灰度压暗显示。
-改版首页开始菜单：默认展示星露谷风四季光影天气循环动画与并排「冒险模式 / 生存模式」，点击「冒险模式」后展开英雄选择与「新游戏 / 继续游戏 / 永恒模式」。
+I have a deep love for video games—they have given me the courage to face life. In the past, I often wrote game reviews and impressions, though that was as far as I could go. Now, AI has empowered me to finally try creating something of my own. What I want to pass on is the boundless joy I felt the very first time I played Minecraft.
 
-## 本地运行
+## Versions
 
-使用 Node.js 22.12+ 或 Node.js 24，以及项目声明的 pnpm 10.26.1。以下命令在仓库根目录运行。
+- **First version (v1.9.0)** · *Emberwood: Pixel Adventure* ships as a single HTML file. [Release](https://github.com/jiangmingyang78-beep/my-codex-game1/releases/tag/v1.9.0) · [Source branch](https://github.com/jiangmingyang78-beep/my-codex-game1/tree/v1) · [Play on Caffeine](https://emberwood-visual-effects-m6k.caffeine.xyz/)
+- **Second version (v2.0.0)** · *Emberwood: Last Torch* uses Phaser 3.90.0 and Vite and is developed on `main`. This MVP covers the snowy woods and the Old Mill and saves progress in the browser’s `localStorage`. [Release](https://github.com/jiangmingyang78-beep/my-codex-game1/releases/tag/v2.0.0)
+- **Third version (v3.0.0)** · [Release](https://github.com/jiangmingyang78-beep/my-codex-game1/releases/tag/v3.0.0)
+  - **Eternal Mode** takes place in a compact 32×32 campfire arena. You have 20 seconds to set up your loadout using a standard allowance or free selection. Standard loadouts get another chance to choose gear every 90 seconds. Enemy spawns use a credit budget that grows faster as combat progresses, three bosses rotate at 120-second intervals, and the mode tracks its own personal best between runs.
+  - **Hero animations** use a hybrid rendering pipeline configured in `heroSprites.json`. Lin has 128×128 sprites with 16-frame idle, walk, attack, dash, hit, and knockdown animations. The other heroes use procedurally generated textures.
+  - **Hero portraits** feature 128×128 pixel art for all five heroes. Nearest-neighbor scaling keeps the pixels crisp. Unlocked heroes appear in full color and locked heroes appear in dimmed grayscale.
+  - **Redesigned title menu** features a Stardew Valley-inspired cycle of seasonal lighting and weather, with Adventure Mode and Survival Mode side by side. Select Adventure Mode to choose a hero and access New Game, Continue, and Eternal Mode.
+
+## Run Locally
+
+Use Node.js 22.12+ or Node.js 24 and the project’s pinned pnpm version, 10.26.1. Run these commands from the repository root.
 
 ```sh
 pnpm install --frozen-lockfile
 pnpm --dir src/frontend dev --host 127.0.0.1 --port 5173 --logLevel info
 ```
 
-打开 [本地开发页](http://127.0.0.1:5173/)。用 WASD 或方向键移动，按 E 互动，按空格攻击，按 Esc 暂停。
+Open the [local development page](http://127.0.0.1:5173/). Use WASD or the arrow keys to move, E to interact, Space to attack, and Esc to pause.
 
 ```sh
 pnpm typecheck
 pnpm build
 ```
 
-生产构建输出在 `src/frontend/dist/`。
+The production build is written to `src/frontend/dist/`.
