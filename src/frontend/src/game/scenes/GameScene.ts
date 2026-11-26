@@ -11,6 +11,7 @@ import { watchTab } from "../session/watchTab";
 import { lockNearestFilter } from "../textures/pixelFilter";
 import type { TextureGenerator } from "../textures/registerTextures";
 import { uiStore } from "../ui/store";
+import { toast } from "../ui/toastBridge";
 import { currentPrompt, publishHud, publishPrompt } from "../ui/uiSync";
 import { EntityViews } from "../world/EntityViews";
 import { Scenery } from "../world/Scenery";
@@ -20,6 +21,7 @@ import {
   preloadHeroSpritesheets,
   registerHeroAnimations,
 } from "../world/heroAnimations";
+import type { ToastScene } from "./ToastScene";
 import { type PlayScreen, bindSceneCommands } from "./bindSceneCommands";
 
 /**
@@ -101,9 +103,12 @@ export class GameScene extends Phaser.Scene {
       error: null,
       toasts: [],
     });
-    publishHud(this.session.hud(), state, this.session.sys);
+    toast.clear();
+    if (!this.scene.isActive(SCENE.toast)) this.scene.launch(SCENE.toast);
+    this.scene.bringToTop(SCENE.toast);
+    this.pushHud();
     if (this.session.startNotice)
-      uiStore.toast(this.session.startNotice, "warn");
+      toast.warn(this.session.startNotice, "warn:start_notice");
   }
 
   update(time: number, deltaMs: number): void {
@@ -164,7 +169,7 @@ export class GameScene extends Phaser.Scene {
     this.hudClock += sec;
     if (this.hudClock >= HUD_REFRESH_SEC) {
       this.hudClock = 0;
-      publishHud(this.session.hud(), state, sys);
+      this.pushHud();
     }
   }
 
@@ -246,7 +251,12 @@ export class GameScene extends Phaser.Scene {
 
   private pushHud(): void {
     const { state, sys } = this.session;
-    publishHud(this.session.hud(), state, sys);
+    const hud = this.session.hud();
+    publishHud(hud, state, sys);
+    if (this.scene.isActive(SCENE.toast)) {
+      const overlay = this.scene.get(SCENE.toast) as ToastScene;
+      overlay.setHudEquipmentCount(hud.equipment.length);
+    }
   }
 
   /** Pauses (and saves, outside Eternal Mode) when the tab is hidden or the window loses focus. */
@@ -257,6 +267,8 @@ export class GameScene extends Phaser.Scene {
   }
 
   private teardown(): void {
+    toast.clear();
+    if (this.scene.isActive(SCENE.toast)) this.scene.stop(SCENE.toast);
     for (const cleanup of this.cleanups) cleanup();
     this.cleanups = [];
     this.scenery?.destroy();

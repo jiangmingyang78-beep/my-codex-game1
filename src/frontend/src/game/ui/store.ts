@@ -1,5 +1,6 @@
 import type { HeroDef, HudModel } from "@/core";
 import { useSyncExternalStore } from "react";
+import { hasToastManager, toast } from "./toastBridge";
 
 export type Screen = "title" | "playing" | "paused" | "craft" | "result";
 export type ToastTone = "info" | "good" | "warn";
@@ -142,7 +143,12 @@ export const uiStore = {
     state = { ...state, ...patch };
     emit();
   },
+  /** 兼容旧版通用提示签名：Phaser ToastManager 就绪时直通双通道管理器，否则安全回退。 */
   toast(text: string, tone: ToastTone = "info"): void {
+    if (hasToastManager()) {
+      toast.show(text, tone);
+      return;
+    }
     const id = ++toastId;
     const next = [...state.toasts, { id, text, tone }].slice(-MAX_TOASTS);
     state = { ...state, toasts: next };
@@ -162,6 +168,7 @@ export const uiStore = {
   },
   /** Back to a clean title state (used when the Phaser game is destroyed). */
   reset(): void {
+    toast.clear();
     for (const timer of timers.values()) clearTimeout(timer);
     timers.clear();
     state = { ...initial, muted: state.muted, title: state.title };

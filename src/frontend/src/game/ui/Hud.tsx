@@ -57,41 +57,43 @@ export function Hud() {
   return (
     <>
       <div className="absolute left-2 top-2 flex w-[min(11rem,42vw)] flex-col gap-1.5 sm:left-3 sm:top-3 sm:w-48">
-        <div className="pixel-panel flex flex-col gap-1.5 p-2.5">
-          <StatBar
-            icon={<Heart size={14} />}
-            label="生命"
-            value={hud.hp}
-            max={hud.maxHp}
-            tone="bar-hp"
-          />
-          <StatBar
-            icon={<Utensils size={14} />}
-            label="饱食"
-            value={hud.hunger}
-            max={hud.maxHunger}
-            tone="bar-hunger"
-          />
-          <StatBar
-            icon={<Flame size={14} />}
-            label="火炬"
-            value={hud.light}
-            max={hud.maxLight}
-            tone="bar-torch"
-          />
-          <p className="text-[11px] text-frost">
-            {hud.inFire
-              ? "在火圈内：火炬恢复中"
-              : night
-                ? "夜里火炬会渐渐熄灭"
-                : "白天火炬不会消耗"}
-            {hud.buffSecondsLeft > 0 &&
-              ` · 暖汤 ${Math.ceil(hud.buffSecondsLeft)} 秒`}
+        <div data-hud-top-left className="flex flex-col gap-1.5">
+          <div className="pixel-panel flex flex-col gap-1.5 p-2.5">
+            <StatBar
+              icon={<Heart size={14} />}
+              label="生命"
+              value={hud.hp}
+              max={hud.maxHp}
+              tone="bar-hp"
+            />
+            <StatBar
+              icon={<Utensils size={14} />}
+              label="饱食"
+              value={hud.hunger}
+              max={hud.maxHunger}
+              tone="bar-hunger"
+            />
+            <StatBar
+              icon={<Flame size={14} />}
+              label="火炬"
+              value={hud.light}
+              max={hud.maxLight}
+              tone="bar-torch"
+            />
+            <p className="text-[11px] text-frost">
+              {hud.inFire
+                ? "在火圈内：火炬恢复中"
+                : night
+                  ? "夜里火炬会渐渐熄灭"
+                  : "白天火炬不会消耗"}
+              {hud.buffSecondsLeft > 0 &&
+                ` · 暖汤 ${Math.ceil(hud.buffSecondsLeft)} 秒`}
+            </p>
+          </div>
+          <p className="pixel-panel-flat px-2.5 py-1.5 text-xs leading-snug text-foreground">
+            {objective}
           </p>
         </div>
-        <p className="pixel-panel-flat px-2.5 py-1.5 text-xs leading-snug text-foreground">
-          {objective}
-        </p>
         {hud.equipment.length > 0 && (
           <EquipmentRingRail items={hud.equipment} />
         )}

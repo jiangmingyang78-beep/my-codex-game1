@@ -9,7 +9,8 @@ import type {
 import { returnToTitle } from "../session/activeRun";
 import { createEternalCommands } from "../session/eternalCommands";
 import { bindCommands } from "../ui/commands";
-import { type Screen, uiStore } from "../ui/store";
+import type { Screen } from "../ui/store";
+import { toast } from "../ui/toastBridge";
 
 export type PlayScreen = Exclude<Screen, "title">;
 
@@ -38,14 +39,12 @@ export function bindSceneCommands(hooks: SceneCommandHooks): () => void {
     resume: () => hooks.getScreen() === "paused" && hooks.setScreen("playing"),
     save: () => {
       if (session.eternal) {
-        uiStore.toast("永恒模式为单局制，不写入存档", "info");
+        toast.info("永恒模式为单局制，不写入存档", "sys:eternal_nosave");
         return false;
       }
       const ok = session.save();
-      uiStore.toast(
-        ok ? "进度已保存" : "保存失败：本地存储不可用",
-        ok ? "good" : "warn",
-      );
+      if (ok) toast.gain("进度已保存", "sys:save");
+      else toast.error("保存失败：本地存储不可用", "error:save_failed");
       playSfx("ui");
       return ok;
     },
@@ -70,7 +69,7 @@ export function bindSceneCommands(hooks: SceneCommandHooks): () => void {
     openCraft: () => {
       const near = nearestInteractable(session.state, session.sys);
       if (near?.kind === "campfire") hooks.openCraft();
-      else uiStore.toast("离营火太远", "warn");
+      else toast.warn("离营火太远", "warn:too_far_camp");
     },
     closeCraft: () => hooks.closeCraft(),
     ...(import.meta.env.DEV && {

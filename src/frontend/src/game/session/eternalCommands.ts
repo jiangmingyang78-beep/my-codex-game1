@@ -7,7 +7,7 @@ import {
 } from "@/systems/eternal/eternalLoadout";
 import { playSfx } from "../audio/sfx";
 import type { EternalCommands } from "../ui/commands";
-import { uiStore } from "../ui/store";
+import { toast } from "../ui/toastBridge";
 import type { RunSession } from "./RunSession";
 
 /** Eternal Mode actions for the React loadout panel; `refresh` republishes the HUD model. */
@@ -17,8 +17,13 @@ export function createEternalCommands(
 ): EternalCommands {
   const { state, sys } = session;
   const apply = (result: LoadoutResult): void => {
-    if (result.message)
-      uiStore.toast(result.message, result.ok ? "good" : "warn");
+    if (result.message) {
+      if (result.ok) {
+        toast.gain(result.message, `eternal:${result.message}`);
+      } else {
+        toast.warn(result.message, `warn:eternal:${result.message}`);
+      }
+    }
     playSfx("ui");
     refresh();
   };

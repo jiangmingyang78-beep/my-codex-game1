@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { PixelButton } from "../ui/PixelButton";
 import { type DevEnemyOption, commands } from "../ui/commands";
-import { uiStore } from "../ui/store";
+import { toast } from "../ui/toastBridge";
 
 export function DevToolbar() {
   const [open, setOpen] = useState(false);
@@ -42,9 +42,9 @@ export function DevToolbar() {
 
   if (!import.meta.env.DEV) return null;
 
-  const act = (fn: (() => void) | undefined, toast?: string) => {
+  const act = (fn: (() => void) | undefined, message?: string) => {
     fn?.();
-    if (toast) uiStore.toast(toast, "info");
+    if (message) toast.info(message, `dev:${message}`);
   };
 
   if (!open) {
@@ -117,7 +117,10 @@ export function DevToolbar() {
           onClick={() => {
             const next = commands.dev?.toggleGodMode() ?? false;
             setGodMode(next);
-            uiStore.toast(next ? "DEV：无敌已开启" : "DEV：无敌已关闭", "info");
+            toast.info(
+              next ? "DEV：无敌已开启" : "DEV：无敌已关闭",
+              "dev:godmode",
+            );
           }}
           className="px-2 py-1 text-xs"
         >
@@ -145,10 +148,8 @@ export function DevToolbar() {
           onClick={() => {
             if (!selectedEnemy) return;
             const ok = commands.dev?.spawnEnemy(selectedEnemy);
-            uiStore.toast(
-              ok ? `DEV：已召唤 ${selectedEnemy}` : "DEV：召唤失败",
-              ok ? "good" : "warn",
-            );
+            if (ok) toast.gain(`DEV：已召唤 ${selectedEnemy}`, "dev:spawn");
+            else toast.warn("DEV：召唤失败", "dev:spawn_fail");
           }}
           className="shrink-0 px-2.5 py-1 text-xs"
         >

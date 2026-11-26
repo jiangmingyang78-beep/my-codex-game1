@@ -4,6 +4,7 @@ export const SCENE = {
   boot: "Boot",
   title: "Title",
   game: "Game",
+  toast: "Toast",
 } as const;
 
 export const REGISTRY = {
@@ -16,6 +17,7 @@ export const DEPTH = {
   fxBody: 2000,
   fxGlow: 2001,
   night: 3000,
+  toast: 10000,
 } as const;
 
 /** Visible world pixels the camera aims for before the integer zoom is chosen. */

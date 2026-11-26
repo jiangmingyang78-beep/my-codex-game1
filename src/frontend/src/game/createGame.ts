@@ -3,6 +3,7 @@ import { bindAudioUnlock, syncMuteState } from "./audio/sfx";
 import { BootScene } from "./scenes/BootScene";
 import { GameScene } from "./scenes/GameScene";
 import { TitleScene } from "./scenes/TitleScene";
+import { ToastScene } from "./scenes/ToastScene";
 import { discardPendingRun } from "./session/activeRun";
 import { uiStore } from "./ui/store";
 import { refreshTitleInfo } from "./ui/titleInfo";
@@ -32,7 +33,7 @@ function launch(parent: HTMLElement, type: number): Phaser.Game {
     banner: false,
     physics: { default: "arcade", arcade: { gravity: { x: 0, y: 0 } } },
     scale: { mode: Phaser.Scale.RESIZE, width: "100%", height: "100%" },
-    scene: [BootScene, TitleScene, GameScene],
+    scene: [BootScene, TitleScene, GameScene, ToastScene],
   });
 }
 
