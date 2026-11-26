@@ -2,6 +2,7 @@ import type { AttackMove, EnemyDef } from "@/core/dataTypes";
 import { EVT, makeEvent } from "@/core/events";
 import type { EnemyState, GameEvent, RunState, Systems } from "@/core/types";
 import { HERO_RADIUS } from "../movement";
+import { rules } from "../runtimeRules";
 import { damageHero } from "../survival";
 import { type MoveOut, moveWithCollision, solidAt } from "../world/collision";
 import { ENEMY_RADIUS, inCone } from "./combatMath";
@@ -165,10 +166,14 @@ export function updateLegacyEnemy(
   const aware = state.regionId === sys.world.spawns.get(e.spawnId)?.regionId;
   switch (e.phase) {
     case "idle":
-      if (aware && dist <= AGGRO_TILES * tile) e.phase = "chase";
+      if (aware && dist <= (rules.perception?.aggroTiles ?? AGGRO_TILES) * tile)
+        e.phase = "chase";
       return;
     case "chase": {
-      if (e.nightRound === null && (!aware || dist > LEASH_TILES * tile)) {
+      if (
+        e.nightRound === null &&
+        (!aware || dist > (rules.perception?.leashTiles ?? LEASH_TILES) * tile)
+      ) {
         e.phase = "idle";
         return;
       }

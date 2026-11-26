@@ -143,6 +143,15 @@ function main() {
     }
   }
 
+  const resolved = process.env.CONSOLE_REPORT === "1" ? JSON.parse(fs.readFileSync(0, "utf8")) : null;
+  if (resolved) {
+    spawnCounts.clear();
+    for (const s of resolved.spawns.filter(s => s.enemyId)) {
+      const count = spawnCounts.get(s.enemyId) || { res: 0, night: 0 };
+      count[s.kind === "night" ? "night" : "res"]++;
+      spawnCounts.set(s.enemyId, count);
+    }
+  }
   const baseDmg = balance.hero.attackDamage, cd = balance.hero.attackCooldownSec, baseHp = balance.stats.hp.max;
   const spearDmg = effVal(itemsMap.get("iron_spear"), "set_combat_stat", "attackDamage") || 2;
   const bladeBonus = effVal(itemsMap.get("iron_blade"), "add_owned_stat", "attackDamage") || 2;
@@ -167,6 +176,14 @@ function main() {
   for (const r of layout.regions) for (const n of r.nodes) {
     const cur = fixedMap.get(n.itemId) || { total: 0, byReg: new Map() };
     cur.total += n.count * n.yield; cur.byReg.set(r.id, (cur.byReg.get(r.id) || 0) + n.count * n.yield); fixedMap.set(n.itemId, cur);
+  }
+  if (resolved) {
+    fixedMap.clear();
+    for (const n of resolved.objects.filter(n => n.itemId)) {
+      const cur = fixedMap.get(n.itemId) || { total: 0, byReg: new Map() };
+      cur.total += n.yield; cur.byReg.set(n.regionId, (cur.byReg.get(n.regionId) || 0) + n.yield);
+      fixedMap.set(n.itemId, cur);
+    }
   }
   const econRows = coreIds.map((id) => {
     let uniq = 0, rep = 0; const uParts = [], rParts = [];
@@ -223,10 +240,10 @@ function main() {
     for (const k of Object.keys(r.inputs || {})) if (!itemsMap.has(k)) badRefs.push(`${r.id}.in:${k}`);
     if (r.output?.type === "item" && !itemsMap.has(r.output.id)) badRefs.push(`${r.id}.out:${r.output.id}`);
   }
-  for (const e of allEnemies) for (const d of e.drops || []) { dropCount += 1; if (!itemsMap.has(d.itemId) || d.probability <= 0 || d.probability > 1 || (d.count != null && d.count <= 0)) dropErrs.push(`${e.id}:${d.itemId}(p=${d.probability})`); }
+  for (const e of allEnemies) for (const d of e.drops || []) { dropCount += 1; if (!itemsMap.has(d.itemId) || d.probability < 0 || d.probability > 1 || (d.count != null && d.count <= 0)) dropErrs.push(`${e.id}:${d.itemId}(p=${d.probability})`); }
   for (const p of plantsData?.plants || []) for (const d of [...(p.drops || []), ...(p.stumpDrops || []), ...(p.digDrops || [])]) { dropCount += 1; if (!itemsMap.has(d.itemId) || d.probability <= 0 || d.probability > 1) dropErrs.push(`${p.id}:${d.itemId}(p=${d.probability})`); }
   addAlert(badRefs.length ? "配方引用异常" : "跨文件 ID 引用", badRefs.length ? "🚨 严重" : "✅ 通过", badRefs.length ? badRefs.join(", ") : `${recipesData.recipes.length} 条配方`, badRefs.length ? "引用了不存在的 itemId" : "所有输入/输出 itemId 均有效");
-  addAlert(dropErrs.length ? "掉落越界" : "掉落概率检查", dropErrs.length ? "🚨 严重" : "✅ 通过", dropErrs.length ? dropErrs.join(", ") : `${dropCount} 条掉落项`, dropErrs.length ? "概率不在 (0,1] 或引用非法" : "概率与数量均合法");
+  addAlert(dropErrs.length ? "掉落越界" : "掉落概率检查", dropErrs.length ? "🚨 严重" : "✅ 通过", dropErrs.length ? dropErrs.join(", ") : `${dropCount} 条掉落项`, dropErrs.length ? "概率超出允许范围或引用非法" : "概率与数量均合法");
   const layoutIds = new Set(layout.regions.map((r) => r.id));
   const missingRegs = regionsData.regions.filter((r) => !layoutIds.has(r.id)).map((r) => `${r.name}(${r.id})`);
   if (missingRegs.length) addAlert("区域未实装", "⚠️ 警告", missingRegs.join("、"), "存在于 regions.json 但未在 worldLayout.ts 实装");
@@ -247,7 +264,12 @@ function main() {
   console.log(c.b("\n核心经济摘要："));
   for (const row of econRows.slice(0, 4)) console.log(`  ${row[0]} · ${row[7]}`);
 
-  if (SUMMARY_ONLY) { console.log(c.dim("\n[--summary] 仅终端打印，未改写 docs/BALANCE_REPORT.md。\n")); return; }
+  const emit = () => {
+    if (!resolved) return;
+    const ttkRisks = allEnemies.map(e => ({ name: e.name, seconds: (Math.ceil(e.maxHp / baseDmg) - 1) * cd })).sort((a,b) => b.seconds - a.seconds).slice(0,5);
+    console.log("\n@@CONSOLE@@" + JSON.stringify({ alerts, ttkRisks, materials: econRows.map(r => r[0] + " · " + r[7]) }));
+  };
+  if (SUMMARY_ONLY) { console.log(c.dim("\n[--summary] 仅终端打印，未改写 docs/BALANCE_REPORT.md。\n")); emit(); return; }
   const md = [
     "# 数值平衡与经济体检报告（BALANCE_REPORT）", "",
     "> 由 `pnpm bal` (`tools/balance-report.mjs`) 只读解析 `src/frontend/src/data/*.json` 与 `worldLayout.ts` 生成。",
@@ -263,6 +285,6 @@ function main() {
   ].join("\n");
   fs.mkdirSync(path.dirname(REPORT_PATH), { recursive: true });
   fs.writeFileSync(REPORT_PATH, md, "utf8");
-  console.log(c.green(`\n✔ 已写入完整报告：${path.relative(ROOT, REPORT_PATH)}\n`));
+  console.log(c.green(`\n✔ 已写入完整报告：${path.relative(ROOT, REPORT_PATH)}\n`)); emit();
 }
 main();

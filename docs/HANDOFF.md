@@ -1,27 +1,27 @@
-# 双工具交接记录（HANDOFF）
+# 双工具交接 · 夜袭往返与急步键盘回归
 
-## 1. 本棒工具与改动清单（Codex · v3.1.0 发布）
-- 更新 `README.md`（40 行）、根 `package.json`（25 行）、`src/frontend/package.json`（94 行）和 `src/frontend/src/game/ui/TitleScreen.tsx`（236 行）的版本信息。
-- 更新 `tools/balance-report.mjs`（268 行 ⚠️≥240），读取新版地图中的 `pt(...)` 和 `node(...)`，重新生成 `docs/BALANCE_REPORT.md`（81 行）。
-- 更新 `docs/HANDOFF.md`（27 行）和 `docs/LDTK_MAP_GUIDE.md`（52 行）。本次发布打包此前的 10 区域冒险地图、旧存档迁移、LDtk 适配器和精灵工作台（单文件版 1873 行 ⚠️≥240）。
+## 1. 工具与改动文件（Codex，括号为行数）
+- 修改 src/frontend/src/systems/movement.ts（212）。
+- 新增 tools/map-viewer/verifyKeyboard.mjs（189）、verifyKeyboard.browser.js（96）。
+- 更新 docs/HANDOFF.md（29）。运行时参数映射与此前对照见 docs/MAP_CONSOLE.md。
 
-## 2. 已验证项
-- 通过 `pnpm typecheck`、`pnpm fix`、`pnpm build`、`node tests/run-ldtk-test.mjs`。
-- 通过 `pnpm bal`，核对报告覆盖 10 个区域。验证精灵工作台首页、资源列表及 PNG 请求。
-- 用 `v2.0.0` 和 `v3.0.0` 发布代码生成旧档并成功读取。用 Edge 实测从 `v3.0.0` 的霜脊档继续游戏，保存为结构版本 4，再次刷新继续游戏。
-- 回归覆盖地形碰撞、守卫血量与击败记录、待拾取炉印、开门进度、备份恢复，以及已使用扩展地图的结构版本 3 存档保留原坐标。
+## 2. 已验证
+- 无头 Edge 通过鼠标点击标题的新游戏入口，再以真实键盘事件驱动 Phaser 主游戏。使用独立浏览器档案、实地图和正常帧循环。脚本设置夜袭和碰撞起点并维持角色生存。
+- 夜袭区域权重 4、最多 6 波、间隔 2 秒。通过 A/D 在炉边雪林与磨坊之间往返 4 趟共 8 次跨界，逐帧活跃上限 8。磨坊每次 8 只，回到雪林时为 5 或 8 只。指定近处追兵 night1_camp_edge_night_a 每次均保留。
+- 冻溪冰面按 D+S+Shift 后松键。默认冲刺约 30 像素，8 格冲刺约 128 像素。长急步结束后约 0.35 秒的滑行由修复前约 110 像素降为约 34 像素，默认约 33 像素。
+- 在磨坊入口用测试页内的碰撞遮挡把两格通道缩成一格，直冲时走完 128 像素。封闭后停在门前，开放与封闭对照均无帧进入阻挡格。
+- pnpm typecheck、pnpm fix、pnpm build、控制台 tsc、verify.mjs、verifyRuntime.mjs 与 verifyKeyboard.mjs 均通过。
+- 测试参数和通道遮挡只应用于隔离页面。两份磁盘配置仍为空对象。snapshot、vfx、锁文件差异为空。
 
 ## 3. 未验证与已知风险
-- 尚未完成扩展冒险全流程和真实 LDtk 导出地图的实机测试。LDtk 的 `StoryProp` 尚未映射一次性奖励字段。
-- 数值报告按地图配置计算固定矿点共 16 矿，最多熔 8 锭。完整唯一/进度配方合计需求 13 锭，实际通关路线及废铁替代供给待试玩。
-- 警戒行数文件（≥240）：`worldGen.ts`(291)、`worldLayout.ts`(270)、`dataTypes.ts`(269)、`GameScene.ts`(263)、`interact.ts`(260)、`meta.ts`(255)、`EntityViews.ts`(250)、`seasonsWeather.ts`(247)。
+- 这是自动化键鼠操作，复现了实际画面与帧输入。手机触控与手柄手感未测。
+- 单格窄门测试沿通道中心直冲，门框斜擦与不同入射角未穷举。上一棒两晚的存读档回归仍可通过 verifyLongRun.mjs 重跑。
 
-## 4. 锁定的接口与约束
-- `sanitizeRunState(raw, sys)` 负责坐标迁移。结构版本 4 表示已使用当前地图坐标。版本 3 的开发存档通过新增刷怪点或对应击败记录识别。
-- `loadRun` 在内存中迁移，下一次正常保存才写结构版本 4，仍保留上一个有效存档作为备份。localStorage 键名沿用原值。
-- `ldtkAdapter.ts` 锁定导出 `LdtkProjectJson` 与 `buildWorldFromLdtk(ldtk, data, levelIndex = 0): World`。
-- `worldGen.ts` 锁定 `getWorld(data: GameData, ldtkMap?: LdtkProjectJson): World`（未传 `ldtkMap` 时命中 `worldsByData` 缓存并返回程序生成世界）。
+## 4. 锁定接口与约束
+- 急步阶段仍执行显式配置中的距离，并由现有碰撞子步处理。结束后的冰面惯性速度上限采用同一地形及装备下的默认急步速度。
+- 近处追兵保留与跨区活跃计数沿用上一棒规则，磨坊有 6 个常驻点，其余活跃配额分给夜袭。
+- 运行 node tools/map-viewer/verifyKeyboard.mjs 可复现。也可传 Edge 可执行文件路径。浏览器观察钩子只由测试服务注入。
 
-## 5. 下一棒任务
-1. 从新档完整试玩冒险流程直到点燃烽台，核对关卡路线、碰撞和制作材料供给。
-2. 按 `docs/LDTK_MAP_GUIDE.md` 导出并试玩完整地图，按需要补齐 `StoryProp` 奖励字段。
+## 5. 下一棒
+1. 用触控与手柄复测斜向急步、墙边入射和松键反馈。
+2. 按自然开门进度试玩夜袭往返及完整战斗路线。

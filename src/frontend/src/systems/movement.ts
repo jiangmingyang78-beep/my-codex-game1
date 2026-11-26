@@ -1,6 +1,7 @@
 import { getHero } from "@/core/gameData";
 import type { RunState, StepInputState, Systems } from "@/core/types";
 import { heroMoveSpeedMultiplier, ownedStatBonus } from "./itemEffects";
+import { rules } from "./runtimeRules";
 import { type MoveOut, moveWithCollision } from "./world/collision";
 import { evaluateRegionModifiers } from "./world/regionEffects";
 
@@ -53,7 +54,7 @@ const DASH = {
 function dashCooldownMaxSec(state: RunState, sys: Systems): number {
   return Math.max(
     0.6,
-    DASH.cooldownSec -
+    (rules.dash?.cooldownSec ?? DASH.cooldownSec) -
       ownedStatBonus(sys.data, state.inventory, "dashCooldownReductionSec"),
   );
 }
@@ -169,10 +170,17 @@ export function moveHero(
   if (dashing) {
     stepSec = Math.min(sec, dash.activeSec);
     dash.activeSec -= stepSec;
-    vx = dash.dx * base * DASH.speedMult;
-    vy = dash.dy * base * DASH.speedMult;
-    slide.vx = vx;
-    slide.vy = vy;
+    const distance = rules.dash?.distanceTiles;
+    const speed =
+      distance === undefined
+        ? base * DASH.speedMult
+        : (distance * data.tileSize) / DASH.activeSec;
+    vx = dash.dx * speed;
+    vy = dash.dy * speed;
+    // A longer burst should not also multiply the speed of the ice coast.
+    const coastSpeed = Math.min(speed, base * DASH.speedMult);
+    slide.vx = dash.dx * coastSpeed;
+    slide.vy = dash.dy * coastSpeed;
   } else {
     vx = v.x * base;
     vy = v.y * base;

@@ -53,10 +53,28 @@ export function moveWithCollision(
   radius: number,
   out: MoveOut,
 ): MoveOut {
+  const span = world.tileSize;
+  const bound = (delta: number, tiles: number) =>
+    Math.sign(delta) * Math.min(Math.abs(delta), span * tiles);
+  const boundedX = bound(dx, world.widthTiles);
+  const boundedY = bound(dy, world.heightTiles);
+  const steps = Math.max(
+    1,
+    Math.ceil(Math.max(Math.abs(boundedX), Math.abs(boundedY)) / (span / 2)),
+  );
+  const stepX = boundedX / steps;
+  const stepY = boundedY / steps;
   let nx = x;
   let ny = y;
-  if (dx !== 0 && !blockedAt(world, changes, x + dx, y, radius)) nx = x + dx;
-  if (dy !== 0 && !blockedAt(world, changes, nx, y + dy, radius)) ny = y + dy;
+  for (let i = 0; i < steps; i++) {
+    const previousX = nx;
+    const previousY = ny;
+    if (stepX !== 0 && !blockedAt(world, changes, nx + stepX, ny, radius))
+      nx += stepX;
+    if (stepY !== 0 && !blockedAt(world, changes, nx, ny + stepY, radius))
+      ny += stepY;
+    if (nx === previousX && ny === previousY) break;
+  }
   out.x = nx;
   out.y = ny;
   return out;

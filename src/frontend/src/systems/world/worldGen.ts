@@ -1,7 +1,9 @@
 import type { GameData } from "@/core/dataTypes";
 import { createRng } from "@/core/rng";
+import diskOverrides from "@/data/worldOverrides.json";
 import { type LdtkProjectJson, buildWorldFromLdtk } from "./ldtkAdapter";
 import { WORLD_LAYOUT, type WorldLayout } from "./worldLayout";
+import * as edits from "./worldOverrides";
 import { type Grid, at, carveTerrain, tileIndex } from "./worldTerrain";
 import {
   type SpawnPoint,
@@ -116,7 +118,11 @@ function scatterTrees(g: Grid, taken: Set<number>, layout: WorldLayout): void {
 }
 
 /** Builds the deterministic tile grid, collision data and object table. */
-export function generateWorld(data: GameData, layout = WORLD_LAYOUT): World {
+export function generateWorld(
+  data: GameData,
+  layout = WORLD_LAYOUT,
+  overrides: edits.WorldOverrides = diskOverrides,
+): World {
   const { widthTiles: w, heightTiles: h } = data.balance.world;
   const size = data.tileSize;
   if (!Number.isInteger(w) || !Number.isInteger(h) || w < 1 || h < 1)
@@ -251,7 +257,7 @@ export function generateWorld(data: GameData, layout = WORLD_LAYOUT): World {
         ...pos(m),
       }),
     );
-    for (const s of [...region.residentSpawns, ...region.nightSpawns]) {
+    for (const s of [...edits.residents(region), ...region.nightSpawns]) {
       const t = layout.spawns[s.spawnId];
       if (!t) throw new Error(`Missing spawn tile for ${s.spawnId}`);
       if (spawns.has(s.spawnId))
@@ -265,7 +271,7 @@ export function generateWorld(data: GameData, layout = WORLD_LAYOUT): World {
   }
   for (const n of nodes) add(n);
 
-  return {
+  const world = {
     widthTiles: w,
     heightTiles: h,
     tileSize: size,
@@ -278,6 +284,7 @@ export function generateWorld(data: GameData, layout = WORLD_LAYOUT): World {
     heroStart: pos(heroStart),
     campfire: pos(campfire),
   };
+  return edits.applyWorldOverrides(world, overrides);
 }
 
 const worldsByData = new WeakMap<GameData, World>();
@@ -286,6 +293,7 @@ export function getWorld(data: GameData, ldtkMap?: LdtkProjectJson): World {
   const cached = worldsByData.get(data);
   if (cached) return cached;
   const world = generateWorld(data);
+  edits.syncResidentSpawns(data, world, diskOverrides);
   worldsByData.set(data, world);
   return world;
 }

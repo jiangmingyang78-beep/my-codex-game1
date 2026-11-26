@@ -3,6 +3,7 @@ import { reasonMessage } from "@/core/messages";
 import type { ActionResult, GameEvent, RunState, Systems } from "@/core/types";
 import { addItem, canAdd, countOf, removeItems } from "../inventory";
 import { BEACON_SEAL_IDS, countBeaconSeals } from "./beacon";
+import { recordHarvest } from "./dawn";
 import { materialFor } from "./materials";
 import { detonateResinBarrel } from "./regionEffects";
 import type { WorldObject } from "./worldTypes";
@@ -59,6 +60,7 @@ function gather(state: RunState, sys: Systems, o: WorldObject): ActionResult {
     return refused(o, EVT.pickupRefused, "inventory_full", { itemId });
   }
   addItem(sys.data, state.inventory, itemId, count);
+  recordHarvest(state, o);
   state.changesByObjectId[o.id] = { ...change, gathered: true };
   const events: GameEvent[] = [
     makeEvent(EVT.collected, o.x, o.y, {

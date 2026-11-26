@@ -6,6 +6,7 @@ import { ENEMY_RADIUS, inCone } from "./combat/combatMath";
 import { updateLegacyEnemy, updateProjectiles } from "./combat/enemyAi";
 import { defeatEnemy } from "./combat/loot";
 import { HERO_RADIUS } from "./movement";
+import { rules } from "./runtimeRules";
 import { damageHero } from "./survival";
 import { blockedAt, moveWithCollision } from "./world/collision";
 export {
@@ -152,13 +153,17 @@ export function updateEnemies(state, sys, dt, events) {
       continue;
     }
     if (!config.seedType) {
-      if (enemy.phase !== "idle" || distance <= 14 * tileSize)
+      if (
+        enemy.phase !== "idle" ||
+        distance <= Math.max(14, rules.perception?.aggroTiles ?? 8) * tileSize
+      )
         updateLegacyEnemy(enemy, config, dt, state, sys, events);
       continue;
     }
     const aware = state.regionId === homeRegion;
     if (enemy.phase === "idle") {
-      if (aware && distance <= 8 * tileSize) enemy.phase = "chase";
+      if (aware && distance <= (rules.perception?.aggroTiles ?? 8) * tileSize)
+        enemy.phase = "chase";
       continue;
     }
     if (!aware && enemy.nightRound === null && enemy.phase === "chase") {
@@ -167,7 +172,7 @@ export function updateEnemies(state, sys, dt, events) {
     }
     if (
       enemy.phase === "chase" &&
-      distance > 16 * tileSize &&
+      distance > (rules.perception?.leashTiles ?? 16) * tileSize &&
       enemy.nightRound === null
     ) {
       enemy.phase = "idle";

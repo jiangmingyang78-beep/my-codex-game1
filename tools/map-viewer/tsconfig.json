@@ -1,0 +1,6 @@
+{
+  "extends": "../../src/frontend/tsconfig.json",
+  "compilerOptions": { "incremental": false, "types": [] },
+  "files": ["../../src/frontend/node_modules/vite/client.d.ts", "../../src/frontend/node_modules/vite/types/importMeta.d.ts"],
+  "include": ["**/*.ts"]
+}

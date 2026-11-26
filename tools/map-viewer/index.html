@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#16221f" /><link rel="icon" href="data:," />
+  <title>余烬林 · 地图与数值控制台</title><link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+  <header class="mast">
+    <div class="identity"><span class="ember" aria-hidden="true">◈</span><div><strong>余烬林</strong><small>地图与数值控制台</small></div></div>
+    <div class="mast-actions">
+      <div class="cluster"><button id="btnUndo" disabled>撤销 0</button><button id="btnRedo" disabled>重做 0</button></div>
+      <div class="cluster"><button id="btnPresetOut">导出预设</button><button id="btnPresetIn">导入预设</button></div>
+      <button id="btnReview">查看 Diff 并保存 <b id="changeCount" hidden>0</b></button><button id="btnCheck" class="primary">保存并运行数值体检</button>
+      <input id="presetFile" type="file" accept=".json,application/json" hidden />
+    </div>
+  </header>
+  <div class="workspace">
+    <main>
+      <div class="map-nav"><div class="modes"><button data-mode="adventure" class="active">冒险</button><button data-mode="survival">生存</button><button data-mode="eternal">永恒</button></div><div id="seedBox" hidden><input id="seedInput" aria-label="生存种子" value="20261125" /><button id="btnRndSeed">随机</button><button id="btnGenSeed">生成</button></div><button id="btnExport">导出全景 PNG</button></div>
+      <div class="viewport"><div class="map-caption"><h1 id="mapTitle">冒险模式</h1><span id="mapMeta"></span></div><canvas id="mapCanvas" aria-label="世界缩略地图"></canvas>
+        <div class="camera"><button id="btnZoomOut" aria-label="缩小">−</button><output id="zoomLabel">100%</output><button id="btnZoomIn" aria-label="放大">+</button><button id="btnFit">适应全图</button><button id="btnReset">重置视角</button></div>
+      </div>
+      <div class="map-key"><span><i class="ice"></i>索敌预览</span><label><input id="leash" type="checkbox" checked />脱战预览</label><span><i class="fire"></i>攻击范围</span><div class="camp"><span>营火</span><button data-camp="1" class="active">Lv.1</button><button data-camp="2">Lv.2</button><button data-camp="3">Lv.3</button></div></div>
+    </main>
+    <aside><nav role="tablist" aria-label="控制台面板"><button role="tab" data-tab="map">点位编辑</button><button role="tab" data-tab="rules">生成规则</button><button role="tab" data-tab="enemy">怪物调优</button><button role="tab" data-tab="hero">英雄调优</button></nav>
+      <section class="inspector"><div id="validation" role="alert" hidden></div><div id="panelBody"></div>
+        <div id="mapLayers"><details open><summary>地图图层</summary><div class="layer-grid">
+          <label><input data-layer="regions" type="checkbox" checked />区域边界</label><label><input data-layer="lights" type="checkbox" checked />营火光圈</label>
+          <label><input data-layer="resources" type="checkbox" checked />物资与设施</label><label><input data-layer="spawns" type="checkbox" checked />怪物与出生点</label>
+          <label><input data-layer="collision" type="checkbox" />阻挡碰撞格</label><label><input data-layer="grid" type="checkbox" />格子线</label>
+        </div></details><details><summary>地貌与标记图例</summary><div id="legendList"></div></details></div>
+      </section>
+    </aside>
+  </div>
+  <footer><span id="diskState">连接本地服务…</span><span id="statusCoords">格 (—, —)</span><span id="statusRegion"></span><span id="statusTerrain"></span><span id="statusSolid"></span><span id="statusItem"></span></footer>
+  <dialog id="review"><h2 id="reviewTitle"></h2><div id="reviewBody"></div><div id="reviewFoot"></div></dialog>
+  <script type="module" src="./main.ts"></script>
+</body></html>

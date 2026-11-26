@@ -231,6 +231,8 @@ button,kbd,.tech-node,.quick-slot,.quickbar .build-controls{border-radius:0}
 <div class="world-controls"><input id="seedInput" type="text" maxlength="32" autocomplete="off" placeholder="例如 2048"><button id="createWorld" type="button">进入世界</button></div>
 </dialog>
 <script type="module">
+import {resourceRoll,loadSurvivalTuning,scaledStock,nightWaves,waveSlot} from "./src/systems/survivalTuning.ts";
+const tuning=await loadSurvivalTuning();
 import {
   ENEMY_TEXTURE_DEFS,
   applyEnemyHit,
@@ -2973,7 +2975,7 @@ function survivalChunk(tx,ty){
   const seed=survival.seed??0;
   for(let ly=0;ly<CHUNK_SIZE;ly++)for(let lx=0;lx<CHUNK_SIZE;lx++){
     const x=cx*CHUNK_SIZE+lx,y=cy*CHUNK_SIZE+ly,i=ly*CHUNK_SIZE+lx;
-    const region=expandedBiome(seed,x,y),biome=biomes[region],roll=seededValue(seed,x,y,23);
+    const region=expandedBiome(seed,x,y),biome=biomes[region],roll=resourceRoll(seededValue(seed,x,y,23),tuning.resourceDensity);
     chunk.regions[i]=region;
     if(x===camp.x||y===camp.y)chunk.terrain[i]=biome.floor;
     else if(biome.lake&&terrainNoise(seed,x/10,y/10,24)<biome.lake)chunk.terrain[i]=5;
@@ -3012,7 +3014,7 @@ function generateSurvivalTerrain(seed){
     const biome=biomes[site.type];
     regions[y][x]=site.type;
     if(!originalPlayableCell(x,y)||terrainNoise(seed,x/5,y/5,6)<biome.lake)return 5;
-    const placement=seededValue(seed,x,y,7);
+    const placement=resourceRoll(seededValue(seed,x,y,7),tuning.resourceDensity);
     if(site.type===3&&placement<.13)return COAL_VEIN;
     if(placement<biome.rock)return 6;
     return placement<biome.rock+biome.tree?0:biome.floor;
@@ -3150,7 +3152,7 @@ function makeSurvival(seed=null){
   builds[cellKey(14,19)]="coop";
   const animal=(kind,x,y)=>({kind,...point(x,y),home:point(x,y),feed:0,ready:false});
   return {
-    seed,stock:{...initialStock},quickbar:defaultQuickbar.slice(),research:[],wildPlantTimers:{},wildFeed:{},
+    seed,stock:scaledStock(initialStock,tuning.startingSupplyMultiplier),quickbar:defaultQuickbar.slice(),research:[],wildPlantTimers:{},wildFeed:{},
     hunger:100,age:0,plots:{},builds,removed:[],open:{},groundItems:{},animals:[animal(henId,12,19),animal(sheepId,13,20)]
   };
 }
@@ -4267,6 +4269,7 @@ function nearbyStructure(kind,tiles){
 function spawnNight(){
   clearNightThreats();
   const day=Math.floor(survival.age/DAY_SECONDS)+1,sites=[],origin=worldCell(player);
+  if(!nightWaves(day,tuning.spawnFrequency))return;
   for(let y=origin.y-12;y<=origin.y+12;y++)for(let x=origin.x-12;x<=origin.x+12;x++){
     const p=point(x,y),range=distance(player,p);
     if(range>=SIZE*5&&range<=SIZE*12&&validCell(x,y)&&clearAt(p.x,p.y))sites.push([x,y]);
@@ -4297,7 +4300,9 @@ function updateSurvival(dt){
   dayTime=survival.age%DAY_SECONDS;
   const night=dayTime>=STAGE_SECONDS*5;
   updateTime();
-  if(night&&(previous<STAGE_SECONDS*5||nightSpawnOrigin&&distance(player,nightSpawnOrigin)>SIZE*24))spawnNight();
+  const dusk=STAGE_SECONDS*5, waves=nightWaves(Math.floor(survival.age/DAY_SECONDS)+1,tuning.spawnFrequency);
+  const nextWave=waves>1 && waveSlot(dayTime,dusk,DAY_SECONDS-dusk,waves)>waveSlot(previous,dusk,DAY_SECONDS-dusk,waves);
+  if(night&&(nextWave||previous<STAGE_SECONDS*5||nightSpawnOrigin&&distance(player,nightSpawnOrigin)>SIZE*24))spawnNight();
   if(!night&&previous>=STAGE_SECONDS*5){clearNightThreats();setMessage("天亮了，夜行怪退回林中。");}
   if(weatherEvent)say("天气转变为："+weatherEvent.name);
   survival.hunger=Math.max(0,survival.hunger-dt*(player.moving?.84:.60)*LEGACY_STAGE_SECONDS/STAGE_SECONDS);

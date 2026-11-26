@@ -15,7 +15,8 @@
     "fix": "pnpm -r --if-present run fix",
     "bindgen": "caffeine-bindgen --did-file ./src/backend/dist/backend.did --out-dir ./src/frontend/src --actor-interface-file --force",
     "bal": "node tools/balance-report.mjs",
-    "art": "node tools/sprite-workbench/server.mjs"
+    "art": "node tools/sprite-workbench/server.mjs",
+    "map": "pnpm --dir src/frontend exec vite --config ../../tools/map-viewer/vite.config.mjs"
   },
   "devDependencies": {
     "@dfinity/pic": "^0.23.0",

@@ -4,12 +4,14 @@ import {
   spawnResidents,
 } from "@/systems/EnemyManager.js";
 import { stepCombat } from "@/systems/combat/combat";
+import { trimNightRaid } from "@/systems/combat/enemySpawn";
 import { consumeItem } from "@/systems/inventory";
 import { heroMaxHp } from "@/systems/itemEffects";
 import { moveHero } from "@/systems/movement";
+import { rules } from "@/systems/runtimeRules";
 import { tickHeroTimers, tickSurvival } from "@/systems/survival";
 import { regionIdAt } from "@/systems/world/collision";
-import { renewAtDawn } from "@/systems/world/dawn";
+import { renewAtDawn, renewTimed } from "@/systems/world/dawn";
 import { interact } from "@/systems/world/interact";
 import { tickRegionEffects } from "@/systems/world/regionEffects";
 import { clampStep, dayAt, phaseAt } from "./clock";
@@ -95,6 +97,7 @@ export function createRun(
       : sanitizeRunState(JSON.parse(JSON.stringify(snapshot)), sys);
   spawnResidents(state, sys);
   if (state.phase === "day") despawnNightRaid(state);
+  else trimNightRaid(state, sys);
   return state;
 }
 
@@ -172,6 +175,7 @@ export function step(
   const region = regionIdAt(sys.world, hero.x, hero.y);
   if (region && region !== state.regionId) {
     state.regionId = region;
+    if (state.phase === "night") trimNightRaid(state, sys);
     events.push(
       makeEvent(EVT.regionEntered, hero.x, hero.y, {
         regionId: region,
@@ -196,7 +200,22 @@ export function step(
   );
 
   state.elapsedSec += sec;
+  const sameNight = state.phase === "night";
   phaseTransition(state, sys, events);
+  if (sameNight && state.phase === "night" && (rules.waves?.count ?? 1) > 1) {
+    const clock = sys.data.balance.clock;
+    const age =
+      (state.elapsedSec % (clock.daySec + clock.nightSec)) - clock.daySec;
+    const interval = rules.waves?.intervalSec ?? 30;
+    const wave = Math.floor(age / interval);
+    if (
+      wave > 0 &&
+      wave < (rules.waves?.count ?? 1) &&
+      wave > Math.floor((age - sec) / interval)
+    )
+      spawnNightRaid(state, sys, events, wave);
+  }
+  renewTimed(state, sys);
   tickSurvival(state, sys, sec, events);
   state.autosaveSec += sec;
   if (state.autosaveSec >= sys.data.balance.storage.autosaveIntervalSec) {
