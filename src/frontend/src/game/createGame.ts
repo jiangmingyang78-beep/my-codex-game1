@@ -5,6 +5,7 @@ import { GameScene } from "./scenes/GameScene";
 import { TitleScene } from "./scenes/TitleScene";
 import { ToastScene } from "./scenes/ToastScene";
 import { discardPendingRun } from "./session/activeRun";
+import { preloadPixelFont } from "./ui/pixelFont";
 import { uiStore } from "./ui/store";
 import { refreshTitleInfo } from "./ui/titleInfo";
 
@@ -25,9 +26,7 @@ function launch(parent: HTMLElement, type: number): Phaser.Game {
     type,
     parent,
     backgroundColor: "#0b0f1e",
-    pixelArt: true,
-    roundPixels: true,
-    antialias: false,
+    render: { pixelArt: true, roundPixels: true, antialias: false },
     canvasStyle: "image-rendering: pixelated;",
     disableContextMenu: true,
     banner: false,
@@ -60,8 +59,13 @@ export function createGame(parent: HTMLElement): () => void {
   const unbindAudio = bindAudioUnlock();
   syncMuteState();
   refreshTitleInfo();
-  const game = launchSafely(parent);
+  let game: Phaser.Game | null = null;
+  let disposed = false;
+  void preloadPixelFont().then(() => {
+    if (!disposed) game = launchSafely(parent);
+  });
   return () => {
+    disposed = true;
     unbindAudio();
     game?.destroy(true);
     discardPendingRun();

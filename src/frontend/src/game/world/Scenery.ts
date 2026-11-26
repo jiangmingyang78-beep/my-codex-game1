@@ -8,7 +8,7 @@ import {
 import { TILE } from "@/systems";
 import { createEffects } from "@/vfx/particles";
 import type Phaser from "phaser";
-import { DEPTH } from "../config";
+import { RENDER_DEPTH } from "../renderDepth";
 import type { TextureGenerator } from "../textures/registerTextures";
 import { CampFires, type Effects } from "./CampFires";
 import { NightOverlay } from "./NightOverlay";
@@ -46,8 +46,8 @@ export class Scenery {
       reducedMotion: reduced,
       textureGenerator: gen,
       tileSize: data.tileSize,
-      bodyDepth: DEPTH.fxBody,
-      glowDepth: DEPTH.fxGlow,
+      bodyDepth: RENDER_DEPTH.combatParticles,
+      glowDepth: RENDER_DEPTH.combatGlow,
       lightStrength: () => 0.2 + 0.8 * Math.min(1, this.darkness / 0.6),
       ambientAt: (tx: number, ty: number) => {
         const tile = world.tiles[ty * world.widthTiles + tx];

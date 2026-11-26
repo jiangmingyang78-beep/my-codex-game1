@@ -1,6 +1,7 @@
 import type { RunState, Systems } from "@/core";
 import { TILE } from "@/systems";
 import type Phaser from "phaser";
+import { RENDER_DEPTH, entityDepthAt } from "../renderDepth";
 import {
   TEX,
   TREE_VARIANTS,
@@ -17,6 +18,7 @@ export class WorldView {
   private readonly nodes = new Map<string, Phaser.GameObjects.Image>();
   private readonly barrels = new Map<string, Phaser.GameObjects.Image>();
   private readonly doors = new Map<string, Phaser.GameObjects.Image[]>();
+  private readonly worldHeightPx: number;
 
   constructor(
     private readonly scene: Phaser.Scene,
@@ -24,10 +26,11 @@ export class WorldView {
     art: TileArt,
   ) {
     const { world } = sys;
+    this.worldHeightPx = world.heightTiles * world.tileSize;
     const key = world.textureKey ?? TEX.world;
     if (!scene.textures.exists(key))
       registerWorldTexture(scene, bakeWorldCanvas(world, art), key);
-    scene.add.image(0, 0, key).setOrigin(0).setDepth(-1);
+    scene.add.image(0, 0, key).setOrigin(0).setDepth(RENDER_DEPTH.ground);
     this.addTrees();
     this.addGates();
     this.addObjects();
@@ -44,7 +47,7 @@ export class WorldView {
         this.scene.add
           .image(tx * tileSize + tileSize / 2, y, key)
           .setOrigin(13 / 26, 23 / 30)
-          .setDepth(y);
+          .setDepth(entityDepthAt(y, this.worldHeightPx));
       }
     }
   }
@@ -54,7 +57,11 @@ export class WorldView {
     for (const [index, gateId] of gateTiles) {
       const x = (index % widthTiles) * tileSize + tileSize / 2;
       const y = Math.floor(index / widthTiles) * tileSize + tileSize / 2;
-      const door = this.scene.add.image(x, y, TEX.door).setDepth(y + 7);
+      const depth = entityDepthAt(
+        y + RENDER_DEPTH.objectYOffset.door,
+        this.worldHeightPx,
+      );
+      const door = this.scene.add.image(x, y, TEX.door).setDepth(depth);
       this.doors.set(gateId, [...(this.doors.get(gateId) ?? []), door]);
     }
   }
@@ -64,8 +71,14 @@ export class WorldView {
     this.scene.add
       .image(campfire.x, campfire.y + 3, TEX.campBase)
       .setOrigin(0.5, 0.8)
-      .setDepth(campfire.y - 1);
+      .setDepth(
+        entityDepthAt(
+          campfire.y + RENDER_DEPTH.objectYOffset.campBase,
+          this.worldHeightPx,
+        ),
+      );
     for (const o of objectList) {
+      const depth = entityDepthAt(o.y, this.worldHeightPx);
       if (
         o.kind === "beacon" ||
         o.kind === "relay_socket" ||
@@ -75,13 +88,13 @@ export class WorldView {
           .image(o.x, o.y + 6, TEX.brazier)
           .setOrigin(0.5, 0.9)
           .setScale(o.kind === "beacon" ? 1.25 : 1)
-          .setDepth(o.y);
+          .setDepth(depth);
         if (o.kind === "mirror_lamp") img.setTint(0x9be7ff);
       } else if (o.kind === "explosive_barrel") {
         const img = this.scene.add
           .image(o.x, o.y + 6, TEX.node("wood"))
           .setOrigin(0.5, 0.9)
-          .setDepth(o.y)
+          .setDepth(depth)
           .setTint(0xff9452);
         this.barrels.set(o.id, img);
       } else if (o.kind === "story_prop") {
@@ -92,7 +105,7 @@ export class WorldView {
         this.scene.add
           .image(o.x, o.y + 6, key)
           .setOrigin(0.5, 0.9)
-          .setDepth(o.y)
+          .setDepth(depth)
           .setTint(0xe8d8a8);
       } else if (o.kind === "node") {
         const key = this.scene.textures.exists(TEX.node(o.itemId ?? ""))
@@ -103,7 +116,7 @@ export class WorldView {
           this.scene.add
             .image(o.x, o.y + 6, key)
             .setOrigin(0.5, 0.9)
-            .setDepth(o.y),
+            .setDepth(depth),
         );
       }
     }

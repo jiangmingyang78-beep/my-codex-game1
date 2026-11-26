@@ -1,5 +1,5 @@
 import Phaser from "phaser";
-import { DEPTH, SCENE } from "../config";
+import { SCENE } from "../config";
 import { ToastManager } from "../ui/ToastManager";
 import { attachToastManager, detachToastManager } from "../ui/toastBridge";
 
@@ -19,7 +19,6 @@ export class ToastScene extends Phaser.Scene {
     this.cameras.main.setZoom(1).setRoundPixels(true).setScroll(0, 0);
     const anchors = this.computeAnchors();
     this.manager = new ToastManager(this, {
-      depth: DEPTH.toast,
       lootMaxVisible: 4,
       lootAnchorX: anchors.lootX,
       lootAnchorY: anchors.lootY,

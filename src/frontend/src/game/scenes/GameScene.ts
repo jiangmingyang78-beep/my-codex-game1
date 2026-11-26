@@ -1,7 +1,17 @@
+import { EVT, type StepInputState } from "@/core";
 import { heroLightRadiusMultiplier } from "@/systems/itemEffects";
+import { getDashCooldownState } from "@/systems/movement";
+import { nearestInteractable } from "@/systems/world/interact";
+import { TILE } from "@/systems/world/worldTypes";
 import Phaser from "phaser";
+import { CombatMotionVfxLayer } from "../atmosphere/CombatMotionVfxLayer";
+import { SnowFootprintLayer } from "../atmosphere/SnowFootprintLayer";
+import { TorchlightAtmosphereLayer } from "../atmosphere/TorchlightAtmosphereLayer";
 import { syncMuteState } from "../audio/sfx";
 import { HUD_REFRESH_SEC, REGISTRY, SCENE } from "../config";
+import { CombatFeelController } from "../feedback/CombatFeelController";
+import { CombatInputBuffer } from "../feedback/InputBuffer";
+import { TelegraphLayer } from "../feedback/TelegraphLayer";
 import { InputController } from "../input/InputController";
 import { RunSession, type StartMode } from "../session/RunSession";
 import { reportFailure, takePendingRun } from "../session/activeRun";
@@ -14,7 +24,7 @@ import { uiStore } from "../ui/store";
 import { toast } from "../ui/toastBridge";
 import { currentPrompt, publishHud, publishPrompt } from "../ui/uiSync";
 import { EntityViews } from "../world/EntityViews";
-import { Scenery } from "../world/Scenery";
+import { Scenery, prefersReducedMotion } from "../world/Scenery";
 import { configureCamera } from "../world/cameraRig";
 import { darknessAt } from "../world/darkness";
 import {
@@ -23,6 +33,8 @@ import {
 } from "../world/heroAnimations";
 import type { ToastScene } from "./ToastScene";
 import { type PlayScreen, bindSceneCommands } from "./bindSceneCommands";
+
+const SNOW_TILE_IDS: ReadonlySet<number> = new Set([TILE.snow]);
 
 /**
  * The playable scene. Time only advances through `session.advance`, which is called solely
@@ -36,6 +48,14 @@ export class GameScene extends Phaser.Scene {
   private scenery: Scenery | null = null;
   private entities!: EntityViews;
   private keys!: InputController;
+  private inputBuffer = new CombatInputBuffer();
+  private telegraphLayer: TelegraphLayer | null = null;
+  private combatFeel: CombatFeelController | null = null;
+  private torchlight: TorchlightAtmosphereLayer | null = null;
+  private combatMotion: CombatMotionVfxLayer | null = null;
+  private snowFootprints: SnowFootprintLayer | null = null;
+  private pendingFlashHero = false;
+  private pendingFlashEnemyIds: string[] = [];
   private ready = false;
   private screen: PlayScreen = "playing";
   private cleanups: (() => void)[] = [];
@@ -82,6 +102,30 @@ export class GameScene extends Phaser.Scene {
     ) as TextureGenerator;
     this.scenery = new Scenery(this, this.session.sys, gen, state);
     this.entities = new EntityViews(this, this.session.sys, gen, state.heroId);
+    this.inputBuffer.clear();
+    this.pendingFlashHero = false;
+    this.pendingFlashEnemyIds = [];
+    this.telegraphLayer = new TelegraphLayer(this, {
+      windupTimerMode: "remaining",
+    });
+    const reducedMotion = prefersReducedMotion();
+    this.torchlight = new TorchlightAtmosphereLayer(this, { reducedMotion });
+    this.combatMotion = new CombatMotionVfxLayer(this, { reducedMotion });
+    this.snowFootprints = new SnowFootprintLayer(this, {
+      reducedMotion,
+      snowTileIds: SNOW_TILE_IDS,
+    });
+    this.combatFeel = new CombatFeelController(this, {
+      reducedMotion,
+      eventTypes: {
+        enemyHit: EVT.hit,
+        enemyDefeated: EVT.enemyDefeated,
+        heroDamaged: EVT.hit,
+        heroBlocked: EVT.blocked,
+        heroHealed: EVT.itemUsed,
+        barrelExploded: EVT.campLit,
+      },
+    });
     this.cleanups.push(lockNearestFilter(this));
     this.keys = new InputController(this);
     this.cleanups.push(
@@ -122,37 +166,69 @@ export class GameScene extends Phaser.Scene {
     if (input.pausePressed) this.togglePause();
     if (this.screen === "playing" && this.session.playing) {
       if (input.slot !== null) this.quickUse(input.slot);
-      this.step(sec, input);
-    }
-    this.render(time / 1000, sec);
-  }
-
-  private step(sec: number, input: ReturnType<InputController["poll"]>): void {
-    const interactPressed = input.interactPressed || this.queued.interact;
-    const attackPressed = input.attackPressed || this.queued.attack;
-    this.queued = { interact: false, attack: false };
-    const out = this.session.advance(
-      sec,
-      {
+      const rawStep: StepInputState = {
         moveX: input.moveX,
         moveY: input.moveY,
-        attackPressed,
-        interactPressed,
+        attackPressed: input.attackPressed || this.queued.attack,
+        interactPressed: input.interactPressed || this.queued.interact,
         itemId: null,
         pausePressed: false,
         dashPressed: input.dashPressed,
-      },
-      undefined,
-    );
+      };
+      this.queued = { interact: false, attack: false };
+      this.inputBuffer.record(rawStep, deltaMs);
+      const { state, sys } = this.session;
+      const resolved = this.inputBuffer.resolve(rawStep, {
+        canAttack: state.hero.attackCooldownSec <= 0,
+        canDash: getDashCooldownState(state, sys).remainingSec <= 0,
+        canInteract: nearestInteractable(state, sys) !== null,
+      });
+      const stepDtMs = this.combatFeel
+        ? this.combatFeel.consumeStepDt(deltaMs)
+        : deltaMs;
+      if (stepDtMs > 0) {
+        this.step(Math.min(stepDtMs / 1000, 0.1), resolved);
+      }
+    }
+    this.render(time / 1000, sec, deltaMs);
+  }
+
+  private step(sec: number, input: StepInputState): void {
+    const out = this.session.advance(sec, input, undefined);
     this.present(out);
   }
 
-  private render(timeSec: number, sec: number): void {
+  private render(timeSec: number, sec: number, deltaMs: number): void {
     const { state, sys } = this.session;
     const scenery = this.scenery;
     if (!scenery) return;
     const darkness = darknessAt(state.elapsedSec, sys.data.balance.clock);
     this.entities.sync(state, timeSec);
+    this.torchlight?.sync(state, sys, sec, timeSec);
+    this.combatMotion?.syncHeroSlash(state, sys);
+    this.combatMotion?.syncDashAfterimage(
+      state,
+      this.screen === "playing" && this.session.playing
+        ? this.entities.hero
+        : null,
+      deltaMs,
+    );
+    this.snowFootprints?.sync(state, sys, sec);
+    if (this.combatFeel) {
+      if (this.pendingFlashHero) {
+        this.combatFeel.flashObject(this.entities.hero);
+        this.pendingFlashHero = false;
+      }
+      if (this.pendingFlashEnemyIds.length > 0) {
+        for (const id of this.pendingFlashEnemyIds) {
+          const sprite = this.entities.enemySprite(id);
+          if (sprite) this.combatFeel.flashObject(sprite);
+        }
+        this.pendingFlashEnemyIds.length = 0;
+      }
+    }
+    this.telegraphLayer?.syncFromState(state, sys, timeSec);
+    this.combatFeel?.syncHudOverlays(state, sys, timeSec);
     scenery.update(state, sec, darkness);
     const { stats } = sys.data.balance;
     const glow = 22 + 40 * (state.hero.light / stats.light.max);
@@ -177,11 +253,23 @@ export class GameScene extends Phaser.Scene {
     handleOutput(out, this.session, this.scenery as Scenery, {
       openCraft: () => this.openCraft(),
       ended: () => this.showResult(),
-      hurt: () => this.cameras.main.shake(110, 0.004),
+      hurt: () => {
+        if (!this.combatFeel) this.cameras.main.shake(110, 0.004);
+      },
     });
+    this.combatFeel?.processEvents(out.events);
+    for (const e of out.events) {
+      if (e.type !== EVT.hit) continue;
+      if (e.payload.kind === "hurt") {
+        this.pendingFlashHero = true;
+      } else if (typeof e.payload.targetId === "string") {
+        this.pendingFlashEnemyIds.push(e.payload.targetId);
+      }
+    }
   }
 
   private setScreen(screen: PlayScreen): void {
+    if (screen !== "playing") this.inputBuffer.clear();
     this.screen = screen;
     uiStore.set({ screen });
   }
@@ -269,6 +357,19 @@ export class GameScene extends Phaser.Scene {
   private teardown(): void {
     toast.clear();
     if (this.scene.isActive(SCENE.toast)) this.scene.stop(SCENE.toast);
+    this.inputBuffer.clear();
+    this.telegraphLayer?.destroy();
+    this.telegraphLayer = null;
+    this.combatFeel?.destroy();
+    this.combatFeel = null;
+    this.torchlight?.destroy();
+    this.torchlight = null;
+    this.combatMotion?.destroy();
+    this.combatMotion = null;
+    this.snowFootprints?.destroy();
+    this.snowFootprints = null;
+    this.pendingFlashHero = false;
+    this.pendingFlashEnemyIds = [];
     for (const cleanup of this.cleanups) cleanup();
     this.cleanups = [];
     this.scenery?.destroy();

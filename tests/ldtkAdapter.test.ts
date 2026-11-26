@@ -1,29 +1,52 @@
 import assert from "node:assert/strict";
-import { loadGameData } from "@/core/gameData";
 import {
   type LdtkProjectJson,
   buildWorldFromLdtk,
 } from "@/systems/world/ldtkAdapter";
 import { getWorld } from "@/systems/world/worldGen";
 import { TILE } from "@/systems/world/worldTypes";
+import { it } from "./fixtures/it";
+import { getTestSystems } from "./fixtures/testFactories";
 
-const data = loadGameData();
+const { data, world: adventureWorld } = getTestSystems();
 const ts = data.tileSize;
 const w = 12;
 const h = 8;
-
-// Build a 12x8 IntGrid covering 0 (fallback wall) and 1..9 (TILE 0..8, including 9 -> TILE.bog).
+const tileCases = [
+  [0, TILE.wall],
+  [1, TILE.snow],
+  [2, TILE.path],
+  [3, TILE.tree],
+  [4, TILE.wall],
+  [5, TILE.floor],
+  [6, TILE.door],
+  [7, TILE.ice],
+  [8, TILE.fireBase],
+  [9, TILE.bog],
+] as const;
 const intGridCsv = new Array<number>(w * h).fill(1);
-intGridCsv[0] = 0; // -> TILE.wall (3)
-intGridCsv[1] = 1; // -> TILE.snow (0)
-intGridCsv[2] = 2; // -> TILE.path (1)
-intGridCsv[3] = 3; // -> TILE.tree (2)
-intGridCsv[4] = 4; // -> TILE.wall (3)
-intGridCsv[5] = 5; // -> TILE.floor (4)
-intGridCsv[6] = 6; // -> TILE.door (5)
-intGridCsv[7] = 7; // -> TILE.ice (6)
-intGridCsv[8] = 8; // -> TILE.fireBase (7)
-intGridCsv[9] = 9; // -> TILE.bog (8)
+for (const [code] of tileCases) intGridCsv[code] = code;
+
+function entity(
+  identifier: string,
+  x: number,
+  y: number,
+  fields: Record<string, unknown> = {},
+  width = 1,
+  height = 1,
+) {
+  return {
+    __identifier: identifier,
+    __grid: [x, y] as [number, number],
+    px: [x * ts, y * ts] as [number, number],
+    width: width * ts,
+    height: height * ts,
+    fieldInstances: Object.entries(fields).map(([key, value]) => ({
+      __identifier: key,
+      __value: value,
+    })),
+  };
+}
 
 const mockLdtk: LdtkProjectJson = {
   levels: [
@@ -47,113 +70,42 @@ const mockLdtk: LdtkProjectJson = {
           __cHei: h,
           __gridSize: ts,
           entityInstances: [
-            {
-              __identifier: "HeroStart",
-              __grid: [2, 2],
-              px: [2 * ts, 2 * ts],
-              width: ts,
-              height: ts,
-              fieldInstances: [],
-            },
-            {
-              __identifier: "Campfire",
-              __grid: [3, 2],
-              px: [3 * ts, 2 * ts],
-              width: ts,
-              height: ts,
-              fieldInstances: [{ __identifier: "regionId", __value: "camp" }],
-            },
-            {
-              __identifier: "Region",
-              __grid: [1, 1],
-              px: [1 * ts, 1 * ts],
-              width: 10 * ts,
-              height: 6 * ts,
-              fieldInstances: [
-                { __identifier: "regionId", __value: "deep_woods" },
-              ],
-            },
-            {
-              __identifier: "Spawn",
-              __grid: [8, 3],
-              px: [8 * ts, 3 * ts],
-              width: ts,
-              height: ts,
-              fieldInstances: [
-                { __identifier: "regionId", __value: "deep_woods" },
-                { __identifier: "spawnId", __value: "sp_test_1" },
-              ],
-            },
-            {
-              __identifier: "Gate",
-              __grid: [5, 1],
-              px: [5 * ts, 1 * ts],
-              width: 2 * ts,
-              height: ts,
-              fieldInstances: [
-                { __identifier: "regionId", __value: "deep_woods" },
-                { __identifier: "gateId", __value: "gate_test" },
-              ],
-            },
-            {
-              __identifier: "RelaySocket",
-              __grid: [4, 4],
-              px: [4 * ts, 4 * ts],
-              width: ts,
-              height: ts,
-              fieldInstances: [
-                { __identifier: "regionId", __value: "deep_woods" },
-                { __identifier: "relayId", __value: "relay_test" },
-              ],
-            },
-            {
-              __identifier: "ResourceNode",
-              __grid: [6, 4],
-              px: [6 * ts, 4 * ts],
-              width: ts,
-              height: ts,
-              fieldInstances: [
-                { __identifier: "regionId", __value: "deep_woods" },
-                { __identifier: "objectId", __value: "node_wood_1" },
-                { __identifier: "itemId", __value: "wood" },
-                { __identifier: "yield", __value: 2 },
-              ],
-            },
-            {
-              __identifier: "StoryProp",
-              __grid: [2, 5],
-              px: [2 * ts, 5 * ts],
-              width: ts,
-              height: ts,
-              fieldInstances: [
-                { __identifier: "regionId", __value: "deep_woods" },
-                { __identifier: "objectId", __value: "prop_basket" },
-                { __identifier: "toast", __value: "遗物中的草药气息尚未散去。" },
-                { __identifier: "unlockNoteId", __value: "note_suheng_1" },
-              ],
-            },
-            {
-              __identifier: "ExplosiveBarrel",
-              __grid: [7, 5],
-              px: [7 * ts, 5 * ts],
-              width: ts,
-              height: ts,
-              fieldInstances: [
-                { __identifier: "regionId", __value: "burnt_caravan" },
-                { __identifier: "objectId", __value: "barrel_test_1" },
-              ],
-            },
-            {
-              __identifier: "MirrorLamp",
-              __grid: [9, 5],
-              px: [9 * ts, 5 * ts],
-              width: ts,
-              height: ts,
-              fieldInstances: [
-                { __identifier: "regionId", __value: "mirror_hall" },
-                { __identifier: "objectId", __value: "lamp_test_1" },
-              ],
-            },
+            entity("HeroStart", 2, 2),
+            entity("Campfire", 3, 2, { regionId: "camp" }),
+            entity("Region", 1, 1, { regionId: "deep_woods" }, 10, 6),
+            entity("Spawn", 8, 3, {
+              regionId: "deep_woods",
+              spawnId: "sp_test_1",
+            }),
+            entity(
+              "Gate",
+              5,
+              1,
+              { regionId: "deep_woods", gateId: "gate_test" },
+              2,
+            ),
+            entity("RelaySocket", 4, 4, {
+              regionId: "deep_woods",
+              relayId: "relay_test",
+            }),
+            entity("ResourceNode", 6, 4, {
+              objectId: "node_wood_1",
+              itemId: "wood",
+              yield: 2,
+            }),
+            entity("StoryProp", 2, 5, {
+              objectId: "prop_basket",
+              toast: "遗物中的草药气息尚未散去。",
+              unlockNoteId: "note_suheng_1",
+            }),
+            entity("ExplosiveBarrel", 7, 5, {
+              regionId: "burnt_caravan",
+              objectId: "barrel_test_1",
+            }),
+            entity("MirrorLamp", 9, 5, {
+              regionId: "mirror_hall",
+              objectId: "lamp_test_1",
+            }),
           ],
         },
       ],
@@ -163,95 +115,89 @@ const mockLdtk: LdtkProjectJson = {
 
 const world = buildWorldFromLdtk(mockLdtk, data);
 
-// 1) Terrain IntGrid mapping (including 0 -> wall & 9 -> TILE.bog)
-assert.equal(world.widthTiles, w);
-assert.equal(world.heightTiles, h);
-assert.equal(world.tileSize, ts);
-assert.equal(world.tiles[0], TILE.wall);
-assert.equal(world.tiles[1], TILE.snow);
-assert.equal(world.tiles[2], TILE.path);
-assert.equal(world.tiles[3], TILE.tree);
-assert.equal(world.tiles[4], TILE.wall);
-assert.equal(world.tiles[5], TILE.floor);
-assert.equal(world.tiles[6], TILE.door);
-assert.equal(world.tiles[7], TILE.ice);
-assert.equal(world.tiles[8], TILE.fireBase);
-assert.equal(world.tiles[9], TILE.bog);
-
-// 2) HeroStart & Campfire
-assert.deepEqual(world.heroStart, { x: 2.5 * ts, y: 2.5 * ts });
-assert.deepEqual(world.campfire, { x: 3.5 * ts, y: 2.5 * ts });
-assert.equal(world.tiles[2 * w + 3], TILE.fireBase);
-assert.equal(
-  world.objects.get(data.worldObjects.mainCampfireId)?.kind,
-  "campfire",
+it.each(tileCases)(
+  ([code]) => `LDtk IntGrid 映射 ${code}`,
+  ([code, tile]) => assert.equal(world.tiles[code], tile),
 );
 
-// 3) Region
-assert.deepEqual(world.regions, [
-  { id: "deep_woods", x0: 1, y0: 1, x1: 10, y1: 6 },
-]);
-
-// 4) Spawn
-assert.deepEqual(world.spawns.get("sp_test_1"), {
-  spawnId: "sp_test_1",
-  regionId: "deep_woods",
-  x: 8.5 * ts,
-  y: 3.5 * ts,
+it("读取地图尺寸、区域、出生点和营火", () => {
+  assert.equal(world.widthTiles, w);
+  assert.equal(world.heightTiles, h);
+  assert.equal(world.tileSize, ts);
+  assert.deepEqual(world.heroStart, { x: 2.5 * ts, y: 2.5 * ts });
+  assert.deepEqual(world.campfire, { x: 3.5 * ts, y: 2.5 * ts });
+  assert.equal(world.tiles[2 * w + 3], TILE.fireBase);
+  assert.equal(
+    world.objects.get(data.worldObjects.mainCampfireId)?.kind,
+    "campfire",
+  );
+  assert.deepEqual(world.regions, [
+    { id: "deep_woods", x0: 1, y0: 1, x1: 10, y1: 6 },
+  ]);
+  assert.deepEqual(world.spawns.get("sp_test_1"), {
+    spawnId: "sp_test_1",
+    regionId: "deep_woods",
+    x: 8.5 * ts,
+    y: 3.5 * ts,
+  });
 });
 
-// 5) Gate (2x1 tiles)
-const gateObj = world.objects.get("gate_test");
-assert.equal(gateObj?.kind, "gate");
-assert.equal(world.tiles[1 * w + 5], TILE.door);
-assert.equal(world.tiles[1 * w + 6], TILE.door);
-assert.equal(world.gateTiles.get(1 * w + 5), "gate_test");
-assert.equal(world.gateTiles.get(1 * w + 6), "gate_test");
-
-// 6) RelaySocket
-const relayObj = world.objects.get("relay_test");
-assert.equal(relayObj?.kind, "relay_socket");
-assert.equal(world.tiles[4 * w + 4], TILE.fireBase);
-
-// 7) ResourceNode, StoryProp, ExplosiveBarrel, MirrorLamp
-const nodeObj = world.objects.get("node_wood_1");
-assert.equal(nodeObj?.kind, "node");
-assert.equal(nodeObj?.itemId, "wood");
-assert.equal(nodeObj?.yield, 2);
-assert.equal(
-  nodeObj?.renewable,
-  data.dawnRenewal.renewableItemIds.includes("wood"),
+it.each([5, 6])(
+  (x) => `多格门的碰撞映射 x=${x}`,
+  (x) => {
+    assert.equal(world.objects.get("gate_test")?.kind, "gate");
+    assert.equal(world.tiles[w + x], TILE.door);
+    assert.equal(world.gateTiles.get(w + x), "gate_test");
+  },
 );
 
-const propObj = world.objects.get("prop_basket");
-assert.equal(propObj?.kind, "story_prop");
-assert.equal(propObj?.storyToast, "遗物中的草药气息尚未散去。");
-assert.equal(propObj?.unlockNoteId, "note_suheng_1");
+it("读取火盆、资源点和遗物属性", () => {
+  assert.equal(world.objects.get("relay_test")?.kind, "relay_socket");
+  assert.equal(world.tiles[4 * w + 4], TILE.fireBase);
+  const node = world.objects.get("node_wood_1");
+  assert.equal(node?.kind, "node");
+  assert.equal(node?.itemId, "wood");
+  assert.equal(node?.yield, 2);
+  assert.equal(
+    node?.renewable,
+    data.dawnRenewal.renewableItemIds.includes("wood"),
+  );
+  const prop = world.objects.get("prop_basket");
+  assert.equal(prop?.kind, "story_prop");
+  assert.equal(prop?.storyToast, "遗物中的草药气息尚未散去。");
+  assert.equal(prop?.unlockNoteId, "note_suheng_1");
+});
 
-const barrelObj = world.objects.get("barrel_test_1");
-assert.equal(barrelObj?.kind, "explosive_barrel");
-assert.equal(barrelObj?.regionId, "burnt_caravan");
-
-const lampObj = world.objects.get("lamp_test_1");
-assert.equal(lampObj?.kind, "mirror_lamp");
-assert.equal(lampObj?.regionId, "mirror_hall");
-
-// 8) Sorted objectList & getWorld fallback/override
-const sortedIds = world.objectList.map((o) => o.id);
-assert.deepEqual(
-  sortedIds,
-  [...sortedIds].sort((a, b) => (a < b ? -1 : 1)),
-);
-const switched = getWorld(data, mockLdtk);
-assert.equal(switched.widthTiles, w);
-const defaultWorld = getWorld(data);
-assert.equal(defaultWorld.widthTiles, data.balance.world.widthTiles);
-assert.equal(defaultWorld.heightTiles, data.balance.world.heightTiles);
-
-// 9) Error validation for invalid LDtk inputs
-assert.throws(
-  () => buildWorldFromLdtk({ levels: [{ identifier: "Bad", pxWid: 16, pxHei: 16, layerInstances: [] }] }, data),
-  /Terrain/,
+it.each([
+  ["barrel_test_1", "explosive_barrel", "burnt_caravan"],
+  ["lamp_test_1", "mirror_lamp", "mirror_hall"],
+] as const)(
+  ([id]) => `导入带区域的世界对象 ${id}`,
+  ([id, kind, regionId]) => {
+    assert.equal(world.objects.get(id)?.kind, kind);
+    assert.equal(world.objects.get(id)?.regionId, regionId);
+  },
 );
 
-console.log("LDTK_ADAPTER_UNIT_TEST_PASSED");
+it("稳定排序地图对象，并允许覆盖内置地图", () => {
+  const ids = world.objectList.map((object) => object.id);
+  assert.deepEqual(ids, [...ids].sort());
+  assert.equal(getWorld(data, mockLdtk).widthTiles, w);
+  assert.equal(adventureWorld.widthTiles, data.balance.world.widthTiles);
+  assert.equal(adventureWorld.heightTiles, data.balance.world.heightTiles);
+});
+
+it("拒绝缺少 Terrain 图层的 LDtk 地图", () => {
+  assert.throws(
+    () =>
+      buildWorldFromLdtk(
+        {
+          levels: [
+            { identifier: "Bad", pxWid: 16, pxHei: 16, layerInstances: [] },
+          ],
+        },
+        data,
+      ),
+    /Terrain/,
+  );
+});

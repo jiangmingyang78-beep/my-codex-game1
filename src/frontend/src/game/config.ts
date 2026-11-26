@@ -11,15 +11,6 @@ export const REGISTRY = {
   textureGenerator: "textureGenerator",
 } as const;
 
-/** Render depths. World objects sort by their y pixel (0..1024); layers below stay above that. */
-export const DEPTH = {
-  ground: 0,
-  fxBody: 2000,
-  fxGlow: 2001,
-  night: 3000,
-  toast: 10000,
-} as const;
-
 /** Visible world pixels the camera aims for before the integer zoom is chosen. */
 const TARGET_VIEW_W = 400;
 const TARGET_VIEW_H = 225;

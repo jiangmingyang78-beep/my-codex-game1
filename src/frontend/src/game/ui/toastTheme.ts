@@ -1,4 +1,6 @@
 import type Phaser from "phaser";
+import { RENDER_DEPTH } from "../renderDepth";
+import { PIXEL_FONT_FAMILY, PIXEL_FONT_SIZE } from "./pixelFont";
 
 export type ToastType = "gain" | "warn" | "error" | "system";
 export type ToastChannel = "loot" | "feedback";
@@ -64,6 +66,7 @@ export interface ToastItem {
   height: number;
   baseX: number;
   targetY: number;
+  targetAlpha: number;
   container: Phaser.GameObjects.Container | null;
   bg: Phaser.GameObjects.Graphics | null;
   iconObj: Phaser.GameObjects.Image | null;
@@ -75,15 +78,15 @@ export const DEFAULT_TOAST_THEME: ToastTheme = {
   bgAlpha: 0.92,
   borderOuter: 0x0e161f,
   borderInner: 0x3b5268,
-  fontFamily: '"Microsoft YaHei", "PingFang SC", monospace',
-  fontSize: "14px",
+  fontFamily: PIXEL_FONT_FAMILY,
+  fontSize: PIXEL_FONT_SIZE,
   paddingX: 12,
   paddingY: 7,
   iconSize: 16,
   iconGap: 8,
   accentWidth: 3,
   minWidth: 112,
-  maxWidth: 360,
+  maxWidth: 420,
   types: {
     gain: { accent: 0x4cc968, text: "#63e27e" },
     warn: { accent: 0xe6b447, text: "#f2c75c" },
@@ -107,6 +110,8 @@ export function resolveToastTheme(options: ToastOptions): ToastTheme {
   return {
     ...DEFAULT_TOAST_THEME,
     ...(options.theme ?? {}),
+    fontFamily: PIXEL_FONT_FAMILY,
+    fontSize: PIXEL_FONT_SIZE,
     types: {
       ...DEFAULT_TOAST_THEME.types,
       ...(options.theme?.types ?? {}),
@@ -116,7 +121,7 @@ export function resolveToastTheme(options: ToastOptions): ToastTheme {
 
 export function resolveToastConfig(options: ToastOptions): ToastConfig {
   return {
-    depth: options.depth ?? 10000,
+    depth: options.depth ?? RENDER_DEPTH.toast,
     lootMaxVisible: options.lootMaxVisible ?? 4,
     lootAnchorX: options.lootAnchorX ?? 16,
     lootAnchorY: options.lootAnchorY ?? 186,
@@ -148,6 +153,7 @@ export function createToastItem(
     height: 0,
     baseX: 0,
     targetY: 0,
+    targetAlpha: 1,
     container: null,
     bg: null,
     iconObj: null,
@@ -178,8 +184,26 @@ export function fitToastIcon(
   icon.setDisplaySize(Math.round(w * snapped), Math.round(h * snapped));
 }
 
+const even = (value: number) => Math.ceil(value / 2) * 2;
+
+export function toastContentWidth(
+  theme: ToastTheme,
+  hasIcon: boolean,
+  maxWidth: number,
+): number {
+  const iconWidth = hasIcon ? theme.iconSize + theme.iconGap : 0;
+  return Math.max(
+    1,
+    maxWidth - theme.paddingX * 2 - theme.accentWidth - iconWidth - 2,
+  );
+}
+
 /** 按内容宽度重绘像素双层描边底框与左侧 3px 状态色条。 */
-export function redrawToastBox(item: ToastItem, theme: ToastTheme): void {
+export function redrawToastBox(
+  item: ToastItem,
+  theme: ToastTheme,
+  maxWidth: number,
+): void {
   if (!item.bg || !item.textObj) return;
   const palette = theme.types[item.type] ?? theme.types.system;
   const hasIcon = Boolean(item.iconObj);
@@ -191,25 +215,29 @@ export function redrawToastBox(item: ToastItem, theme: ToastTheme): void {
   const textH = Math.ceil(item.textObj.height);
 
   const width = Math.max(
-    theme.minWidth,
-    Math.min(theme.maxWidth, textX + textW + theme.paddingX),
+    Math.min(theme.minWidth, maxWidth),
+    textX + textW + theme.paddingX,
   );
   const height = Math.max(theme.iconSize, textH) + theme.paddingY * 2;
 
-  item.width = Math.round(width);
-  item.height = Math.round(height);
+  item.width = even(width);
+  item.height = even(height);
 
   // feedback 居中对齐，loot 左对齐，统一以垂直中线为 y=0
-  const offsetX = item.channel === "feedback" ? -Math.round(item.width / 2) : 0;
-  const offsetY = -Math.round(item.height / 2);
+  const offsetX = item.channel === "feedback" ? -item.width / 2 : 0;
+  const offsetY = -item.height / 2;
 
   if (item.iconObj) {
     item.iconObj.setPosition(
-      Math.round(offsetX + contentLeft + theme.iconSize / 2),
-      0,
+      Math.round(
+        offsetX +
+          contentLeft +
+          (theme.iconSize - item.iconObj.displayWidth) / 2,
+      ),
+      Math.round(-item.iconObj.displayHeight / 2),
     );
   }
-  item.textObj.setPosition(Math.round(offsetX + textX), 0);
+  item.textObj.setPosition(Math.round(offsetX + textX), Math.round(-textH / 2));
 
   const g = item.bg;
   g.clear();

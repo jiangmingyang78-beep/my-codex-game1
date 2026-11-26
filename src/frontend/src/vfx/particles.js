@@ -1,5 +1,7 @@
+import { RENDER_DEPTH } from "../game/renderDepth";
 import { createTextureGenerator, registerCanvasTexture } from "./proceduralTextures.js";
 import { drawImpactRings, drawParticleGlows, drawParticles } from "./particleCanvas.js";
+import { PT } from "./particlePresets.js";
 import { createParticleSimulation } from "./particleSimulation.js";
 import { clamp, context2d, createBrowserCanvas, parseColor, toHex } from "./vfxPrimitives.js";
 
@@ -72,8 +74,8 @@ export function createEffects(scene, {
   maxParticles = 120,
   reducedMotion = globalThis.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false,
   textureGenerator = createTextureGenerator(),
-  bodyDepth = 100,
-  glowDepth = bodyDepth + 1,
+  bodyDepth = RENDER_DEPTH.combatParticles,
+  glowDepth = bodyDepth + (RENDER_DEPTH.combatGlow - RENDER_DEPTH.combatParticles),
   tileSize = 16,
   ambientAt,
   isDark = () => false,
@@ -86,12 +88,18 @@ export function createEffects(scene, {
   const namespace = `emberwood-vfx-${++instanceId}`;
   const body = createLayer(scene, `${namespace}:body`, bodyDepth, false);
   const glow = createLayer(scene, `${namespace}:glow`, glowDepth, true);
+  const fireLight = createLayer(scene, `${namespace}:fire-light`, RENDER_DEPTH.campHalo, true);
+  const ambience = createLayer(scene, `${namespace}:ambience`, RENDER_DEPTH.ambientParticles, false);
+  const ambienceGlow = createLayer(scene, `${namespace}:ambience-glow`, RENDER_DEPTH.ambientGlow, true);
+  const layers = [body, glow, fireLight, ambience, ambienceGlow];
+  const layerImages = layers.map(layer => layer.image);
+  const combatParticles = [], ambientParticles = [];
   const webgl = Boolean(scene.sys.game.renderer.gl);
   const camps = new Set(), flameSets = new Map(), flameKeys = [];
   let view = viewBounds(camera), tick = 0, destroyed = false, dirty = true;
   const markDirty = () => { dirty = true; };
   for (const other of scene.cameras.cameras) {
-    if (other !== camera) other.ignore([body.image, glow.image]);
+    if (other !== camera) other.ignore(layerImages);
   }
 
   function sparking(x, y, color, count, kind, dx = 0, dy = 0, leaves) {
@@ -164,7 +172,7 @@ export function createEffects(scene, {
   }
 
   function addCampfire(x, y, {
-    color = "#f49a59", haloColor = "#ffaa4b", scale = 1, radius = 64 * scale, depth = 1, active = true
+    color = "#f49a59", haloColor = "#ffaa4b", scale = 1, radius = 64 * scale, depth = RENDER_DEPTH.campFlame, active = true
   } = {}) {
     if (destroyed) throw new Error("This scene's effects have been destroyed.");
     if (![x, y, radius, scale].every(Number.isFinite) || radius <= 0 || scale <= 0) {
@@ -251,14 +259,28 @@ export function createEffects(scene, {
     dirty = false;
     const { particles, rings } = simulation;
     const litCamps = [...camps].filter(camp => camp.active && visible(view, camp.x, camp.y, camp.radius));
-    paintLayer(body, view, particles.length > 0 || rings.length > 0, webgl, context => {
-      drawParticles(context, particles);
+    combatParticles.length = 0;
+    ambientParticles.length = 0;
+    for (const particle of particles) {
+      const isAmbient = particle.amb || particle.type === PT.ember || particle.type === PT.smoke;
+      (isAmbient ? ambientParticles : combatParticles).push(particle);
+    }
+    paintLayer(body, view, combatParticles.length > 0 || rings.length > 0, webgl, context => {
+      drawParticles(context, combatParticles);
       drawImpactRings(context, rings);
     });
-    paintLayer(glow, view, litCamps.length > 0 || particles.some(particle => particle.glow > 0), webgl, context => {
+    paintLayer(glow, view, combatParticles.some(particle => particle.glow > 0), webgl, context => {
+      drawParticleGlows(context, combatParticles);
+    });
+    paintLayer(fireLight, view, litCamps.length > 0, webgl, context => {
       const strength = clamp(lightStrength(), 0, 1);
       for (const camp of litCamps) drawCampHalo(context, camp, strength);
-      drawParticleGlows(context, particles);
+    });
+    paintLayer(ambience, view, ambientParticles.length > 0, webgl, context => {
+      drawParticles(context, ambientParticles);
+    });
+    paintLayer(ambienceGlow, view, ambientParticles.some(particle => particle.glow > 0), webgl, context => {
+      drawParticleGlows(context, ambientParticles);
     });
   }
 
@@ -270,7 +292,7 @@ export function createEffects(scene, {
     scene.events.off("destroy", destroy);
     for (const camp of camps) camp.image.destroy();
     camps.clear();
-    for (const layer of [body, glow]) {
+    for (const layer of layers) {
       layer.image.destroy();
       scene.textures.remove(layer.key);
     }
@@ -278,6 +300,8 @@ export function createEffects(scene, {
     flameKeys.length = 0;
     flameSets.clear();
     simulation.clear();
+    combatParticles.length = 0;
+    ambientParticles.length = 0;
   }
 
   camera.on(CAMERA_PRE_RENDER, render);

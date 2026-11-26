@@ -26,7 +26,10 @@ const ICONS: Record<string, ReactNode> = {
 
 export function QuickSlots({ slots }: { slots: HudModel["quickSlots"] }) {
   return (
-    <div className="absolute bottom-3 left-1/2 flex w-max max-w-[calc(100%_-_1rem)] -translate-x-1/2 flex-wrap justify-center gap-2">
+    <div
+      data-hud-hotbar
+      className="absolute bottom-3 left-1/2 flex w-max max-w-[calc(100%_-_1rem)] -translate-x-1/2 flex-wrap justify-center gap-2"
+    >
       {slots.map((slot) => (
         <button
           key={slot.slot}
@@ -40,16 +43,16 @@ export function QuickSlots({ slots }: { slots: HudModel["quickSlots"] }) {
             slot.count === 0 ? "opacity-55" : ""
           }`}
         >
-          <span className="font-pixel absolute left-1 top-0.5 text-[10px] text-ember">
+          <span className="pixel-hud-text absolute left-1 top-0.5 text-xs text-ember">
             {slot.slot}
           </span>
           <span className="text-foreground">
             {ICONS[slot.itemId] ?? <Heart size={20} />}
           </span>
-          <span className="text-[10px] leading-none text-foreground">
+          <span className="pixel-hud-text max-w-full break-words text-center text-xs leading-none text-foreground">
             {slot.name}
           </span>
-          <span className="font-pixel absolute bottom-0.5 right-1 text-[11px] tabular-nums text-ember-glow">
+          <span className="pixel-hud-text absolute bottom-0.5 right-1 text-xs tabular-nums text-ember-glow">
             ×{slot.count}
           </span>
         </button>

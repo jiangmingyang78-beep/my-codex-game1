@@ -1,6 +1,7 @@
 import type { RunState, Systems } from "@/core";
 import { campRadiusPx } from "@/systems";
 import type { createEffects } from "@/vfx/particles";
+import { RENDER_DEPTH } from "../renderDepth";
 
 export type Effects = ReturnType<typeof createEffects>;
 type FireHandle = ReturnType<Effects["addCampfire"]>;
@@ -32,7 +33,7 @@ export class CampFires {
       const lit = state.changesByObjectId[o.id]?.lit === true;
       const handle = fx.addCampfire(o.x, o.y + 5, {
         radius: o.kind === "mirror_lamp" ? lampRadius : relayRadius,
-        depth: o.y + 1,
+        depth: RENDER_DEPTH.campFlame,
         active: lit,
       });
       this.lights.set(o.id, { handle, lit });
@@ -47,7 +48,7 @@ export class CampFires {
       const { x, y } = this.sys.world.campfire;
       this.main = this.fx.addCampfire(x, y + 2, {
         radius,
-        depth: y + 1,
+        depth: RENDER_DEPTH.campFlame,
         scale: 1,
       });
       this.mainRadius = radius;

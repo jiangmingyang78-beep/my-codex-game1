@@ -35,7 +35,7 @@ function StatBar({ icon, label, value, max, tone }: BarProps) {
       <div className={`pixel-bar ${tone} min-w-0 flex-1`} aria-hidden="true">
         <span style={{ width: `${pct}%` }} />
       </div>
-      <span className="font-pixel w-[3.75rem] shrink-0 text-right text-xs tabular-nums text-pixel-shadow">
+      <span className="pixel-hud-text w-[3.75rem] shrink-0 text-right text-xs tabular-nums text-pixel-shadow">
         {label} {Math.ceil(value)}
       </span>
     </div>

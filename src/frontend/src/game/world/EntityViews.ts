@@ -4,6 +4,7 @@ import { eternalEnemyMaxHp } from "@/systems/eternal/eternalSpawn";
 import { isHeroDashActive, isHeroDashInvulnerable } from "@/systems/movement";
 import { getBucklerCooldownSec } from "@/systems/survival";
 import type Phaser from "phaser";
+import { RENDER_DEPTH, entityDepthAt } from "../renderDepth";
 import {
   TEX,
   type TextureGenerator,
@@ -34,7 +35,6 @@ export class EntityViews {
   readonly hero: Phaser.GameObjects.Sprite;
   private readonly heroShadow: Phaser.GameObjects.Image;
   private readonly heroShield: Phaser.GameObjects.Graphics;
-  private readonly slash: Phaser.GameObjects.Image;
   private readonly bars: Phaser.GameObjects.Graphics;
   private lastX = Number.NaN;
   private lastY = Number.NaN;
@@ -61,21 +61,21 @@ export class EntityViews {
       .setScale(1);
     this.heroShadow = this.shadow();
     this.heroShield = scene.add.graphics();
-    this.slash = scene.add
-      .image(0, 0, TEX.slash)
-      .setOrigin(originOf(TEX.slash).x, 0.5)
-      .setVisible(false);
-    this.bars = scene.add.graphics();
+    this.bars = scene.add.graphics().setDepth(RENDER_DEPTH.enemyHealth);
   }
 
   private shadow(): Phaser.GameObjects.Image {
     return this.scene.add.image(0, 0, TEX.shadow).setOrigin(0.5, 0.5);
   }
 
+  enemySprite(enemyId: string): Phaser.GameObjects.Sprite | null {
+    return this.enemies.get(enemyId)?.sprite ?? null;
+  }
+
   sync(state: RunState, timeSec: number): void {
     this.syncHero(state, timeSec);
     this.syncEnemies(state);
-    this.syncSet(this.loot, state.groundLoot, (l) => ({
+    this.syncSet(this.loot, state.groundLoot, RENDER_DEPTH.groundLoot, (l) => ({
       key: Object.hasOwn(LOOT_TINT, l.itemId)
         ? TEX.lootByItem(l.itemId)
         : TEX.lootOrb,
@@ -85,6 +85,7 @@ export class EntityViews {
     this.syncSet(
       this.shots,
       Object.fromEntries(state.projectiles.map((p) => [p.id, p])),
+      RENDER_DEPTH.projectile,
       (p) => ({
         key: TEX.projectile,
         x: p.x,
@@ -129,10 +130,12 @@ export class EntityViews {
 
     const px = Math.round(hero.x);
     const py = Math.round(hero.y);
+    const { heightTiles, tileSize } = this.sys.world;
+    const depth = entityDepthAt(hero.y, heightTiles * tileSize);
 
     let bodyY = py;
     if (visual.kind === "sheet") {
-      this.hero.setPosition(px, py).setDepth(hero.y);
+      this.hero.setPosition(px, py).setDepth(depth);
       syncHeroAnimation(this.hero, state.heroId, {
         dead,
         hurt,
@@ -144,7 +147,7 @@ export class EntityViews {
     } else {
       bodyY =
         py + (!dead && moving ? Math.round(Math.sin(timeSec * 16) * 0.6) : 0);
-      this.hero.setPosition(px, bodyY).setDepth(hero.y);
+      this.hero.setPosition(px, bodyY).setDepth(depth);
       if (Math.abs(hero.facingX) > 0.05) this.hero.setFlipX(hero.facingX < 0);
     }
 
@@ -155,7 +158,9 @@ export class EntityViews {
     else if (dashInvuln) this.hero.setTint(0x9fd8ff);
     else this.hero.clearTint();
 
-    this.heroShadow.setPosition(px, py + 1).setDepth(hero.y - 0.5);
+    this.heroShadow
+      .setPosition(px, py + 1)
+      .setDepth(depth + RENDER_DEPTH.entityOffset.shadow);
     this.heroShield.clear();
     const bucklerCd = getBucklerCooldownSec(state, this.sys);
     if (!dead && bucklerCd !== null && bucklerCd <= 0) {
@@ -166,30 +171,16 @@ export class EntityViews {
       const halfArc = (52 * Math.PI) / 180;
       const alpha = 0.72 + Math.sin(timeSec * 5) * 0.14;
       this.heroShield
-        .setDepth(hero.y + 0.5)
+        .setDepth(depth + RENDER_DEPTH.entityOffset.shield)
         .lineStyle(1, 0xb8d8f0, alpha)
         .beginPath()
         .arc(px, bodyY - 6, 9, faceAngle - halfArc, faceAngle + halfArc, false)
         .strokePath();
     }
-    this.slash.setVisible(swinging);
-    if (swinging) {
-      const angle = Math.atan2(
-        hero.facingY,
-        hero.facingX || (hero.facingY ? 0 : 1),
-      );
-      this.slash
-        .setPosition(
-          Math.round(hero.x + Math.cos(angle) * 6),
-          Math.round(hero.y - 6 + Math.sin(angle) * 6),
-        )
-        .setRotation(angle)
-        .setDepth(hero.y + 1);
-    }
   }
 
   private syncEnemies(state: RunState): void {
-    this.bars.clear().setDepth(4000);
+    this.bars.clear();
     for (const [id, body] of this.enemies) {
       if (state.enemiesById[id]) continue;
       body.destroy();
@@ -228,6 +219,7 @@ export class EntityViews {
   private syncSet<T extends { x: number; y: number }>(
     views: Map<string, Phaser.GameObjects.Image>,
     items: Record<string, T>,
+    depth: number,
     look: (item: T) => { key: string; x: number; y: number },
   ): void {
     for (const [id, image] of views) {
@@ -240,10 +232,13 @@ export class EntityViews {
       let image = views.get(id);
       if (!image) {
         const o = originOf(l.key);
-        image = this.scene.add.image(0, 0, l.key).setOrigin(o.x, o.y);
+        image = this.scene.add
+          .image(0, 0, l.key)
+          .setOrigin(o.x, o.y)
+          .setDepth(depth);
         views.set(id, image);
       }
-      image.setPosition(l.x, l.y).setDepth(item.y);
+      image.setPosition(l.x, l.y);
     }
   }
 }

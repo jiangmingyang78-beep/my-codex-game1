@@ -3,6 +3,22 @@
 @tailwind utilities;
 
 @font-face {
+  font-family: "PixelZH";
+  src: url("/fonts/pixel-zh.woff2") format("woff2");
+  font-style: normal;
+  font-weight: normal;
+  font-display: block;
+}
+
+.pixel-hud-text {
+  font-family: "PixelZH", monospace;
+  font-synthesis: none;
+  -webkit-font-smoothing: none;
+  /* biome-ignore lint/correctness/noUnknownProperty: Optional pixel font smoothing hint. */
+  font-smooth: never;
+}
+
+@font-face {
   font-family: "JetBrains Mono";
   src: url("/assets/fonts/JetBrainsMono.woff2") format("woff2");
   font-display: swap;

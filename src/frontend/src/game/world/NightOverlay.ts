@@ -1,6 +1,7 @@
 import { registerCanvasTexture } from "@/vfx/proceduralTextures";
 import type Phaser from "phaser";
-import { DEPTH } from "../config";
+import { ATMOSPHERE_PRESETS } from "../atmosphere/atmospherePresets";
+import { RENDER_DEPTH } from "../renderDepth";
 
 export interface LightSpot {
   x: number;
@@ -20,6 +21,7 @@ type Visit = (light: {
 const KEY = "emberwood-night-overlay";
 /** The visible light reaches a bit past the nominal fire radius because the halo fades out. */
 const LIGHT_SPREAD = 1.25;
+const { duskColor, nightColor } = ATMOSPHERE_PRESETS.nightTint;
 const mix = (a: number, b: number, t: number): number =>
   Math.round(a + (b - a) * t);
 
@@ -49,7 +51,7 @@ export class NightOverlay {
     this.image = scene.add
       .image(0, 0, KEY)
       .setOrigin(0)
-      .setDepth(DEPTH.night)
+      .setDepth(RENDER_DEPTH.night)
       .setVisible(false);
     this.webgl =
       "gl" in scene.sys.game.renderer && Boolean(scene.sys.game.renderer.gl);
@@ -77,7 +79,10 @@ export class NightOverlay {
     g.globalAlpha = 1;
     g.clearRect(0, 0, w, h);
     const t = Math.min(1, this.darkness / 0.8);
-    g.fillStyle = `rgba(${mix(44, 6, t)},${mix(22, 10, t)},${mix(62, 38, t)},${this.darkness})`;
+    const r = mix(duskColor >> 16, nightColor >> 16, t);
+    const green = mix((duskColor >> 8) & 255, (nightColor >> 8) & 255, t);
+    const b = mix(duskColor & 255, nightColor & 255, t);
+    g.fillStyle = `rgba(${r},${green},${b},${this.darkness})`;
     g.fillRect(0, 0, w, h);
     g.globalCompositeOperation = "destination-out";
     g.imageSmoothingEnabled = true;

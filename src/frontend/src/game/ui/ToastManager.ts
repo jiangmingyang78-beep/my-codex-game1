@@ -1,4 +1,5 @@
 import Phaser from "phaser";
+import { loadPixelFont } from "./pixelFont";
 import {
   createToastVisual,
   dismissToastVisual,
@@ -15,7 +16,6 @@ import {
   type ToastTheme,
   createToastItem,
   formatToastText,
-  redrawToastBox,
   resolveToastConfig,
   resolveToastTheme,
 } from "./toastTheme";
@@ -55,6 +55,14 @@ export class ToastManager {
     scene.events.once(Phaser.Scenes.Events.SHUTDOWN, this.destroy, this);
     scene.events.once(Phaser.Scenes.Events.DESTROY, this.destroy, this);
     scene.scale.on(Phaser.Scale.Events.RESIZE, this.onResize, this);
+    void loadPixelFont().then((loaded) => {
+      if (!loaded || this.destroyed) return;
+      for (const channel of CHANNELS) {
+        for (const item of this.channels[channel])
+          item.textObj?.style.update(true);
+        this.layoutChannel(channel);
+      }
+    });
   }
 
   /** 动态更新锚点（如装备环栏增减或视口尺寸变化时避开 HUD）。 */
@@ -200,7 +208,7 @@ export class ToastManager {
   private refreshVisualContent(item: ToastItem): void {
     if (!item.textObj || !item.bg) return;
     item.textObj.setText(formatToastText(item));
-    redrawToastBox(item, this.theme);
+    item.textObj.texture.setFilter(Phaser.Textures.FilterMode.NEAREST);
     this.layoutChannel(item.channel);
   }
 
@@ -214,6 +222,7 @@ export class ToastManager {
       this.channels[channel],
       channel,
       this.config,
+      this.theme,
       newlyCreatedId,
     );
   }

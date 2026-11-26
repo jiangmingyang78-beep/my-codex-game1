@@ -21,6 +21,11 @@ I have a deep love for video games—they have given me the courage to face life
   - **Save migration** moves characters, enemies, and uncollected loot from the old map into the expanded world while preserving progress.
   - **Map and development tools** include an LDtk adapter, a balance report, and a sprite workbench. The game uses its built-in map by default.
 
+- **Combat feedback and atmosphere (v3.2.0)** · [Version tag](https://github.com/jiangmingyang78-beep/my-codex-game1/tree/v3.2.0)
+  - Adds enemy attack warnings, hit feedback, slash arcs, and dash afterimages to the main battle scene.
+  - Adds flickering torchlight, drifting embers, a low-light vignette, and snow-only footprints. Chinese combat and loot toasts use a bundled pixel font.
+  - Centralizes render depths and adds a shared unit-test entry point with `npm test`. Existing saves retain their format.
+
 ## Run Locally
 
 Use Node.js 22.12+ or Node.js 24 and the project’s pinned pnpm version, 10.26.1. Run these commands from the repository root.
