@@ -8,6 +8,7 @@ import { reportFailure, takePendingRun } from "../session/activeRun";
 import { buildCraftView } from "../session/craftView";
 import { handleOutput } from "../session/outputHandler";
 import { watchTab } from "../session/watchTab";
+import { lockNearestFilter } from "../textures/pixelFilter";
 import type { TextureGenerator } from "../textures/registerTextures";
 import { uiStore } from "../ui/store";
 import { currentPrompt, publishHud, publishPrompt } from "../ui/uiSync";
@@ -79,6 +80,7 @@ export class GameScene extends Phaser.Scene {
     ) as TextureGenerator;
     this.scenery = new Scenery(this, this.session.sys, gen, state);
     this.entities = new EntityViews(this, this.session.sys, gen, state.heroId);
+    this.cleanups.push(lockNearestFilter(this));
     this.keys = new InputController(this);
     this.cleanups.push(
       configureCamera(this, this.session.sys, this.entities.hero),

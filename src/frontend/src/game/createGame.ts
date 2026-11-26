@@ -27,6 +27,7 @@ function launch(parent: HTMLElement, type: number): Phaser.Game {
     pixelArt: true,
     roundPixels: true,
     antialias: false,
+    canvasStyle: "image-rendering: pixelated;",
     disableContextMenu: true,
     banner: false,
     physics: { default: "arcade", arcade: { gravity: { x: 0, y: 0 } } },

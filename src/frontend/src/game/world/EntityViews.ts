@@ -57,7 +57,8 @@ export class EntityViews {
     this.lastHeroId = heroId;
     this.hero = scene.add
       .sprite(0, 0, visual.textureKey)
-      .setOrigin(visual.originX, visual.originY);
+      .setOrigin(visual.originX, visual.originY)
+      .setScale(1);
     this.heroShadow = this.shadow();
     this.heroShield = scene.add.graphics();
     this.slash = scene.add
@@ -103,7 +104,8 @@ export class EntityViews {
         this.hero.stop();
       this.hero
         .setTexture(visual.textureKey)
-        .setOrigin(visual.originX, visual.originY);
+        .setOrigin(visual.originX, visual.originY)
+        .setScale(1);
       this.lastHeroId = state.heroId;
       this.lastHp = hero.hp;
     }
@@ -125,9 +127,12 @@ export class EntityViews {
     const swinging = !dead && hero.attackAnimSec > 0;
     const hurt = !dead && timeSec < this.hurtUntilSec;
 
-    let bodyY = hero.y;
+    const px = Math.round(hero.x);
+    const py = Math.round(hero.y);
+
+    let bodyY = py;
     if (visual.kind === "sheet") {
-      this.hero.setPosition(hero.x, hero.y).setDepth(hero.y);
+      this.hero.setPosition(px, py).setDepth(hero.y);
       syncHeroAnimation(this.hero, state.heroId, {
         dead,
         hurt,
@@ -137,8 +142,9 @@ export class EntityViews {
         facingX: hero.facingX,
       });
     } else {
-      bodyY = hero.y + (!dead && moving ? Math.sin(timeSec * 16) * 0.6 : 0);
-      this.hero.setPosition(hero.x, bodyY).setDepth(hero.y);
+      bodyY =
+        py + (!dead && moving ? Math.round(Math.sin(timeSec * 16) * 0.6) : 0);
+      this.hero.setPosition(px, bodyY).setDepth(hero.y);
       if (Math.abs(hero.facingX) > 0.05) this.hero.setFlipX(hero.facingX < 0);
     }
 
@@ -149,7 +155,7 @@ export class EntityViews {
     else if (dashInvuln) this.hero.setTint(0x9fd8ff);
     else this.hero.clearTint();
 
-    this.heroShadow.setPosition(hero.x, hero.y + 1).setDepth(hero.y - 0.5);
+    this.heroShadow.setPosition(px, py + 1).setDepth(hero.y - 0.5);
     this.heroShield.clear();
     const bucklerCd = getBucklerCooldownSec(state, this.sys);
     if (!dead && bucklerCd !== null && bucklerCd <= 0) {
@@ -163,14 +169,7 @@ export class EntityViews {
         .setDepth(hero.y + 0.5)
         .lineStyle(1, 0xb8d8f0, alpha)
         .beginPath()
-        .arc(
-          hero.x,
-          bodyY - 6,
-          9,
-          faceAngle - halfArc,
-          faceAngle + halfArc,
-          false,
-        )
+        .arc(px, bodyY - 6, 9, faceAngle - halfArc, faceAngle + halfArc, false)
         .strokePath();
     }
     this.slash.setVisible(swinging);
@@ -181,8 +180,8 @@ export class EntityViews {
       );
       this.slash
         .setPosition(
-          hero.x + Math.cos(angle) * 6,
-          hero.y - 6 + Math.sin(angle) * 6,
+          Math.round(hero.x + Math.cos(angle) * 6),
+          Math.round(hero.y - 6 + Math.sin(angle) * 6),
         )
         .setRotation(angle)
         .setDepth(hero.y + 1);

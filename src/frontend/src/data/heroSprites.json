@@ -17,7 +17,7 @@
   },
   "gale_smith": {
     "file": "gale_smith.png",
-    "enabled": false,
+    "enabled": true,
     "frameWidth": 32,
     "frameHeight": 32,
     "originX": 0.5,
@@ -33,7 +33,7 @@
   },
   "suheng_herb": {
     "file": "suheng_herb.png",
-    "enabled": false,
+    "enabled": true,
     "frameWidth": 32,
     "frameHeight": 32,
     "originX": 0.5,
@@ -49,7 +49,7 @@
   },
   "corvus_hunt": {
     "file": "corvus_hunt.png",
-    "enabled": false,
+    "enabled": true,
     "frameWidth": 32,
     "frameHeight": 32,
     "originX": 0.5,
@@ -60,12 +60,12 @@
       "attack": { "start": 8, "end": 11, "frameRate": 16, "repeat": 0 },
       "dash": { "start": 12, "end": 13, "frameRate": 14, "repeat": 0 },
       "hurt": { "start": 14, "end": 14, "frameRate": 8, "repeat": 0 },
-      "dead": { "start": 15, "end": 15, "repeat": 0, "frameRate": 4 }
+      "dead": { "start": 15, "end": 15, "frameRate": 4, "repeat": 0 }
     }
   },
   "alvin_scribe": {
     "file": "alvin_scribe.png",
-    "enabled": false,
+    "enabled": true,
     "frameWidth": 32,
     "frameHeight": 32,
     "originX": 0.5,

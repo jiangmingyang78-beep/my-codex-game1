@@ -231,7 +231,19 @@ button,kbd,.tech-node,.quick-slot,.quickbar .build-controls{border-radius:0}
 <div class="world-controls"><input id="seedInput" type="text" maxlength="32" autocomplete="off" placeholder="例如 2048"><button id="createWorld" type="button">进入世界</button></div>
 </dialog>
 <script type="module">
-import {resourceRoll,loadSurvivalTuning,scaledStock,nightWaves,waveSlot} from "./src/systems/survivalTuning.ts";
+import {loadSurvivalTuning,scaledStock,nightWaves,waveSlot} from "./src/systems/survivalTuning.ts";
+import {
+  CHUNK_RADIUS,CHUNK_SIZE,COAL_VEIN,NATURAL_FLORA as naturalFlora,SURVIVAL_BIOMES as biomes,
+  WORLD_MAX,WORLD_MIN,inOriginalMap,insideSurvivalCamp as insideCamp,originalPlayableCell,
+  solidSurvivalTerrain as solidTerrain,survivalCellCoordinates as cellCoordinates,survivalCellKey as cellKey
+} from "./src/systems/survival/survivalBiomes.ts";
+import {
+  chunkCellIndex,getOrCreateSurvivalChunk,seedFromText as parseSeedFromText,seededValue
+} from "./src/systems/survival/survivalNoise.ts";
+import {
+  applyClassicSurvivalTerrain,buildBaseClassicWorld,carveCampPassages,
+  generateSurvivalTerrain as generateCoreSurvivalTerrain,resolveEcologyBiome
+} from "./src/systems/survival/survivalWorldGen.ts";
 const tuning=await loadSurvivalTuning();
 import {
   ENEMY_TEXTURE_DEFS,
@@ -496,7 +508,6 @@ function defineContent(group,key,properties){
 const canvas = $("game"), ctx = canvas.getContext("2d"), mini = $("map").getContext("2d");
 const WIDTH = 50, HEIGHT = 32, SIZE = 16, MAX_HP = 6;
 const tileColors = ["#213b36","#2b4736","#39483c","#38403e","#23444e","#163b52","#594735","#4b414c"];
-const COAL_VEIN=8;
 const terrainContent=Array.from({length:COAL_VEIN+1},(_,tile)=>contentEntry("terrain",tile));
 const altars = [
   defineContent("altar","moss",{x:9,y:7,color:"#8bdfaa",region:"苔林",guard:"moss",sealId:contentId("pickup","sealMoss")}),
@@ -519,19 +530,8 @@ const hash = (x,y,s=0) => {
   const v = Math.imul(x+83,374761393)^Math.imul(y+31,668265263)^Math.imul(s+4,1686049);
   return ((v^(v>>>13))>>>0)%997/997;
 };
-const world = Array.from({length:HEIGHT},()=>Array(WIDTH).fill(0));
 // Floor types 1–4 and 7 are walkable. Trees, water and rock are solid.
-function fill(x0,y0,x1,y1,tile){
-  for(let y=y0;y<=y1;y++) for(let x=x0;x<=x1;x++) world[y][x]=tile;
-}
-fill(2,12,12,20,1); fill(3,3,16,10,1); fill(18,2,32,11,3);
-fill(7,21,22,29,4); fill(15,12,34,20,1); fill(37,10,47,22,7);
-fill(34,15,38,17,2); fill(33,15,34,17,2);
-fill(7,9,10,14,2); fill(10,15,34,17,2); fill(24,9,27,15,2);
-fill(11,18,14,24,2); fill(18,18,24,20,2);
-fill(4,6,5,6,0); fill(14,5,15,6,0); fill(18,2,20,3,6); fill(29,3,31,4,6);
-fill(15,23,19,25,5); fill(18,25,20,27,5); fill(7,26,9,28,5);
-fill(18,14,19,14,0); fill(30,18,31,19,0); fill(43,11,46,12,6); fill(40,20,42,21,6);
+const world = buildBaseClassicWorld();
 const pickupsAt = [[7,5],[29,8],[8,24],[20,16],[38,15]];
 const enemySpecs = [
   ["scout",12,7,2],["moss",9,5,4],["bat",19,15,2],["shield",22,19,4],
@@ -2859,28 +2859,6 @@ $("mute").addEventListener("click",()=>{
 });
 const baseWorld = world.map(row=>row.slice());
 const survivalCamp=camp, well=defineContent("site","well",{x:10,y:13});
-const initialTrees=[[3,13],[4,11],[6,10],[12,12],[14,15],[9,21],[13,22],[22,13],[25,15],[18,10],[20,11]];
-const initialRocks=[[4,18],[12,10],[22,18],[23,20]];
-const biomes=[
-  {name:"草甸",floor:1,land:"#3d5436",detail:"#5b6f45",map:"#88a065",tree:.10,rock:.05,lake:0,fertile:true,
-    plant:"berry",animal:"hare",veins:["quartz"]},
-  {name:"密林",floor:1,land:"#283f33",detail:"#405742",map:"#387351",tree:.32,rock:.04,lake:0,fertile:true,
-    plant:"herb",animal:"deer",veins:["copper"]},
-  {name:"湿地",floor:4,land:"#34483e",detail:"#4b6b55",map:"#548e8a",tree:.11,rock:.03,lake:.40,fertile:true,
-    plant:"reed",animal:"frog",veins:["clay"]},
-  {name:"岩脊",floor:3,land:"#4b423d",detail:"#746350",map:"#b18469",tree:.04,rock:.27,lake:0,fertile:false,
-    plant:"rockBloom",animal:"goat",veins:["iron"],coal:true},
-  {name:"霜原",floor:4,land:"#50616e",detail:"#829399",map:"#a5bdc8",tree:.13,rock:.10,lake:.19,fertile:false,
-    plant:"frostBerry",animal:"fox",veins:["frostOre"]},
-  {name:"松林",floor:1,land:"#273d3d",detail:"#445c58",map:"#427974",tree:.36,rock:.08,lake:.12,fertile:true,
-    plant:"pinecone",animal:"squirrel",veins:["copper","quartz"]},
-  {name:"赤沙荒地",floor:3,land:"#694c3b",detail:"#967354",map:"#c58e5d",tree:.02,rock:.22,lake:0,fertile:false,
-    plant:"sandFruit",animal:"lizard",veins:["salt"]},
-  {name:"花谷",floor:1,land:"#52603c",detail:"#6f8050",map:"#a0b56c",tree:.07,rock:.05,lake:0,fertile:true,
-    plant:"nectar",animal:"bee",veins:["quartz","clay"]},
-  {name:"菌林",floor:4,land:"#463d50",detail:"#695977",map:"#9a78a1",tree:.25,rock:.06,lake:.18,fertile:true,
-    plant:"glowcap",animal:"beetle",veins:["iron","frostOre"]}
-];
 const wildPlants={
   berry:defineContent("wildPlant","berry",{art:".cc.cc.. cclcclc. ccclccc. .ccbcc.. ..b.b... .ccc.c..",color:"#e97a95"}),
   herb:defineContent("wildPlant","herb",{art:".l...l.. .cl.lc.. ..clc... .lccc.l. .cccclc. ..cbcc..",color:"#c0deba"}),
@@ -2922,13 +2900,10 @@ const wildAnimalArt=Object.fromEntries(Object.values(wildSpecies).map(animal=>[
 ]));
 const wildSpeciesById=new Map(Object.values(wildSpecies).map(animal=>[animal.contentId,animal]));
 let biomeGrid=null,survivalBaseTerrain=null;
-const CHUNK_SIZE=16, WORLD_MIN=-2048, WORLD_MAX=2048, CHUNK_RADIUS=2;
 const chunks=new Map(),removedResources=new Set();
 let activeChunk=null,nightSpawnOrigin=null,wildlife=[],wildlifeSector="";
 let activePlantChunk=null,survivalRoads=new Set(),heatSourcesCache=null;
 const seededPlantChunks=new Set();
-const inOriginalMap=(x,y)=>x>=0&&x<WIDTH&&y>=0&&y<HEIGHT;
-const originalPlayableCell=(x,y)=>x>0&&x<WIDTH-1&&y>0&&y<HEIGHT-1;
 function containsTile(x,y){
   return mode==="survival"?x>=WORLD_MIN&&x<WORLD_MAX&&y>=WORLD_MIN&&y<WORLD_MAX:inOriginalMap(x,y);
 }
@@ -2939,54 +2914,7 @@ function biomeAt(x,y){
   return biomes[chunk.regions[index]];
 }
 const groundTile=(x,y)=>biomeAt(x,y)?.floor??1;
-const solidTerrain=tile=>tile===0||tile===5||tile===6||tile===COAL_VEIN;
-function seededValue(seed,x,y,salt){
-  let n=seed^Math.imul(x+193,0x85ebca6b)^Math.imul(y+97,0xc2b2ae35)^Math.imul(salt,0x27d4eb2f);
-  n=Math.imul(n^(n>>>16),0x7feb352d);
-  n=Math.imul(n^(n>>>15),0x846ca68b);
-  return ((n^(n>>>16))>>>0)/4294967296;
-}
-function terrainNoise(seed,x,y,salt){
-  const left=Math.floor(x),top=Math.floor(y);
-  const smooth=t=>t*t*(3-2*t),u=smooth(x-left),v=smooth(y-top);
-  return lerp(
-    lerp(seededValue(seed,left,top,salt),seededValue(seed,left+1,top,salt),u),
-    lerp(seededValue(seed,left,top+1,salt),seededValue(seed,left+1,top+1,salt),u),v);
-}
-function expandedBiome(seed,x,y){
-  const heat=terrainNoise(seed,x/79,y/79,20);
-  const moisture=terrainNoise(seed,x/64,y/64,21);
-  const relief=terrainNoise(seed,x/54,y/54,22);
-  if(heat<.26)return 4;
-  if(heat<.43&&moisture>.34)return 5;
-  if(relief>.72)return 3;
-  if(heat>.61&&moisture<.42)return 6;
-  if(moisture>.76)return heat>.52?8:2;
-  if(moisture>.60)return 1;
-  if(moisture>.43&&relief<.53)return 7;
-  return 0;
-}
-const chunkCellIndex=(chunk,x,y)=>(y-chunk.y*CHUNK_SIZE)*CHUNK_SIZE+x-chunk.x*CHUNK_SIZE;
-function survivalChunk(tx,ty){
-  const cx=Math.floor(tx/CHUNK_SIZE),cy=Math.floor(ty/CHUNK_SIZE),key=cx+","+cy;
-  const cached=chunks.get(key);
-  if(cached)return cached;
-  const chunk={x:cx,y:cy,terrain:new Uint8Array(CHUNK_SIZE**2),regions:new Uint8Array(CHUNK_SIZE**2)};
-  const seed=survival.seed??0;
-  for(let ly=0;ly<CHUNK_SIZE;ly++)for(let lx=0;lx<CHUNK_SIZE;lx++){
-    const x=cx*CHUNK_SIZE+lx,y=cy*CHUNK_SIZE+ly,i=ly*CHUNK_SIZE+lx;
-    const region=expandedBiome(seed,x,y),biome=biomes[region],roll=resourceRoll(seededValue(seed,x,y,23),tuning.resourceDensity);
-    chunk.regions[i]=region;
-    if(x===camp.x||y===camp.y)chunk.terrain[i]=biome.floor;
-    else if(biome.lake&&terrainNoise(seed,x/10,y/10,24)<biome.lake)chunk.terrain[i]=5;
-    else if(region===3&&roll<.12)chunk.terrain[i]=COAL_VEIN;
-    else if(roll<biome.rock)chunk.terrain[i]=6;
-    else chunk.terrain[i]=roll<biome.rock+biome.tree?0:biome.floor;
-  }
-  if(chunks.size>=(CHUNK_RADIUS*2+3)**2)chunks.delete(chunks.keys().next().value);
-  chunks.set(key,chunk);
-  return chunk;
-}
+const survivalChunk=(tx,ty)=>getOrCreateSurvivalChunk(chunks,tx,ty,survival.seed??0,tuning.resourceDensity,camp);
 function unloadDistantChunks(){
   if(mode!=="survival")return;
   const x=Math.floor(player.x/(SIZE*CHUNK_SIZE)),y=Math.floor(player.y/(SIZE*CHUNK_SIZE));
@@ -2996,53 +2924,7 @@ function unloadDistantChunks(){
     if(Math.abs(chunk.x-x)>CHUNK_RADIUS||Math.abs(chunk.y-y)>CHUNK_RADIUS)chunks.delete(key);
   }
 }
-function generateSurvivalTerrain(seed){
-  const types=[0,1,2,3,4];
-  for(let i=types.length-1;i>0;i--){
-    const j=Math.floor(seededValue(seed,i,0,1)*(i+1));
-    [types[i],types[j]]=[types[j],types[i]];
-  }
-  const sites=[[9,6],[26,7],[41,7],[11,26],[35,24]].map(([x,y],i)=>({
-    x:x+Math.floor(seededValue(seed,x,y,2)*7)-3,
-    y:y+Math.floor(seededValue(seed,x,y,3)*5)-2,type:types[i]
-  }));
-  const regions=Array.from({length:HEIGHT},()=>Array(WIDTH));
-  const tiles=regions.map((row,y)=>Array.from(row,(_,x)=>{
-    const wx=x+(terrainNoise(seed,x/6,y/6,4)-.5)*12;
-    const wy=y+(terrainNoise(seed,x/6,y/6,5)-.5)*12;
-    const site=sites.reduce((best,n)=>Math.hypot(wx-n.x,wy-n.y)<Math.hypot(wx-best.x,wy-best.y)?n:best);
-    const biome=biomes[site.type];
-    regions[y][x]=site.type;
-    if(!originalPlayableCell(x,y)||terrainNoise(seed,x/5,y/5,6)<biome.lake)return 5;
-    const placement=resourceRoll(seededValue(seed,x,y,7),tuning.resourceDensity);
-    if(site.type===3&&placement<.13)return COAL_VEIN;
-    if(placement<biome.rock)return 6;
-    return placement<biome.rock+biome.tree?0:biome.floor;
-  }));
-  // Keep each region reachable from camp even when a seed places a lake across the route.
-  const trail=new Set();
-  const carve=(x,y)=>{tiles[y][x]=biomes[regions[y][x]].floor;trail.add(cellKey(x,y));};
-  for(const site of sites){
-    const steps=Math.max(Math.abs(site.x-6),Math.abs(site.y-16));
-    let oldX=6,oldY=16;
-    carve(oldX,oldY);
-    for(let i=0;i<=steps;i++){
-      const t=i/steps,x=Math.round(lerp(6,site.x,t)),y=Math.round(lerp(16,site.y,t)+Math.sin(t*Math.PI)*2);
-      while(oldY!==y){oldY+=Math.sign(y-oldY);carve(oldX,oldY);}
-      while(oldX!==x){oldX+=Math.sign(x-oldX);carve(oldX,oldY);}
-    }
-  }
-  for(let y=12;y<=22;y++)for(let x=2;x<=16;x++){tiles[y][x]=1;regions[y][x]=0;}
-  const supplies=[[3,13],[4,14],[5,12],[8,13],[3,19],[5,20],[7,19],[8,17]];
-  supplies.sort(([x,y],[a,b])=>Number(trail.has(cellKey(x,y)))-Number(trail.has(cellKey(a,b)))||
-    seededValue(seed,x,y,8)-seededValue(seed,a,b,8));
-  supplies.slice(0,4).forEach(([x,y],i)=>{tiles[y][x]=i<2?0:6;});
-  const coal=sites.find(site=>site.type===3);
-  const coalCell=[[1,0],[-1,0],[0,1],[0,-1]].map(([dx,dy])=>({x:coal.x+dx,y:coal.y+dy}))
-    .find(({x,y})=>!trail.has(cellKey(x,y))&&!(y>=12&&y<=22&&x>=2&&x<=16)&&originalPlayableCell(x,y));
-  if(coalCell)tiles[coalCell.y][coalCell.x]=COAL_VEIN;
-  return {tiles,regions,trail};
-}
+const generateSurvivalTerrain=seed=>generateCoreSurvivalTerrain(seed,tuning.resourceDensity);
 const basicStock={wood:3,stone:1,coal:0,seed:4,water:6,wheat:2,egg:0,bread:2,wool:0,bandage:0,boiled:0};
 const initialStock={...basicStock};
 for(const entry of contentById.values())if(entry.group==="stock")initialStock[entry.key]??=0;
@@ -3119,12 +3001,6 @@ function normalizeQuickbar(saved){
 }
 const plotId=contentId("site","plot"), wheatCropId=contentId("crop","wheat");
 const saveKey="emberwood-survival-1", SAVE_VERSION=8;
-const cellKey=(x,y)=>inOriginalMap(x,y)?y*WIDTH+x:x+","+y;
-function cellCoordinates(id){
-  if(typeof id==="string"&&id.includes(","))return id.split(",").map(Number);
-  const index=Number(id);
-  return [index%WIDTH,Math.floor(index/WIDTH)];
-}
 const tilePoint=id=>point(...cellCoordinates(id));
 const worldCatalogKey="emberwood-worlds", worldChoiceKey="emberwood-world-choice";
 const worldSlot=id=>id==="classic"?saveKey:saveKey+"-"+id;
@@ -3224,13 +3100,7 @@ function randomWorldId(){
   do{id=String(Math.floor(Math.random()*4294967296));}while(knownWorlds.has(id));
   return id;
 }
-function seedFromText(text){
-  if(!text)return randomWorldId();
-  if(/^\d+$/.test(text))return String(BigInt(text)&0xffffffffn);
-  let value=0x811c9dc5;
-  for(let i=0;i<text.length;i++)value=Math.imul(value^text.charCodeAt(i),0x01000193);
-  return String(value>>>0);
-}
+const seedFromText=text=>parseSeedFromText(text,randomWorldId);
 const worldLabel=id=>id==="classic"?"旧林地":("种子 "+id);
 function registerWorld(){
   knownWorlds.add(activeWorld);
@@ -3260,15 +3130,10 @@ function resetTerrain(){
     generated.tiles.forEach((row,y)=>world[y]=row);
     biomeGrid=generated.regions;survivalRoads=generated.trail;
   }else{
-    baseWorld.forEach((row,y)=>world[y]=row.slice());
-    fill(2,9,24,23,1);fill(6,15,24,16,2);fill(16,17,21,20,5);
-    fill(17,11,20,14,1);fill(18,13,20,13,2);
-    for(const [x,y] of initialTrees)world[y][x]=0;
-    for(const [x,y] of initialRocks)world[y][x]=6;
+    applyClassicSurvivalTerrain(world,baseWorld);
   }
   // The four passages connect old save coordinates to the streamed terrain.
-  for(let x=0;x<WIDTH;x++)if(solidTerrain(world[camp.y][x]))world[camp.y][x]=groundTile(x,camp.y);
-  for(let y=0;y<HEIGHT;y++)if(solidTerrain(world[y][camp.x]))world[y][camp.x]=groundTile(camp.x,y);
+  carveCampPassages(world,groundTile,camp);
   survivalBaseTerrain=world.map(row=>row.slice());
   for(const id of survival.removed){
     const [x,y]=cellCoordinates(id);removedResources.add(String(id));
@@ -3447,17 +3312,6 @@ function getSurvivalTerrainTag(tx,ty,nearWater=isSurvivalNearWater(tx,ty)){
   if(biome===biomes[3]||biome===biomes[6])return "ash";
   return tile===3||tile===7||biome===biomes[1]||biome===biomes[5]?"soil":"grass";
 }
-const naturalFlora=[
-  ["frost_pine","snow_berry_bush","tundra_grass"],
-  ["ember_birch","frost_herb_cluster","snow_berry_bush"],
-  ["mire_reed","frost_herb_cluster","glow_cap"],
-  ["charred_ancient"],
-  ["frost_pine","snow_berry_bush","tundra_grass","mire_reed"],
-  ["frost_pine","ember_birch","frost_herb_cluster"],
-  ["charred_ancient"],
-  ["snow_berry_bush","tundra_grass","ember_birch"],
-  ["glow_cap","frost_herb_cluster","mire_reed"]
-];
 const cultivatedAt=(tx,ty)=>plantRegistry.get(tileKey(tx,ty));
 function canMatureSurvivalPlant(plant){
   const at=point(plant.tx,plant.ty);
@@ -3513,18 +3367,12 @@ function survivalHeatSources(){
   }
   return heatSourcesCache;
 }
-function ecologyBiome(x,y,biome=biomeAt(x,y)){
-  if(biome)return biome;
-  if(y<12)return biomes[x>17?3:1];
-  if(y>=23)return biomes[x<=22?2:4];
-  return biomes[0];
-}
+const ecologyBiome=(x,y,biome=biomeAt(x,y))=>resolveEcologyBiome(x,y,biome);
 function habitatSummary(biome){
   const minerals=biome.veins.map(key=>oreTypes[key].name);
   if(biome.coal)minerals.push(terrainContent[COAL_VEIN].name);
   return [wildSpecies[biome.animal].name,wildPlants[biome.plant].name,...minerals].join(" · ");
 }
-const insideCamp=(x,y)=>x>=2&&x<=16&&y>=12&&y<=22;
 function wildPlantAt(x,y,tile=terrainTile(x,y),biome){
   if(mode!=="survival"||!survival||solidTerrain(tile)||insideCamp(x,y)||!containsTile(x,y))return null;
   if(seededValue(survival.seed??0,x,y,41)>=.09)return null;
