@@ -86,7 +86,11 @@
     "bog_spitter",
     "ember_wisp",
     "mill_overseer",
-    "summit_pyre_warden"
+    "summit_pyre_warden",
+    "frost_shield_bearer",
+    "scarred_alpha",
+    "spore_matriarch",
+    "mirror_wisp"
   ],
   "heroIds": [
     "lin_tinder",
@@ -101,7 +105,11 @@
     "ice_gorge",
     "beacon",
     "deep_woods",
-    "frost_ridge"
+    "frost_ridge",
+    "frozen_brook",
+    "burnt_caravan",
+    "herbalist_hollow",
+    "blackened_outpost"
   ],
   "legacyAssetReferences": [
     {

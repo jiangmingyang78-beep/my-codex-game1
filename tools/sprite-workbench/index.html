@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>余烬林 · 像素精灵表预览与洗图工作台</title>
+  <link rel="stylesheet" href="./workbench.css" />
+</head>
+<body>
+  <div id="dropOverlay" class="drop-overlay">
+    <div class="drop-card">松开鼠标以载入本地 PNG 精灵表</div>
+  </div>
+
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-dot"></span>
+      <div>
+        <h1>余烬林 · 像素精灵表预览与洗图工作台</h1>
+        <div class="sub">只读项目 assets/sprites &amp; portraits · 拖放本地 PNG · 脚底基线校准 · 16 色板洗图导出</div>
+      </div>
+    </div>
+    <div class="top-actions">
+      <select id="assetSelect" title="选择项目内现有 PNG 资源"></select>
+      <button id="btnLoadAsset" class="primary">加载项目资源</button>
+      <input id="fileInput" type="file" accept="image/png,image/*" hidden />
+      <button id="btnOpenFile">📂 本地 PNG</button>
+      <button id="btnLoadMagenta">🟣 洋红测试图</button>
+      <button id="btnUndo" disabled>↩ 撤销</button>
+      <button id="btnReset">⟲ 重置</button>
+      <button id="btnExport" class="success">⬇ 导出透明 PNG</button>
+    </div>
+  </header>
+
+  <main class="workspace">
+    <section class="col">
+      <div class="panel">
+        <div class="panel-head">
+          <div class="panel-title">
+            <span>动画实时预览</span>
+            <span id="frameBadge" class="badge">行 0 · 列 0</span>
+          </div>
+          <div class="btn-group" id="scaleBtns">
+            <button data-scale="1">1x</button>
+            <button data-scale="2">2x</button>
+            <button data-scale="4">4x</button>
+            <button data-scale="6" class="active">6x</button>
+          </div>
+        </div>
+        <div class="stage-wrap">
+          <canvas id="previewCanvas" class="pixelated"></canvas>
+        </div>
+        <div class="ctrl-row">
+          <span class="ctrl-label">行动作：</span>
+          <div id="rowButtons" class="btn-group"></div>
+        </div>
+        <div class="ctrl-row">
+          <span class="ctrl-label">播放控制：</span>
+          <button id="btnPlayPause" class="active">⏸ 暂停</button>
+          <button id="btnPrev">⏮ 上一帧</button>
+          <button id="btnNext">⏭ 下一帧</button>
+          <button id="btnFlipX">⇄ flipX: 关</button>
+        </div>
+        <div class="ctrl-row">
+          <span class="ctrl-label">FPS (4-20)：</span>
+          <input id="fpsRange" type="range" min="4" max="20" step="1" value="9" />
+          <span id="fpsVal" class="mono-val">9 fps</span>
+        </div>
+        <div class="ctrl-row">
+          <span class="ctrl-label">雪夜底色：</span>
+          <div class="btn-group" id="bgButtons">
+            <button data-bg="checker" class="active">透明棋盘</button>
+            <button data-bg="night">深靛雪夜 #121626</button>
+            <button data-bg="campfire">营火暖光圈</button>
+            <button data-bg="snow">亮雪地 #dce7f2</button>
+          </div>
+        </div>
+        <div class="ctrl-row">
+          <span class="ctrl-label">参考线：</span>
+          <label class="chk"><input id="chkGrid" type="checkbox" checked /> 32×32 网格线</label>
+          <label class="chk"><input id="chkAnchor" type="checkbox" checked /> 脚底锚点红十字 (16,28)</label>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <div class="panel-title">
+            <span>整表总览（点击跳转帧）</span>
+            <span id="hoverBadge" class="badge">悬停查看坐标与色值</span>
+          </div>
+          <div class="btn-group" id="sheetScaleBtns">
+            <button data-sheet-scale="1">1x</button>
+            <button data-sheet-scale="2">2x</button>
+            <button data-sheet-scale="3" class="active">3x</button>
+            <button data-sheet-scale="4">4x</button>
+          </div>
+        </div>
+        <div class="sheet-wrap">
+          <canvas id="sheetCanvas" class="pixelated"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <section class="col">
+      <div class="panel">
+        <div class="panel-head">
+          <div class="panel-title">网格与锚点配置</div>
+          <button id="btnAutoFrame">📐 按图推导单帧</button>
+        </div>
+        <div class="grid-fields">
+          <label>列数<input id="inpCols" type="number" min="1" max="32" value="4" /></label>
+          <label>行数<input id="inpRows" type="number" min="1" max="32" value="4" /></label>
+          <label>单帧宽<input id="inpFW" type="number" min="8" max="512" value="32" /></label>
+          <label>单帧高<input id="inpFH" type="number" min="8" max="512" value="32" /></label>
+          <label>锚点 X<input id="inpAX" type="number" min="0" max="512" value="16" /></label>
+          <label>锚点 Y<input id="inpAY" type="number" min="0" max="512" value="28" /></label>
+        </div>
+        <div class="ctrl-row">
+          <button id="btnDefaultAnchor">🎯 标准锚点 (16, 28)</button>
+          <span id="fileBadge" class="badge">未加载</span>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <div class="panel-title">洗图工具与余烬林 16 色板吸附</div>
+          <span id="diagBadge" class="badge">-</span>
+        </div>
+        <div class="tool-card">
+          <div class="tool-title">去除洋红底（#ff00ff）</div>
+          <div class="ctrl-row" style="margin-top:0">
+            <span>容差</span>
+            <input id="tolRange" type="range" min="0" max="150" value="38" style="flex:1" />
+            <span id="tolVal" class="mono-val">38</span>
+          </div>
+          <label class="chk"><input id="chkFlood" type="checkbox" /> 仅从边缘连通清除（保护内部紫红）</label>
+          <button id="btnCleanMagenta" class="primary">✨ 去除洋红底 (#ff00ff)</button>
+        </div>
+        <div class="tool-card">
+          <div class="tool-title">吸附至余烬林 16 色主色板</div>
+          <label class="chk"><input id="chkHarden" type="checkbox" checked /> 同步硬化半透明毛边 (Alpha 二值化)</label>
+          <button id="btnSnapPalette" class="primary">🎨 吸附至 16 色主色板</button>
+          <div id="paletteGrid" class="palette-grid"></div>
+        </div>
+        <div id="logBox" class="log-box"></div>
+      </div>
+    </section>
+  </main>
+
+  <script type="module" src="./workbench.js"></script>
+</body>
+</html>

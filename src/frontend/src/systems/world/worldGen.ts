@@ -1,5 +1,6 @@
 import type { GameData } from "@/core/dataTypes";
 import { createRng } from "@/core/rng";
+import { type LdtkProjectJson, buildWorldFromLdtk } from "./ldtkAdapter";
 import { WORLD_LAYOUT, type WorldLayout } from "./worldLayout";
 import { type Grid, at, carveTerrain, tileIndex } from "./worldTerrain";
 import {
@@ -11,6 +12,20 @@ import {
 
 const px = (tile: number, size: number) => (tile + 0.5) * size;
 
+function reserve(
+  g: Grid,
+  taken: Set<number>,
+  cx: number,
+  cy: number,
+  r: number,
+): void {
+  for (let y = cy - r; y <= cy + r; y++) {
+    for (let x = cx - r; x <= cx + r; x++) {
+      if (x >= 0 && y >= 0 && x < g.w && y < g.h) taken.add(at(g, x, y));
+    }
+  }
+}
+
 /** Picks free tiles with a seeded RNG; `taken` holds tile indices that are not available. */
 function placeNodes(
   data: GameData,
@@ -21,22 +36,17 @@ function placeNodes(
   const rng = createRng(layout.seed);
   const size = data.tileSize;
   const out: WorldObject[] = [];
-  const claim = (x: number, y: number) => {
-    for (let dy = -1; dy <= 1; dy++)
-      for (let dx = -1; dx <= 1; dx++) taken.add(at(g, x + dx, y + dy));
-  };
   for (const id of data.worldObjects.renewableWoodNodeIds) {
-    const point = layout.renewableWoodTiles[id];
-    if (!point) throw new Error(`Missing renewable wood tile for ${id}`);
-    const { x, y } = point;
-    tileIndex(g, x, y);
-    claim(x, y);
+    const pt = layout.renewableWoodTiles[id];
+    if (!pt) throw new Error(`Missing renewable wood tile for ${id}`);
+    tileIndex(g, pt.x, pt.y);
+    reserve(g, taken, pt.x, pt.y, 1);
     out.push({
       id,
       kind: "node",
       regionId: data.balance.starting.regionId,
-      x: px(x, size),
-      y: px(y, size),
+      x: px(pt.x, size),
+      y: px(pt.y, size),
       itemId: "wood",
       yield: 1,
       renewable: true,
@@ -56,21 +66,18 @@ function placeNodes(
             bounds.y0 + 5 + Math.floor(rng() * (bounds.y1 - bounds.y0 - 10));
           const tile = g.tiles[at(g, x, y)];
           if (
-            (tile !== TILE.snow && tile !== TILE.floor) ||
+            (tile !== TILE.snow && tile !== TILE.floor && tile !== TILE.bog) ||
             taken.has(at(g, x, y))
           )
             continue;
           if (nodeArea?.minX !== undefined && x < nodeArea.minX) continue;
           if (plan.maxX !== undefined && x > plan.maxX) continue;
           if (nodeArea?.campDistance) {
-            const distance = Math.hypot(
-              x - layout.campfire.x,
-              y - layout.campfire.y,
-            );
-            const [min, max] = nodeArea.campDistance;
-            if (distance < min || distance > max) continue;
+            const d = Math.hypot(x - layout.campfire.x, y - layout.campfire.y);
+            if (d < nodeArea.campDistance[0] || d > nodeArea.campDistance[1])
+              continue;
           }
-          claim(x, y);
+          reserve(g, taken, x, y, 1);
           out.push({
             id: `${plan.idPrefix}_${n}`,
             kind: "node",
@@ -108,20 +115,6 @@ function scatterTrees(g: Grid, taken: Set<number>, layout: WorldLayout): void {
   }
 }
 
-function reserve(
-  g: Grid,
-  taken: Set<number>,
-  cx: number,
-  cy: number,
-  r: number,
-): void {
-  for (let y = cy - r; y <= cy + r; y++) {
-    for (let x = cx - r; x <= cx + r; x++) {
-      if (x >= 0 && y >= 0 && x < g.w && y < g.h) taken.add(at(g, x, y));
-    }
-  }
-}
-
 /** Builds the deterministic tile grid, collision data and object table. */
 export function generateWorld(data: GameData, layout = WORLD_LAYOUT): World {
   const { widthTiles: w, heightTiles: h } = data.balance.world;
@@ -141,9 +134,20 @@ export function generateWorld(data: GameData, layout = WORLD_LAYOUT): World {
     tileIndex(g, t.x, t.y);
     reserve(g, taken, t.x, t.y, 2);
   }
-  for (const { gate, relay, beacon } of layout.regions) {
+  for (const {
+    bounds,
+    gate,
+    relay,
+    beacon,
+    barrels,
+    mirrorLamps,
+  } of layout.regions) {
     if (relay) reserve(g, taken, relay.x, relay.y, 2);
     if (beacon) reserve(g, taken, beacon.x, beacon.y, 2);
+    for (const b of barrels ?? []) reserve(g, taken, b.x, b.y, 1);
+    for (const m of mirrorLamps ?? []) reserve(g, taken, m.x, m.y, 1);
+    for (const p of data.regions.get(bounds.id)?.storyProps ?? [])
+      reserve(g, taken, p.tileX, p.tileY, 1);
     for (const t of gate?.tiles ?? [])
       reserve(
         g,
@@ -162,19 +166,26 @@ export function generateWorld(data: GameData, layout = WORLD_LAYOUT): World {
     if (objects.has(o.id)) throw new Error(`Duplicate map object ${o.id}`);
     objects.set(o.id, o);
   };
-  const position = ({ x, y }: { x: number; y: number }) => ({
-    x: px(x, size),
-    y: px(y, size),
+  const pos = (p: { x: number; y: number }) => ({
+    x: px(p.x, size),
+    y: px(p.y, size),
   });
   add({
     id: data.worldObjects.mainCampfireId,
     kind: "campfire",
     regionId: data.balance.starting.regionId,
-    ...position(campfire),
+    ...pos(campfire),
   });
   const gateTiles = new Map<number, string>();
   const spawns = new Map<string, SpawnPoint>();
-  for (const { bounds, gate, relay, beacon } of layout.regions) {
+  for (const {
+    bounds,
+    gate,
+    relay,
+    beacon,
+    barrels,
+    mirrorLamps,
+  } of layout.regions) {
     const region = data.regions.get(bounds.id);
     if (!region) throw new Error(`Unknown map region ${bounds.id}`);
     const gateId = region.entry.gateId;
@@ -185,7 +196,7 @@ export function generateWorld(data: GameData, layout = WORLD_LAYOUT): World {
         id: gateId,
         kind: "gate",
         regionId: region.id,
-        ...position(gate.interactAt),
+        ...pos(gate.interactAt),
       });
       for (const t of gate.tiles) {
         const index = at(g, t.x, t.y);
@@ -196,22 +207,50 @@ export function generateWorld(data: GameData, layout = WORLD_LAYOUT): World {
     }
     if (Boolean(region.relaySocketId) !== Boolean(relay))
       throw new Error(`Missing relay id or tile for ${region.id}`);
-    if (region.relaySocketId && relay) {
+    if (region.relaySocketId && relay)
       add({
         id: region.relaySocketId,
         kind: "relay_socket",
         regionId: region.id,
-        ...position(relay),
+        ...pos(relay),
       });
-    }
-    if (beacon) {
+    if (beacon)
       add({
         id: data.worldObjects.finalBeaconId,
         kind: "beacon",
         regionId: region.id,
-        ...position(beacon),
+        ...pos(beacon),
+      });
+    for (const p of region.storyProps ?? []) {
+      add({
+        id: p.id,
+        kind: "story_prop",
+        regionId: region.id,
+        ...pos({ x: p.tileX, y: p.tileY }),
+        spriteKey: p.spriteKey,
+        storyToast: p.toast,
+        unlockNoteId: p.unlockNoteId,
+        itemId: p.rewardItem?.itemId,
+        yield: p.rewardItem?.count,
+        pickupId: p.rewardItem?.pickupId,
       });
     }
+    (barrels ?? []).forEach((b, idx) =>
+      add({
+        id: `${region.id}_barrel_${idx + 1}`,
+        kind: "explosive_barrel",
+        regionId: region.id,
+        ...pos(b),
+      }),
+    );
+    (mirrorLamps ?? []).forEach((m, idx) =>
+      add({
+        id: `${region.id}_lamp_${idx + 1}`,
+        kind: "mirror_lamp",
+        regionId: region.id,
+        ...pos(m),
+      }),
+    );
     for (const s of [...region.residentSpawns, ...region.nightSpawns]) {
       const t = layout.spawns[s.spawnId];
       if (!t) throw new Error(`Missing spawn tile for ${s.spawnId}`);
@@ -220,7 +259,7 @@ export function generateWorld(data: GameData, layout = WORLD_LAYOUT): World {
       spawns.set(s.spawnId, {
         spawnId: s.spawnId,
         regionId: region.id,
-        ...position(t),
+        ...pos(t),
       });
     }
   }
@@ -236,13 +275,14 @@ export function generateWorld(data: GameData, layout = WORLD_LAYOUT): World {
     objectList: [...objects.values()].sort((a, b) => (a.id < b.id ? -1 : 1)),
     spawns,
     gateTiles,
-    heroStart: position(heroStart),
-    campfire: position(campfire),
+    heroStart: pos(heroStart),
+    campfire: pos(campfire),
   };
 }
 
 const worldsByData = new WeakMap<GameData, World>();
-export function getWorld(data: GameData): World {
+export function getWorld(data: GameData, ldtkMap?: LdtkProjectJson): World {
+  if (ldtkMap) return buildWorldFromLdtk(ldtkMap, data);
   const cached = worldsByData.get(data);
   if (cached) return cached;
   const world = generateWorld(data);

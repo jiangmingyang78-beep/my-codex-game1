@@ -4,6 +4,7 @@ import type { ActionResult, GameEvent, RunState, Systems } from "@/core/types";
 import { addItem, canAdd, countOf, removeItems } from "../inventory";
 import { BEACON_SEAL_IDS, countBeaconSeals } from "./beacon";
 import { materialFor } from "./materials";
+import { detonateResinBarrel } from "./regionEffects";
 import type { WorldObject } from "./worldTypes";
 
 /** Nearest interactable object within balance.hero.interactRangeTiles, or null. */
@@ -16,6 +17,8 @@ export function nearestInteractable(
   let bestD = range;
   for (const o of sys.world.objectList) {
     if (o.kind === "node" && state.changesByObjectId[o.id]?.gathered) continue;
+    if (o.kind === "explosive_barrel" && state.changesByObjectId[o.id]?.opened)
+      continue;
     const d = Math.hypot(o.x - state.hero.x, o.y - state.hero.y);
     if (d <= bestD) {
       bestD = d;
@@ -146,6 +149,64 @@ function igniteBeacon(
   };
 }
 
+function inspectStoryProp(
+  state: RunState,
+  sys: Systems,
+  o: WorldObject,
+): ActionResult {
+  const events: GameEvent[] = [];
+  if (o.storyToast) {
+    events.push(
+      makeEvent(EVT.notice, o.x, o.y, {
+        objectId: o.id,
+        message: o.storyToast,
+        unlockNoteId: o.unlockNoteId,
+      }),
+    );
+  }
+  if (o.itemId && o.pickupId && !state.collectedPickups.includes(o.pickupId)) {
+    const count = o.yield ?? 1;
+    if (canAdd(sys.data, state.inventory, o.itemId, count)) {
+      addItem(sys.data, state.inventory, o.itemId, count);
+      state.collectedPickups.push(o.pickupId);
+      events.push(
+        makeEvent(EVT.itemPicked, o.x, o.y, {
+          itemId: o.itemId,
+          count,
+          pickupId: o.pickupId,
+        }),
+      );
+    } else {
+      events.push(
+        makeEvent(EVT.pickupRefused, o.x, o.y, {
+          itemId: o.itemId,
+          reason: "inventory_full",
+        }),
+      );
+    }
+  }
+  return { ok: true, events };
+}
+
+function igniteMirrorLamp(state: RunState, o: WorldObject): ActionResult {
+  if (state.changesByObjectId[o.id]?.lit)
+    return refused(o, EVT.interactRefused, "already_lit");
+  state.changesByObjectId[o.id] = {
+    ...state.changesByObjectId[o.id],
+    lit: true,
+  };
+  return {
+    ok: true,
+    events: [
+      makeEvent(EVT.campLit, o.x, o.y, { objectId: o.id, count: 6 }),
+      makeEvent(EVT.notice, o.x, o.y, {
+        objectId: o.id,
+        message: "折镜铜灯亮起，暗室里折射出一圈稳定微光。",
+      }),
+    ],
+  };
+}
+
 /**
  * Interacts with a target id, or the nearest interactable when omitted.
  * Gathering, opening the gate (camp level gate with a text reason), lighting the relay
@@ -181,6 +242,15 @@ export function interact(
       return igniteRelay(state, o);
     case "beacon":
       return igniteBeacon(state, sys, o);
+    case "story_prop":
+      return inspectStoryProp(state, sys, o);
+    case "explosive_barrel": {
+      const events: GameEvent[] = [];
+      detonateResinBarrel(state, sys, o.id, events);
+      return { ok: events.length > 0, events };
+    }
+    case "mirror_lamp":
+      return igniteMirrorLamp(state, o);
     default:
       return {
         ok: true,

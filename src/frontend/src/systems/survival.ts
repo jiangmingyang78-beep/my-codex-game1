@@ -6,6 +6,7 @@ import { lightDrainMultiplier, tickBuffs } from "./buffs";
 import { inFireCircle } from "./campCircle";
 import { bucklerBlockCooldown, heroMaxHp, ownedStatBonus } from "./itemEffects";
 import { isHeroDashInvulnerable } from "./movement";
+import { evaluateRegionModifiers } from "./world/regionEffects";
 
 /** In-memory timers; deliberately not part of RunState/snapshot. */
 const restTimers = new WeakMap<RunState, number>();
@@ -167,16 +168,13 @@ export function tickSurvival(
     hero.darknessDamageSec = 0;
     return;
   }
-  const coldDrainMultiplier =
-    state.regionId === "frost_ridge"
-      ? Math.max(0, 1 - ownedStatBonus(sys.data, state.inventory, "coldResist"))
-      : 1;
+  const regionDrain = evaluateRegionModifiers(state, sys).lightDrainMult;
   hero.light = Math.max(
     0,
     hero.light -
       stats.light.nightDrainPerSec *
         lightDrainMultiplier(state, sys) *
-        coldDrainMultiplier *
+        regionDrain *
         sec,
   );
   if (hero.light > 0) {

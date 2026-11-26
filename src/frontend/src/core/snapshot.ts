@@ -1,10 +1,12 @@
-import { regionIdAt } from "@/systems/world/collision";
+import { blockedAt, regionIdAt } from "@/systems/world/collision";
 import { dayAt, phaseAt } from "./clock";
 import {
   RUN_SCHEMA_VERSION,
   SnapshotError,
   migrateRunSnapshot,
+  readRunVersion,
 } from "./saveMigration";
+import { migrateAdventureCoordinates } from "./snapshotCoordinates";
 import { int, num, rec, str } from "./snapshotFields";
 import {
   pickupIds,
@@ -25,7 +27,9 @@ const STATUSES: readonly RunStatus[] = ["playing", "won", "dead", "storm_lost"];
  * (reason `version_mismatch` or `invalid_*`) for corrupt or incompatible data.
  */
 export function sanitizeRunState(raw: unknown, sys: Systems): RunState {
-  const r = migrateRunSnapshot(rec(raw, "root"));
+  const source = rec(raw, "root");
+  const sourceVersion = readRunVersion(source.schemaVersion);
+  const r = migrateRunSnapshot(source);
   const balance = sys.data.balance;
   const status = STATUSES.find((s) => s === r.status);
   if (!status) throw new SnapshotError("invalid_status");
@@ -42,13 +46,8 @@ export function sanitizeRunState(raw: unknown, sys: Systems): RunState {
   const changesByObjectId = readChanges(r.changesByObjectId ?? {});
   const heroId = str(r.heroId, "hero_id");
   if (!sys.data.heroes.has(heroId)) throw new SnapshotError("invalid_hero_id");
-  const hero = readHero(r.hero, sys, changesByObjectId, inventory, heroId);
+  const hero = readHero(r.hero, sys, inventory, heroId);
   const savedRegionId = r.regionId ?? balance.starting.regionId;
-  const regionId =
-    regionIdAt(sys.world, hero.x, hero.y) ??
-    (sys.world.regions.some((region) => region.id === savedRegionId)
-      ? str(savedRegionId, "region")
-      : balance.starting.regionId);
   const savedSeals = pickupIds(r.seals);
   const collectedPickups = new Set([
     ...pickupIds(r.collectedPickups),
@@ -72,7 +71,7 @@ export function sanitizeRunState(raw: unknown, sys: Systems): RunState {
       sys.data.items.get("ember_seal")?.maxStack ?? 3,
     );
   else Reflect.deleteProperty(inventory, "ember_seal");
-  return {
+  const state: RunState = {
     schemaVersion: RUN_SCHEMA_VERSION,
     runId: str(r.runId, "run_id"),
     seed: int(r.seed, "seed", 0, 4294967295),
@@ -81,7 +80,9 @@ export function sanitizeRunState(raw: unknown, sys: Systems): RunState {
     status,
     phase: phaseAt(elapsedSec, balance),
     day: dayAt(elapsedSec, balance),
-    regionId,
+    regionId: sys.world.regions.some((region) => region.id === savedRegionId)
+      ? str(savedRegionId, "region")
+      : balance.starting.regionId,
     heroId,
     hero,
     inventory,
@@ -94,4 +95,11 @@ export function sanitizeRunState(raw: unknown, sys: Systems): RunState {
     autosaveSec: num(r.autosaveSec ?? 0, "autosave", 0, 3600),
     idCounter: int(r.idCounter ?? 0, "id_counter"),
   };
+  if (sourceVersion < 4) migrateAdventureCoordinates(state, sys.world);
+  if (blockedAt(sys.world, changesByObjectId, hero.x, hero.y, 5)) {
+    hero.x = sys.world.heroStart.x;
+    hero.y = sys.world.heroStart.y;
+  }
+  state.regionId = regionIdAt(sys.world, hero.x, hero.y) ?? state.regionId;
+  return state;
 }

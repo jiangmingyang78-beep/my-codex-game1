@@ -1,5 +1,5 @@
 import { EVT, makeEvent } from "@/core/events";
-import { getActiveAdventureSpecial } from "@/entities/adventureSpecialEnemies";
+import { getAdventureSpecial } from "@/entities/adventureSpecialEnemies";
 import { enemySeeds } from "@/entities/enemySeeds.js";
 import { applyEnemyHit, tickEnemyImpact } from "@/shared/monsterCatalog.js";
 import { ENEMY_RADIUS, inCone } from "./combat/combatMath";
@@ -90,17 +90,31 @@ function spawnThreat(state, sys, events, enemy, aim, attack, damage) {
 export function hitEnemy(state, sys, enemy, damage, events) {
   const config = sys.data.enemies.get(enemy.enemyId);
   if (!config || state.enemiesById[enemy.id] !== enemy) return;
-  const context = { state, sys, enemy, config };
-  const special = getActiveAdventureSpecial(context);
-  const adjusted = special?.onBeforeHit?.(context, damage, events) ?? damage;
-  if (!Number.isFinite(adjusted) || adjusted <= 0) return;
-  applyEnemyHit(enemy, adjusted, state.hero, {
+  const special = getAdventureSpecial(enemy.enemyId, config.specialKey);
+  if (special?.isUnlocked && !special.isUnlocked(enemy, state, sys)) return;
+  let finalDamage = damage;
+  if (special?.onBeforeHit) {
+    const dx = enemy.x - state.hero.x;
+    const dy = enemy.y - state.hero.y;
+    const len = Math.hypot(dx, dy) || 1;
+    const decision = special.onBeforeHit(enemy, damage, {
+      state,
+      sys,
+      config,
+      events,
+      attackDirX: dx / len,
+      attackDirY: dy / len,
+    });
+    if (decision?.blocked) return;
+    if (typeof decision?.damage === "number") finalDamage = decision.damage;
+  }
+  applyEnemyHit(enemy, finalDamage, state.hero, {
     config,
     emitEvent: (type, x, y, payload) =>
       events.push(makeEvent(type, x, y, payload)),
     onEnemyKilled: (target) => {
       defeatEnemy(state, sys, target, events);
-      special?.onKilled?.(context, events);
+      special?.onKilled?.(target, state, sys, events);
       if (
         config.drops.some(
           ({ pickupId }) => pickupId && state.groundLoot[pickupId],
@@ -120,12 +134,23 @@ export function updateEnemies(state, sys, dt, events) {
   for (const enemy of Object.values(state.enemiesById)) {
     const config = sys.data.enemies.get(enemy.enemyId);
     if (!config) continue;
+    const special = getAdventureSpecial(enemy.enemyId, config.specialKey);
+    if (special?.isUnlocked && !special.isUnlocked(enemy, state, sys)) continue;
     tickEnemyImpact(enemy, dt, move);
-    const context = { state, sys, enemy, config };
-    const special = getActiveAdventureSpecial(context);
-    if (special?.onUpdate?.(context, dt, events, move) === true) continue;
     const homeRegion = sys.world.spawns.get(enemy.spawnId)?.regionId;
     const distance = Math.hypot(hero.x - enemy.x, hero.y - enemy.y);
+    if (
+      special?.onUpdate?.(enemy, {
+        state,
+        sys,
+        config,
+        dt,
+        distance,
+        events,
+      }) === true
+    ) {
+      continue;
+    }
     if (!config.seedType) {
       if (enemy.phase !== "idle" || distance <= 14 * tileSize)
         updateLegacyEnemy(enemy, config, dt, state, sys, events);

@@ -1,5 +1,4 @@
 import { heroMaxHp } from "@/systems/itemEffects";
-import { blockedAt } from "@/systems/world/collision";
 import { SnapshotError, isRecord } from "./saveMigration";
 import { type Rec, int, num, rec, str } from "./snapshotFields";
 import type {
@@ -26,14 +25,12 @@ const PHASES: readonly EnemyPhase[] = [
 export function readHero(
   raw: unknown,
   sys: Systems,
-  changes: Record<string, ObjectChange>,
   inventory: Inventory,
   heroId: string,
 ): HeroState {
   const h = rec(raw, "hero");
   const { stats } = sys.data.balance;
-  const w = sys.world;
-  const hero: HeroState = {
+  return {
     x: num(h.x, "hero_x"),
     y: num(h.y, "hero_y"),
     facingX: num(h.facingX, "facing", -1, 1),
@@ -48,11 +45,6 @@ export function readHero(
     darknessDamageSec: num(h.darknessDamageSec ?? 0, "timer", 0, 600),
     inFire: h.inFire === true,
   };
-  if (blockedAt(w, changes, hero.x, hero.y, 5)) {
-    hero.x = w.heroStart.x;
-    hero.y = w.heroStart.y;
-  }
-  return hero;
 }
 
 // Previous releases allowed 30 of these drops. Existing excess stays usable.

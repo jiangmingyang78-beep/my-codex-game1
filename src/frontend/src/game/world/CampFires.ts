@@ -5,11 +5,11 @@ import type { createEffects } from "@/vfx/particles";
 export type Effects = ReturnType<typeof createEffects>;
 type FireHandle = ReturnType<Effects["addCampfire"]>;
 
-/** Keeps the vfx flame and light of the main campfire and relay braziers in step with RunState. */
+/** Keeps the vfx flame and light of the main campfire, relay braziers and mirror lamps in step with RunState. */
 export class CampFires {
   private main: FireHandle | null = null;
   private mainRadius = -1;
-  private readonly relays = new Map<
+  private readonly lights = new Map<
     string,
     { handle: FireHandle; lit: boolean }
   >();
@@ -20,20 +20,22 @@ export class CampFires {
     state: RunState,
   ) {
     const { world, data } = sys;
-    const radius = data.balance.camp.relayRadiusTiles * data.tileSize;
-    for (const id of [
-      ...data.relaySocketIds,
-      data.worldObjects.finalBeaconId,
-    ]) {
-      const o = world.objects.get(id);
-      if (!o) continue;
-      const lit = state.changesByObjectId[id]?.lit === true;
+    const relayRadius = data.balance.camp.relayRadiusTiles * data.tileSize;
+    const lampRadius = 4.5 * data.tileSize;
+    for (const o of world.objectList) {
+      if (
+        o.kind !== "relay_socket" &&
+        o.kind !== "mirror_lamp" &&
+        o.kind !== "beacon"
+      )
+        continue;
+      const lit = state.changesByObjectId[o.id]?.lit === true;
       const handle = fx.addCampfire(o.x, o.y + 5, {
-        radius,
+        radius: o.kind === "mirror_lamp" ? lampRadius : relayRadius,
         depth: o.y + 1,
         active: lit,
       });
-      this.relays.set(id, { handle, lit });
+      this.lights.set(o.id, { handle, lit });
     }
     this.sync(state);
   }
@@ -50,11 +52,11 @@ export class CampFires {
       });
       this.mainRadius = radius;
     }
-    for (const [id, relay] of this.relays) {
+    for (const [id, light] of this.lights) {
       const lit = state.changesByObjectId[id]?.lit === true;
-      if (lit === relay.lit) continue;
-      relay.lit = lit;
-      relay.handle.setActive(lit);
+      if (lit === light.lit) continue;
+      light.lit = lit;
+      light.handle.setActive(lit);
     }
   }
 }

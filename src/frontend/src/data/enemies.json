@@ -18,9 +18,21 @@
         "recoverSec": 0.65
       },
       "drops": [
-        { "itemId": "berry", "count": 1, "probability": 0.2 },
-        { "itemId": "wood", "count": 1, "probability": 0.35 },
-        { "itemId": "raw_meat", "count": 1, "probability": 0.35 }
+        {
+          "itemId": "berry",
+          "count": 1,
+          "probability": 0.2
+        },
+        {
+          "itemId": "wood",
+          "count": 1,
+          "probability": 0.35
+        },
+        {
+          "itemId": "raw_meat",
+          "count": 1,
+          "probability": 0.35
+        }
       ]
     },
     {
@@ -40,12 +52,18 @@
         "dashDurationSec": 0.18,
         "recoverSec": 0.55
       },
-      "drops": [{ "itemId": "berry", "count": 1, "probability": 0.25 }]
+      "drops": [
+        {
+          "itemId": "berry",
+          "count": 1,
+          "probability": 0.25
+        }
+      ]
     },
     {
       "id": "ash_wolf",
       "name": "灰烬恶狼",
-      "regionIds": ["old_mill", "deep_woods"],
+      "regionIds": ["old_mill", "deep_woods", "frozen_brook", "burnt_caravan"],
       "scope": "shared",
       "seedType": "lunge",
       "maxHp": 4,
@@ -60,14 +78,22 @@
         "recoverSec": 0.75
       },
       "drops": [
-        { "itemId": "raw_meat", "count": 1, "probability": 0.65 },
-        { "itemId": "pelt", "count": 1, "probability": 0.4 }
+        {
+          "itemId": "raw_meat",
+          "count": 1,
+          "probability": 0.65
+        },
+        {
+          "itemId": "pelt",
+          "count": 1,
+          "probability": 0.4
+        }
       ]
     },
     {
       "id": "shadow_lynx",
       "name": "黑雾山猫",
-      "regionIds": ["deep_woods", "frost_ridge"],
+      "regionIds": ["deep_woods", "frost_ridge", "herbalist_hollow"],
       "scope": "shared",
       "seedType": "lunge",
       "maxHp": 5,
@@ -82,23 +108,44 @@
         "recoverSec": 0.5
       },
       "drops": [
-        { "itemId": "pelt", "count": 1, "probability": 0.6 },
-        { "itemId": "ember_dust", "count": 1, "probability": 0.35 }
+        {
+          "itemId": "pelt",
+          "count": 1,
+          "probability": 0.6
+        },
+        {
+          "itemId": "ember_dust",
+          "count": 1,
+          "probability": 0.35
+        }
       ]
     },
     {
       "id": "rotted_woodcutter",
       "name": "迷雾朽木人",
-      "regionIds": ["camp_edge", "old_mill"],
+      "regionIds": ["camp_edge", "old_mill", "frozen_brook"],
       "scope": "shared",
       "seedType": "stalk_melee",
       "maxHp": 4,
       "attackDamage": 1,
       "moveSpeedPxPerSec": 42,
-      "attack": { "type": "melee", "reachTiles": 1.2, "windupSec": 0.3, "cooldownSec": 0.85 },
+      "attack": {
+        "type": "melee",
+        "reachTiles": 1.2,
+        "windupSec": 0.3,
+        "cooldownSec": 0.85
+      },
       "drops": [
-        { "itemId": "wood", "count": 2, "probability": 0.8 },
-        { "itemId": "resin", "count": 1, "probability": 0.3 }
+        {
+          "itemId": "wood",
+          "count": 2,
+          "probability": 0.8
+        },
+        {
+          "itemId": "resin",
+          "count": 1,
+          "probability": 0.3
+        }
       ]
     },
     {
@@ -110,10 +157,23 @@
       "maxHp": 6,
       "attackDamage": 2,
       "moveSpeedPxPerSec": 48,
-      "attack": { "type": "melee", "reachTiles": 1.3, "windupSec": 0.35, "cooldownSec": 0.9 },
+      "attack": {
+        "type": "melee",
+        "reachTiles": 1.3,
+        "windupSec": 0.35,
+        "cooldownSec": 0.9
+      },
       "drops": [
-        { "itemId": "charcoal", "count": 1, "probability": 0.6 },
-        { "itemId": "ember_dust", "count": 1, "probability": 0.25 }
+        {
+          "itemId": "charcoal",
+          "count": 1,
+          "probability": 0.6
+        },
+        {
+          "itemId": "ember_dust",
+          "count": 1,
+          "probability": 0.25
+        }
       ]
     },
     {
@@ -126,10 +186,23 @@
       "attackDamage": 3,
       "moveSpeedPxPerSec": 36,
       "knockbackSpeed": 60,
-      "attack": { "type": "melee", "reachTiles": 1.5, "windupSec": 0.45, "cooldownSec": 1.1 },
+      "attack": {
+        "type": "melee",
+        "reachTiles": 1.5,
+        "windupSec": 0.45,
+        "cooldownSec": 1.1
+      },
       "drops": [
-        { "itemId": "iron_scrap", "count": 2, "probability": 0.75 },
-        { "itemId": "ember_dust", "count": 1, "probability": 0.45 }
+        {
+          "itemId": "iron_scrap",
+          "count": 2,
+          "probability": 0.75
+        },
+        {
+          "itemId": "ember_dust",
+          "count": 1,
+          "probability": 0.45
+        }
       ]
     },
     {
@@ -149,29 +222,51 @@
         "projectileSpeedPxPerSec": 140
       },
       "drops": [
-        { "itemId": "feather", "count": 1, "probability": 0.5 },
-        { "itemId": "berry", "count": 1, "probability": 0.2 }
+        {
+          "itemId": "feather",
+          "count": 1,
+          "probability": 0.5
+        },
+        {
+          "itemId": "berry",
+          "count": 1,
+          "probability": 0.2
+        }
       ]
     },
     {
       "id": "bog_spitter",
       "name": "冻沼毒孢怪",
-      "regionIds": ["deep_woods"],
+      "regionIds": ["deep_woods", "herbalist_hollow"],
       "scope": "shared",
       "seedType": "ranged_telegraph",
       "maxHp": 5,
       "attackDamage": 2,
       "moveSpeedPxPerSec": 34,
-      "attack": { "mode": "aoe", "preferredTiles": 5, "radiusTiles": 1.3, "windupSec": 0.65, "cooldownSec": 1.6 },
+      "attack": {
+        "mode": "aoe",
+        "preferredTiles": 5,
+        "radiusTiles": 1.3,
+        "windupSec": 0.65,
+        "cooldownSec": 1.6
+      },
       "drops": [
-        { "itemId": "resin", "count": 1, "probability": 0.55 },
-        { "itemId": "herb", "count": 1, "probability": 0.4 }
+        {
+          "itemId": "resin",
+          "count": 1,
+          "probability": 0.55
+        },
+        {
+          "itemId": "herb",
+          "count": 1,
+          "probability": 0.4
+        }
       ]
     },
     {
       "id": "ember_wisp",
       "name": "游离鬼火灵",
-      "regionIds": ["deep_woods", "frost_ridge"],
+      "regionIds": ["deep_woods", "frost_ridge", "ice_gorge", "blackened_outpost"],
       "scope": "shared",
       "seedType": "ranged_telegraph",
       "maxHp": 4,
@@ -184,7 +279,13 @@
         "cooldownSec": 1.15,
         "projectileSpeedPxPerSec": 165
       },
-      "drops": [{ "itemId": "ember_dust", "count": 2, "probability": 0.7 }]
+      "drops": [
+        {
+          "itemId": "ember_dust",
+          "count": 2,
+          "probability": 0.7
+        }
+      ]
     },
     {
       "id": "mill_overseer",
@@ -202,7 +303,11 @@
           "seedType": "stalk_melee",
           "overrides": {
             "moveSpeedPxPerSec": 46,
-            "attack": { "reachTiles": 1.4, "windupSec": 0.62, "cooldownSec": 1.1 }
+            "attack": {
+              "reachTiles": 1.4,
+              "windupSec": 0.62,
+              "cooldownSec": 1.1
+            }
           }
         },
         {
@@ -229,7 +334,11 @@
           "pickupId": "old_mill_ember_seal",
           "oncePerRun": true
         },
-        { "itemId": "iron_scrap", "count": 3, "probability": 1 }
+        {
+          "itemId": "iron_scrap",
+          "count": 3,
+          "probability": 1
+        }
       ]
     },
     {
@@ -248,7 +357,11 @@
           "seedType": "stalk_melee",
           "overrides": {
             "moveSpeedPxPerSec": 50,
-            "attack": { "reachTiles": 1.6, "windupSec": 0.35, "cooldownSec": 0.85 }
+            "attack": {
+              "reachTiles": 1.6,
+              "windupSec": 0.35,
+              "cooldownSec": 0.85
+            }
           }
         },
         {
@@ -289,7 +402,130 @@
           "pickupId": "summit_ember_seal",
           "oncePerRun": true
         },
-        { "itemId": "ember_dust", "count": 5, "probability": 1 }
+        {
+          "itemId": "ember_dust",
+          "count": 5,
+          "probability": 1
+        }
+      ]
+    },
+    {
+      "id": "frost_shield_bearer",
+      "name": "冻木盾卫",
+      "scope": "adventure_only",
+      "specialKey": "front_shield",
+      "regionIds": ["frozen_brook"],
+      "seedType": "lunge",
+      "maxHp": 7,
+      "attackDamage": 2,
+      "moveSpeedPxPerSec": 40,
+      "knockbackSpeed": 50,
+      "attack": {
+        "type": "lunge",
+        "triggerTiles": 3.4,
+        "windupSec": 0.45,
+        "distanceTiles": 2.4,
+        "dashDurationSec": 0.24,
+        "recoverSec": 0.9
+      },
+      "drops": [
+        {
+          "itemId": "wood",
+          "count": 2,
+          "probability": 0.8
+        },
+        {
+          "itemId": "iron_scrap",
+          "count": 1,
+          "probability": 0.6
+        }
+      ]
+    },
+    {
+      "id": "scarred_alpha",
+      "name": "焦毛狼王",
+      "scope": "adventure_only",
+      "specialKey": "pack_howl",
+      "regionIds": ["burnt_caravan"],
+      "seedType": "lunge",
+      "maxHp": 12,
+      "attackDamage": 2,
+      "moveSpeedPxPerSec": 80,
+      "attack": {
+        "type": "lunge",
+        "triggerTiles": 4.5,
+        "windupSec": 0.4,
+        "distanceTiles": 3.2,
+        "dashDurationSec": 0.24,
+        "recoverSec": 0.65
+      },
+      "drops": [
+        {
+          "itemId": "pelt",
+          "count": 3,
+          "probability": 1
+        },
+        {
+          "itemId": "raw_meat",
+          "count": 2,
+          "probability": 1
+        }
+      ]
+    },
+    {
+      "id": "spore_matriarch",
+      "name": "寒孢母体",
+      "scope": "adventure_only",
+      "specialKey": "immobile_turret",
+      "regionIds": ["herbalist_hollow"],
+      "seedType": "ranged_telegraph",
+      "maxHp": 14,
+      "attackDamage": 2,
+      "moveSpeedPxPerSec": 1,
+      "knockbackSpeed": 0,
+      "attack": {
+        "mode": "aoe",
+        "preferredTiles": 5.5,
+        "radiusTiles": 1.6,
+        "windupSec": 0.6,
+        "cooldownSec": 1.15
+      },
+      "drops": [
+        {
+          "itemId": "herb",
+          "count": 3,
+          "probability": 1
+        },
+        {
+          "itemId": "resin",
+          "count": 2,
+          "probability": 1
+        }
+      ]
+    },
+    {
+      "id": "mirror_wisp",
+      "name": "折镜鬼火",
+      "scope": "adventure_only",
+      "specialKey": "light_phase",
+      "regionIds": ["blackened_outpost"],
+      "seedType": "ranged_telegraph",
+      "maxHp": 9,
+      "attackDamage": 2,
+      "moveSpeedPxPerSec": 58,
+      "attack": {
+        "mode": "projectile",
+        "preferredTiles": 4.8,
+        "windupSec": 0.45,
+        "cooldownSec": 1.1,
+        "projectileSpeedPxPerSec": 155
+      },
+      "drops": [
+        {
+          "itemId": "ember_dust",
+          "count": 4,
+          "probability": 1
+        }
       ]
     }
   ]

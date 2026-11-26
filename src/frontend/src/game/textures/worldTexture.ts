@@ -31,6 +31,7 @@ const PLANK = { land: "#6f5543", detail: "#4d392c", floor: 4 };
 const ROCK = { land: "#262c40", detail: "#343c58", floor: 3 };
 const MILL_WALL = { land: "#5a4a3e", detail: "#3d3129", floor: 3 };
 const FIRE_BASE = { land: "#6b7180", detail: "#4a4f5e", floor: 3 };
+const BOG = { land: "#3a4f46", detail: "#253630", floor: 2 };
 const EDGE_COLOR = "#8497b2";
 const TUFT_COLOR = "#7d98a4";
 /** Edge dither sides: 0 top, 1 right, 2 bottom, 3 left. */
@@ -57,6 +58,8 @@ function style(world: World, tx: number, ty: number): typeof SNOW {
       return inMill(tx, ty) ? MILL_WALL : ROCK;
     case TILE.fireBase:
       return FIRE_BASE;
+    case TILE.bog:
+      return BOG;
     default:
       return SNOW;
   }

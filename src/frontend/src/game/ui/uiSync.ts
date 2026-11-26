@@ -24,6 +24,12 @@ function promptText(
       return state.changesByObjectId[id]?.lit
         ? null
         : "E 点燃火站（需要接力火盆）";
+    case "story_prop":
+      return "E 查看遗物";
+    case "explosive_barrel":
+      return state.changesByObjectId[id]?.opened ? null : "E / 攻击 引爆松脂桶";
+    case "mirror_lamp":
+      return state.changesByObjectId[id]?.lit ? null : "E 点亮折镜铜灯";
     default:
       return null;
   }

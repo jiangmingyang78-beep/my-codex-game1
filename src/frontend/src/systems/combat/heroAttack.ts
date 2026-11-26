@@ -4,6 +4,7 @@ import type { EnemyState, GameEvent, RunState, Systems } from "@/core/types";
 import { hitEnemy } from "../EnemyManager.js";
 import { countOf } from "../inventory";
 import { ownedStatBonus } from "../itemEffects";
+import { detonateResinBarrel } from "../world/regionEffects";
 import { ENEMY_RADIUS, inCone } from "./combatMath";
 
 export interface Weapon {
@@ -77,5 +78,24 @@ export function heroAttack(
       targets.push(e);
   }
   for (const e of targets) hitEnemy(state, sys, e, w.damage, events);
+  for (const o of sys.world.objectList) {
+    if (
+      o.kind === "explosive_barrel" &&
+      !state.changesByObjectId[o.id]?.opened &&
+      inCone(
+        hero.x,
+        hero.y,
+        hero.facingX,
+        hero.facingY,
+        o.x,
+        o.y,
+        range,
+        w.arcDegrees,
+        ENEMY_RADIUS,
+      )
+    ) {
+      detonateResinBarrel(state, sys, o.id, events);
+    }
+  }
   return true;
 }

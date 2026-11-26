@@ -60,11 +60,12 @@ function describe(e: GameEvent, sys: Systems): Feedback | null {
     case EVT.campUpgraded:
       return { toast: [`营火升到 ${Number(p.level)} 级，火圈变大了`, "good"] };
     case EVT.campLit:
+      if (p.kind === "barrel_blast") return { sfx: "hit" };
       return {
         toast: [
           p.objectId === sys.data.worldObjects.finalBeaconId
             ? "山脊烽台已点燃"
-            : "接力火盆已点亮，火圈永久扩展",
+            : "火光已点亮，火圈永久扩展",
           "good",
         ],
         sfx: "craft",
@@ -84,7 +85,7 @@ function describe(e: GameEvent, sys: Systems): Feedback | null {
         };
       }
       return {
-        toast: ["攻击被护盾挡住，绕到侧面再出手", "warn"],
+        toast: [text(p.message) || "攻击被护盾挡住，绕到侧面再出手", "warn"],
         sfx: "block",
       };
     case EVT.enemyPhaseChanged:
@@ -114,7 +115,12 @@ function describe(e: GameEvent, sys: Systems): Feedback | null {
       return { toast: ["天亮了，枯枝与浆果重新长出", "good"] };
     case EVT.notice:
       return text(p.message)
-        ? { toast: [text(p.message), p.tone === "warn" ? "warn" : "good"] }
+        ? {
+            toast: [
+              text(p.message),
+              p.tone === "warn" ? "warn" : "objectId" in p ? "info" : "good",
+            ],
+          }
         : null;
     case EVT.hit:
       return p.kind ? { sfx: "hit" } : null;

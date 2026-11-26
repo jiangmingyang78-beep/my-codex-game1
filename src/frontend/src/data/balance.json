@@ -2,8 +2,8 @@
   "schemaVersion": 1,
   "world": {
     "mapKey": "snowland",
-    "widthTiles": 156,
-    "heightTiles": 64,
+    "widthTiles": 240,
+    "heightTiles": 96,
     "tileSizePx": 16,
     "logicalWidthPx": 384,
     "logicalHeightPx": 224

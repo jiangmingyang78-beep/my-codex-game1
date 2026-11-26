@@ -5,11 +5,16 @@ import {
   registerCanvasTexture,
 } from "@/vfx/proceduralTextures";
 import type Phaser from "phaser";
+import { SPECIAL_ENEMY_TEXTURE_DEFS } from "./specialEnemyTextures";
 import { PIXEL_SPRITES } from "./spriteArt";
 
 export type TextureGenerator = ReturnType<typeof createTextureGenerator>;
 
-const enemyTextureKeys = new Set(ENEMY_TEXTURE_DEFS.map(({ key }) => key));
+const ALL_ENEMY_TEXTURES = [
+  ...ENEMY_TEXTURE_DEFS,
+  ...SPECIAL_ENEMY_TEXTURE_DEFS,
+];
+const enemyTextureKeys = new Set(ALL_ENEMY_TEXTURES.map(({ key }) => key));
 
 export const TEX = {
   world: "world-ground",
@@ -156,7 +161,7 @@ export function registerGameTextures(
       }
     }
   }
-  for (const def of ENEMY_TEXTURE_DEFS) {
+  for (const def of ALL_ENEMY_TEXTURES) {
     const art = gen.generate(def);
     register(scene, def.key, art.canvas, art.anchorX, art.anchorY);
   }

@@ -8,6 +8,7 @@ export const TILE = {
   door: 5,
   ice: 6,
   fireBase: 7,
+  bog: 8,
 } as const;
 
 export type ObjectKind =
@@ -15,7 +16,10 @@ export type ObjectKind =
   | "node"
   | "gate"
   | "relay_socket"
-  | "beacon";
+  | "beacon"
+  | "story_prop"
+  | "explosive_barrel"
+  | "mirror_lamp";
 
 export interface WorldObject {
   id: string;
@@ -27,6 +31,10 @@ export interface WorldObject {
   itemId?: string;
   yield?: number;
   renewable?: boolean;
+  spriteKey?: string;
+  storyToast?: string;
+  unlockNoteId?: string;
+  pickupId?: string;
 }
 
 export interface RegionBounds {

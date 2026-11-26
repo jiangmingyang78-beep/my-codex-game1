@@ -1,5 +1,5 @@
 import { ENEMY_RADIUS } from "@/systems/combat/combatMath";
-import { getActiveAdventureSpecial } from "./adventureSpecialEnemies";
+import { getAdventureSpecial } from "./adventureSpecialEnemies";
 
 /** Phaser view and body. The rules layer owns position and tile collision. */
 export class EnemyEntity {
@@ -31,15 +31,17 @@ export class EnemyEntity {
     if (enemy.hurtTimer > 0) this.sprite.setTintFill(0xffffff).setAlpha(0.65);
     else if (enemy.phase === "windup") this.sprite.setTint(0xff9a8a);
     if (enemy.phase === "windup") this.drawTelegraph(enemy, tileSize);
-    const special =
-      this.definition &&
-      getActiveAdventureSpecial({
-        state,
-        sys,
-        enemy,
-        config: this.definition,
-      });
-    special?.renderOverlay?.(this.telegraph, enemy, tileSize);
+    const special = getAdventureSpecial(
+      enemy.enemyId,
+      this.definition?.specialKey,
+    );
+    if (
+      special &&
+      (!special.isUnlocked ||
+        (state && sys && special.isUnlocked(enemy, state, sys)))
+    ) {
+      special.renderOverlay?.(this.telegraph, enemy, tileSize);
+    }
   }
 
   drawTelegraph(enemy, tileSize) {

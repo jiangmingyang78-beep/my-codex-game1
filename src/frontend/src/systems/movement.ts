@@ -2,9 +2,11 @@ import { getHero } from "@/core/gameData";
 import type { RunState, StepInputState, Systems } from "@/core/types";
 import { heroMoveSpeedMultiplier, ownedStatBonus } from "./itemEffects";
 import { type MoveOut, moveWithCollision } from "./world/collision";
+import { evaluateRegionModifiers } from "./world/regionEffects";
 
 export const HERO_RADIUS = 5;
 const scratch: MoveOut = { x: 0, y: 0 };
+const slideByRun = new WeakMap<RunState, { vx: number; vy: number }>();
 
 /**
  * Unit-length (or shorter analog) movement vector. Diagonals are normalized so
@@ -147,22 +149,53 @@ export function moveHero(
     startDash(state, sys, dash, fx, fy);
   }
   const dashing = dash.activeSec > 0;
-  if (len === 0 && !dashing) return;
   const { data } = sys;
-  const dashSec = dashing ? Math.min(sec, dash.activeSec) : 0;
-  if (dashing) dash.activeSec -= dashSec;
+  const mods = evaluateRegionModifiers(state, sys);
   const base =
     data.balance.hero.moveSpeedPxPerSec *
     (getHero(data, state.heroId).traits.moveSpeedMult ?? 1) *
-    heroMoveSpeedMultiplier(data, state.inventory);
-  const dist = dashing ? base * DASH.speedMult * dashSec : base * sec;
+    heroMoveSpeedMultiplier(data, state.inventory) *
+    mods.speedMult;
+
+  let slide = slideByRun.get(state);
+  if (!slide) {
+    slide = { vx: 0, vy: 0 };
+    slideByRun.set(state, slide);
+  }
+
+  let vx: number;
+  let vy: number;
+  let stepSec = sec;
+  if (dashing) {
+    stepSec = Math.min(sec, dash.activeSec);
+    dash.activeSec -= stepSec;
+    vx = dash.dx * base * DASH.speedMult;
+    vy = dash.dy * base * DASH.speedMult;
+    slide.vx = vx;
+    slide.vy = vy;
+  } else {
+    vx = v.x * base;
+    vy = v.y * base;
+    if (mods.slipperyDrag !== null) {
+      const blend = 1 - Math.exp(-mods.slipperyDrag * sec);
+      slide.vx += (vx - slide.vx) * blend;
+      slide.vy += (vy - slide.vy) * blend;
+      vx = slide.vx;
+      vy = slide.vy;
+    } else {
+      slide.vx = vx;
+      slide.vy = vy;
+    }
+  }
+
+  if (Math.abs(vx) < 0.5 && Math.abs(vy) < 0.5) return;
   moveWithCollision(
     sys.world,
     state.changesByObjectId,
     hero.x,
     hero.y,
-    (dashing ? dash.dx : v.x) * dist,
-    (dashing ? dash.dy : v.y) * dist,
+    vx * stepSec,
+    vy * stepSec,
     HERO_RADIUS,
     scratch,
   );

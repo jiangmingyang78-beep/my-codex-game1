@@ -2,9 +2,13 @@
   "worldTagline": "雪夜生存 · 守住最后的火光",
   "regionToasts": {
     "camp_edge": "雪压松枝，营火还在身后。",
+    "frozen_brook": "冻溪冰面脆响，岸边浅滩已化作阴冷冻沼。",
+    "burnt_caravan": "焦黑的车辙没入积雪，空气里残着松脂焦味。",
     "old_mill": "磨轮早已停转，屋里还传来铁器拖地的声音。",
     "deep_woods": "风进了密林便低下来，枝叶间有脚步声。",
+    "herbalist_hollow": "枯松围拢的药谷雾气低垂，石臼旁仍有余香。",
     "ice_gorge": "峡风挟着碎冰从脚边擦过。",
+    "blackened_outpost": "被涂黑的哨卡静默无声，暗处微光游移。",
     "frost_ridge": "树线断在脚下，再往东便是旧烽台。",
     "beacon": "石台上的积雪，盖住了历代守火人的刻痕。"
   },

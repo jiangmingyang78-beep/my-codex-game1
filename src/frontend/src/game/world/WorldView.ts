@@ -12,9 +12,10 @@ import {
   tileHash,
 } from "../textures/worldTexture";
 
-/** Static world art (baked ground, trees, doors) plus the state-driven nodes and gates. */
+/** Static world art (baked ground, trees, doors) plus the state-driven nodes, barrels and gates. */
 export class WorldView {
   private readonly nodes = new Map<string, Phaser.GameObjects.Image>();
+  private readonly barrels = new Map<string, Phaser.GameObjects.Image>();
   private readonly doors = new Map<string, Phaser.GameObjects.Image[]>();
 
   constructor(
@@ -65,12 +66,34 @@ export class WorldView {
       .setOrigin(0.5, 0.8)
       .setDepth(campfire.y - 1);
     for (const o of objectList) {
-      if (o.kind === "beacon" || o.kind === "relay_socket") {
-        this.scene.add
+      if (
+        o.kind === "beacon" ||
+        o.kind === "relay_socket" ||
+        o.kind === "mirror_lamp"
+      ) {
+        const img = this.scene.add
           .image(o.x, o.y + 6, TEX.brazier)
           .setOrigin(0.5, 0.9)
           .setScale(o.kind === "beacon" ? 1.25 : 1)
           .setDepth(o.y);
+        if (o.kind === "mirror_lamp") img.setTint(0x9be7ff);
+      } else if (o.kind === "explosive_barrel") {
+        const img = this.scene.add
+          .image(o.x, o.y + 6, TEX.node("wood"))
+          .setOrigin(0.5, 0.9)
+          .setDepth(o.y)
+          .setTint(0xff9452);
+        this.barrels.set(o.id, img);
+      } else if (o.kind === "story_prop") {
+        const key =
+          o.spriteKey && this.scene.textures.exists(o.spriteKey)
+            ? o.spriteKey
+            : TEX.node("stone");
+        this.scene.add
+          .image(o.x, o.y + 6, key)
+          .setOrigin(0.5, 0.9)
+          .setDepth(o.y)
+          .setTint(0xe8d8a8);
       } else if (o.kind === "node") {
         const key = this.scene.textures.exists(TEX.node(o.itemId ?? ""))
           ? TEX.node(o.itemId ?? "")
@@ -86,10 +109,12 @@ export class WorldView {
     }
   }
 
-  /** Hides gathered nodes and opened gates; cheap enough to run every frame. */
+  /** Hides gathered nodes, detonated barrels and opened gates; cheap enough to run every frame. */
   sync(state: RunState): void {
     for (const [id, image] of this.nodes)
       image.setVisible(!state.changesByObjectId[id]?.gathered);
+    for (const [id, image] of this.barrels)
+      image.setVisible(!state.changesByObjectId[id]?.opened);
     for (const [id, images] of this.doors) {
       const open = state.changesByObjectId[id]?.opened === true;
       for (const image of images) image.setVisible(!open);

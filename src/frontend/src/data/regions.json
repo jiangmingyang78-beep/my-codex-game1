@@ -3,6 +3,8 @@
     {
       "id": "camp_edge",
       "name": "炉边雪林",
+      "act": 1,
+      "kind": "main",
       "entry": {
         "gateId": null,
         "minCampLevel": 1,
@@ -16,6 +18,15 @@
         "fiber": 6,
         "berry": 6
       },
+      "storyProps": [
+        {
+          "id": "lin_old_cellar",
+          "tileX": 14,
+          "tileY": 18,
+          "spriteKey": "prop:cellar_door",
+          "toast": "漏风的地窖旧门，门框缝隙里残留着半截烤干的松脂。"
+        }
+      ],
       "residentSpawns": [
         {
           "spawnId": "camp_edge_weasel",
@@ -42,8 +53,104 @@
       ]
     },
     {
+      "id": "frozen_brook",
+      "name": "冻溪伐木场",
+      "act": 2,
+      "kind": "main",
+      "environmentRule": {
+        "type": "slippery_ice",
+        "drag": 4.2
+      },
+      "entry": {
+        "gateId": null,
+        "minCampLevel": 1,
+        "requiredPickupIds": []
+      },
+      "encounterId": null,
+      "relaySocketId": null,
+      "minimumStartingSupply": {
+        "wood": 8,
+        "stone": 4
+      },
+      "storyProps": [
+        {
+          "id": "brook_clawed_cart",
+          "tileX": 74,
+          "tileY": 54,
+          "spriteKey": "prop:broken_cart",
+          "toast": "倾倒的运炭车上满是冻硬的抓痕——当年被关在门外的伐木工留下的。"
+        }
+      ],
+      "residentSpawns": [
+        {
+          "spawnId": "brook_woodcutter_a",
+          "enemyId": "rotted_woodcutter"
+        },
+        {
+          "spawnId": "brook_ash_wolf",
+          "enemyId": "ash_wolf"
+        },
+        {
+          "spawnId": "brook_shield_guard",
+          "enemyId": "frost_shield_bearer"
+        }
+      ],
+      "nightSpawns": [
+        {
+          "spawnId": "brook_night_a",
+          "enemyId": "ash_wolf"
+        }
+      ]
+    },
+    {
+      "id": "burnt_caravan",
+      "name": "灰烬商道残骸",
+      "act": 2,
+      "kind": "side",
+      "environmentRule": {
+        "type": "explosive_barrels",
+        "blastRadiusTiles": 2.5,
+        "blastDamage": 4
+      },
+      "entry": {
+        "gateId": null,
+        "minCampLevel": 1,
+        "requiredPickupIds": []
+      },
+      "encounterId": null,
+      "relaySocketId": null,
+      "minimumStartingSupply": {},
+      "storyProps": [
+        {
+          "id": "corvus_fire_cloak_log",
+          "tileX": 22,
+          "tileY": 76,
+          "spriteKey": "prop:charred_wagon",
+          "toast": "焦黑的兽皮残片与倾覆松脂桶，雪地上拖出一条长长的焦痕。",
+          "unlockNoteId": "note_three_mile_fire"
+        }
+      ],
+      "residentSpawns": [
+        {
+          "spawnId": "caravan_wolf_a",
+          "enemyId": "ash_wolf"
+        },
+        {
+          "spawnId": "caravan_wolf_b",
+          "enemyId": "ash_wolf"
+        },
+        {
+          "spawnId": "caravan_alpha",
+          "enemyId": "scarred_alpha"
+        }
+      ],
+      "nightSpawns": []
+    },
+    {
       "id": "old_mill",
-      "name": "废磨坊",
+      "name": "废弃磨坊",
+      "act": 3,
+      "kind": "main",
       "entry": {
         "gateId": "old_mill_gate",
         "minCampLevel": 2,
@@ -56,6 +163,15 @@
         "stone": 4,
         "frostcap": 4
       },
+      "storyProps": [
+        {
+          "id": "gale_split_anvil",
+          "tileX": 78,
+          "tileY": 20,
+          "spriteKey": "prop:split_anvil",
+          "toast": "一座从中间硬生生砸裂的生铁砧，边缘还留着陈年炭灰。"
+        }
+      ],
       "residentSpawns": [
         {
           "spawnId": "old_mill_weasel",
@@ -94,8 +210,118 @@
       ]
     },
     {
+      "id": "deep_woods",
+      "name": "幽暗冻沼",
+      "act": 4,
+      "kind": "main",
+      "environmentRule": {
+        "type": "dense_fog_bog",
+        "bogSpeedMult": 0.65,
+        "fogLightDrainMult": 1.4,
+        "safeTile": "path"
+      },
+      "entry": {
+        "gateId": null,
+        "minCampLevel": 2,
+        "requiredPickupIds": []
+      },
+      "encounterId": null,
+      "relaySocketId": "deep_woods_relay",
+      "minimumStartingSupply": {},
+      "storyProps": [
+        {
+          "id": "suheng_basket",
+          "tileX": 118,
+          "tileY": 26,
+          "spriteKey": "prop:herb_basket",
+          "toast": "半埋在冻雪里的竹编药篓，肩带系着工整的双环草绳结。",
+          "unlockNoteId": "note_green_spore_diary",
+          "rewardItem": {
+            "itemId": "herb",
+            "count": 2,
+            "pickupId": "deep_woods_brother_herb"
+          }
+        }
+      ],
+      "residentSpawns": [
+        {
+          "spawnId": "deep_shadow_lynx",
+          "enemyId": "shadow_lynx"
+        },
+        {
+          "spawnId": "deep_bog_spitter",
+          "enemyId": "bog_spitter"
+        },
+        {
+          "spawnId": "deep_ember_wisp",
+          "enemyId": "ember_wisp"
+        }
+      ],
+      "nightSpawns": [
+        {
+          "spawnId": "deep_night_a",
+          "enemyId": "shadow_lynx"
+        }
+      ]
+    },
+    {
+      "id": "herbalist_hollow",
+      "name": "枯松药谷",
+      "act": 4,
+      "kind": "side",
+      "environmentRule": {
+        "type": "dense_fog_bog",
+        "bogSpeedMult": 0.65,
+        "fogLightDrainMult": 1.25,
+        "safeTile": "path"
+      },
+      "entry": {
+        "gateId": null,
+        "minCampLevel": 2,
+        "requiredPickupIds": []
+      },
+      "encounterId": null,
+      "relaySocketId": null,
+      "minimumStartingSupply": {},
+      "storyProps": [
+        {
+          "id": "hollow_mortar",
+          "tileX": 116,
+          "tileY": 64,
+          "spriteKey": "prop:stone_mortar",
+          "toast": "冻住的石臼里还残留着青绿色的雪草药泥与松脂。"
+        }
+      ],
+      "residentSpawns": [
+        {
+          "spawnId": "hollow_bog_a",
+          "enemyId": "bog_spitter"
+        },
+        {
+          "spawnId": "hollow_lynx",
+          "enemyId": "shadow_lynx"
+        },
+        {
+          "spawnId": "hollow_matriarch",
+          "enemyId": "spore_matriarch"
+        }
+      ],
+      "nightSpawns": []
+    },
+    {
       "id": "ice_gorge",
-      "name": "冰峡",
+      "name": "冰峡裂谷",
+      "act": 5,
+      "kind": "main",
+      "environmentRule": {
+        "type": "periodic_gale",
+        "intervalSec": 25,
+        "durationSec": 4,
+        "lightRadiusMult": 0.6,
+        "pushSpeedPxPerSec": 36,
+        "pushDirX": -1,
+        "pushDirY": 0
+      },
       "entry": {
         "gateId": "ice_gorge_gate",
         "minCampLevel": 2,
@@ -108,6 +334,16 @@
         "stone": 4,
         "frostcap": 4
       },
+      "storyProps": [
+        {
+          "id": "alvin_gorge_crate",
+          "tileX": 164,
+          "tileY": 24,
+          "spriteKey": "prop:iron_crate",
+          "toast": "防水铁匣压在石座下，记着通往山脊的每一段风歇间隙。",
+          "unlockNoteId": "note_gorge_fireline"
+        }
+      ],
       "residentSpawns": [
         {
           "spawnId": "ice_gorge_ram",
@@ -116,6 +352,10 @@
         {
           "spawnId": "ice_gorge_shade",
           "enemyId": "coal_shade"
+        },
+        {
+          "spawnId": "ice_gorge_wisp",
+          "enemyId": "ember_wisp"
         }
       ],
       "nightSpawns": [
@@ -130,12 +370,92 @@
       ]
     },
     {
+      "id": "blackened_outpost",
+      "name": "被涂黑的北境哨卡",
+      "act": 5,
+      "kind": "side",
+      "environmentRule": {
+        "type": "mirror_darkroom",
+        "requiredLamps": 3
+      },
+      "entry": {
+        "gateId": "outpost_gate",
+        "minCampLevel": 2,
+        "requiredPickupIds": ["old_mill_ember_seal"]
+      },
+      "encounterId": null,
+      "relaySocketId": null,
+      "minimumStartingSupply": {},
+      "storyProps": [
+        {
+          "id": "alvin_page_17",
+          "tileX": 166,
+          "tileY": 64,
+          "spriteKey": "prop:archive_desk",
+          "toast": "《烽台营造录》第十七页手抄本：黑雾吞不掉被余烬尘约束的定态微光。",
+          "unlockNoteId": "note_page_seventeen"
+        }
+      ],
+      "residentSpawns": [
+        {
+          "spawnId": "outpost_wisp_a",
+          "enemyId": "ember_wisp"
+        },
+        {
+          "spawnId": "outpost_mirror_wisp",
+          "enemyId": "mirror_wisp"
+        }
+      ],
+      "nightSpawns": []
+    },
+    {
+      "id": "frost_ridge",
+      "name": "霜冻古道",
+      "act": 6,
+      "kind": "main",
+      "environmentRule": {
+        "type": "low_pressure_storm",
+        "lightDrainMult": 1.35,
+        "coldScale": 1
+      },
+      "entry": {
+        "gateId": "frost_ridge_gate",
+        "minCampLevel": 2,
+        "requiredPickupIds": ["old_mill_ember_seal"]
+      },
+      "encounterId": null,
+      "relaySocketId": null,
+      "minimumStartingSupply": {},
+      "residentSpawns": [
+        {
+          "spawnId": "ridge_frozen_guard",
+          "enemyId": "frozen_guard"
+        },
+        {
+          "spawnId": "ridge_frozen_guard_b",
+          "enemyId": "frozen_guard"
+        },
+        {
+          "spawnId": "ridge_warden",
+          "enemyId": "summit_pyre_warden"
+        }
+      ],
+      "nightSpawns": []
+    },
+    {
       "id": "beacon",
       "name": "山脊烽台",
+      "act": 6,
+      "kind": "main",
+      "environmentRule": {
+        "type": "low_pressure_storm",
+        "lightDrainMult": 1.2,
+        "coldScale": 1
+      },
       "entry": {
         "gateId": "beacon_gate",
         "minCampLevel": 3,
-        "requiredPickupIds": ["old_mill_ember_seal", "ice_gorge_ember_seal"]
+        "requiredPickupIds": ["old_mill_ember_seal", "summit_ember_seal"]
       },
       "encounterId": null,
       "relaySocketId": null,
@@ -152,59 +472,6 @@
         "spawnId": "beacon_keeper_spawn",
         "lightZoneId": "beacon_arena_light"
       }
-    },
-    {
-      "id": "deep_woods",
-      "name": "密林深处",
-      "entry": {
-        "gateId": null,
-        "minCampLevel": 2,
-        "requiredPickupIds": []
-      },
-      "encounterId": null,
-      "relaySocketId": null,
-      "minimumStartingSupply": {},
-      "residentSpawns": [
-        {
-          "spawnId": "deep_shadow_lynx",
-          "enemyId": "shadow_lynx"
-        },
-        {
-          "spawnId": "deep_bog_spitter",
-          "enemyId": "bog_spitter"
-        },
-        {
-          "spawnId": "deep_ember_wisp",
-          "enemyId": "ember_wisp"
-        }
-      ],
-      "nightSpawns": [
-        { "spawnId": "deep_woods_night_wolf", "enemyId": "ash_wolf" },
-        { "spawnId": "deep_woods_night_lynx", "enemyId": "shadow_lynx" }
-      ]
-    },
-    {
-      "id": "frost_ridge",
-      "name": "霜渊山脊",
-      "entry": {
-        "gateId": "frost_ridge_gate",
-        "minCampLevel": 2,
-        "requiredPickupIds": ["old_mill_ember_seal"]
-      },
-      "encounterId": null,
-      "relaySocketId": null,
-      "minimumStartingSupply": {},
-      "residentSpawns": [
-        {
-          "spawnId": "ridge_frozen_guard",
-          "enemyId": "frozen_guard"
-        },
-        {
-          "spawnId": "ridge_warden",
-          "enemyId": "summit_pyre_warden"
-        }
-      ],
-      "nightSpawns": []
     }
   ],
   "worldObjects": {
@@ -219,6 +486,6 @@
     ]
   },
   "dawnRenewal": {
-    "renewableItemIds": ["berry", "frostcap", "fiber", "herb"]
+    "renewableItemIds": ["berry", "frostcap", "herb"]
   }
 }

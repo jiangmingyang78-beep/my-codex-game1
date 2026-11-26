@@ -1,4 +1,4 @@
-export const RUN_SCHEMA_VERSION = 3;
+export const RUN_SCHEMA_VERSION = 4;
 
 export class SnapshotError extends Error {
   constructor(readonly reason: string) {
@@ -45,6 +45,7 @@ const migrations: Partial<
 > = {
   1: migrateV1,
   2: migrateV2,
+  3: (raw) => ({ ...raw, schemaVersion: 4 }),
 };
 
 /** Upgrade the persisted shape before validating it against current gameplay data. */

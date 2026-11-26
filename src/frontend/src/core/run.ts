@@ -11,6 +11,7 @@ import { tickHeroTimers, tickSurvival } from "@/systems/survival";
 import { regionIdAt } from "@/systems/world/collision";
 import { renewAtDawn } from "@/systems/world/dawn";
 import { interact } from "@/systems/world/interact";
+import { tickRegionEffects } from "@/systems/world/regionEffects";
 import { clampStep, dayAt, phaseAt } from "./clock";
 import { runCommands } from "./commands";
 import { EVT, makeEvent } from "./events";
@@ -166,6 +167,8 @@ export function step(
     sec,
     request.frame?.hero,
   );
+  tickRegionEffects(state, sys, sec, events);
+
   const region = regionIdAt(sys.world, hero.x, hero.y);
   if (region && region !== state.regionId) {
     state.regionId = region;

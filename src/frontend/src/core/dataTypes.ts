@@ -68,9 +68,45 @@ export interface SpawnDef {
   enemyId: string;
 }
 
+export type RegionEnvironmentRule =
+  | { type: "slippery_ice"; drag: number }
+  | {
+      type: "dense_fog_bog";
+      bogSpeedMult: number;
+      fogLightDrainMult: number;
+      safeTile: "path" | "floor";
+    }
+  | {
+      type: "periodic_gale";
+      intervalSec: number;
+      durationSec: number;
+      lightRadiusMult: number;
+      pushSpeedPxPerSec: number;
+      pushDirX: number;
+      pushDirY: number;
+    }
+  | { type: "low_pressure_storm"; lightDrainMult: number; coldScale: number }
+  | { type: "explosive_barrels"; blastRadiusTiles: number; blastDamage: number }
+  | { type: "mirror_darkroom"; requiredLamps: number };
+
+export interface StoryPropDef {
+  id: string;
+  tileX: number;
+  tileY: number;
+  spriteKey: string;
+  toast: string;
+  heroToasts?: Record<string, string>;
+  unlockNoteId?: string;
+  rewardItem?: { itemId: string; count: number; pickupId: string };
+}
+
 export interface RegionDef {
   id: string;
   name: string;
+  act?: number;
+  kind?: "main" | "side";
+  environmentRule?: RegionEnvironmentRule;
+  storyProps?: StoryPropDef[];
   entry: {
     gateId: string | null;
     minCampLevel: number;

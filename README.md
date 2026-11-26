@@ -16,6 +16,11 @@ I have a deep love for video games—they have given me the courage to face life
   - **Hero portraits** feature 128×128 pixel art for all five heroes. Nearest-neighbor scaling keeps the pixels crisp. Unlocked heroes appear in full color and locked heroes appear in dimmed grayscale.
   - **Redesigned title menu** features a Stardew Valley-inspired cycle of seasonal lighting and weather, with Adventure Mode and Survival Mode side by side. Select Adventure Mode to choose a hero and access New Game, Continue, and Eternal Mode.
 
+- **Adventure expansion (v3.1.0)** · [Release](https://github.com/jiangmingyang78-beep/my-codex-game1/releases/tag/v3.1.0)
+  - **Expanded Adventure Mode** spans ten regions, including the starting camp, on a 240×96 map. It adds bogs, explosive resin barrels, mirror lamps, story relics, and new enemy behaviors.
+  - **Save migration** moves characters, enemies, and uncollected loot from the old map into the expanded world while preserving progress.
+  - **Map and development tools** include an LDtk adapter, a balance report, and a sprite workbench. The game uses its built-in map by default.
+
 ## Run Locally
 
 Use Node.js 22.12+ or Node.js 24 and the project’s pinned pnpm version, 10.26.1. Run these commands from the repository root.
