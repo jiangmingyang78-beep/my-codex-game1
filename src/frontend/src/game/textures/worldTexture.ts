@@ -1,4 +1,5 @@
 import { MILL_BUILDING, TILE, type World } from "@/systems";
+import { ETERNAL_TEXTURE_KEY } from "@/systems/eternal/eternalWorld";
 
 /** The subset of the vfx texture generator the world bake needs. */
 export interface TileArt {
@@ -33,7 +34,10 @@ const MILL_WALL = { land: "#5a4a3e", detail: "#3d3129", floor: 3 };
 const FIRE_BASE = { land: "#6b7180", detail: "#4a4f5e", floor: 3 };
 const BOG = { land: "#3a4f46", detail: "#253630", floor: 2 };
 const EDGE_COLOR = "#8497b2";
+const WINTER_EDGE_COLOR = "#576b8c";
 const TUFT_COLOR = "#7d98a4";
+const ICE_PALETTE = { base: "#476484", edge: "#a7c5d8", detail: "#7095af" };
+const TRAIL_PALETTE = { base: "#b7a8a4", edge: "#8d8999", detail: "#a1999a" };
 /** Edge dither sides: 0 top, 1 right, 2 bottom, 3 left. */
 const NEIGHBOURS: readonly (readonly [number, number, number])[] = [
   [0, -1, 0],
@@ -71,6 +75,105 @@ function isWall(world: World, tx: number, ty: number): boolean {
   return world.tiles[ty * world.widthTiles + tx] === TILE.wall;
 }
 
+function wrappedNoise(
+  x: number,
+  y: number,
+  cells: number,
+  salt: number,
+): number {
+  const ix = Math.floor(x);
+  const iy = Math.floor(y);
+  const fx = x - ix;
+  const fy = y - iy;
+  const u = fx * fx * (3 - 2 * fx);
+  const v = fy * fy * (3 - 2 * fy);
+  const x0 = ix % cells;
+  const x1 = (ix + 1) % cells;
+  const y0 = iy % cells;
+  const y1 = (iy + 1) % cells;
+  const a = tileHash(x0, y0, salt) * (1 - u) + tileHash(x1, y0, salt) * u;
+  const b = tileHash(x0, y1, salt) * (1 - u) + tileHash(x1, y1, salt) * u;
+  return a * (1 - v) + b * v;
+}
+
+/** Samples snow in world coordinates so drifts cross tile and texture boundaries. */
+function makeSnowfield(): HTMLCanvasElement {
+  const span = 256;
+  const canvas = document.createElement("canvas");
+  canvas.width = span;
+  canvas.height = span;
+  const g = canvas.getContext("2d");
+  if (!g) throw new Error("Canvas 2D is unavailable.");
+  for (let y = 0; y < span; y++) {
+    for (let x = 0; x < span; x++) {
+      const drift =
+        0.68 * wrappedNoise((x + y) / 64, y / 32, 4, 31) +
+        0.32 * wrappedNoise(x / 16, y / 8, 16, 77);
+      if (drift < 0.28) g.fillStyle = "#7084a1";
+      else if (drift < 0.4) g.fillStyle = "#798eaa";
+      else if (drift < 0.6) g.fillStyle = "#8297b2";
+      else g.fillStyle = "#8ba0b9";
+      g.fillRect(x, y, 1, 1);
+    }
+  }
+  for (let i = 0; i < 190; i++) {
+    const x = Math.floor(tileHash(i, 4, 41) * span);
+    const y = Math.floor(tileHash(i, 5, 9) * span);
+    g.fillStyle = i % 4 ? "#91a4bc" : "#748aa6";
+    g.fillRect(x, y, 2 + (i % 4), 1);
+    if (i % 5 === 0) g.fillRect(x + 3, y - 1, 2, 1);
+  }
+  return canvas;
+}
+
+function drawWinterGround(
+  g: CanvasRenderingContext2D,
+  world: World,
+  sheet: HTMLCanvasElement,
+  tile: number,
+  tx: number,
+  ty: number,
+  variant: number,
+): boolean {
+  const { tileSize: size, widthTiles, heightTiles, tiles } = world;
+  const x = tx * size;
+  const y = ty * size;
+  if (tile === TILE.snow || tile === TILE.tree) {
+    const cell = 16;
+    const sx = (tx * cell) % sheet.width;
+    const sy = (ty * cell) % sheet.height;
+    g.drawImage(sheet, sx, sy, cell, cell, x, y, size, size);
+    return true;
+  }
+  const ice = tile === TILE.ice;
+  if (!ice && tile !== TILE.path) return false;
+  const palette = ice ? ICE_PALETTE : TRAIL_PALETTE;
+  g.fillStyle = palette.base;
+  g.fillRect(x, y, size, size);
+  g.fillStyle = palette.edge;
+  for (const [dx, dy, side] of NEIGHBOURS) {
+    const nx = tx + dx;
+    const ny = ty + dy;
+    if (nx < 0 || ny < 0 || nx >= widthTiles || ny >= heightTiles) continue;
+    const next = tiles[ny * widthTiles + nx];
+    if (next === tile || (!ice && next === TILE.door)) continue;
+    const vertical = dx !== 0;
+    for (let offset = 0; offset < size; offset += 4) {
+      const depth = tileHash(tx, ty, offset + side) > 0.55 ? 2 : 1;
+      const along = Math.min(4, size - offset);
+      const sx = x + (vertical ? (dx > 0 ? size - depth : 0) : offset);
+      const sy = y + (vertical ? offset : dy > 0 ? size - depth : 0);
+      g.fillRect(sx, sy, vertical ? depth : along, vertical ? along : depth);
+    }
+  }
+  if (variant === 1 || variant === 3) {
+    g.fillStyle = palette.detail;
+    g.fillRect(x + 3 + variant, y + 5 + variant, ice ? 5 : 2, 1);
+    if (ice) g.fillRect(x + 8 + variant, y + 4 + variant, 2, 1);
+  }
+  return true;
+}
+
 /** Bakes the whole tile grid (ground, ice, tufts and snow edges) into one canvas. */
 export function bakeWorldCanvas(world: World, art: TileArt): HTMLCanvasElement {
   const size = world.tileSize;
@@ -80,29 +183,38 @@ export function bakeWorldCanvas(world: World, art: TileArt): HTMLCanvasElement {
   const g = canvas.getContext("2d");
   if (!g) throw new Error("Canvas 2D is unavailable.");
   g.imageSmoothingEnabled = false;
+  const snowfield =
+    world.textureKey === ETERNAL_TEXTURE_KEY ? null : makeSnowfield();
+  const edgeColor = snowfield ? WINTER_EDGE_COLOR : EDGE_COLOR;
+  const tuftRate = snowfield ? 0.025 : 0.06;
   for (let ty = 0; ty < world.heightTiles; ty++) {
     for (let tx = 0; tx < world.widthTiles; tx++) {
       const tile = world.tiles[ty * world.widthTiles + tx];
       const variant = Math.floor(tileHash(tx, ty, 1) * 4);
       const px = tx * size;
       const py = ty * size;
-      if (tile === TILE.ice) {
-        g.drawImage(art.water({ variant, frame: 0 }).canvas, px, py);
-        continue;
+      const painted =
+        snowfield &&
+        drawWinterGround(g, world, snowfield, tile, tx, ty, variant);
+      if (!painted) {
+        if (tile === TILE.ice) {
+          g.drawImage(art.water({ variant, frame: 0 }).canvas, px, py);
+          continue;
+        }
+        g.drawImage(
+          art.ground({ ...style(world, tx, ty), variant, seed: 3 }).canvas,
+          px,
+          py,
+        );
       }
-      g.drawImage(
-        art.ground({ ...style(world, tx, ty), variant, seed: 3 }).canvas,
-        px,
-        py,
-      );
       const baseSnow = tile === TILE.snow || tile === TILE.tree;
       if (!baseSnow) continue;
       for (const [dx, dy, side] of NEIGHBOURS) {
         if (isWall(world, tx + dx, ty + dy)) {
-          g.drawImage(art.edge({ color: EDGE_COLOR, side }).canvas, px, py);
+          g.drawImage(art.edge({ color: edgeColor, side }).canvas, px, py);
         }
       }
-      if (tile === TILE.snow && tileHash(tx, ty, 7) < 0.06) {
+      if (tile === TILE.snow && tileHash(tx, ty, 7) < tuftRate) {
         const lean = Math.round(tileHash(tx, ty, 9) * 4) - 2;
         g.drawImage(
           art.tuft({ color: TUFT_COLOR, lean }).canvas,

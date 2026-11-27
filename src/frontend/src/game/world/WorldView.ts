@@ -1,5 +1,6 @@
 import type { RunState, Systems } from "@/core";
 import { TILE } from "@/systems";
+import { ETERNAL_TEXTURE_KEY } from "@/systems/eternal/eternalWorld";
 import type Phaser from "phaser";
 import { RENDER_DEPTH, entityDepthAt } from "../renderDepth";
 import {
@@ -37,12 +38,15 @@ export class WorldView {
   }
 
   private addTrees(): void {
-    const { tiles, widthTiles, heightTiles, tileSize } = this.sys.world;
+    const { tiles, widthTiles, heightTiles, tileSize, textureKey } =
+      this.sys.world;
+    const treeTexture =
+      textureKey === ETERNAL_TEXTURE_KEY ? TEX.tree : TEX.snowPine;
     for (let ty = 0; ty < heightTiles; ty++) {
       for (let tx = 0; tx < widthTiles; tx++) {
         if (tiles[ty * widthTiles + tx] !== TILE.tree) continue;
         const variant = Math.floor(tileHash(tx, ty, 3) * TREE_VARIANTS);
-        const key = TEX.tree(variant);
+        const key = treeTexture(variant);
         const y = (ty + 1) * tileSize - 1;
         this.scene.add
           .image(tx * tileSize + tileSize / 2, y, key)

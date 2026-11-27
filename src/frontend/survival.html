@@ -2391,18 +2391,8 @@ function tiles(){
         rect("#a58a62",x+5,y+3,5,1);rect("#755f50",x+10,y+6,4,2);
         rect("#4d3a36",x+7,y+5,1,3);rect("#4d3a36",x+5,y+8,2,1);
         rect("#bfa57a",x+6,y+2,3,1);rect("#241f27",x+2,y+13,12,1);
-        if(type===COAL_VEIN){
-          rect("#2c2c38",x+4,y+5,4,3);rect("#2c2c38",x+10,y+6,3,3);
-          rect("#5d626c",x+5,y+5,2,1);rect("#5a5250",x+10,y+6,2,1);rect("#8a919c",x+5,y+5,1,1);
-        }else{
-          const ore=veinAt(tx,ty,type,biome);
-          if(ore){
-            const color=oreTypes[ore].color;
-            rect("#413642",x+4,y+4,4,4);rect("#413642",x+9,y+7,4,3);
-            rect(color,x+5,y+4,2,3);rect(color,x+10,y+7,3,2);rect(color,x+8,y+3,1,1);
-            rect("#ffffff",x+5,y+4,1,1);rect("#ffffff",x+10,y+7,1,1);
-          }
-        }
+        const mineral=type===COAL_VEIN?"coal":veinAt(tx,ty,type,biome);
+        if(mineral)sprite(oreMarkArt[mineral],x+3,y+2);
       }else if(!biome&&(type===3||type===7)){
         rect(type===3?"#4d4b45":"#5d505e",x+1,y+1,14,1);
         rect("#2a2b34",x,y+15,16,1);rect("#282936",x+(ty%2?4:12),y+2,1,9);
@@ -2889,6 +2879,24 @@ const oreTypes={
   frostOre:defineContent("vein","frostOre",{color:"#8ce0f1"}),
   salt:defineContent("vein","salt",{color:"#f0c5ab"})
 };
+// Keep every mineral identifiable by silhouette at the native tile resolution.
+const oreMarkPatterns={
+  quartz:  "...h...... ..hbs..h.. .hbbbs.bs. ..bbs.hbbs ...s...ss.",
+  copper:  ".....h..h. ....hb.hb. ...hb.hb.. ..hb.hb... .hb.hb.... .s..s.....",
+  clay:    ".......... .hhbb..... .bbbss.hh. ....hhbbs. ..bbbbss..",
+  iron:    "...hhh.... ..hbbbs... .hbbbbss.. ..sss..hb. .....hbbs.",
+  frostOre:"..h....h.. .hb...hb.. .bh..hb... ..bbhb.... ...bs..... ...s......",
+  salt:    ".hhb...... .hbbs..hh. .ssss..hbs .....hhbs. .....hbbs.",
+  coal:    "..hss..... .hbbbs.hs. .bbbbs.bbs ..sss.bbss ......ss.."
+};
+const oreMarkArt=Object.fromEntries(Object.entries(oreMarkPatterns).map(([id,pattern])=>{
+  const coal=id==="coal";
+  return [id,pixelArt(pattern,{
+    b:coal?"#242638":oreTypes[id].color,
+    h:coal?"#757886":"#f6e9ce",
+    s:coal?"#171b28":"#4a3e4a"
+  },0,0,0,false)];
+}));
 const plantArt=Object.fromEntries(Object.entries(wildPlants).map(([key,plant])=>[
   key,pixelArt(plant.art,{b:"#604b40",c:"#5a8953",l:plant.color},4,5,0,"pad")
 ]));

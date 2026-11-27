@@ -1,29 +1,25 @@
-# 双工具交接 · v3.2.0 战斗反馈、氛围与测试夹具
+# 双工具交接 · v3.2.0 雪夜地表与生存矿纹
 
 ## 1. 工具与改动文件（Codex，⚠ 表示 ≥240 行）
-- `game/renderDepth.ts`（新增，51）、`game/config.ts`（29）、`game/scenes/GameScene.ts`（378 ⚠）、`game/scenes/ToastScene.ts`（91）。
-- `game/atmosphere/atmospherePresets.ts`（46）、`CombatMotionVfxLayer.ts`（284 ⚠）、`TorchlightAtmosphereLayer.ts`（396 ⚠）。
-- `game/feedback/CombatFeelController.ts`（565 ⚠）、`combatFeelPresets.ts`（114）、`game/ui/toastTheme.ts`（256 ⚠）。
-- `game/world/CampFires.ts`（63）、`EntityViews.ts`（244 ⚠）、`NightOverlay.ts`（106）、`Scenery.ts`（92）、`WorldView.ts`（136）。
-- `src/frontend/src/entities/EnemyEntity.js`（132）、`src/frontend/src/vfx/particles.js`（311 ⚠）。
-- 新增 `tests/fixtures/testFactories.ts`（100）、`tests/fixtures/it.ts`（9）、`tests/run-unit-tests.mjs`（43）。
-- 新增 `tests/mapConsole.test.js`（204）、`runtimeRules.test.ts`（222）、`survivalTuning.test.ts`（48）、`renderDepth.test.ts`（74）。修改 `tests/ldtkAdapter.test.ts`（203）。
-- `tests/run-ldtk-test.mjs`（3）、`tools/map-viewer/verify.mjs`（3）、`verifyRuntime.mjs`（6）保留原入口并转调统一运行器。`package.json`（27）增加 `npm test`。
-- `README.md`（45）、`package.json`（27）、`src/frontend/package.json`（94）更新到 v3.2.0。`docs/HANDOFF.md`（29）。
+- 导入前将当前游戏的 7 个源文件改动保存到 Git `31cbe03`。
+- `src/frontend/src/game/textures/worldTexture.ts`（228）：连续积雪、冰面边缘和林道绘制。
+- `src/frontend/src/game/textures/snowPine.ts`（新增，51）、`registerTextures.ts`（215）、`../world/WorldView.ts`（140）：覆雪松树绘制、注册和选择。
+- `src/frontend/survival.html`（5013 ⚠）：为石英、铜矿、黏土、铁矿、霜晶矿、盐和煤炭接入独立像素图案。
+- `docs/HANDOFF.md`（25）：记录导入范围与验证。
 
 ## 2. 已验证项
-- `pnpm typecheck`、`pnpm fix`、`pnpm build`、`npm run build` 通过。测试 TypeScript 单独检查通过，`npm test` 五份文件共 60 项通过，三个原脚本入口均通过。
-- Chrome Canvas 和 WebGL 从生产构建进入主场景，验证角色和敌人 Y 排序、地面掉落与预警、弹丸与挥砍、夜幕和余烬深度、五个 VFX 批次实际绘制，以及场景退出时纹理回收。
-- 实体深度测试覆盖冒险、永恒、超高地图和无效地图高度。地图测试使用 `it.each` 覆盖索敌、刷新倍率、地块映射与校验边界。
+- `pnpm typecheck`、`pnpm fix`、`pnpm build` 通过。`npm test` 的 60 项现有测试通过。
+- Chrome Canvas 生产构建进入冒险，捕获积雪、覆雪松枝和冰边的绘制，保存后重新进入页面可以继续。
+- Chrome Canvas 生产构建进入生存，确认初始化 7 种矿纹且初始视野实际绘制矿纹。存档后刷新恢复相同地图种子，两个入口均无页面脚本异常。
 
 ## 3. 未验证与已知风险
-- 浏览器检查覆盖固定场景片段。完整冒险和永恒模式的游玩，以及五个 VFX 批次在低端设备上的长时帧率，尚未验证。
+- 雪夜尚未在 WebGL、最大缩放和低端设备上实玩。生存冒烟检查覆盖初始视野，未逐个走访 7 种矿物的产地。
+- 仅复跑了仓库现有 60 项测试。附件截图提到的 130 项回归未随发布包提供。
 
 ## 4. 锁定接口与约束
-- `RENDER_DEPTH` 是 Phaser 渲染深度的统一来源。实体实际坐标仍由规则层控制，视图使用 `entityDepthAt(worldY, worldHeightPx)`。
-- 交互框、掉落和预警位于实体下方。旧夜幕保持单层。战斗粒子、火光、气氛粒子使用独立绘制批次，VFX 公共接口和粒子模拟参数保持原样。
-- 共享测试系统只读。`createTestRun` 默认种子为 12345，每次构造独立状态。可变地图草稿在用例内复制。规则、平衡数据和存档结构均无改动。
+- `bakeWorldCanvas(world, art)`、`TileArt`、VFX 公共接口、存档结构不变。
+- 用 `ETERNAL_TEXTURE_KEY` 保留永恒模式的原有地表和松树。矿纹只接入 `tiles()` 的绘制路径，矿物判定仍走 `veinAt()` 与 `COAL_VEIN`。
 
 ## 5. 下一棒任务
-1. 在高粒子负荷的雪夜复核长期帧率与显存。
-2. 实玩检查交互框、掉落和火焰遇到地形遮挡时的可读性。
+1. 在 WebGL 下实玩冒险雪夜，复核冰岸、路径与营火附近的可读性。
+2. 在生存地图中走访 7 种矿物，确认原始缩放与夜间光照下仍可辨认。
