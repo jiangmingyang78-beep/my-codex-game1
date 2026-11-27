@@ -81,10 +81,10 @@ export const DEFAULT_TOAST_THEME: ToastTheme = {
   fontFamily: PIXEL_FONT_FAMILY,
   fontSize: PIXEL_FONT_SIZE,
   paddingX: 12,
-  paddingY: 7,
+  paddingY: 8,
   iconSize: 16,
   iconGap: 8,
-  accentWidth: 3,
+  accentWidth: 4,
   minWidth: 112,
   maxWidth: 420,
   types: {
@@ -124,9 +124,9 @@ export function resolveToastConfig(options: ToastOptions): ToastConfig {
     depth: options.depth ?? RENDER_DEPTH.toast,
     lootMaxVisible: options.lootMaxVisible ?? 4,
     lootAnchorX: options.lootAnchorX ?? 16,
-    lootAnchorY: options.lootAnchorY ?? 186,
-    lootGap: options.lootGap ?? 6,
-    feedbackOffsetY: options.feedbackOffsetY ?? 106,
+    lootAnchorY: options.lootAnchorY ?? 216,
+    lootGap: options.lootGap ?? 8,
+    feedbackOffsetY: options.feedbackOffsetY ?? 104,
     defaultLootDuration: options.defaultLootDuration ?? 1800,
     defaultFeedbackDuration: options.defaultFeedbackDuration ?? 2000,
   };
@@ -198,7 +198,7 @@ export function toastContentWidth(
   );
 }
 
-/** 按内容宽度重绘像素双层描边底框与左侧 3px 状态色条。 */
+/** 按内容宽度重绘像素双层描边底框与左侧 4px 状态色条。 */
 export function redrawToastBox(
   item: ToastItem,
   theme: ToastTheme,
@@ -250,7 +250,7 @@ export function redrawToastBox(
   g.lineStyle(1, theme.borderOuter, 1);
   g.strokeRect(offsetX + 0.5, offsetY + 0.5, item.width - 1, item.height - 1);
 
-  // 左侧 3px 状态色条
+  // 左侧 4px 状态色条
   g.fillStyle(palette.accent, 1);
   g.fillRect(offsetX + 1, offsetY + 1, theme.accentWidth, item.height - 2);
 }

@@ -56,9 +56,9 @@ export function Hud() {
   const night = hud.phase === "night";
   return (
     <>
-      <div className="absolute left-2 top-2 flex w-[min(11rem,42vw)] flex-col gap-1.5 sm:left-3 sm:top-3 sm:w-48">
-        <div data-hud-top-left className="flex flex-col gap-1.5">
-          <div className="pixel-panel flex flex-col gap-1.5 p-2.5">
+      <div className="absolute left-2 top-2 flex w-[min(11rem,42vw)] flex-col gap-2 sm:left-3 sm:top-3 sm:w-48">
+        <div data-hud-top-left className="flex flex-col gap-2">
+          <div className="pixel-panel flex flex-col gap-2 p-2">
             <StatBar
               icon={<Heart size={14} />}
               label="生命"
@@ -80,7 +80,7 @@ export function Hud() {
               max={hud.maxLight}
               tone="bar-torch"
             />
-            <p className="text-[11px] text-frost">
+            <p className="text-xs text-frost">
               {hud.inFire
                 ? "在火圈内：火炬恢复中"
                 : night
@@ -90,7 +90,7 @@ export function Hud() {
                 ` · 暖汤 ${Math.ceil(hud.buffSecondsLeft)} 秒`}
             </p>
           </div>
-          <p className="pixel-panel-flat px-2.5 py-1.5 text-xs leading-snug text-foreground">
+          <p className="pixel-panel-flat px-3 py-2 text-xs leading-snug text-foreground">
             {objective}
           </p>
         </div>
@@ -99,7 +99,7 @@ export function Hud() {
         )}
       </div>
 
-      <div className="pixel-panel absolute right-2 top-14 flex max-w-[calc(58vw_-_1.5rem)] items-center gap-2 px-2 py-1.5 sm:left-1/2 sm:right-auto sm:top-3 sm:max-w-none sm:-translate-x-1/2 sm:gap-3 sm:px-3">
+      <div className="pixel-panel absolute right-2 top-14 flex max-w-[calc(58vw_-_1.5rem)] items-center gap-2 px-2 py-2 sm:left-1/2 sm:right-auto sm:top-3 sm:max-w-none sm:-translate-x-1/2 sm:gap-3 sm:px-3">
         {hud.eternal ? (
           <InfinityIcon size={18} className="text-accent" />
         ) : night ? (
@@ -113,7 +113,7 @@ export function Hud() {
               ? hud.eternal.clockText
               : `${hud.dayLabel} · ${hud.clock}`}
           </p>
-          <p className="text-[11px] text-muted-foreground">
+          <p className="text-xs text-muted-foreground">
             {hud.eternal
               ? hud.eternal.threatText
               : `${hud.regionName} · 风暴 ${formatStorm(hud.stormRemainingSec)}`}

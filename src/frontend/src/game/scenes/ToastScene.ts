@@ -22,7 +22,7 @@ export class ToastScene extends Phaser.Scene {
       lootMaxVisible: 4,
       lootAnchorX: anchors.lootX,
       lootAnchorY: anchors.lootY,
-      lootGap: 6,
+      lootGap: 8,
       feedbackOffsetY: anchors.feedbackOffsetY,
     });
     attachToastManager(this.manager, this.textures);
@@ -53,14 +53,17 @@ export class ToastScene extends Phaser.Scene {
     const viewH = this.scale.height;
     const compact = viewW < 640;
 
-    // 避开左上角血条/饱食/火炬面板与目标栏
-    let lootY = compact ? 176 : 186;
+    // 避开左上角血条/饱食/火炬面板与目标栏，至少留出 16px 纵向安全间距
+    let lootY = compact ? 200 : 216;
     if (typeof document !== "undefined") {
       const box = document
         .querySelector("[data-hud-top-left]")
         ?.getBoundingClientRect();
       if (box && box.bottom > 0) {
-        lootY = Math.round(Math.min(236, Math.max(132, box.bottom + 8)));
+        lootY = Math.min(
+          256,
+          Math.max(136, Math.ceil((box.bottom + 16) / 4) * 4),
+        );
       }
     }
     lootY = Math.min(lootY, Math.max(120, Math.round(viewH * 0.44)));
@@ -68,15 +71,15 @@ export class ToastScene extends Phaser.Scene {
     // 若装备环栏（冒险/无尽模式）出现在左上角下方，则水平避让其列宽
     let lootX = compact ? 12 : 16;
     if (this.equipmentCount > 0) {
-      const badgeStep = compact ? 42 : 46;
+      const badgeStep = compact ? 44 : 48;
       const maxColHeight = Math.max(badgeStep, Math.floor(viewH * 0.42));
       const perCol = Math.max(1, Math.floor(maxColHeight / badgeStep));
       const cols = Math.min(3, Math.ceil(this.equipmentCount / perCol));
       lootX = (compact ? 8 : 12) + cols * badgeStep + 8;
     }
 
-    // 底部快捷栏高度：桌面 72px + bottom 12px = 84px；窄屏 64px + 12px = 76px
-    const feedbackOffsetY = compact ? 96 : 106;
+    // 底部快捷栏高度：桌面 72px + bottom 12px = 84px；窄屏 64px + 12px = 76px；再留 20px 安全间距
+    const feedbackOffsetY = compact ? 96 : 104;
     return { lootX, lootY, feedbackOffsetY };
   }
 

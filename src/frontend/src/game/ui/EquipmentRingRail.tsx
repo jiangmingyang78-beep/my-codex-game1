@@ -121,7 +121,7 @@ function EquipmentBadge({ item }: { item: HudEquipmentItem }) {
         {cooling && (
           <span
             aria-hidden="true"
-            className="font-pixel absolute -bottom-0.5 -right-0.5 border border-border bg-card px-0.5 text-[10px] leading-none tabular-nums text-accent"
+            className="font-pixel absolute bottom-0 right-0 border border-border bg-card px-1 text-[10px] leading-none tabular-nums text-accent"
           >
             {seconds}
           </span>
@@ -135,7 +135,7 @@ function EquipmentBadge({ item }: { item: HudEquipmentItem }) {
       <div
         id={tooltipId}
         role="tooltip"
-        className="pixel-panel-flat pointer-events-none invisible absolute left-full top-0 ml-2 w-52 max-w-[calc(100vw_-_8rem)] px-2.5 py-2 text-xs group-hover:visible group-focus-within:visible"
+        className="pixel-panel-flat pointer-events-none invisible absolute left-full top-0 ml-2 w-52 max-w-[calc(100vw_-_8rem)] px-3 py-2 text-xs group-hover:visible group-focus-within:visible"
       >
         <p className="font-pixel font-bold text-foreground">{item.name}</p>
         <p className={ready ? "text-ember-glow" : "text-frost"}>{status}</p>
@@ -151,7 +151,7 @@ export function EquipmentRingRail({ items }: { items: HudEquipmentItem[] }) {
   return (
     <ul
       aria-label="已锻装备"
-      className="flex max-h-[42dvh] flex-col flex-wrap content-start items-start gap-1.5 overflow-visible"
+      className="flex max-h-[42dvh] flex-col flex-wrap content-start items-start gap-2 overflow-visible"
     >
       {items.map((item) => (
         <EquipmentBadge key={item.id} item={item} />

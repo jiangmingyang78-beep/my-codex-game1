@@ -39,11 +39,11 @@ export function QuickSlots({ slots }: { slots: HudModel["quickSlots"] }) {
             commands.quickUse(slot.slot);
             e.currentTarget.blur();
           }}
-          className={`pixel-panel-flat pointer-events-auto relative flex h-16 w-14 select-none flex-col items-center justify-center gap-0.5 transition-step hover:border-ring sm:h-[4.5rem] sm:w-16 ${
+          className={`pixel-panel-flat pointer-events-auto relative flex h-16 w-14 select-none flex-col items-center justify-center gap-1 transition-step hover:border-ring sm:h-[4.5rem] sm:w-16 ${
             slot.count === 0 ? "opacity-55" : ""
           }`}
         >
-          <span className="pixel-hud-text absolute left-1 top-0.5 text-xs text-ember">
+          <span className="pixel-hud-text absolute left-1 top-1 text-xs text-ember">
             {slot.slot}
           </span>
           <span className="text-foreground">
@@ -52,7 +52,7 @@ export function QuickSlots({ slots }: { slots: HudModel["quickSlots"] }) {
           <span className="pixel-hud-text max-w-full break-words text-center text-xs leading-none text-foreground">
             {slot.name}
           </span>
-          <span className="pixel-hud-text absolute bottom-0.5 right-1 text-xs tabular-nums text-ember-glow">
+          <span className="pixel-hud-text absolute bottom-1 right-1 text-xs tabular-nums text-ember-glow">
             ×{slot.count}
           </span>
         </button>

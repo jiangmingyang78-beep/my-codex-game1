@@ -88,7 +88,7 @@ export function layoutToastChannel(
       : undefined;
   const feedbackBottom = Math.min(
     viewH - config.feedbackOffsetY,
-    (hotbarTop ?? viewH) - 8,
+    (hotbarTop ?? viewH) - 20,
   );
 
   active.forEach((item, index) => {
@@ -96,7 +96,7 @@ export function layoutToastChannel(
     if (!container || !item.textObj) return;
     const isFeedback = channel === "feedback";
     const targetX = Math.round(isFeedback ? viewW / 2 : config.lootAnchorX);
-    const available = viewW - (isFeedback ? 18 : targetX + 8);
+    const available = viewW - (isFeedback ? 16 : targetX + 8);
     const limit = Math.max(
       2,
       Math.floor(Math.min(theme.maxWidth, available) / 2) * 2,
@@ -124,8 +124,8 @@ export function layoutToastChannel(
     if (item.id === newlyCreatedId) {
       container
         .setPosition(
-          isFeedback ? targetX : targetX - 18,
-          isFeedback ? targetY + 10 : targetY,
+          isFeedback ? targetX : targetX - 16,
+          isFeedback ? targetY + 8 : targetY,
         )
         .setAlpha(0);
       scene.tweens.add({
