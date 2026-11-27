@@ -4,9 +4,23 @@ async (page) => {
     if (!condition) throw new Error(label);
   };
   const key = async (name) => {
+    const action = { Space: "attack", e: "interact", Escape: "pause" }[name];
+    if (action === "interact") {
+      // 等战斗停顿结束，避免一次性的交互边沿被跳过逻辑步的画面帧消耗。
+      const beforeStep = await page.evaluate(() => window.adventureQA.steps);
+      await page.waitForFunction((step) => window.adventureQA.steps > step, beforeStep);
+    }
+    const before = await page.evaluate((action) => window.adventureQA.inputCounts[action], action);
     await page.keyboard.down(name);
-    await page.waitForTimeout(90);
-    await page.keyboard.up(name);
+    try {
+      // 软件渲染器的单帧可能超过 90 ms，收到游戏输入确认后再松开。
+      await page.waitForFunction(
+        ({ action, before }) => window.adventureQA.inputCounts[action] > before,
+        { action, before },
+      );
+    } finally {
+      await page.keyboard.up(name);
+    }
   };
   const start = () => page.locator('[data-ocid="title.new_game_button"]');
   const resume = () => page.locator('[data-ocid="title.continue_button"]');
@@ -21,8 +35,13 @@ async (page) => {
         performance.getEntriesByType("resource").findLast((e) => new URL(e.name).pathname === path)?.name ?? path;
       const { RunSession } = await import(live("/src/game/session/RunSession.ts"));
       const { EntityViews } = await import(live("/src/game/world/EntityViews.ts"));
+      const { InputController } = await import(live("/src/game/input/InputController.ts"));
       const { toVfxEvent } = await import(live("/src/core/vfxBridge.ts"));
-      const q = (window.adventureQA = { session: null, texture: "", events: [], effects: [] });
+      const q = (window.adventureQA = {
+        session: null, texture: "", events: [], effects: [],
+        steps: 0,
+        inputCounts: { attack: 0, interact: 0, pause: 0 },
+      });
       q.messages=[];
       const {ToastManager}=await import(live("/src/game/ui/ToastManager.ts"));
       const push=ToastManager.prototype.push;
@@ -33,9 +52,18 @@ async (page) => {
       };
       const advance = RunSession.prototype.advance;
       const sync = EntityViews.prototype.sync;
+      const poll = InputController.prototype.poll;
+      InputController.prototype.poll = function () {
+        const input = poll.call(this);
+        if (input.pausePressed) q.inputCounts.pause++;
+        return input;
+      };
       RunSession.prototype.advance = function (...args) {
         q.session = this;
         const out = advance.apply(this, args);
+        q.steps++;
+        if (args[1]?.interactPressed) q.inputCounts.interact++;
+        if (out.events.some((event) => event.type === "combat.swing")) q.inputCounts.attack++;
         q.events.push(...out.events);
         q.effects.push(...out.events.map(toVfxEvent).filter(Boolean));
         return out;

@@ -5,7 +5,7 @@
 - Codex。括号内为行数，⚠ 标记至少 240 行的文件。
 - 工作流 · .github/workflows/ci.yml（49）、.github/workflows/deploy.yml（62）
 - 本地入口 · package.json（30）、pnpm-lock.yaml（5270 ⚠）、playwright.config.ts（38）、tools/ci-check.sh（77）、tools/一键体检.bat（25）
-- 浏览器测试 · tests/e2e/browser-fixture.ts（87）、tests/e2e/game.smoke.spec.ts（90）、tests/e2e/adventure-regression.spec.ts（14）、src/frontend/tests/adventure-regression.js（295 ⚠）
+- 浏览器测试 · tests/e2e/browser-fixture.ts（87）、tests/e2e/game.smoke.spec.ts（90）、tests/e2e/adventure-regression.spec.ts（14）、src/frontend/tests/adventure-regression.js（323 ⚠）
 - 游戏入口与快照 · src/frontend/src/main.tsx（36）、src/frontend/survival.html（5370 ⚠）、src/frontend/src/core/snapshot.ts（144）
 - 诊断 · src/frontend/src/game/diagnostics/config.ts（1）、src/frontend/src/game/diagnostics/report.ts（115）、src/frontend/src/game/diagnostics/listeners.ts（25）、src/frontend/src/game/diagnostics/ErrorBoundary.tsx（33）、src/frontend/src/game/diagnostics/survivalEntry.tsx（20）
 - 场景与事件 · src/frontend/src/game/scenes/BootScene.ts（25）、src/frontend/src/game/scenes/GameScene.ts（379 ⚠）、src/frontend/src/game/scenes/TitleScene.ts（81）、src/frontend/src/game/session/activeRun.ts（74）、src/frontend/src/game/session/outputHandler.ts（54）
@@ -22,7 +22,7 @@
 ## 3. 未验证与已知风险
 
 - 首次云端体检的 Chromium 安装因 Ubuntu 26.04 与 Playwright 1.58.2 不兼容而失败。安装日志已归档，CI 固定使用 Ubuntu 24.04。
-- 冒险完整回归依赖 Vite 开发模块探针。冷启动等待标题最多 30 秒。生产冒烟使用独立 Vite preview。
+- Ubuntu 24.04 已通过 Chromium 安装和 5 项生产冒烟。完整冒险回归通过 Vite 开发模块探针确认键盘输入被游戏处理，避免软件渲染低帧率漏掉固定时长的按键。
 
 ## 4. 锁定接口与约束
 
