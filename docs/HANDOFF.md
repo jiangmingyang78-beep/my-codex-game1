@@ -3,7 +3,7 @@
 ## 1. 工具与改动文件
 
 - Codex。括号内为行数，⚠ 标记至少 240 行的文件。
-- 工作流 · .github/workflows/ci.yml（49）、.github/workflows/deploy.yml（62）
+- 工作流 · .github/workflows/ci.yml（49）、.github/workflows/deploy.yml（97）
 - 本地入口 · package.json（30）、pnpm-lock.yaml（5270 ⚠）、playwright.config.ts（38）、tools/ci-check.sh（77）、tools/一键体检.bat（25）
 - 浏览器测试 · tests/e2e/browser-fixture.ts（87）、tests/e2e/game.smoke.spec.ts（90）、tests/e2e/adventure-regression.spec.ts（14）、src/frontend/tests/adventure-regression.js（323 ⚠）
 - 游戏入口与快照 · src/frontend/src/main.tsx（36）、src/frontend/survival.html（5370 ⚠）、src/frontend/src/core/snapshot.ts（144）
@@ -22,7 +22,7 @@
 ## 3. 未验证与已知风险
 
 - 首次云端体检的 Chromium 安装因 Ubuntu 26.04 与 Playwright 1.58.2 不兼容而失败。安装日志已归档，CI 固定使用 Ubuntu 24.04。
-- Ubuntu 24.04 已通过 Chromium 安装和 5 项生产冒烟。完整冒险回归通过 Vite 开发模块探针确认键盘输入被游戏处理，避免软件渲染低帧率漏掉固定时长的按键。
+- 云端 Ubuntu 24.04 已通过完整冒险回归和 5 项生产冒烟。回归探针确认键盘输入被游戏处理，避免软件渲染低帧率漏掉固定时长的按键。Pages 的附件上传与发布拆为两个作业，发布前等待附件可见。
 
 ## 4. 锁定接口与约束
 

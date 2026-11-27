@@ -14,7 +14,7 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  deploy:
+  prepare:
     if: >-
       github.event.workflow_run.conclusion == 'success' &&
       github.event.workflow_run.head_branch == 'main' &&
@@ -25,11 +25,8 @@ jobs:
     permissions:
       actions: read
       contents: read
-      pages: write
-      id-token: write
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+    outputs:
+      artifact_name: ${{ steps.target.outputs.artifact_name }}
     steps:
       - name: 确认已体检提交仍是 main 最新提交
         id: target
@@ -39,24 +36,62 @@ jobs:
         run: |
           main_sha="$(gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/main" --jq '.object.sha')"
           if [ "$main_sha" = "$CHECKED_SHA" ]; then
-            echo 'current=true' >> "$GITHUB_OUTPUT"
+            printf 'artifact_name=github-pages-%s\n' "$GITHUB_RUN_ATTEMPT" >> "$GITHUB_OUTPUT"
           fi
       - uses: actions/download-artifact@v4
-        if: steps.target.outputs.current == 'true'
+        if: steps.target.outputs.artifact_name != ''
         with:
           name: checked-game-${{ github.event.workflow_run.head_sha }}-${{ github.event.workflow_run.run_attempt }}
           run-id: ${{ github.event.workflow_run.id }}
           github-token: ${{ github.token }}
           path: checked-dist
       - name: Verify game entry points
-        if: steps.target.outputs.current == 'true'
+        if: steps.target.outputs.artifact_name != ''
         run: |
           test -s checked-dist/index.html
           test -s checked-dist/survival.html
       - uses: actions/upload-pages-artifact@v3
-        if: steps.target.outputs.current == 'true'
+        if: steps.target.outputs.artifact_name != ''
         with:
+          name: ${{ steps.target.outputs.artifact_name }}
           path: checked-dist
+
+  deploy:
+    needs: prepare
+    if: needs.prepare.outputs.artifact_name != ''
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: 等待发布附件可见并核对最新提交
+        id: ready
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CHECKED_SHA: ${{ github.event.workflow_run.head_sha }}
+          PAGES_ARTIFACT: ${{ needs.prepare.outputs.artifact_name }}
+        run: |
+          for attempt in {1..8}; do
+            if count="$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/artifacts?name=$PAGES_ARTIFACT" --jq '[.artifacts[] | select(.expired == false)] | length')" &&
+                [ "$count" = 1 ]; then
+              main_sha="$(gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/main" --jq '.object.sha')"
+              if [ "$main_sha" = "$CHECKED_SHA" ]; then
+                echo 'current=true' >> "$GITHUB_OUTPUT"
+              fi
+              exit 0
+            fi
+            echo "等待 Pages 附件可见（$attempt/8）"
+            sleep 5
+          done
+          echo '::error::Pages 附件在等待期限内未可见。'
+          exit 1
       - uses: actions/deploy-pages@v4
-        if: steps.target.outputs.current == 'true'
+        if: steps.ready.outputs.current == 'true'
         id: deployment
+        with:
+          artifact_name: ${{ needs.prepare.outputs.artifact_name }}
