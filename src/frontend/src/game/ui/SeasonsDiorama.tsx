@@ -132,7 +132,7 @@ export function SeasonsDiorama() {
           })}
         </div>
       </div>
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 flex items-center justify-between bg-gradient-to-t from-night/85 via-night/40 to-transparent px-2.5 py-1.5 text-[11px] text-frost">
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 flex items-center justify-between bg-gradient-to-t from-night/85 via-night/40 to-transparent px-2.5 py-1.5 text-xs text-frost">
         <span>沙盒营地 · 四季流转与光影天气循环</span>
         <span className="hidden text-muted-foreground sm:inline">
           点击右上角可切换季节预览

@@ -92,7 +92,7 @@ export class TelegraphLayer {
     this.scene.events.once(Phaser.Scenes.Events.DESTROY, this.destroy, this);
   }
 
-  syncFromState(state: RunState, sys: Systems, timeSec: number): void {
+  syncFromState(state: RunState, sys: Systems, _timeSec: number): void {
     const g = this.graphics;
     if (!g) return;
 
@@ -115,8 +115,7 @@ export class TelegraphLayer {
       const progress = 1 - ratio01(remaining, windup);
 
       const border =
-        remaining <= this.opts.commitWindowSec &&
-        Math.floor(timeSec * 30) % 2 === 0
+        remaining <= this.opts.commitWindowSec
           ? this.opts.commitFlashColor
           : this.opts.borderColor;
 
@@ -135,6 +134,13 @@ export class TelegraphLayer {
     const { x: ux, y: uy } = safeUnit(enemy.dirX, enemy.dirY);
     const ox = Math.round(enemy.x);
     const oy = Math.round(enemy.y);
+    // Leave one dark world pixel on each side so even the white commit edge reads on snow.
+    const stroke = (draw: () => void, alpha = 1): void => {
+      g.lineStyle(4, this.opts.outlineColor, alpha);
+      draw();
+      g.lineStyle(2, border, alpha);
+      draw();
+    };
 
     switch (move.kind) {
       case "sweep": {
@@ -158,11 +164,12 @@ export class TelegraphLayer {
           g.fillPath();
         }
 
-        g.lineStyle(2, border, 1);
-        g.beginPath();
-        g.slice(ox, oy, radius, startA, endA, false);
-        g.closePath();
-        g.strokePath();
+        stroke(() => {
+          g.beginPath();
+          g.slice(ox, oy, radius, startA, endA, false);
+          g.closePath();
+          g.strokePath();
+        });
         break;
       }
 
@@ -195,8 +202,7 @@ export class TelegraphLayer {
           g.fillPoints(buildQuad(length * progress), true);
         }
 
-        g.lineStyle(2, border, 1);
-        g.strokePoints(fullQuad, true);
+        stroke(() => g.strokePoints(fullQuad, true));
         break;
       }
 
@@ -211,8 +217,7 @@ export class TelegraphLayer {
           g.fillStyle(this.opts.fillColor, this.opts.progressAlpha);
           g.fillCircle(tx, ty, radius * progress);
         }
-        g.lineStyle(2, border, 1);
-        g.strokeCircle(tx, ty, radius);
+        stroke(() => g.strokeCircle(tx, ty, radius));
         break;
       }
 
@@ -229,23 +234,25 @@ export class TelegraphLayer {
         const totalDist = Math.hypot(dx, dy);
         if (totalDist > 1e-4) {
           const { x: dirX, y: dirY } = safeUnit(dx, dy);
-          g.lineStyle(2, border, this.opts.projectileAimAlpha);
-          for (let d = 0; d < totalDist; d += 14) {
-            const segEnd = Math.min(d + 8, totalDist);
-            g.lineBetween(
-              Math.round(ox + dirX * d),
-              Math.round(oy + dirY * d),
-              Math.round(ox + dirX * segEnd),
-              Math.round(oy + dirY * segEnd),
-            );
-          }
+          stroke(() => {
+            for (let d = 0; d < totalDist; d += 14) {
+              const segEnd = Math.min(d + 8, totalDist);
+              g.lineBetween(
+                Math.round(ox + dirX * d),
+                Math.round(oy + dirY * d),
+                Math.round(ox + dirX * segEnd),
+                Math.round(oy + dirY * segEnd),
+              );
+            }
+          }, this.opts.projectileAimAlpha);
           if (progress > 0) {
-            g.lineStyle(2, border, 1);
-            g.lineBetween(
-              ox,
-              oy,
-              Math.round(ox + dx * progress),
-              Math.round(oy + dy * progress),
+            stroke(() =>
+              g.lineBetween(
+                ox,
+                oy,
+                Math.round(ox + dx * progress),
+                Math.round(oy + dy * progress),
+              ),
             );
           }
         }
@@ -259,8 +266,7 @@ export class TelegraphLayer {
         ];
         g.fillStyle(this.opts.fillColor, this.opts.progressAlpha);
         g.fillPoints(diamond, true);
-        g.lineStyle(2, border, 1);
-        g.strokePoints(diamond, true);
+        stroke(() => g.strokePoints(diamond, true));
         break;
       }
     }

@@ -30,10 +30,10 @@ export function TitleScreen() {
     <div className="pointer-events-auto absolute inset-0 overflow-y-auto bg-night/40 px-3">
       <div className="mx-auto flex min-h-full max-w-2xl flex-col justify-center gap-4 py-4">
         <header className="text-center">
-          <p className="font-pixel text-xs tracking-[0.3em] text-frost text-pixel-shadow">
+          <p className="font-pixel text-xs tracking-[4px] text-frost text-pixel-shadow">
             {title.worldTagline} · v3.1.0
           </p>
-          <h1 className="font-pixel mt-2 text-3xl font-bold text-ember-glow sm:text-5xl">
+          <h1 className="font-pixel mt-2 text-2xl font-bold text-ember-glow sm:text-3xl">
             余烬林：最后一炬
           </h1>
         </header>

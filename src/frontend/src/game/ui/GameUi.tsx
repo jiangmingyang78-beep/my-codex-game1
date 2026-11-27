@@ -15,8 +15,12 @@ export function GameUi() {
   const failed = useUi((s) => s.error !== null);
   return (
     <div className="pointer-events-none absolute inset-0 overflow-hidden">
-      <div className="vignette absolute inset-0" />
-      <div className="scanlines absolute inset-0 opacity-40" />
+      {screen === "title" && (
+        <>
+          <div className="vignette absolute inset-0" />
+          <div className="scanlines absolute inset-0 opacity-40" />
+        </>
+      )}
       {failed ? (
         <ErrorScreen />
       ) : screen === "title" ? (

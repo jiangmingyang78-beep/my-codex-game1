@@ -32,6 +32,7 @@ export interface TelegraphPreset {
   windupTimerMode: WindupTimerMode;
   groundDepth: number;
   fillColor: number;
+  outlineColor: number;
   borderColor: number;
   commitFlashColor: number;
   commitWindowSec: number;
@@ -83,7 +84,8 @@ export const COMBAT_FEEL_PRESETS: CombatFeelPresets = {
     windupTimerMode: "remaining",
     groundDepth: RENDER_DEPTH.telegraph,
     fillColor: 0xc92a2a,
-    borderColor: 0xff6b6b,
+    outlineColor: 0x48172a,
+    borderColor: 0xff504e,
     commitFlashColor: 0xffffff,
     commitWindowSec: 0.1,
     fillAlpha: 0.24,

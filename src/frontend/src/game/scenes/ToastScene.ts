@@ -10,6 +10,7 @@ import { attachToastManager, detachToastManager } from "../ui/toastBridge";
 export class ToastScene extends Phaser.Scene {
   private manager: ToastManager | null = null;
   private equipmentCount = 0;
+  private hudObserver?: ResizeObserver;
 
   constructor() {
     super(SCENE.toast);
@@ -26,6 +27,7 @@ export class ToastScene extends Phaser.Scene {
       feedbackOffsetY: anchors.feedbackOffsetY,
     });
     attachToastManager(this.manager, this.textures);
+    this.observeHud();
     this.scale.on(Phaser.Scale.Events.RESIZE, this.syncAnchors, this);
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, this.cleanup, this);
     this.events.once(Phaser.Scenes.Events.DESTROY, this.cleanup, this);
@@ -33,9 +35,18 @@ export class ToastScene extends Phaser.Scene {
 
   /** 根据已锻装备数量与当前视口重新计算安全锚点（兼容冒险模式与无尽模式）。 */
   setHudEquipmentCount(count: number): void {
+    this.observeHud();
     if (this.equipmentCount === count) return;
     this.equipmentCount = count;
     this.syncAnchors();
+  }
+
+  private observeHud(): void {
+    if (this.hudObserver) return;
+    const panel = document.querySelector("[data-hud-top-left]");
+    if (!panel) return;
+    this.hudObserver = new ResizeObserver(() => this.syncAnchors());
+    this.hudObserver.observe(panel);
   }
 
   private syncAnchors(): void {
@@ -60,13 +71,9 @@ export class ToastScene extends Phaser.Scene {
         .querySelector("[data-hud-top-left]")
         ?.getBoundingClientRect();
       if (box && box.bottom > 0) {
-        lootY = Math.min(
-          256,
-          Math.max(136, Math.ceil((box.bottom + 16) / 4) * 4),
-        );
+        lootY = Math.ceil((box.bottom + 16) / 4) * 4;
       }
     }
-    lootY = Math.min(lootY, Math.max(120, Math.round(viewH * 0.44)));
 
     // 若装备环栏（冒险/无尽模式）出现在左上角下方，则水平避让其列宽
     let lootX = compact ? 12 : 16;
@@ -84,6 +91,8 @@ export class ToastScene extends Phaser.Scene {
   }
 
   private cleanup(): void {
+    this.hudObserver?.disconnect();
+    this.hudObserver = undefined;
     this.scale.off(Phaser.Scale.Events.RESIZE, this.syncAnchors, this);
     if (this.manager) {
       detachToastManager(this.manager);

@@ -21,7 +21,7 @@ export function HeroPortrait({ hero, unlocked }: HeroPortraitProps) {
         className={`${frame} flex flex-col items-center justify-center gap-0.5 bg-night/80 text-frost`}
       >
         <UserRound size={18} aria-hidden="true" className="opacity-75" />
-        <span className="font-pixel text-[10px] font-bold leading-none">
+        <span className="font-pixel text-xs font-bold leading-none">
           {hero.name.slice(0, 1)}
         </span>
       </div>

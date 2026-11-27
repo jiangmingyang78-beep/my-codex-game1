@@ -4,7 +4,9 @@ import { forEachFireSource } from "@/systems/campCircle";
 import { heroLightRadiusMultiplier } from "@/systems/itemEffects";
 import Phaser from "phaser";
 import { RENDER_DEPTH } from "../renderDepth";
+import { darknessAt } from "../world/darkness";
 import { ATMOSPHERE_PRESETS, type FlamePalette } from "./atmospherePresets";
+import { makePixelHole } from "./pixelLightMask";
 
 interface TorchlightOptions {
   reducedMotion?: boolean;
@@ -20,33 +22,6 @@ const clamp01 = (value: number): number => Math.max(0, Math.min(1, value));
 
 function createEmber() {
   return { x: 0, y: 0, sway: 0, rise: 0, age: 0, life: 0 };
-}
-
-function makePixelHole(): HTMLCanvasElement {
-  const canvas = document.createElement("canvas");
-  const size = 64;
-  const half = size / 2;
-  canvas.width = canvas.height = size;
-  const context = canvas.getContext("2d");
-  if (!context) throw new Error("无法创建夜幕挖孔纹理");
-  const pixels = context.createImageData(size, size);
-  for (let y = 0; y < size; y++) {
-    for (let x = 0; x < size; x++) {
-      const distance = Math.hypot(x + 0.5 - half, y + 0.5 - half) / half;
-      pixels.data[(y * size + x) * 4 + 3] =
-        distance <= 0.48
-          ? 255
-          : distance <= 0.66
-            ? 196
-            : distance <= 0.82
-              ? 118
-              : distance <= 1
-                ? 46
-                : 0;
-    }
-  }
-  context.putImageData(pixels, 0, 0);
-  return canvas;
 }
 
 class PixelNightMask {
@@ -175,8 +150,7 @@ export class TorchlightAtmosphereLayer {
     this.night = options?.manageDarknessMask ? new PixelNightMask(scene) : null;
     this.halo = scene.add
       .graphics()
-      .setDepth(options?.haloDepth ?? RENDER_DEPTH.torchHalo)
-      .setBlendMode(Phaser.BlendModes.ADD);
+      .setDepth(options?.haloDepth ?? RENDER_DEPTH.torchHalo);
     this.emberGraphics = scene.add
       .graphics()
       .setDepth(options?.emberDepth ?? RENDER_DEPTH.torchEmbers);
@@ -221,6 +195,11 @@ export class TorchlightAtmosphereLayer {
     this.edge.setVisible(this.edgeAlpha > 0.001).setAlpha(this.edgeAlpha);
 
     this.halo.clear();
+    this.halo.setAlpha(
+      0.2 +
+        0.8 *
+          clamp01(darknessAt(state.elapsedSec, sys.data.balance.clock) / 0.8),
+    );
     this.night?.sync(state.elapsedSec, sys.data.balance.clock);
     this.sourceCount = 0;
     forEachFireSource(state, sys, this.recordFire);
@@ -295,14 +274,26 @@ export class TorchlightAtmosphereLayer {
       Math.round(radius + wave * flicker.radiusJitterPx * motion),
     );
     const alpha = clamp01(strength + wave * flicker.alphaJitter * motion);
-    this.halo
-      .fillStyle(this.palette.ember, alpha * 0.035)
-      .fillCircle(cx, cy, r)
-      .fillStyle(this.palette.mid, alpha * 0.045)
-      .fillCircle(cx, cy, Math.max(1, Math.round(r * 0.68)))
-      .fillStyle(this.palette.core, alpha * 0.09)
-      .fillCircle(cx, cy, Math.max(1, Math.round(r * 0.32)));
+    this.fillLightBand(cx, cy, r, this.palette.ember, alpha * 0.06);
+    this.fillLightBand(cx, cy, r * 0.68, this.palette.mid, alpha * 0.1);
+    this.fillLightBand(cx, cy, r * 0.32, this.palette.core, alpha * 0.08);
     this.night?.addHole(cx, cy, r, alpha);
+  }
+
+  private fillLightBand(
+    x: number,
+    y: number,
+    radius: number,
+    color: number,
+    alpha: number,
+  ): void {
+    const cells = Math.max(1, Math.round(radius / 2));
+    this.halo.fillStyle(color, alpha);
+    for (let row = -cells; row < cells; row++) {
+      const halfWidth =
+        2 * Math.round(Math.sqrt(cells ** 2 - (row + 0.5) ** 2));
+      this.halo.fillRect(x - halfWidth, y + 2 * row, 2 * halfWidth, 2);
+    }
   }
 
   private syncEmbers(budget: number, dt: number): void {

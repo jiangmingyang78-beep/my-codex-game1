@@ -28,7 +28,7 @@ function OptionCard({
           commands.eternal?.toggleEquipment(option.id);
           event.currentTarget.blur();
         }}
-        className={`pointer-events-auto flex w-full items-center gap-2 border-2 px-2 py-1.5 text-left hover:border-frost focus-visible:outline-2 focus-visible:outline-frost disabled:cursor-not-allowed disabled:opacity-60 ${tone}`}
+        className={`pointer-events-auto flex w-full items-center gap-2 border-2 px-2 py-1 text-left hover:border-frost focus-visible:outline-2 focus-visible:outline-frost disabled:cursor-not-allowed disabled:opacity-60 ${tone}`}
       >
         {url !== null ? (
           <img
@@ -45,7 +45,7 @@ function OptionCard({
           <span className="font-pixel block truncate text-xs font-bold">
             {option.name}
           </span>
-          <span className="block text-[10px] text-muted-foreground">
+          <span className="block text-xs text-muted-foreground">
             {option.kind === "weapon" ? "武器" : "防具 / 照明"}
           </span>
         </span>
@@ -60,7 +60,7 @@ function ModeSwitch({ eternal }: { eternal: EternalHud }) {
     ["free", "自由配装"],
   ] as const;
   return (
-    <div className="grid grid-cols-2 gap-1.5">
+    <div className="grid grid-cols-2 gap-2">
       {modes.map(([mode, label]) => (
         <PixelButton
           key={mode}
@@ -126,14 +126,14 @@ function LoadoutPanel({
   return (
     <section
       aria-label="永恒模式配装"
-      className="pixel-panel pointer-events-auto absolute right-2 top-16 flex max-h-[calc(100dvh-11rem)] w-[min(20rem,calc(100vw-1rem))] flex-col gap-2 overflow-y-auto p-2.5 sm:right-3"
+      className="pixel-panel pointer-events-auto absolute right-2 top-16 flex max-h-[calc(100dvh-11rem)] w-[min(20rem,calc(100vw-1rem))] flex-col gap-2 overflow-y-auto p-3 sm:right-3"
     >
       <h2 className="font-pixel text-sm font-bold text-ember-glow">
         {prep ? "永恒试炼 · 配装准备" : "补给装备 · 补选"}
       </h2>
       {prep && <ModeSwitch eternal={eternal} />}
       <QuotaLine eternal={eternal} />
-      <ul className="grid grid-cols-2 gap-1.5">
+      <ul className="grid grid-cols-2 gap-2">
         {eternal.options.map((option) => (
           <OptionCard
             key={option.id}
@@ -149,7 +149,7 @@ function LoadoutPanel({
           </span>
           <PixelButton
             onClick={() => commands.eternal?.startCombat()}
-            className="px-3 py-1.5 text-xs"
+            className="px-3 py-1 text-xs"
           >
             立即开战
           </PixelButton>

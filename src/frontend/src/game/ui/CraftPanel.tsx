@@ -22,7 +22,7 @@ function RecipeCard({ row }: { row: RecipeRow }) {
         <h3 className="font-pixel text-sm font-bold text-ember-glow">
           {row.name}
         </h3>
-        <span className="font-pixel shrink-0 text-[11px] text-frost">
+        <span className="font-pixel shrink-0 text-xs text-frost">
           需营火 Lv.{row.minCampLevel}
         </span>
       </div>

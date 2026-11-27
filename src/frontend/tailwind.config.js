@@ -15,6 +15,12 @@ export default {
       },
     },
     extend: {
+      fontSize: {
+        sm: ["16px", "20px"],
+        lg: ["16px", "24px"],
+        xl: ["24px", "32px"],
+        "3xl": ["32px", "40px"],
+      },
       colors: {
         border: "oklch(var(--border))",
         input: "oklch(var(--input))",

@@ -1,4 +1,4 @@
-export const BASE_FONT_SIZE = 12;
+export const BASE_FONT_SIZE = 16;
 export const PIXEL_FONT_FAMILY = '"PixelZH", monospace';
 export const PIXEL_FONT_SIZE = `${BASE_FONT_SIZE}px`;
 

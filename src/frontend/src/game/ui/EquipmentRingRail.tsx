@@ -79,7 +79,7 @@ function EquipmentBadge({ item }: { item: HudEquipmentItem }) {
             cy="20"
             r={RING_RADIUS}
             fill="none"
-            strokeWidth="2.5"
+            strokeWidth="2"
             className="stroke-border opacity-70"
           />
           {remaining !== null && (
@@ -88,7 +88,7 @@ function EquipmentBadge({ item }: { item: HudEquipmentItem }) {
               cy="20"
               r={RING_RADIUS}
               fill="none"
-              strokeWidth="2.5"
+              strokeWidth="2"
               strokeDasharray={CIRCUMFERENCE}
               strokeDashoffset={CIRCUMFERENCE * (1 - readyRatio)}
               strokeLinecap="butt"
@@ -121,7 +121,7 @@ function EquipmentBadge({ item }: { item: HudEquipmentItem }) {
         {cooling && (
           <span
             aria-hidden="true"
-            className="font-pixel absolute bottom-0 right-0 border border-border bg-card px-1 text-[10px] leading-none tabular-nums text-accent"
+            className="font-pixel absolute bottom-0 right-0 border border-border bg-card px-1 text-xs leading-none tabular-nums text-accent"
           >
             {seconds}
           </span>

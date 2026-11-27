@@ -184,7 +184,7 @@ export function fitToastIcon(
   icon.setDisplaySize(Math.round(w * snapped), Math.round(h * snapped));
 }
 
-const even = (value: number) => Math.ceil(value / 2) * 2;
+const grid = (value: number) => Math.ceil(value / 4) * 4;
 
 export function toastContentWidth(
   theme: ToastTheme,
@@ -220,8 +220,8 @@ export function redrawToastBox(
   );
   const height = Math.max(theme.iconSize, textH) + theme.paddingY * 2;
 
-  item.width = even(width);
-  item.height = even(height);
+  item.width = grid(width);
+  item.height = grid(height);
 
   // feedback 居中对齐，loot 左对齐，统一以垂直中线为 y=0
   const offsetX = item.channel === "feedback" ? -item.width / 2 : 0;
@@ -245,12 +245,12 @@ export function redrawToastBox(
   g.fillRect(offsetX, offsetY, item.width, item.height);
 
   // 深蓝灰像素双层描边
-  g.lineStyle(1, theme.borderInner, 0.95);
-  g.strokeRect(offsetX + 1.5, offsetY + 1.5, item.width - 3, item.height - 3);
-  g.lineStyle(1, theme.borderOuter, 1);
-  g.strokeRect(offsetX + 0.5, offsetY + 0.5, item.width - 1, item.height - 1);
+  g.lineStyle(2, theme.borderInner, 1);
+  g.strokeRect(offsetX + 3, offsetY + 3, item.width - 6, item.height - 6);
+  g.lineStyle(2, theme.borderOuter, 1);
+  g.strokeRect(offsetX + 1, offsetY + 1, item.width - 2, item.height - 2);
 
   // 左侧 4px 状态色条
   g.fillStyle(palette.accent, 1);
-  g.fillRect(offsetX + 1, offsetY + 1, theme.accentWidth, item.height - 2);
+  g.fillRect(offsetX + 4, offsetY + 4, theme.accentWidth, item.height - 8);
 }

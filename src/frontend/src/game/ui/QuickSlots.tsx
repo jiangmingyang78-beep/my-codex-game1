@@ -40,7 +40,7 @@ export function QuickSlots({ slots }: { slots: HudModel["quickSlots"] }) {
             e.currentTarget.blur();
           }}
           className={`pixel-panel-flat pointer-events-auto relative flex h-16 w-14 select-none flex-col items-center justify-center gap-1 transition-step hover:border-ring sm:h-[4.5rem] sm:w-16 ${
-            slot.count === 0 ? "opacity-55" : ""
+            slot.count === 0 ? "bg-card [&>span]:opacity-75" : ""
           }`}
         >
           <span className="pixel-hud-text absolute left-1 top-1 text-xs text-ember">

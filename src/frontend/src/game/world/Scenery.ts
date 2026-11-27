@@ -64,11 +64,8 @@ export class Scenery {
     } as Parameters<typeof createEffects>[1];
     this.fx = createEffects(scene, options);
     this.fires = new CampFires(this.fx, sys, state);
-    this.overlay = new NightOverlay(
-      scene,
-      scene.cameras.main,
-      gen.halo("#ffffff"),
-      (visit) => this.fx.forEachCampLight(visit),
+    this.overlay = new NightOverlay(scene, scene.cameras.main, (visit) =>
+      this.fx.forEachCampLight(visit),
     );
     this.snowClock = showSnowClock
       ? new SnowClockArt(scene, world, data.balance.clock)

@@ -1,6 +1,7 @@
 import { registerCanvasTexture } from "@/vfx/proceduralTextures";
 import type Phaser from "phaser";
 import { ATMOSPHERE_PRESETS } from "../atmosphere/atmospherePresets";
+import { makePixelHole } from "../atmosphere/pixelLightMask";
 import { RENDER_DEPTH } from "../renderDepth";
 
 export interface LightSpot {
@@ -21,19 +22,20 @@ type Visit = (light: {
 const KEY = "emberwood-night-overlay";
 /** The visible light reaches a bit past the nominal fire radius because the halo fades out. */
 const LIGHT_SPREAD = 1.25;
-const { duskColor, nightColor } = ATMOSPHERE_PRESETS.nightTint;
+const { duskColor, nightColor, maxNightAlpha } = ATMOSPHERE_PRESETS.nightTint;
 const mix = (a: number, b: number, t: number): number =>
   Math.round(a + (b - a) * t);
 
 /**
  * Dusk/night tint drawn on one view-sized canvas: fill with the ambient colour, then erase
- * soft circles at camp lights and around the hero. Painted on the camera's prerender event so
+ * stepped light bands at camp lights and around the hero. Painted on the camera's prerender event so
  * it never lags a frame behind camera follow.
  */
 export class NightOverlay {
   darkness = 0;
   heroLight: LightSpot | null = null;
   private readonly canvas = document.createElement("canvas");
+  private readonly halo = makePixelHole();
   private readonly texture: Phaser.Textures.CanvasTexture;
   private readonly image: Phaser.GameObjects.Image;
   private readonly webgl: boolean;
@@ -41,7 +43,6 @@ export class NightOverlay {
   constructor(
     private readonly scene: Phaser.Scene,
     private readonly camera: Phaser.Cameras.Scene2D.Camera,
-    private readonly halo: CanvasImageSource,
     private readonly forEachLight: (visit: Visit) => void,
   ) {
     this.canvas.width = 1;
@@ -82,14 +83,20 @@ export class NightOverlay {
     const r = mix(duskColor >> 16, nightColor >> 16, t);
     const green = mix((duskColor >> 8) & 255, (nightColor >> 8) & 255, t);
     const b = mix(duskColor & 255, nightColor & 255, t);
-    g.fillStyle = `rgba(${r},${green},${b},${this.darkness})`;
+    g.fillStyle = `rgba(${r},${green},${b},${t * maxNightAlpha})`;
     g.fillRect(0, 0, w, h);
     g.globalCompositeOperation = "destination-out";
-    g.imageSmoothingEnabled = true;
+    g.imageSmoothingEnabled = false;
     const erase = (light: LightSpot): void => {
-      const r = light.radius * LIGHT_SPREAD;
-      g.globalAlpha = light.alpha;
-      g.drawImage(this.halo, light.x - x - r, light.y - y - r, r * 2, r * 2);
+      const r = Math.max(1, Math.round(light.radius * LIGHT_SPREAD));
+      g.globalAlpha = light.alpha * 0.76;
+      g.drawImage(
+        this.halo,
+        Math.round(light.x) - x - r,
+        Math.round(light.y) - y - r,
+        r * 2,
+        r * 2,
+      );
     };
     this.forEachLight(erase);
     if (this.heroLight) erase(this.heroLight);

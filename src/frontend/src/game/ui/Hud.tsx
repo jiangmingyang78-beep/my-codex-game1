@@ -90,7 +90,7 @@ export function Hud() {
                 ` · 暖汤 ${Math.ceil(hud.buffSecondsLeft)} 秒`}
             </p>
           </div>
-          <p className="pixel-panel-flat px-3 py-2 text-xs leading-snug text-foreground">
+          <p className="pixel-panel-flat px-3 py-2 text-xs leading-4 text-foreground">
             {objective}
           </p>
         </div>
@@ -99,7 +99,9 @@ export function Hud() {
         )}
       </div>
 
-      <div className="pixel-panel absolute right-2 top-14 flex max-w-[calc(58vw_-_1.5rem)] items-center gap-2 px-2 py-2 sm:left-1/2 sm:right-auto sm:top-3 sm:max-w-none sm:-translate-x-1/2 sm:gap-3 sm:px-3">
+      <div
+        className={`pixel-panel absolute right-2 top-14 flex max-w-[calc(58vw_-_1.5rem)] items-center gap-2 px-2 py-2 md:left-1/2 md:right-auto md:top-3 md:max-w-none md:-translate-x-1/2 md:justify-center md:gap-3 md:px-3 ${hud.eternal ? "md:w-80" : "md:w-52"}`}
+      >
         {hud.eternal ? (
           <InfinityIcon size={18} className="text-accent" />
         ) : night ? (

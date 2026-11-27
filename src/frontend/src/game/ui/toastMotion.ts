@@ -86,10 +86,10 @@ export function layoutToastChannel(
     channel === "feedback"
       ? document.querySelector("[data-hud-hotbar]")?.getBoundingClientRect().top
       : undefined;
-  const feedbackBottom = Math.min(
-    viewH - config.feedbackOffsetY,
-    (hotbarTop ?? viewH) - 20,
-  );
+  const feedbackBottom =
+    hotbarTop === undefined
+      ? viewH - config.feedbackOffsetY
+      : Math.ceil((hotbarTop - 20) / 4) * 4;
 
   active.forEach((item, index) => {
     const container = item.container;
@@ -99,7 +99,7 @@ export function layoutToastChannel(
     const available = viewW - (isFeedback ? 16 : targetX + 8);
     const limit = Math.max(
       2,
-      Math.floor(Math.min(theme.maxWidth, available) / 2) * 2,
+      Math.floor(Math.min(theme.maxWidth, available) / 4) * 4,
     );
     const wrapWidth = toastContentWidth(theme, Boolean(item.iconObj), limit);
     if (item.textObj.style.wordWrapWidth !== wrapWidth)
@@ -125,7 +125,7 @@ export function layoutToastChannel(
       container
         .setPosition(
           isFeedback ? targetX : targetX - 16,
-          isFeedback ? targetY + 8 : targetY,
+          isFeedback ? targetY + 4 : targetY,
         )
         .setAlpha(0);
       scene.tweens.add({
