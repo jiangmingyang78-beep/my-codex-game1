@@ -3,7 +3,8 @@
 ## 1. 工具与改动文件
 
 - Codex 导入并提交新版。括号内为文件行数，⚠ 标记至少 240 行的文件。
-- docs · ARCHITECTURE_REVIEW.md（87）、BALANCE_PLAYTEST.md（45）、BALANCE_REPORT.md（140）、BESTIARY_AND_NOTES_DRAFT.md（376 ⚠）、EASTER_EGGS_BACKLOG.md（105）、HANDOFF.md（52）、MVP_CHECKLIST.md（124）、SPATIAL_RUNTIME.md（61）
+- V4 版本文件：README.md（84）、package.json（27）、src/frontend/package.json（94）。版本标签为 4.0.0。
+- docs · ARCHITECTURE_REVIEW.md（87）、BALANCE_PLAYTEST.md（45）、BALANCE_REPORT.md（140）、BESTIARY_AND_NOTES_DRAFT.md（376 ⚠）、EASTER_EGGS_BACKLOG.md（105）、HANDOFF.md（53）、MVP_CHECKLIST.md（124）、SPATIAL_RUNTIME.md（61）
 - src/frontend/public · survival-balance.schema.json（91）
 - src/frontend/src/core · dataTypes.ts（295 ⚠）、dataValidator.ts（241 ⚠）、gameData.ts（79）、itemTypes.ts（91）、messages.ts（41）、run.ts（241 ⚠）、save.ts（219）、snapshot.ts（123）、snapshotReaders.ts（220）、survivalDataValidator.ts（172）、types.ts（200）、vfxBridge.ts（77）
 - src/frontend/src/core/schemas · adventure.ts（280 ⚠）、survival.ts（202）

@@ -26,6 +26,10 @@ I have a deep love for video games—they have given me the courage to face life
   - Adds flickering torchlight, drifting embers, a low-light vignette, and snow-only footprints. Chinese combat and loot toasts use a bundled pixel font.
   - Centralizes render depths and adds a shared unit-test entry point with `npm test`. Existing saves retain their format.
 
+- **三模式空间运行时 (v4.0.0)** · [版本标签](https://github.com/jiangmingyang78-beep/my-codex-game1/tree/v4.0.0)
+  - 冒险、生存和永夜共用遮挡视野、局部追击寻路与刷怪落点校验。
+  - 生存模式新增营地工程、寒潮和袭营预警。详见[空间运行时报告](docs/SPATIAL_RUNTIME.md)和[生存平衡报告](docs/BALANCE_REPORT.md)。
+
 ## Run Locally
 
 Use Node.js 22.12+ or Node.js 24 and the project’s pinned pnpm version, 10.26.1. Run these commands from the repository root.
