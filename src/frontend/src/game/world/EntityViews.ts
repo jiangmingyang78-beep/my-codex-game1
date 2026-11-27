@@ -146,10 +146,11 @@ export class EntityViews {
     const py = Math.round(hero.y);
     const { heightTiles, tileSize } = this.sys.world;
     const depth = entityDepthAt(hero.y, heightTiles * tileSize);
+    if (this.hero.depth !== depth) this.hero.setDepth(depth);
 
     let bodyY = py;
     if (visual.kind === "sheet") {
-      this.hero.setPosition(px, py).setDepth(depth);
+      this.hero.setPosition(px, py);
       syncHeroAnimation(this.hero, state.heroId, {
         dead,
         hurt,
@@ -161,7 +162,7 @@ export class EntityViews {
     } else {
       bodyY =
         py + (!dead && moving ? Math.round(Math.sin(timeSec * 16) * 0.6) : 0);
-      this.hero.setPosition(px, bodyY).setDepth(depth);
+      this.hero.setPosition(px, bodyY);
       if (Math.abs(hero.facingX) > 0.05) this.hero.setFlipX(hero.facingX < 0);
     }
 
@@ -172,9 +173,10 @@ export class EntityViews {
     else if (dashInvuln) this.hero.setTint(0x9fd8ff);
     else this.hero.clearTint();
 
-    this.heroShadow
-      .setPosition(px, py + 1)
-      .setDepth(depth + RENDER_DEPTH.entityOffset.shadow);
+    this.heroShadow.setPosition(px, py + 1);
+    const shadowDepth = depth + RENDER_DEPTH.entityOffset.shadow;
+    if (this.heroShadow.depth !== shadowDepth)
+      this.heroShadow.setDepth(shadowDepth);
     this.heroShield.clear();
     const bucklerCd = getBucklerCooldownSec(state, this.sys);
     if (!dead && bucklerCd !== null && bucklerCd <= 0) {
@@ -184,8 +186,10 @@ export class EntityViews {
       );
       const halfArc = (52 * Math.PI) / 180;
       const alpha = 0.72 + Math.sin(timeSec * 5) * 0.14;
+      const shieldDepth = depth + RENDER_DEPTH.entityOffset.shield;
+      if (this.heroShield.depth !== shieldDepth)
+        this.heroShield.setDepth(shieldDepth);
       this.heroShield
-        .setDepth(depth + RENDER_DEPTH.entityOffset.shield)
         .lineStyle(1, 0xb8d8f0, alpha)
         .beginPath()
         .arc(px, bodyY - 6, 9, faceAngle - halfArc, faceAngle + halfArc, false)

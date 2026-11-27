@@ -1,37 +1,37 @@
-# GitHub 游戏体检与报错回溯交接
+# 84 敌人 GC 首轮优化交接
 
 ## 1. 工具与改动文件
 
-- Codex。括号内为行数，⚠ 标记至少 240 行的文件。
-- 工作流 · .github/workflows/ci.yml（49）、.github/workflows/deploy.yml（97）
-- 本地入口 · package.json（30）、pnpm-lock.yaml（5270 ⚠）、playwright.config.ts（38）、tools/ci-check.sh（77）、tools/一键体检.bat（25）
-- 浏览器测试 · tests/e2e/browser-fixture.ts（87）、tests/e2e/game.smoke.spec.ts（90）、tests/e2e/adventure-regression.spec.ts（14）、src/frontend/tests/adventure-regression.js（323 ⚠）
-- 游戏入口与快照 · src/frontend/src/main.tsx（36）、src/frontend/survival.html（5370 ⚠）、src/frontend/src/core/snapshot.ts（144）
-- 诊断 · src/frontend/src/game/diagnostics/config.ts（1）、src/frontend/src/game/diagnostics/report.ts（115）、src/frontend/src/game/diagnostics/listeners.ts（25）、src/frontend/src/game/diagnostics/ErrorBoundary.tsx（33）、src/frontend/src/game/diagnostics/survivalEntry.tsx（20）
-- 场景与事件 · src/frontend/src/game/scenes/BootScene.ts（25）、src/frontend/src/game/scenes/GameScene.ts（379 ⚠）、src/frontend/src/game/scenes/TitleScene.ts（81）、src/frontend/src/game/session/activeRun.ts（74）、src/frontend/src/game/session/outputHandler.ts（54）
-- 界面 · src/frontend/src/game/ui/ErrorScreen.tsx（75）、src/frontend/src/game/ui/GameUi.tsx（43）、src/frontend/src/game/ui/store.ts（186）
+Codex。括号为当前行数，⚠ 表示至少 240 行。
+- src/frontend/src/entities/EnemyEntity.ts（65）
+- src/frontend/src/game/feedback/TelegraphDrawing.ts（221，新增）
+- src/frontend/src/game/feedback/TelegraphLayer.ts（270 ⚠）
+- src/frontend/src/game/ui/EquipmentRingRail.tsx（179）
+- src/frontend/src/game/ui/Hud.tsx（203）
+- src/frontend/src/game/ui/QuickSlots.tsx（75）
+- src/frontend/src/game/world/EntityViews.ts（287 ⚠）
+- docs/SPATIAL_RUNTIME.md（152）
 - docs/HANDOFF.md（37）
 
 ## 2. 已验证项
 
-- 本机 pnpm check:all、pnpm fix 和冻结锁文件离线安装通过。155 项单测、18 项单独 LDtk 测试及平衡摘要通过。
-- Chrome/SwiftShader 完整冒险回归及 5 项生产冒烟通过，包含 VITE_COMMIT_SHA、快照、25 条面包屑及剪贴板。独立注入 React 渲染错误验证了组件堆栈。
-- 注入实际 pageerror、console.error 与 WebGL 创建失败，确认 Playwright 非零退出并保留截图、trace 和 console-errors.log。
-- actionlint 校验两份工作流。Bash 失败探针验证中文节点、失败摘录和退出码。Windows 批处理验证成功态及暂停。
+- pnpm typecheck、fix、check、build、全量单测 159/159。生产 E2E 5/5，冒险完整回归 1/1。
+- WebGL 和 Canvas 像素对照覆盖充能进度、普通与末段顺序、直向及斜向预警、清屏、复用和销毁。浏览器实测快捷消耗、圆盾冷却与就绪、静音、暂停和继续。
+- 同场景三轮估算分配量 193.80→94.19 MiB。独立三轮 GC 30→16 次，累计 33.555→25.833 ms，各轮最长暂停的中位数 4.496→0.790 ms。逐轮和补测指标见 SPATIAL_RUNTIME.md。
 
 ## 3. 未验证与已知风险
 
-- 首次云端体检的 Chromium 安装因 Ubuntu 26.04 与 Playwright 1.58.2 不兼容而失败。安装日志已归档，CI 固定使用 Ubuntu 24.04。
-- 云端 Ubuntu 24.04 已通过完整冒险回归和 5 项生产冒烟。回归探针确认键盘输入被游戏处理，避免软件渲染低帧率漏掉固定时长的按键。Pages 的附件上传与发布拆为两个作业，发布前等待附件可见。
+- 主对比最长 GC 9.045→16.881 ms，渲染 CPU P95 2.2→2.8 ms，帧间隔 P95 64.5→69.3 ms。后补三轮 15 次 MinorGC，最大 0.898 ms，峰值来源待复现。
+- 低端硬件 GPU、超出 32×32 流场窗口的封闭地形以及 Caffeine 云端回放待验证。
 
 ## 4. 锁定接口与约束
 
-- CI 以短 SHA 注入 VITE_COMMIT_SHA。Pages 只下载对应成功体检的 main 提交与运行尝试编号，发布前确认仍对应 main 最新提交。手动发布通过在 main 运行「游戏体检」触发。
-- 诊断环仅存内存并最多保留 25 条。快照摘要使用白名单字段，现有存档结构与玩法数值保持原状。
-- Issue 仓库在 diagnostics/config.ts 配置。Issue URL 限 7500 字符，剪贴板保留完整 Markdown。
-- Caffeine 生成用例保留在 tests/e2e，Playwright 运行同目录的确定性 spec。失败制品路径为 .cache/ci-playwright。
+- TelegraphLayer.syncFromState 与 destroy 负责场景预警。WebGL 纹理和视图池归场景所有，Canvas 使用原路径几何。普通预警先画，末段预警随后画。
+- 敌人位置、移动碰撞与伤害由玩法层负责，视图负责渲染和归还。HUD 等值比较受快捷栏、装备显示字段约束，添加字段时同步更新。
+- FlowField.compute 完整求解，update 同格修复受影响路径。WorldContext 的光照与导航缓存只在内存。ISpawnDirector.hasRoom 和 allowsLocation 可以按批调用，accepts 组合执行。
+- 死亡钩子在敌人归还前运行。遵循 VFX 公开接口、渲染深度、存档和 CI 诊断契约。开发版 Alt+Shift+R 重读已校验的空间平衡参数。
 
 ## 5. 下一棒任务
 
-1. 推送后检查 Actions 的中文体检看板和 Pages 部署关联。
-2. 此前空间运行时和生存平衡实测见 SPATIAL_RUNTIME.md 与 BALANCE_PLAYTEST.md。
+1. 前后版本交错复测 84 敌人场景，保存每次 GC 的事件类型、墙钟和线程 CPU 时间。
+2. 在低端硬件 GPU 上复现，核对精灵批处理、VFX 和纹理上传字节数。

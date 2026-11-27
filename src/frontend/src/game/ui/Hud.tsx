@@ -9,7 +9,7 @@ import {
   Volume2,
   VolumeX,
 } from "lucide-react";
-import type { ReactNode } from "react";
+import { type ReactNode, memo } from "react";
 import { toggleMuted } from "../audio/sfx";
 import { EquipmentRingRail } from "./EquipmentRingRail";
 import { PixelButton } from "./PixelButton";
@@ -25,7 +25,17 @@ interface BarProps {
   tone: "bar-hp" | "bar-hunger" | "bar-torch";
 }
 
-function StatBar({ icon, label, value, max, tone }: BarProps) {
+const HP_ICON = <Heart size={14} />;
+const HUNGER_ICON = <Utensils size={14} />;
+const LIGHT_ICON = <Flame size={14} />;
+
+const StatBar = memo(function StatBar({
+  icon,
+  label,
+  value,
+  max,
+  tone,
+}: BarProps) {
   const pct = Math.max(0, Math.min(100, (value / max) * 100));
   return (
     <div className="flex items-center gap-1 sm:gap-2">
@@ -40,7 +50,7 @@ function StatBar({ icon, label, value, max, tone }: BarProps) {
       </span>
     </div>
   );
-}
+});
 
 function formatStorm(sec: number): string {
   const total = Math.max(0, Math.ceil(sec));
@@ -50,8 +60,6 @@ function formatStorm(sec: number): string {
 export function Hud() {
   const hud = useUi((s) => s.hud);
   const objective = useUi((s) => s.objective);
-  const muted = useUi((s) => s.muted);
-  const nearCamp = useUi((s) => s.nearCamp);
   if (!hud) return null;
   const night = hud.phase === "night";
   return (
@@ -60,21 +68,21 @@ export function Hud() {
         <div data-hud-top-left className="flex flex-col gap-2">
           <div className="pixel-panel flex flex-col gap-2 p-2">
             <StatBar
-              icon={<Heart size={14} />}
+              icon={HP_ICON}
               label="生命"
               value={hud.hp}
               max={hud.maxHp}
               tone="bar-hp"
             />
             <StatBar
-              icon={<Utensils size={14} />}
+              icon={HUNGER_ICON}
               label="饱食"
               value={hud.hunger}
               max={hud.maxHunger}
               tone="bar-hunger"
             />
             <StatBar
-              icon={<Flame size={14} />}
+              icon={LIGHT_ICON}
               label="火炬"
               value={hud.light}
               max={hud.maxLight}
@@ -99,41 +107,67 @@ export function Hud() {
         )}
       </div>
 
-      <div
-        data-hud-clock
-        className={`pixel-panel absolute right-2 top-14 flex max-w-[calc(58vw_-_1.5rem)] items-center gap-2 px-2 py-2 md:left-1/2 md:right-auto md:top-3 md:max-w-none md:-translate-x-1/2 md:justify-center md:gap-3 md:px-3 ${hud.eternal ? "md:w-80" : "md:w-52"}`}
-      >
-        {hud.eternal ? (
-          <InfinityIcon
-            size={18}
-            className="hidden shrink-0 text-accent md:block"
-          />
-        ) : night ? (
-          <Moon size={18} className="text-accent" />
-        ) : (
-          <Sun size={18} className="text-warning" />
-        )}
-        <div className="leading-tight">
-          <p className="font-pixel flex flex-wrap gap-x-2 text-xs leading-4 text-pixel-shadow md:gap-x-0 md:text-sm">
-            {(hud.eternal?.clockText ?? `${hud.dayLabel} · ${hud.clock}`)
-              .split(" · ")
-              .map((part, index) => (
-                <span key={part} className="inline-block whitespace-nowrap">
-                  {index > 0 && (
-                    <span className="hidden md:inline">{" · "}</span>
-                  )}
-                  {part}
-                </span>
-              ))}
-          </p>
-          <p className="text-xs text-muted-foreground">
-            {hud.eternal
-              ? hud.eternal.threatText
-              : `${hud.regionName} · 风暴 ${formatStorm(hud.stormRemainingSec)}`}
-          </p>
-        </div>
-      </div>
+      <HudClock
+        eternal={!!hud.eternal}
+        night={night}
+        clockText={hud.eternal?.clockText ?? `${hud.dayLabel} · ${hud.clock}`}
+        threatText={
+          hud.eternal?.threatText ??
+          `${hud.regionName} · 风暴 ${formatStorm(hud.stormRemainingSec)}`
+        }
+      />
+      <HudActions />
+      <QuickSlots slots={hud.quickSlots} />
+    </>
+  );
+}
 
+const HudClock = memo(function HudClock({
+  eternal,
+  night,
+  clockText,
+  threatText,
+}: {
+  eternal: boolean;
+  night: boolean;
+  clockText: string;
+  threatText: string;
+}) {
+  return (
+    <div
+      data-hud-clock
+      className={`pixel-panel absolute right-2 top-14 flex max-w-[calc(58vw_-_1.5rem)] items-center gap-2 px-2 py-2 md:left-1/2 md:right-auto md:top-3 md:max-w-none md:-translate-x-1/2 md:justify-center md:gap-3 md:px-3 ${eternal ? "md:w-80" : "md:w-52"}`}
+    >
+      {eternal ? (
+        <InfinityIcon
+          size={18}
+          className="hidden shrink-0 text-accent md:block"
+        />
+      ) : night ? (
+        <Moon size={18} className="text-accent" />
+      ) : (
+        <Sun size={18} className="text-warning" />
+      )}
+      <div className="leading-tight">
+        <p className="font-pixel flex flex-wrap gap-x-2 text-xs leading-4 text-pixel-shadow md:gap-x-0 md:text-sm">
+          {clockText.split(" · ").map((part, index) => (
+            <span key={part} className="inline-block whitespace-nowrap">
+              {index > 0 && <span className="hidden md:inline">{" · "}</span>}
+              {part}
+            </span>
+          ))}
+        </p>
+        <p className="text-xs text-muted-foreground">{threatText}</p>
+      </div>
+    </div>
+  );
+});
+
+const HudActions = memo(function HudActions() {
+  const muted = useUi((s) => s.muted);
+  const nearCamp = useUi((s) => s.nearCamp);
+  return (
+    <>
       <div
         data-hud-actions
         className="absolute right-2 top-2 flex gap-2 sm:right-3 sm:top-3"
@@ -164,7 +198,6 @@ export function Hud() {
           营火：制作
         </PixelButton>
       )}
-      <QuickSlots slots={hud.quickSlots} />
     </>
   );
-}
+});

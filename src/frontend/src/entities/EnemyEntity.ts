@@ -1,16 +1,14 @@
 import type { EnemyDef } from "@/core/dataTypes";
 import type { EnemyState, RunState, Systems } from "@/core/types";
 import { RENDER_DEPTH, entityDepthAt } from "@/game/renderDepth";
-import { ENEMY_RADIUS } from "@/systems/combat/combatMath";
 import type Phaser from "phaser";
 import { getAdventureSpecial } from "./adventureSpecialEnemies";
 
-/** Phaser view and body. The rules layer owns position and tile collision. */
+/** Phaser view. The rules layer owns position and collision. */
 export class EnemyEntity {
   readonly sprite: Phaser.GameObjects.Sprite;
   readonly shadow: Phaser.GameObjects.Image;
   readonly telegraph: Phaser.GameObjects.Graphics;
-  readonly body: Phaser.Physics.Arcade.Body;
 
   constructor(
     scene: Phaser.Scene,
@@ -24,14 +22,6 @@ export class EnemyEntity {
     this.telegraph = scene.add
       .graphics()
       .setDepth(RENDER_DEPTH.legacyTelegraph);
-    scene.physics.add.existing(this.sprite);
-    this.body = this.sprite.body as Phaser.Physics.Arcade.Body;
-    this.body.moves = false;
-    this.body.setCircle(
-      ENEMY_RADIUS,
-      this.sprite.width * origin.x - ENEMY_RADIUS,
-      this.sprite.height * origin.y - ENEMY_RADIUS,
-    );
   }
 
   sync(enemy: EnemyState, tileSize: number, state: RunState, sys: Systems) {
@@ -44,7 +34,6 @@ export class EnemyEntity {
     this.shadow
       .setPosition(x, y + 1)
       .setDepth(depth + RENDER_DEPTH.entityOffset.shadow);
-    this.body.updateFromGameObject();
     this.sprite.clearTint().setAlpha(1);
     if (this.telegraph.visible) this.telegraph.clear();
     if ((enemy.hurtTimer ?? 0) > 0)
@@ -69,7 +58,6 @@ export class EnemyEntity {
     this.sprite.setVisible(value).setActive(value);
     this.shadow.setVisible(value);
     this.telegraph.clear().setVisible(value);
-    this.body.enable = value;
   }
   destroy() {
     this.sprite.destroy();

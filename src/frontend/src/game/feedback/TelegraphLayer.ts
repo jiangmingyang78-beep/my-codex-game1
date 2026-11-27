@@ -4,12 +4,8 @@ import type { EnemyState, RunState, Systems } from "@/core/types";
 import { ratio01, safeUnit } from "@/systems/combat/combatMath";
 import { currentMove } from "@/systems/combat/enemyAi";
 import Phaser from "phaser";
+import { TelegraphDrawing } from "./TelegraphDrawing";
 import { COMBAT_FEEL_PRESETS, type TelegraphPreset } from "./combatFeelPresets";
-
-interface Point2D {
-  x: number;
-  y: number;
-}
 
 interface SeedAttackView {
   kind: "sweep" | "lunge" | "charge" | "projectile" | "aoe";
@@ -81,22 +77,21 @@ function resolveTelegraphMove(
 export class TelegraphLayer {
   private readonly scene: Phaser.Scene;
   private readonly opts: TelegraphPreset;
-  private graphics: Phaser.GameObjects.Graphics | null;
+  private drawing: TelegraphDrawing | null;
 
   constructor(scene: Phaser.Scene, options: Partial<TelegraphPreset> = {}) {
     this.scene = scene;
     this.opts = { ...COMBAT_FEEL_PRESETS.telegraph, ...options };
-    this.graphics = scene.add.graphics().setDepth(this.opts.groundDepth);
+    this.drawing = new TelegraphDrawing(scene, this.opts);
 
     this.scene.events.once(Phaser.Scenes.Events.SHUTDOWN, this.destroy, this);
     this.scene.events.once(Phaser.Scenes.Events.DESTROY, this.destroy, this);
   }
 
   syncFromState(state: RunState, sys: Systems, _timeSec: number): void {
-    const g = this.graphics;
-    if (!g) return;
-
-    g.clear();
+    const drawing = this.drawing;
+    if (!drawing) return;
+    drawing.begin();
     const tileSize = sys.data.tileSize;
     const commits: {
       enemy: EnemyState;
@@ -104,7 +99,8 @@ export class TelegraphLayer {
       progress: number;
     }[] = [];
 
-    for (const enemy of Object.values(state.enemiesById)) {
+    for (const id in state.enemiesById) {
+      const enemy = state.enemiesById[id];
       if (enemy.phase !== "windup" || enemy.hp <= 0) continue;
       const move = resolveTelegraphMove(
         getEnemy(sys.data, enemy.enemyId),
@@ -122,39 +118,43 @@ export class TelegraphLayer {
       if (remaining <= this.opts.commitWindowSec) {
         commits.push({ enemy, move, progress });
       } else {
-        this.drawMoveTelegraph(
-          g,
-          enemy,
-          move,
-          tileSize,
-          progress,
-          this.opts.borderColor,
-        );
+        this.drawMoveTelegraph(drawing, enemy, move, tileSize, progress, false);
       }
     }
     for (const { enemy, move, progress } of commits) {
-      this.drawMoveTelegraph(
-        g,
-        enemy,
-        move,
-        tileSize,
-        progress,
-        this.opts.commitFlashColor,
-      );
+      this.drawMoveTelegraph(drawing, enemy, move, tileSize, progress, true);
     }
+    drawing.end();
   }
 
   private drawMoveTelegraph(
-    g: Phaser.GameObjects.Graphics,
+    drawing: TelegraphDrawing,
     enemy: EnemyState,
     move: SeedAttackView,
     tileSize: number,
     progress: number,
-    border: number,
+    committing: boolean,
   ): void {
     const { x: ux, y: uy } = safeUnit(enemy.dirX, enemy.dirY);
     const ox = Math.round(enemy.x);
     const oy = Math.round(enemy.y);
+    if (move.kind === "charge" || move.kind === "lunge") {
+      drawing.linear(
+        ox,
+        oy,
+        ux,
+        uy,
+        move.distanceTiles * tileSize,
+        progress,
+        committing,
+      );
+      return;
+    }
+
+    const g = drawing.path();
+    const border = committing
+      ? this.opts.commitFlashColor
+      : this.opts.borderColor;
     // Leave one dark world pixel on each side so even the white commit edge reads on snow.
     const stroke = (draw: () => void, alpha = 1): void => {
       g.lineStyle(4, this.opts.outlineColor, alpha);
@@ -191,39 +191,6 @@ export class TelegraphLayer {
           g.closePath();
           g.strokePath();
         });
-        break;
-      }
-
-      case "charge":
-      case "lunge": {
-        const length = move.distanceTiles * tileSize;
-        const hw = this.opts.lineWidthPx / 2;
-        const px = -uy;
-        const py = ux;
-
-        const buildQuad = (dist: number): Point2D[] => [
-          { x: Math.round(ox + px * hw), y: Math.round(oy + py * hw) },
-          {
-            x: Math.round(ox + ux * dist + px * hw),
-            y: Math.round(oy + uy * dist + py * hw),
-          },
-          {
-            x: Math.round(ox + ux * dist - px * hw),
-            y: Math.round(oy + uy * dist - py * hw),
-          },
-          { x: Math.round(ox - px * hw), y: Math.round(oy - py * hw) },
-        ];
-
-        const fullQuad = buildQuad(length);
-        g.fillStyle(this.opts.fillColor, this.opts.fillAlpha);
-        g.fillPoints(fullQuad, true);
-
-        if (progress > 0) {
-          g.fillStyle(this.opts.fillColor, this.opts.progressAlpha);
-          g.fillPoints(buildQuad(length * progress), true);
-        }
-
-        stroke(() => g.strokePoints(fullQuad, true));
         break;
       }
 
@@ -279,7 +246,7 @@ export class TelegraphLayer {
         }
 
         const r = 6;
-        const diamond: Point2D[] = [
+        const diamond = [
           { x: tx, y: ty - r },
           { x: tx + r, y: ty },
           { x: tx, y: ty + r },
@@ -294,10 +261,10 @@ export class TelegraphLayer {
   }
 
   destroy(): void {
-    if (!this.graphics) return;
+    if (!this.drawing) return;
     this.scene.events.off(Phaser.Scenes.Events.SHUTDOWN, this.destroy, this);
     this.scene.events.off(Phaser.Scenes.Events.DESTROY, this.destroy, this);
-    this.graphics.destroy();
-    this.graphics = null;
+    this.drawing.destroy();
+    this.drawing = null;
   }
 }
