@@ -1,0 +1,48 @@
+name: 游戏体检
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  health:
+    name: 静态检查、回归与生产冒烟
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - name: 执行全链路体检
+        id: health
+        run: bash tools/ci-check.sh
+      - name: 汇报运行器准备失败
+        if: failure() && steps.health.outcome == 'skipped'
+        run: |
+          printf '# 游戏体检\n\n- ❌ 运行器准备失败，未执行体检。请展开此作业中失败的准备步骤。\n' >> "$GITHUB_STEP_SUMMARY"
+      - name: 上传浏览器失败现场
+        if: failure() && steps.health.outputs.browser_failed == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: browser-failures-${{ github.run_attempt }}
+          path: |
+            .cache/ci-playwright/
+            .cache/ci-logs/browser*.log
+          include-hidden-files: true
+          if-no-files-found: error
+      - name: 保存已通过体检的生产构建
+        if: success() && github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: checked-game-${{ github.sha }}-${{ github.run_attempt }}
+          path: src/frontend/dist/
+          if-no-files-found: error
+          retention-days: 3

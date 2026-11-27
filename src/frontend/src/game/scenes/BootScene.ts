@@ -1,6 +1,7 @@
 import { createTextureGenerator } from "@/vfx/proceduralTextures";
 import Phaser from "phaser";
 import { REGISTRY, SCENE } from "../config";
+import { breadcrumb } from "../diagnostics/report";
 import { registerGameTextures } from "../textures/registerTextures";
 
 /** Generates every placeholder texture once (2D canvas only, no loader), then hands over to the title. */
@@ -10,6 +11,7 @@ export class BootScene extends Phaser.Scene {
   }
 
   create(): void {
+    breadcrumb(`场景 ${SCENE.boot}`);
     try {
       const gen = createTextureGenerator();
       registerGameTextures(this, gen);

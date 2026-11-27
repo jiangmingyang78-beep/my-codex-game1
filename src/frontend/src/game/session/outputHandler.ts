@@ -1,5 +1,6 @@
 import { CAMP_NOTE_TEXT, EVT, getHero } from "@/core";
 import { getUnlockDef } from "@/shared/metaUnlocks.js";
+import { breadcrumb } from "../diagnostics/report";
 import { toast } from "../ui/toastBridge";
 import type { Scenery } from "../world/Scenery";
 import type { RunSession, SessionOutput } from "./RunSession";
@@ -10,6 +11,14 @@ export interface OutputHooks {
   ended(): void;
   hurt(): void;
 }
+
+const reportedEvents = new Set<string>([
+  EVT.regionEntered,
+  EVT.craftDone,
+  EVT.campUpgraded,
+  EVT.campLit,
+  EVT.runEnded,
+]);
 
 /** Presents one batch of rule output: toasts, sounds, particles and scene reactions. */
 export function handleOutput(
@@ -23,6 +32,7 @@ export function handleOutput(
   presentEvents(events, session.sys);
   scenery.emit(events);
   for (const e of events) {
+    if (reportedEvents.has(e.type)) breadcrumb(`游戏事件 ${e.type}`);
     if (e.type === EVT.openCraft) hooks.openCraft();
     else if (e.type === EVT.runEnded) hooks.ended();
     else if (e.type === EVT.hit && e.payload.kind === "hurt") hooks.hurt();

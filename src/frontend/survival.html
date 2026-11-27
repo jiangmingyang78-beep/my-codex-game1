@@ -264,7 +264,9 @@ button,kbd,.tech-node,.quick-slot,.quickbar .build-controls{border-radius:0}
 <label for="seedInput">种子，可留空随机生成</label>
 <div class="world-controls"><input id="seedInput" type="text" maxlength="32" autocomplete="off" placeholder="例如 2048"><button id="createWorld" type="button">进入世界</button></div>
 </dialog>
+<script type="module" src="./src/game/diagnostics/survivalEntry.tsx"></script>
 <script type="module">
+import {breadcrumb,setSnapshotReader} from "./src/game/diagnostics/report.ts";
 import {encounterById} from "./src/systems/survival/encounterCatalog.ts";
 import {activateEncounter,discoverEncounter} from "./src/systems/survival/landmarks.ts";
 import {encounterProgressForSave} from "./src/core/save.ts";
@@ -733,6 +735,7 @@ function show(eyebrow,title,text,button){
   $("overlayText").textContent=text; $("primary").textContent=button; $("overlay").hidden=false;
 }
 function resumeFromOverlay(){
+  breadcrumb("生存界面 "+phase+" → play");
   phase="play"; $("overlay").hidden=true; $("pause").disabled=false;
   $("pause").textContent="暂停"; keys.clear();
 }
@@ -741,6 +744,7 @@ function start(){
 }
 function togglePause(){
   if(phase==="play"){
+    breadcrumb("生存界面 play → paused");
     phase="paused";clearGameplayInput();$("pause").textContent="继续";
     show("PAUSE","已暂停","休息一下。你的营地会停在这里。","继续生存");
   }else if(phase==="paused"){
@@ -3186,6 +3190,7 @@ function resetTerrain(){
 }
 function changeMode(next,worldId=activeWorld){
   if(next!==mode)return;
+  breadcrumb("载入生存世界");
   if(survival)writeSave();
   activeQuickSlot=0;chosenPlan="floor";quickbarUI="";naturalHits.clear();
   activeWorld=worldId;
@@ -5313,6 +5318,12 @@ window.addEventListener("storage",event=>{
   if(event.key===META_STORAGE_KEY||event.key===null)refreshCrossModeUnlocks();
 });
 for(const event of ["pointerdown","keydown"])window.addEventListener(event,unlockAudio,{passive:true,once:true});
+setSnapshotReader(()=>({
+  mode:"生存",schemaVersion:SAVE_VERSION,phase,seed:survival?.seed,
+  ageSec:survival?Math.floor(survival.age):undefined,day:dailyClock?.day,
+  weather:weatherMods?.name,raidStage:survival?.raid?.stage,
+  hero:player?{x:Math.round(player.x),y:Math.round(player.y),hp:player.hp}:undefined,
+}));
 changeMode("survival");requestAnimationFrame(frame);
 
 </script>

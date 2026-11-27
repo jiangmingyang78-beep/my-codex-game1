@@ -1,3 +1,5 @@
+import { summarizeRunSnapshot } from "@/core/snapshot";
+import { breadcrumb, captureDiagnostic } from "../diagnostics/report";
 import { uiStore } from "../ui/store";
 import { RunSession, type StartMode } from "./RunSession";
 
@@ -28,6 +30,7 @@ export function beginRun(mode: StartMode): void {
   if (pending || uiStore.get().screen !== "title" || uiStore.get().error)
     return;
   try {
+    breadcrumb(`开始局次 ${mode}`);
     const { title } = uiStore.get();
     const selected = title.heroes.find(
       ({ definition }) => definition.id === title.selectedHeroId,
@@ -40,14 +43,19 @@ export function beginRun(mode: StartMode): void {
     }, SCENE_ATTACH_TIMEOUT_MS);
   } catch (error) {
     console.error(error);
-    reportFailure("无法开始游戏，请返回标题后重试。");
+    reportFailure("无法开始游戏，请返回标题后重试。", error);
   }
 }
 
 /** Shows the Chinese error screen with a back-to-title button. */
-export function reportFailure(message: string): void {
+export function reportFailure(message: string, error?: unknown): void {
+  const report = captureDiagnostic(
+    message,
+    error,
+    pending ? summarizeRunSnapshot(pending.state, pending.eternal) : undefined,
+  );
   discardPendingRun();
-  uiStore.set({ error: message, prompt: null, craft: null });
+  uiStore.set({ error: report, prompt: null, craft: null });
 }
 
 /** Drops any run and shows the title menu again. */

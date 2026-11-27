@@ -1,53 +1,37 @@
-# 三模式空间运行时交接
+# GitHub 游戏体检与报错回溯交接
 
 ## 1. 工具与改动文件
 
-- Codex 导入并提交新版。括号内为文件行数，⚠ 标记至少 240 行的文件。
-- V4 版本文件：README.md（84）、package.json（27）、src/frontend/package.json（94）。版本标签为 4.0.0。
-- docs · ARCHITECTURE_REVIEW.md（87）、BALANCE_PLAYTEST.md（45）、BALANCE_REPORT.md（140）、BESTIARY_AND_NOTES_DRAFT.md（376 ⚠）、EASTER_EGGS_BACKLOG.md（105）、HANDOFF.md（53）、MVP_CHECKLIST.md（124）、SPATIAL_RUNTIME.md（61）
-- src/frontend/public · survival-balance.schema.json（91）
-- src/frontend/src/core · dataTypes.ts（295 ⚠）、dataValidator.ts（241 ⚠）、gameData.ts（79）、itemTypes.ts（91）、messages.ts（41）、run.ts（241 ⚠）、save.ts（219）、snapshot.ts（123）、snapshotReaders.ts（220）、survivalDataValidator.ts（172）、types.ts（200）、vfxBridge.ts（77）
-- src/frontend/src/core/schemas · adventure.ts（280 ⚠）、survival.ts（202）
-- src/frontend/src/data · balance.json（122）、catalogDefinitions.json（149）、elements.json（12）、enemies.json（706 ⚠）、items.json（334 ⚠）、plants.json（178）、recipes.json（348 ⚠）、survivalCampProjects.json（85）、survivalCatalog.json（207）、survivalRecipes.json（112）、survivalRhythm.json（33）、survivalRockArt.json（89）、survivalSfx.json（73）、weather.json（185）
-- src/frontend/src/entities · EnemyEntity.ts（79）、enemySeeds.ts（299 ⚠）
-- src/frontend/src/game/atmosphere · SnowFootprintLayer.ts（146）、TorchlightAtmosphereLayer.ts（270 ⚠）、pixelLightMask.ts（42）
-- src/frontend/src/game/audio · sfx.ts（257 ⚠）
-- src/frontend/src/game/dev · DevToolbar.tsx（227）、renderMetrics.ts（1）
-- src/frontend/src/game/scenes · bindSceneCommands.ts（96）
-- src/frontend/src/game/session · craftView.ts（141）、eventFeedback.ts（259 ⚠）
-- src/frontend/src/game/textures · survivalAnimalArt.ts（129）、survivalCampProjectArt.ts（84）、survivalFarmArt.ts（188）、survivalPlantStages.ts（48）、survivalRainArt.ts（82）、survivalRockArt.ts（101）、survivalShoreArt.ts（155）、survivalTreeArt.ts（147）
-- src/frontend/src/game/ui · CraftPanel.tsx（167）、commands.ts（98）、store.ts（184）
-- src/frontend/src/game/world · CampFires.ts（87）、ElementMarks.ts（52）、EntityViews.ts（283 ⚠）、NightOverlay.ts（105）、Scenery.ts（129）、SnowClockArt.ts（263 ⚠）、WorldView.ts（168）
-- src/frontend/src · main.tsx（8）
-- src/frontend/src/systems · EnemyManager.ts（380 ⚠）、buffs.ts（99）、crafting.ts（154）、inventory.ts（168）、movement.ts（260 ⚠）、recipeBook.ts（52）、survival.ts（201）
-- src/frontend/src/systems/combat · combatMath.ts（54）、ecology.ts（196）、enemyAi.ts（236）、enemySpawn.ts（136）、loot.ts（173）、projectilePool.ts（27）、skirtLight.ts（101）、spawnPopulation.ts（99）、spawnRules.ts（127）
-- src/frontend/src/systems/eternal · eternalDirector.ts（184）、eternalSpawn.ts（142）、eternalWorld.ts（92）
-- src/frontend/src/systems/survival · campApproach.ts（37）、campProjects.ts（162）、nightForecast.ts（114）、raidSpawn.ts（87）、rhythm.js（59）、survivalNoise.ts（154）、weatherRenderer.ts（129）、weatherSystem.ts（190）
-- src/frontend/src/systems/world · collision.ts（111）、dawn.ts（73）、elementGrid.ts（283 ⚠）、flowField.ts（106）、fovShadowcast.ts（86）、interact.ts（275 ⚠）、lightGrid.ts（211）、regionEffects.ts（156）、runContext.ts（29）、runElements.ts（143）、runLight.ts（60）、worldContext.ts（233）、worldGen.ts（300 ⚠）、worldTypes.ts（103）
-- src/frontend/src/vfx · particlePresets.js（112）、particleSimulation.js（143）、particles.js（312 ⚠）
-- src/frontend · survival.html（5359 ⚠）
-- src/frontend/tests · adventure-regression.js（294 ⚠）、spatial-stress.js（120）
-- tests · ecologyRecipeBook.test.ts（211）、elementGrid.test.ts（250 ⚠）、mapConsole.test.js（217）、runtimeRules.test.ts（224）、spatialRuntime.test.ts（166）、winterSurvival.test.ts（221）
-- tools · balance-report.mjs（318 ⚠）
-- tools/map-viewer/panels · SpawnRulePanel.ts（93）
-- tools/map-viewer · verifyLongRun.browser.ts（189）
+- Codex。括号内为行数，⚠ 标记至少 240 行的文件。
+- 工作流 · .github/workflows/ci.yml（48）、.github/workflows/deploy.yml（62）
+- 本地入口 · package.json（30）、pnpm-lock.yaml（5270 ⚠）、playwright.config.ts（38）、tools/ci-check.sh（77）、tools/一键体检.bat（25）
+- 浏览器测试 · tests/e2e/browser-fixture.ts（87）、tests/e2e/game.smoke.spec.ts（90）、tests/e2e/adventure-regression.spec.ts（14）、src/frontend/tests/adventure-regression.js（295 ⚠）
+- 游戏入口与快照 · src/frontend/src/main.tsx（36）、src/frontend/survival.html（5370 ⚠）、src/frontend/src/core/snapshot.ts（144）
+- 诊断 · src/frontend/src/game/diagnostics/config.ts（1）、src/frontend/src/game/diagnostics/report.ts（115）、src/frontend/src/game/diagnostics/listeners.ts（25）、src/frontend/src/game/diagnostics/ErrorBoundary.tsx（33）、src/frontend/src/game/diagnostics/survivalEntry.tsx（20）
+- 场景与事件 · src/frontend/src/game/scenes/BootScene.ts（25）、src/frontend/src/game/scenes/GameScene.ts（379 ⚠）、src/frontend/src/game/scenes/TitleScene.ts（81）、src/frontend/src/game/session/activeRun.ts（74）、src/frontend/src/game/session/outputHandler.ts（54）
+- 界面 · src/frontend/src/game/ui/ErrorScreen.tsx（75）、src/frontend/src/game/ui/GameUi.tsx（43）、src/frontend/src/game/ui/store.ts（186）
+- docs/HANDOFF.md（37）
 
 ## 2. 已验证项
 
-- 本次导入复验 TypeScript、Biome 和 Vite 生产构建，155 项单测全部通过。
-- 新版原有冒险回归、三模式测试和永夜 84 敌人压测见 SPATIAL_RUNTIME.md。种子 42 的生存新档实玩记录见 BALANCE_PLAYTEST.md。
+- 本机 pnpm check:all、pnpm fix 和冻结锁文件离线安装通过。155 项单测、18 项单独 LDtk 测试及平衡摘要通过。
+- Chrome/SwiftShader 完整冒险回归及 5 项生产冒烟通过，包含 VITE_COMMIT_SHA、快照、25 条面包屑及剪贴板。独立注入 React 渲染错误验证了组件堆栈。
+- 注入实际 pageerror、console.error 与 WebGL 创建失败，确认 Playwright 非零退出并保留截图、trace 和 console-errors.log。
+- actionlint 校验两份工作流。Bash 失败探针验证中文节点、失败摘录和退出码。Windows 批处理验证成功态及暂停。
 
 ## 3. 未验证与已知风险
 
-- 本次导入未重跑浏览器实玩与压测。原有压测仍记录到 GC，真机 GPU 时间与跨越 32 格窗口的追击待复测。
+- GitHub 云端 Ubuntu 执行、附件上传与 Pages 发布等待实际推送后的首次验证。
+- 冒险完整回归依赖 Vite 开发模块探针。冷启动等待标题最多 30 秒。生产冒烟使用独立 Vite preview。
 
 ## 4. 锁定接口与约束
 
-- VisibilityMask.compute / has、FlowField.compute / step 和适配器 solid、opaque 使用格坐标。IWorldContext.prepare / steer 使用世界像素。
-- ISpawnDirector.accepts 汇合容量、亮度、距离与碰撞校验。各模式决定波次。RunState 的 WeakMap 缓存不写入存档。
-- 地形通行性变化更新版本，亮度和元素变化更新各自的 revision。复用对象前清除可选目标、威胁和物理状态。生存旧档草药架交付继续通过 legacyCredit 迁移。
+- CI 以短 SHA 注入 VITE_COMMIT_SHA。Pages 只下载对应成功体检的 main 提交与运行尝试编号，发布前确认仍对应 main 最新提交。手动发布通过在 main 运行「游戏体检」触发。
+- 诊断环仅存内存并最多保留 25 条。快照摘要使用白名单字段，现有存档结构与玩法数值保持原状。
+- Issue 仓库在 diagnostics/config.ts 配置。Issue URL 限 7500 字符，剪贴板保留完整 Markdown。
+- Caffeine 生成用例保留在 tests/e2e，Playwright 运行同目录的确定性 spec。失败制品路径为 .cache/ci-playwright。
 
 ## 5. 下一棒任务
 
-1. 在目标硬件复测永夜 84 敌人场景及 GC 暂停。
-2. 复测跨越局部窗口的大型障碍追击。
+1. 推送后检查 Actions 的中文体检看板和 Pages 部署关联。
+2. 此前空间运行时和生存平衡实测见 SPATIAL_RUNTIME.md 与 BALANCE_PLAYTEST.md。

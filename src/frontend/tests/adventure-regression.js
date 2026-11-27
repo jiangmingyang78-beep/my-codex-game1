@@ -87,6 +87,7 @@ async (page) => {
     }, target);
   await page.goto("http://127.0.0.1:4179/");
   await page.setViewportSize({ width: 1280, height: 720 });
+  await page.getByRole("heading", { name: "余烬林：最后一炬" }).waitFor({ timeout: 30000 });
   await page.locator('[data-ocid="title.adventure_button"]').click();
     await start().waitFor();
   check(await resume().isDisabled(), "请在新的 Playwright 浏览器会话运行");

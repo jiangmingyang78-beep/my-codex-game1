@@ -1,4 +1,5 @@
 import { EVT, type StepInputState } from "@/core";
+import { summarizeRunSnapshot } from "@/core/snapshot";
 import { getDashCooldownState } from "@/systems/movement";
 import { nearestInteractable } from "@/systems/world/interact";
 import { TILE } from "@/systems/world/worldTypes";
@@ -8,6 +9,7 @@ import { SnowFootprintLayer } from "../atmosphere/SnowFootprintLayer";
 import { TorchlightAtmosphereLayer } from "../atmosphere/TorchlightAtmosphereLayer";
 import { syncMuteState } from "../audio/sfx";
 import { HUD_REFRESH_SEC, REGISTRY, SCENE } from "../config";
+import { breadcrumb, setSnapshotReader } from "../diagnostics/report";
 import { CombatFeelController } from "../feedback/CombatFeelController";
 import { CombatInputBuffer } from "../feedback/InputBuffer";
 import { TelegraphLayer } from "../feedback/TelegraphLayer";
@@ -74,6 +76,7 @@ export class GameScene extends Phaser.Scene {
   }
 
   create(): void {
+    breadcrumb(`场景 ${SCENE.game}`);
     this.ready = false;
     this.scenery = null;
     this.cleanups = [];
@@ -86,14 +89,19 @@ export class GameScene extends Phaser.Scene {
       this.ready = true;
     } catch (error) {
       console.error(error);
+      reportFailure("游戏场景启动失败，请返回标题后重试。", error);
       this.teardown();
-      reportFailure("游戏场景启动失败，请返回标题后重试。");
     }
   }
 
   private build(attached: RunSession | null): void {
     this.session = attached ?? new RunSession(this.mode, this.heroId);
     const { state } = this.session;
+    this.cleanups.push(
+      setSnapshotReader(() =>
+        summarizeRunSnapshot(state, this.session.eternal),
+      ),
+    );
     const gen = this.registry.get(
       REGISTRY.textureGenerator,
     ) as TextureGenerator;

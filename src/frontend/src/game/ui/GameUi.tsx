@@ -7,12 +7,13 @@ import { PromptBubble, Toasts } from "./Overlays";
 import { PauseMenu } from "./PauseMenu";
 import { ResultScreen } from "./ResultScreen";
 import { TitleScreen } from "./TitleScreen";
+import { commands } from "./commands";
 import { useUi } from "./store";
 
 /** DOM layer over the Phaser canvas. Everything is click-through except its buttons and panels. */
 export function GameUi() {
   const screen = useUi((s) => s.screen);
-  const failed = useUi((s) => s.error !== null);
+  const error = useUi((s) => s.error);
   return (
     <div className="pointer-events-none absolute inset-0 overflow-hidden">
       {screen === "title" && (
@@ -21,8 +22,8 @@ export function GameUi() {
           <div className="scanlines absolute inset-0 opacity-40" />
         </>
       )}
-      {failed ? (
-        <ErrorScreen />
+      {error ? (
+        <ErrorScreen report={error} onBack={() => commands.toTitle()} />
       ) : screen === "title" ? (
         <TitleScreen />
       ) : (

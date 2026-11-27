@@ -1,5 +1,6 @@
 import type { HeroDef, HudModel } from "@/core";
 import { useSyncExternalStore } from "react";
+import { type DiagnosticReport, breadcrumb } from "../diagnostics/report";
 import { hasToastManager, toast } from "./toastBridge";
 
 export type Screen = "title" | "playing" | "paused" | "craft" | "result";
@@ -96,8 +97,7 @@ export interface UiState {
   title: TitleView;
   craft: CraftView | null;
   result: ResultView | null;
-  /** Chinese failure message; when set the error screen replaces the HUD. */
-  error: string | null;
+  error: DiagnosticReport | null;
 }
 
 const initial: UiState = {
@@ -143,6 +143,8 @@ export const uiStore = {
     };
   },
   set(patch: Partial<UiState>): void {
+    if (patch.screen && patch.screen !== state.screen)
+      breadcrumb(`界面 ${state.screen} → ${patch.screen}`);
     state = { ...state, ...patch };
     emit();
   },

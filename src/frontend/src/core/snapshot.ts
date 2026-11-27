@@ -25,6 +25,27 @@ export { RUN_SCHEMA_VERSION, SnapshotError } from "./saveMigration";
 
 const STATUSES: readonly RunStatus[] = ["playing", "won", "dead", "storm_lost"];
 
+/** 供诊断上报使用的只读摘要，避免包含完整存档。 */
+export function summarizeRunSnapshot(run: RunState, eternal: boolean) {
+  return {
+    mode: eternal ? "永夜" : "冒险",
+    schemaVersion: run.schemaVersion,
+    seed: run.seed,
+    elapsedSec: Math.floor(run.elapsedSec),
+    day: run.day,
+    phase: run.phase,
+    status: run.status,
+    regionId: run.regionId,
+    heroId: run.heroId,
+    hero: {
+      x: Math.round(run.hero.x),
+      y: Math.round(run.hero.y),
+      hp: run.hero.hp,
+    },
+    campLevel: run.campLevel,
+  };
+}
+
 /**
  * Validates an unknown value as a RunState and returns a clean deep copy. Throws SnapshotError
  * (reason `version_mismatch` or `invalid_*`) for corrupt or incompatible data.
