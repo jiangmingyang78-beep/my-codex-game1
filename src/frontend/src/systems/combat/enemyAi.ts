@@ -104,7 +104,10 @@ function strikeHero(
   events: GameEvent[],
 ): void {
   if (
-    damageHero(state, sys, def.attackDamage, events, def.id) &&
+    damageHero(state, sys, def.attackDamage, events, def.id, {
+      x: e.x,
+      y: e.y,
+    }) &&
     move.lightDamage
   ) {
     state.hero.light = Math.max(0, state.hero.light - move.lightDamage);
@@ -238,7 +241,11 @@ export function updateProjectiles(
     const hit =
       !wall &&
       Math.hypot(state.hero.x - p.x, state.hero.y - p.y) <= HERO_RADIUS + 3;
-    if (hit) damageHero(state, sys, p.damage, events, "projectile");
+    if (hit)
+      damageHero(state, sys, p.damage, events, "projectile", {
+        x: p.x - p.vx,
+        y: p.y - p.vy,
+      });
     if (hit || wall || p.lifeSec <= 0) list.splice(i, 1);
   }
 }

@@ -39,6 +39,7 @@ interface DashState {
   cooldownSec: number;
   dx: number;
   dy: number;
+  started: boolean;
 }
 
 /** In-memory only: dash state is never persisted in RunState. */
@@ -75,6 +76,20 @@ export function resetDashCooldown(state: RunState): void {
   if (dash) dash.cooldownSec = 0;
 }
 
+/** True once per dash start; consumed by the combat step (riposte telegraph check). */
+export function consumeDashStart(state: RunState): boolean {
+  const dash = dashes.get(state);
+  if (!dash?.started) return false;
+  dash.started = false;
+  return true;
+}
+
+/** Refunds dash cooldown by `sec` seconds, clamped at zero. */
+export function refundDashCooldown(state: RunState, sec: number): void {
+  const dash = dashes.get(state);
+  if (dash) dash.cooldownSec = Math.max(0, dash.cooldownSec - sec);
+}
+
 /** True while the Shift dash i-frames are active. */
 export function isHeroDashInvulnerable(state: RunState): boolean {
   return (dashes.get(state)?.invulnSec ?? 0) > 0;
@@ -88,7 +103,14 @@ export function isHeroDashActive(state: RunState): boolean {
 function dashFor(state: RunState, sec: number): DashState {
   let dash = dashes.get(state);
   if (!dash) {
-    dash = { activeSec: 0, invulnSec: 0, cooldownSec: 0, dx: 0, dy: 0 };
+    dash = {
+      activeSec: 0,
+      invulnSec: 0,
+      cooldownSec: 0,
+      dx: 0,
+      dy: 0,
+      started: false,
+    };
     dashes.set(state, dash);
   }
   dash.invulnSec = Math.max(0, dash.invulnSec - sec);
@@ -102,9 +124,9 @@ function startDash(
   dash: DashState,
   dx: number,
   dy: number,
-) {
+): boolean {
   const { hero } = state;
-  if (dash.cooldownSec > 0 || hero.hunger < DASH.hungerCost) return;
+  if (dash.cooldownSec > 0 || hero.hunger < DASH.hungerCost) return false;
   hero.hunger -= DASH.hungerCost;
   Object.assign(dash, {
     activeSec: DASH.activeSec,
@@ -112,7 +134,9 @@ function startDash(
     cooldownSec: dashCooldownMaxSec(state, sys),
     dx,
     dy,
+    started: true,
   });
+  return true;
 }
 
 /**

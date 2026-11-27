@@ -1,13 +1,10 @@
-import type { AttackMove } from "@/core/dataTypes";
+import type { AttackMove, EnemyDef } from "@/core/dataTypes";
 import { getEnemy } from "@/core/gameData";
 import type { EnemyState, RunState, Systems } from "@/core/types";
+import { ratio01, safeUnit } from "@/systems/combat/combatMath";
 import { currentMove } from "@/systems/combat/enemyAi";
 import Phaser from "phaser";
-import {
-  COMBAT_FEEL_PRESETS,
-  type TelegraphPreset,
-  type WindupTimerMode,
-} from "./combatFeelPresets";
+import { COMBAT_FEEL_PRESETS, type TelegraphPreset } from "./combatFeelPresets";
 
 interface Point2D {
   x: number;
@@ -24,38 +21,25 @@ interface SeedAttackView {
 }
 
 function resolveTelegraphMove(
-  def: ReturnType<typeof getEnemy>,
+  def: EnemyDef | undefined,
   enemy: EnemyState,
 ): SeedAttackView | null {
-  if (!def) {
-    return null;
-  }
-  const meta = def as unknown as {
-    seedType?: string;
-    phases?: Array<{
-      seedType?: string;
-      overrides?: { attack?: Record<string, unknown> };
-    }>;
-    attack?: Record<string, unknown>;
-  };
+  if (!def) return null;
 
-  if (meta.seedType) {
-    const stage = meta.phases?.[enemy.wardenPhase ?? 0];
-    const seedType = stage?.seedType ?? meta.seedType;
-    const attack = {
-      ...(meta.attack ?? {}),
-      ...(stage?.overrides?.attack ?? {}),
-    };
-    const windupSec =
-      typeof attack.windupSec === "number" ? attack.windupSec : 0.4;
+  if (def.seedType) {
+    const stage = def.phases?.[enemy.wardenPhase ?? 0];
+    const seedType = stage?.seedType ?? def.seedType;
+    const attack = stage?.overrides?.attack
+      ? { ...def.attack, ...stage.overrides.attack }
+      : def.attack;
+    const windupSec = attack.windupSec ?? 0.4;
+
     if (seedType === "lunge") {
       return {
         kind: "lunge",
         windupSec,
-        rangeTiles:
-          typeof attack.triggerTiles === "number" ? attack.triggerTiles : 2,
-        distanceTiles:
-          typeof attack.distanceTiles === "number" ? attack.distanceTiles : 2.5,
+        rangeTiles: attack.triggerTiles ?? 2,
+        distanceTiles: attack.distanceTiles ?? 2.5,
         arcDegrees: 100,
         radiusTiles: 1.2,
       };
@@ -64,32 +48,26 @@ function resolveTelegraphMove(
       return {
         kind: "sweep",
         windupSec,
-        rangeTiles:
-          typeof attack.reachTiles === "number" ? attack.reachTiles : 1.5,
+        rangeTiles: attack.reachTiles ?? 1.5,
         distanceTiles: 1.5,
         arcDegrees: 130,
         radiusTiles: 1.2,
       };
     }
     if (seedType === "ranged_telegraph") {
-      const mode = attack.mode;
       return {
-        kind: mode === "aoe" ? "aoe" : "projectile",
+        kind: attack.mode === "aoe" ? "aoe" : "projectile",
         windupSec,
-        rangeTiles:
-          typeof attack.preferredTiles === "number" ? attack.preferredTiles : 5,
+        rangeTiles: attack.preferredTiles ?? 5,
         distanceTiles: 5,
         arcDegrees: 100,
-        radiusTiles:
-          typeof attack.radiusTiles === "number" ? attack.radiusTiles : 1.2,
+        radiusTiles: attack.radiusTiles ?? 1.2,
       };
     }
   }
 
   const move: AttackMove | undefined = currentMove(def, enemy);
-  if (!move) {
-    return null;
-  }
+  if (!move) return null;
   return {
     kind: move.type,
     windupSec: move.windupSec,
@@ -102,9 +80,8 @@ function resolveTelegraphMove(
 
 export class TelegraphLayer {
   private readonly scene: Phaser.Scene;
-  private opts: TelegraphPreset;
+  private readonly opts: TelegraphPreset;
   private graphics: Phaser.GameObjects.Graphics | null;
-  private destroyed = false;
 
   constructor(scene: Phaser.Scene, options: Partial<TelegraphPreset> = {}) {
     this.scene = scene;
@@ -115,37 +92,27 @@ export class TelegraphLayer {
     this.scene.events.once(Phaser.Scenes.Events.DESTROY, this.destroy, this);
   }
 
-  setTimerMode(mode: WindupTimerMode): void {
-    this.opts = { ...this.opts, windupTimerMode: mode };
-  }
-
   syncFromState(state: RunState, sys: Systems, timeSec: number): void {
     const g = this.graphics;
-    if (!g || this.destroyed) {
-      return;
-    }
+    if (!g) return;
 
     g.clear();
     const tileSize = sys.data.tileSize;
-    const enemies = Object.values(state.enemiesById);
 
-    for (const enemy of enemies) {
-      if (enemy.phase !== "windup" || enemy.hp <= 0) {
-        continue;
-      }
-      const def = getEnemy(sys.data, enemy.enemyId);
-      const move = resolveTelegraphMove(def, enemy);
-      if (!move) {
-        continue;
-      }
+    for (const enemy of Object.values(state.enemiesById)) {
+      if (enemy.phase !== "windup" || enemy.hp <= 0) continue;
+      const move = resolveTelegraphMove(
+        getEnemy(sys.data, enemy.enemyId),
+        enemy,
+      );
+      if (!move) continue;
 
       const windup = Math.max(1e-4, move.windupSec);
-      const rawSec = enemy.phaseSec;
       const remaining =
         this.opts.windupTimerMode === "remaining"
-          ? Phaser.Math.Clamp(rawSec, 0, windup)
-          : Phaser.Math.Clamp(windup - rawSec, 0, windup);
-      const progress = 1 - remaining / windup;
+          ? Phaser.Math.Clamp(enemy.phaseSec, 0, windup)
+          : Phaser.Math.Clamp(windup - enemy.phaseSec, 0, windup);
+      const progress = 1 - ratio01(remaining, windup);
 
       const border =
         remaining <= this.opts.commitWindowSec &&
@@ -165,9 +132,7 @@ export class TelegraphLayer {
     progress: number,
     border: number,
   ): void {
-    const lenRaw = Math.hypot(enemy.dirX, enemy.dirY);
-    const ux = lenRaw > 1e-4 ? enemy.dirX / lenRaw : 1;
-    const uy = lenRaw > 1e-4 ? enemy.dirY / lenRaw : 0;
+    const { x: ux, y: uy } = safeUnit(enemy.dirX, enemy.dirY);
     const ox = Math.round(enemy.x);
     const oy = Math.round(enemy.y);
 
@@ -236,13 +201,8 @@ export class TelegraphLayer {
       }
 
       case "aoe": {
-        const hasAim =
-          typeof enemy.aimX === "number" &&
-          Number.isFinite(enemy.aimX) &&
-          typeof enemy.aimY === "number" &&
-          Number.isFinite(enemy.aimY);
-        const tx = Math.round(hasAim ? (enemy.aimX as number) : ox);
-        const ty = Math.round(hasAim ? (enemy.aimY as number) : oy);
+        const tx = Math.round(enemy.aimX ?? ox);
+        const ty = Math.round(enemy.aimY ?? oy);
         const radius = move.radiusTiles * tileSize;
 
         g.fillStyle(this.opts.fillColor, this.opts.fillAlpha);
@@ -257,28 +217,18 @@ export class TelegraphLayer {
       }
 
       case "projectile": {
-        const hasAim =
-          typeof enemy.aimX === "number" &&
-          Number.isFinite(enemy.aimX) &&
-          typeof enemy.aimY === "number" &&
-          Number.isFinite(enemy.aimY);
         const tx = Math.round(
-          hasAim
-            ? (enemy.aimX as number)
-            : ox + ux * move.rangeTiles * tileSize,
+          enemy.aimX ?? ox + ux * move.rangeTiles * tileSize,
         );
         const ty = Math.round(
-          hasAim
-            ? (enemy.aimY as number)
-            : oy + uy * move.rangeTiles * tileSize,
+          enemy.aimY ?? oy + uy * move.rangeTiles * tileSize,
         );
 
         const dx = tx - ox;
         const dy = ty - oy;
         const totalDist = Math.hypot(dx, dy);
         if (totalDist > 1e-4) {
-          const dirX = dx / totalDist;
-          const dirY = dy / totalDist;
+          const { x: dirX, y: dirY } = safeUnit(dx, dy);
           g.lineStyle(2, border, this.opts.projectileAimAlpha);
           for (let d = 0; d < totalDist; d += 14) {
             const segEnd = Math.min(d + 8, totalDist);
@@ -313,24 +263,14 @@ export class TelegraphLayer {
         g.strokePoints(diamond, true);
         break;
       }
-
-      default:
-        break;
     }
-  }
-
-  clear(): void {
-    this.graphics?.clear();
   }
 
   destroy(): void {
-    if (this.destroyed) {
-      return;
-    }
-    this.destroyed = true;
+    if (!this.graphics) return;
     this.scene.events.off(Phaser.Scenes.Events.SHUTDOWN, this.destroy, this);
     this.scene.events.off(Phaser.Scenes.Events.DESTROY, this.destroy, this);
-    this.graphics?.destroy();
+    this.graphics.destroy();
     this.graphics = null;
   }
 }

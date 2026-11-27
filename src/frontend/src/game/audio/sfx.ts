@@ -10,6 +10,8 @@ export type SfxName =
   | "boss_phase"
   | "pickup"
   | "nightfall"
+  | "riposte_arm"
+  | "riposte_strike"
   | "ui";
 
 interface Tone {
@@ -91,6 +93,35 @@ const SOUNDS: Record<SfxName, Tone[]> = {
       gain: 0.16,
     },
     { freq: 147, endFreq: 73, start: 0.25, dur: 0.9, type: "sine", gain: 0.14 },
+  ],
+  riposte_arm: [
+    {
+      freq: 587,
+      endFreq: 880,
+      start: 0,
+      dur: 0.08,
+      type: "triangle",
+      gain: 0.14,
+    },
+    { freq: 1175, start: 0.04, dur: 0.09, type: "sine", gain: 0.1 },
+  ],
+  riposte_strike: [
+    {
+      freq: 320,
+      endFreq: 110,
+      start: 0,
+      dur: 0.14,
+      type: "sawtooth",
+      gain: 0.18,
+    },
+    {
+      freq: 784,
+      endFreq: 523,
+      start: 0.02,
+      dur: 0.11,
+      type: "triangle",
+      gain: 0.12,
+    },
   ],
   ui: [{ freq: 480, start: 0, dur: 0.05, type: "square", gain: 0.06 }],
 };

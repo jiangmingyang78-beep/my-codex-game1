@@ -5,8 +5,10 @@ import type {
   Systems,
 } from "@/core/types";
 import { updateEnemies } from "../EnemyManager.js";
+import { consumeDashStart } from "../movement";
 import { heroAttack } from "./heroAttack";
 import { collectGroundLoot } from "./loot";
+import { tickRiposte, tryArmRiposteOnDash } from "./riposte";
 
 /**
  * One combat step: hero attack, enemy telegraph/attack state machines, projectiles and
@@ -19,6 +21,8 @@ export function stepCombat(
   sec: number,
   events: GameEvent[],
 ): void {
+  tickRiposte(state, sec, sys);
+  if (consumeDashStart(state)) tryArmRiposteOnDash(state, sys, events);
   if (input.attackPressed) heroAttack(state, sys, events);
   updateEnemies(state, sys, sec, events);
   collectGroundLoot(state, sys, events);

@@ -144,6 +144,29 @@ function describe(e: GameEvent, sys: Systems): Feedback | null {
         },
         sfx: "block",
       };
+    case EVT.COMBAT_RIPOSTE_ARMED:
+      return {
+        toast: {
+          kind: "gain",
+          label: "余烬反势！",
+          key: "riposte:armed",
+        },
+        sfx: "riposte_arm",
+      };
+    case EVT.COMBAT_RIPOSTE_STRIKE: {
+      const hits = Number(p.hitCount) || 0;
+      const light = Math.round(Number(p.lightRestored) || 0);
+      return hits > 0 && light > 0
+        ? {
+            toast: {
+              kind: "gain",
+              label: `反刺命中！火炬 +${light}`,
+              key: "riposte:strike",
+            },
+            sfx: "riposte_strike",
+          }
+        : { sfx: "riposte_strike" };
+    }
     case EVT.enemyPhaseChanged:
       return Number(p.phaseIndex) > 0
         ? {

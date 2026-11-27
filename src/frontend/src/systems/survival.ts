@@ -4,6 +4,7 @@ import type { GameEvent, RunState, Systems } from "@/core/types";
 import { isDevGodMode } from "@/game/dev/devTools";
 import { lightDrainMultiplier, tickBuffs } from "./buffs";
 import { inFireCircle } from "./campCircle";
+import { tryArmRiposteOnMitigate } from "./combat/riposte";
 import { bucklerBlockCooldown, heroMaxHp, ownedStatBonus } from "./itemEffects";
 import { isHeroDashInvulnerable } from "./movement";
 import { evaluateRegionModifiers } from "./world/regionEffects";
@@ -34,16 +35,16 @@ export function damageHero(
   amount: number,
   events: GameEvent[],
   cause: string,
+  source?: { x: number; y: number },
 ): boolean {
   if (import.meta.env.DEV && isDevGodMode(state)) return false;
   const { hero } = state;
-  if (
-    state.status !== "playing" ||
-    hero.invulnerableSec > 0 ||
-    amount <= 0 ||
-    isHeroDashInvulnerable(state)
-  )
+  if (state.status !== "playing" || amount <= 0) return false;
+  if (isHeroDashInvulnerable(state)) {
+    if (source) tryArmRiposteOnMitigate(state, "dash_iframe", events, source);
     return false;
+  }
+  if (hero.invulnerableSec > 0) return false;
   const isEnvDamage = cause === "hunger" || cause === "darkness";
   if (!isEnvDamage) {
     const blockCooldown = bucklerBlockCooldown(sys.data, state.inventory);
@@ -57,6 +58,8 @@ export function damageHero(
           message: "锻铁圆盾格挡了攻击！",
         }),
       );
+      if (source)
+        tryArmRiposteOnMitigate(state, "buckler_block", events, source);
       return false;
     }
   }

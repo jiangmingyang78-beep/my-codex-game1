@@ -68,7 +68,10 @@ function spawnThreat(state, sys, events, enemy, aim, attack, damage) {
       clearPath(state, sys, enemy.x, enemy.y, aim.x, aim.y) &&
       clearPath(state, sys, aim.x, aim.y, state.hero.x, state.hero.y)
     )
-      damageHero(state, sys, damage, events, enemy.enemyId);
+      damageHero(state, sys, damage, events, enemy.enemyId, {
+        x: enemy.x,
+        y: enemy.y,
+      });
     return;
   }
   if (state.projectiles.length >= sys.data.balance.limits.activeProjectiles)
@@ -208,7 +211,10 @@ export function updateEnemies(state, sys, dt, events) {
             )
           : Math.hypot(hero.x - source.x, hero.y - source.y) <= reach) &&
         clearPath(state, sys, source.x, source.y, hero.x, hero.y) &&
-        damageHero(state, sys, damage, events, source.enemyId),
+        damageHero(state, sys, damage, events, source.enemyId, {
+          x: source.x,
+          y: source.y,
+        }),
       spawnEnemyThreat: (source, aim, attack, damage = config.attackDamage) =>
         spawnThreat(state, sys, events, source, aim, attack, damage),
     });

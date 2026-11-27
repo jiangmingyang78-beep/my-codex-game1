@@ -144,7 +144,10 @@ export function devSimulateHit(
   events: GameEvent[],
 ): boolean {
   if (!import.meta.env.DEV) return false;
-  const applied = damageHero(state, sys, 2, events, "dev_dummy");
+  const applied = damageHero(state, sys, 2, events, "dev_dummy", {
+    x: state.hero.x + state.hero.facingX * 24,
+    y: state.hero.y + state.hero.facingY * 24,
+  });
   if (!applied && isDevGodMode(state)) {
     events.push(
       makeEvent(EVT.notice, state.hero.x, state.hero.y, {

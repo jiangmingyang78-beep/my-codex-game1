@@ -54,8 +54,6 @@ export class GameScene extends Phaser.Scene {
   private torchlight: TorchlightAtmosphereLayer | null = null;
   private combatMotion: CombatMotionVfxLayer | null = null;
   private snowFootprints: SnowFootprintLayer | null = null;
-  private pendingFlashHero = false;
-  private pendingFlashEnemyIds: string[] = [];
   private ready = false;
   private screen: PlayScreen = "playing";
   private cleanups: (() => void)[] = [];
@@ -109,8 +107,6 @@ export class GameScene extends Phaser.Scene {
     );
     this.entities = new EntityViews(this, this.session.sys, gen, state.heroId);
     this.inputBuffer.clear();
-    this.pendingFlashHero = false;
-    this.pendingFlashEnemyIds = [];
     this.telegraphLayer = new TelegraphLayer(this, {
       windupTimerMode: "remaining",
     });
@@ -121,17 +117,8 @@ export class GameScene extends Phaser.Scene {
       reducedMotion,
       snowTileIds: SNOW_TILE_IDS,
     });
-    this.combatFeel = new CombatFeelController(this, {
-      reducedMotion,
-      eventTypes: {
-        enemyHit: EVT.hit,
-        enemyDefeated: EVT.enemyDefeated,
-        heroDamaged: EVT.hit,
-        heroBlocked: EVT.blocked,
-        heroHealed: EVT.itemUsed,
-        barrelExploded: EVT.campLit,
-      },
-    });
+    this.combatFeel = new CombatFeelController(this, { reducedMotion });
+    this.combatFeel.setHeroTarget(this.entities.hero);
     this.cleanups.push(lockNearestFilter(this));
     this.keys = new InputController(this);
     this.cleanups.push(
@@ -200,8 +187,12 @@ export class GameScene extends Phaser.Scene {
   }
 
   private step(sec: number, input: StepInputState): void {
+    const preHero = {
+      x: this.session.state.hero.x,
+      y: this.session.state.hero.y,
+    };
     const out = this.session.advance(sec, input, undefined);
-    this.present(out);
+    this.present(out, preHero);
   }
 
   private render(timeSec: number, sec: number, deltaMs: number): void {
@@ -211,6 +202,7 @@ export class GameScene extends Phaser.Scene {
     const darkness = darknessAt(state.elapsedSec, sys.data.balance.clock);
     this.entities.sync(state, timeSec);
     this.torchlight?.sync(state, sys, sec, timeSec);
+    this.combatMotion?.syncRiposteAura(state, timeSec);
     this.combatMotion?.syncHeroSlash(state, sys);
     this.combatMotion?.syncDashAfterimage(
       state,
@@ -220,19 +212,6 @@ export class GameScene extends Phaser.Scene {
       deltaMs,
     );
     this.snowFootprints?.sync(state, sys, sec);
-    if (this.combatFeel) {
-      if (this.pendingFlashHero) {
-        this.combatFeel.flashObject(this.entities.hero);
-        this.pendingFlashHero = false;
-      }
-      if (this.pendingFlashEnemyIds.length > 0) {
-        for (const id of this.pendingFlashEnemyIds) {
-          const sprite = this.entities.enemySprite(id);
-          if (sprite) this.combatFeel.flashObject(sprite);
-        }
-        this.pendingFlashEnemyIds.length = 0;
-      }
-    }
     this.telegraphLayer?.syncFromState(state, sys, timeSec);
     this.combatFeel?.syncHudOverlays(state, sys, timeSec);
     scenery.update(state, sec, darkness);
@@ -255,7 +234,10 @@ export class GameScene extends Phaser.Scene {
     }
   }
 
-  private present(out: ReturnType<RunSession["advance"]>): void {
+  private present(
+    out: ReturnType<RunSession["advance"]>,
+    preHero?: { x: number; y: number },
+  ): void {
     handleOutput(out, this.session, this.scenery as Scenery, {
       openCraft: () => this.openCraft(),
       ended: () => this.showResult(),
@@ -265,11 +247,22 @@ export class GameScene extends Phaser.Scene {
     });
     this.combatFeel?.processEvents(out.events);
     for (const e of out.events) {
-      if (e.type !== EVT.hit) continue;
-      if (e.payload.kind === "hurt") {
-        this.pendingFlashHero = true;
-      } else if (typeof e.payload.targetId === "string") {
-        this.pendingFlashEnemyIds.push(e.payload.targetId);
+      if (e.type !== EVT.COMBAT_RIPOSTE_STRIKE) continue;
+      const { dirX, dirY, rangePx } = e.payload;
+      if (
+        typeof dirX === "number" &&
+        typeof dirY === "number" &&
+        typeof rangePx === "number"
+      ) {
+        this.combatMotion?.triggerCounterThrust(
+          e.x ?? this.session.state.hero.x,
+          e.y ?? this.session.state.hero.y,
+          dirX,
+          dirY,
+          rangePx,
+          this.entities.hero,
+          preHero,
+        );
       }
     }
   }
@@ -374,8 +367,6 @@ export class GameScene extends Phaser.Scene {
     this.combatMotion = null;
     this.snowFootprints?.destroy();
     this.snowFootprints = null;
-    this.pendingFlashHero = false;
-    this.pendingFlashEnemyIds = [];
     for (const cleanup of this.cleanups) cleanup();
     this.cleanups = [];
     this.scenery?.destroy();

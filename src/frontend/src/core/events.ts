@@ -39,5 +39,7 @@ export const EVT = {
   sealCollected: "seal.collected",
   saveDue: "save.due",
   runEnded: "run.ended",
+  COMBAT_RIPOSTE_ARMED: "combat.riposte_armed",
+  COMBAT_RIPOSTE_STRIKE: "combat.riposte_strike",
   notice: "ui.notice",
 } as const;

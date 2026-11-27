@@ -94,7 +94,7 @@ function spawnEnemy(
   const id = `eternal_${state.idCounter++}`;
   const isBoss =
     (ETERNAL.bossOrder as readonly string[]).includes(enemyId) ||
-    Boolean((def as { phases?: unknown }).phases);
+    Boolean(def.phases);
   const scaled = isBoss
     ? def.maxHp
     : Math.ceil(def.maxHp * eternalHpMultiplier(combatSec));

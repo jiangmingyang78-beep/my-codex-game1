@@ -6,6 +6,12 @@ import { countOf } from "../inventory";
 import { ownedStatBonus } from "../itemEffects";
 import { detonateResinBarrel } from "../world/regionEffects";
 import { ENEMY_RADIUS, inCone } from "./combatMath";
+import {
+  RIPOSTE_CONFIG,
+  consumeRiposte,
+  finishRiposteStrike,
+  lungeForRiposte,
+} from "./riposte";
 
 export interface Weapon {
   damage: number;
@@ -52,17 +58,26 @@ export function heroAttack(
   const w = currentWeapon(state, sys);
   hero.attackCooldownSec = w.cooldownSec;
   hero.attackAnimSec = 0.18;
+  const riposte = consumeRiposte(state);
+  if (riposte) lungeForRiposte(state, sys, riposte);
   events.push(
     makeEvent(EVT.swing, hero.x, hero.y, {
       dx: hero.facingX,
       dy: hero.facingY,
     }),
   );
-  const range = w.rangeTiles * sys.data.tileSize;
+  const range =
+    (w.rangeTiles + (riposte ? RIPOSTE_CONFIG.rangeBonusTiles : 0)) *
+    sys.data.tileSize;
+  const arc = riposte ? RIPOSTE_CONFIG.arcDegrees : w.arcDegrees;
+  const damage = riposte
+    ? Math.ceil(w.damage * RIPOSTE_CONFIG.damageMult)
+    : w.damage;
   const targets: EnemyState[] = [];
   for (const id in state.enemiesById) {
     const e = state.enemiesById[id];
     if (
+      e.hp > 0 &&
       inCone(
         hero.x,
         hero.y,
@@ -71,13 +86,13 @@ export function heroAttack(
         e.x,
         e.y,
         range,
-        w.arcDegrees,
+        arc,
         ENEMY_RADIUS,
       )
     )
       targets.push(e);
   }
-  for (const e of targets) hitEnemy(state, sys, e, w.damage, events);
+  for (const e of targets) hitEnemy(state, sys, e, damage, events);
   for (const o of sys.world.objectList) {
     if (
       o.kind === "explosive_barrel" &&
@@ -90,12 +105,13 @@ export function heroAttack(
         o.x,
         o.y,
         range,
-        w.arcDegrees,
+        arc,
         ENEMY_RADIUS,
       )
     ) {
       detonateResinBarrel(state, sys, o.id, events);
     }
   }
+  if (riposte) finishRiposteStrike(state, sys, targets, damage, range, events);
   return true;
 }

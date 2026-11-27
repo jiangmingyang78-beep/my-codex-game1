@@ -27,9 +27,27 @@ export interface AttackMove {
 }
 
 export interface EnemyAttack extends Omit<Partial<AttackMove>, "type"> {
-  type: AttackMove["type"] | "alternating";
+  type?: AttackMove["type"] | "melee" | "alternating";
   moves?: AttackMove[];
   enrage?: { hpRatioAtOrBelow: number; intervalSec: number };
+  mode?: "projectile" | "aoe";
+  triggerTiles?: number;
+  dashDurationSec?: number;
+  recoverSec?: number;
+  reachTiles?: number;
+  cooldownSec?: number;
+  preferredTiles?: number;
+  radiusTiles?: number;
+}
+
+export interface EnemyPhaseStage {
+  hpThreshold: number;
+  seedType: "lunge" | "stalk_melee" | "ranged_telegraph";
+  overrides?: {
+    moveSpeedPxPerSec?: number;
+    attackDamage?: number;
+    attack?: Partial<EnemyAttack>;
+  };
 }
 
 export interface DropDef {
@@ -52,6 +70,7 @@ export interface EnemyDef {
   attack: EnemyAttack;
   drops: DropDef[];
   seedType?: "lunge" | "stalk_melee" | "ranged_telegraph" | "warden_phase";
+  phases?: EnemyPhaseStage[];
   knockbackSpeed?: number;
 }
 

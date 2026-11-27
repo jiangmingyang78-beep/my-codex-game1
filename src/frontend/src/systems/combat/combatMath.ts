@@ -33,3 +33,21 @@ export function inCone(
   if (dist <= targetRadius) return true;
   return angleBetweenDeg(dirX, dirY, dx, dy) <= arcDegrees / 2;
 }
+
+/** Safe unit vector normalization; returns fallback direction on zero-length inputs. */
+export function safeUnit(
+  dx: number,
+  dy: number,
+  fallbackX = 1,
+  fallbackY = 0,
+): { x: number; y: number } {
+  const len = Math.hypot(dx, dy);
+  return len > 1e-6
+    ? { x: dx / len, y: dy / len }
+    : { x: fallbackX, y: fallbackY };
+}
+
+/** Clamped [0, 1] ratio that safely returns 0 when max <= 0. */
+export function ratio01(value: number, max: number): number {
+  return max > 1e-6 ? Math.max(0, Math.min(1, value / max)) : 0;
+}

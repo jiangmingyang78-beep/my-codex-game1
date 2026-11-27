@@ -105,6 +105,15 @@ export class RunSession {
   ): SessionOutput {
     const events = step(this.state, { sec, input, commands }, this.sys);
     if (this.eternal) stepEternalDirector(this.state, this.sys, sec, events);
+    if (
+      import.meta.env.DEV &&
+      (!Number.isFinite(this.state.hero.x) ||
+        !Number.isFinite(this.state.hero.y))
+    ) {
+      throw new Error(
+        `Invalid hero position: (${this.state.hero.x}, ${this.state.hero.y})`,
+      );
+    }
     return this.settle(events);
   }
 
