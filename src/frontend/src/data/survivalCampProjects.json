@@ -1,0 +1,22 @@
+{
+  "projects": {
+    "wellhead": {
+      "name": "修缮井台",
+      "detail": "手持水壶靠近营地水井时，自动装满。",
+      "cost": { "wood": 6, "stone": 5 }
+    },
+    "restCorner": {
+      "name": "布置休息角",
+      "detail": "在营地床上睡觉少消耗 4 点饱食。",
+      "cost": { "wheat": 4, "wool": 2 }
+    },
+    "feedingTrough": {
+      "name": "添置禽舍料槽",
+      "detail": "营地的鸡每次多产 1 枚蛋。",
+      "cost": { "copper": 2, "wood": 3, "egg": 2 }
+    }
+  },
+  "wellAutoRefillTiles": 2,
+  "restHungerSaved": 4,
+  "bonusEggs": 1
+}

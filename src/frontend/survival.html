@@ -37,7 +37,12 @@ aside{display:grid;gap:12px}.panel{padding:14px}.panel h2{font-size:15px}.panel-
 @media(pointer:coarse),(max-width:620px){.touch{display:flex}.keys{display:none}header{margin-bottom:11px}}
 @media(max-width:500px){.brand-icon{display:none}.heart{font-size:14px}header button{min-height:36px;padding:3px 8px}.card p{font-size:13px;margin-bottom:7px}.card button{min-height:34px;padding:.25rem 1rem}.card small{font-size:10px}.panel{font-size:13px}}
 
-.status-info{grid-area:location;display:flex;align-items:center;gap:12px;min-width:0}
+.status-info{grid-area:location;display:flex;align-items:center;flex-wrap:wrap;gap:3px 10px;min-width:0}
+.clock-group{display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap}
+#raidForecast{display:inline-flex;align-items:center;gap:4px;color:#f0bf91;font:700 11px/1.4 sans-serif;font-variant-numeric:tabular-nums;white-space:nowrap}
+.forecast-flame{width:10px;height:12px;position:relative;background:#f0835d;clip-path:polygon(40% 0,60% 0,60% 17%,80% 17%,80% 50%,100% 50%,100% 83%,80% 83%,80% 100%,20% 100%,20% 83%,0 83%,0 50%,20% 50%,20% 33%,40% 33%)}
+.forecast-flame::after{content:"";position:absolute;inset:5px 2px 1px;background:#ffd19a;clip-path:polygon(33% 0,67% 0,67% 33%,100% 33%,100% 83%,67% 83%,67% 100%,33% 100%,33% 83%,0 83%,0 50%,33% 50%)}
+#beaconStatus{color:var(--sea);font-size:11px;white-space:nowrap}
 .weather-label{font:700 12px monospace;color:var(--sea);white-space:nowrap}
 #message{grid-area:message;display:grid;align-content:center;min-height:2.8em;color:#f9dfb4;font-size:13px;line-height:1.4;text-align:center;overflow-wrap:anywhere}
 #dayClock{color:#f2cca0;font:700 13px/1.4 "Microsoft YaHei",sans-serif;white-space:nowrap}
@@ -84,7 +89,17 @@ aside{display:grid;gap:12px}.panel{padding:14px}.panel h2{font-size:15px}.panel-
 .tech-node small{color:#b5bfc5;font-size:12px}.tech-node button{justify-self:start;min-height:32px;font-size:13px}
 .tech-arrow{text-align:center;font-size:12px;color:#a1aeb7;line-height:1}
 #techStatus{min-height:1.5em;color:var(--gold);font-size:14px}
-@media(max-width:560px){.tech-branches{grid-template-columns:1fr}}
+.camp-projects{margin:10px 0 14px;border-bottom:1px solid var(--edge);padding-bottom:10px}
+.camp-projects summary{font-weight:700;color:var(--gold);cursor:pointer;padding:4px 0 7px}
+.camp-project-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.camp-materials{list-style:none;margin:4px 0;padding:0;display:grid;gap:3px;font-size:12px;font-variant-numeric:tabular-nums;color:#ccd9da}
+.camp-materials li{display:grid;grid-template-columns:1fr auto;gap:5px}.camp-materials progress{grid-column:1/-1;width:100%;height:4px;accent-color:#be9161}
+.camp-materials li[data-complete="true"]{color:var(--sea)}
+.map-landmarks{display:grid;gap:5px;margin-top:8px;font-size:12px}
+.map-landmarks .map-field{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px;align-items:center}
+.map-landmarks select,.map-landmarks button{font:inherit;min-height:30px;padding:3px 5px;color:var(--paper);background:#1a2833;border:1px solid #425667;min-width:0}
+.map-landmarks button:disabled{opacity:.55}.map-landmarks p{font-size:12px;color:var(--sea);font-variant-numeric:tabular-nums}
+@media(max-width:560px){.tech-branches,.camp-project-grid{grid-template-columns:1fr}}
 #packStatus{font-size:13px;color:#edcf9e}
 @media(max-width:570px){.pack-grid{grid-template-columns:1fr;gap:8px}}
 .resource-grid b{color:#f1d5a5;font-variant-numeric:tabular-nums}
@@ -153,7 +168,7 @@ button,kbd,.tech-node,.quick-slot,.quickbar .build-controls{border-radius:0}
 <div class="layout">
 <section class="frame" aria-label="游戏画面">
 <div class="statusbar">
-<div class="status-info"><span id="zone" class="zone">篝火营地</span><span id="dayClock">黎明 06:00</span><span id="gameMode" class="mode-label">生存</span><span id="weatherLabel" class="weather-label" hidden>晴冷微风</span></div>
+<div class="status-info"><span id="zone" class="zone">篝火营地</span><span class="clock-group"><span id="dayClock">黎明 06:00</span><span id="raidForecast" hidden title="定时波次。远离上次遇袭地点时仍可能遭遇夜袭。"><span id="forecastFlame" class="forecast-flame" aria-hidden="true"></span><span id="forecastText"></span></span></span><span id="gameMode" class="mode-label">生存</span><span id="weatherLabel" class="weather-label" hidden>晴冷微风</span><span id="beaconStatus" hidden title="下一次夜袭生成时会受到压制">处于烽火台保护范围</span></div>
 <p id="message" role="status" aria-label="旅途记事" aria-live="polite">从营地出发。篝火可以恢复生命。</p>
 <div class="vitals"><span>生命</span><span id="hearts" class="hearts"></span></div>
 </div>
@@ -192,18 +207,23 @@ button,kbd,.tech-node,.quick-slot,.quickbar .build-controls{border-radius:0}
 <li>左键长按可采植物、收割作物、拾取 5 格内的掉落物或拆除建筑。短按可播种、开门和操作设施。</li>
 <li>手持材料后选择配方，右键放置，长按右键拖过空格可连续放置。触屏点按空格可放置。</li>
 <li>空手右键开垦，触屏空手长按空地开垦。</li>
-<li>手持水壶，按住左键拖过作物可连续浇水。在水井或池边补水。</li>
+<li>手持水壶，按住左键拖过作物可连续浇水。在水井或池边补水，修好的井台还能为靠近的水壶自动补水。</li>
 <li>手持种子，按住右键拖过空耕地可连续播种。</li>
 <li>喂鸡和羊吃小麦，之后可收蛋和剪羊毛。</li>
 <li>靠近篝火可烤面包，天黑后小心夜行怪。</li>
 <li>用手采野生植物，拿当地植物喂野生动物。矿脉可以长按采集。</li>
-<li>用 3 木材和 1 石料建研究台，靠近后按 T 研究科技。</li>
+<li>用 3 木材和 1 石料建研究台，靠近后按 T 研究科技或捐助营地修缮。</li>
 </ul></details>
 </section>
 <section class="panel map-panel">
   <div class="panel-title"><h2>地图</h2><small id="mapCoordinates" hidden></small></div>
   <label id="oreFilterLabel" hidden>寻找矿脉 <select id="oreFilter"><option value="">全部矿物</option></select></label>
   <canvas id="map" width="150" height="96" aria-label="小地图，亮点代表当前位置"></canvas>
+  <div id="mapLandmarks" class="map-landmarks" hidden>
+    <p id="landmarkBearing"></p>
+    <div class="map-field"><select id="landmarkTarget" aria-label="指引目标" aria-describedby="landmarkBearing"></select><button id="removeLandmark" type="button">删除</button></div>
+    <div class="map-field"><select id="landmarkKind" aria-label="新地标类型"></select><button id="addLandmark" type="button" title="在脚下放置或更新地标">标记脚下</button></div>
+  </div>
   <div id="biomeLegend" hidden></div>
 </section>
 </aside>
@@ -228,6 +248,10 @@ button,kbd,.tech-node,.quick-slot,.quickbar .build-controls{border-radius:0}
 <dialog id="techDialog" aria-labelledby="techTitle">
 <div class="gear-heading"><h2 id="techTitle">科技树</h2><button id="closeTech" type="button" autofocus>返回游戏</button></div>
 <p id="techStatus" role="status" aria-live="polite"></p>
+<details id="campProjectPanel" class="camp-projects" open>
+<summary id="campProjectSummary">营地修缮</summary>
+<div id="campProjectList" class="camp-project-grid"></div>
+</details>
 <div id="techTree" class="tech-tree"></div>
 </dialog>
 <dialog id="worldDialog" aria-labelledby="worldTitle">
@@ -239,6 +263,11 @@ button,kbd,.tech-node,.quick-slot,.quickbar .build-controls{border-radius:0}
 </dialog>
 <script type="module">
 import {loadSurvivalTuning,scaledStock,nightWaves,waveSlot} from "./src/systems/survivalTuning.ts";
+import {campProjects,campProjectEffects,campProjectComplete,campProjectContribution,donateCampMaterials,normalizeCampProjects} from "./src/systems/survival/campProjects.ts";
+import {CAMP_LANDMARK,landmarkBearing,landmarkId,landmarkKinds,normalizeLandmarks} from "./src/systems/survival/landmarks.ts";
+import {survivalNightForecast} from "./src/systems/survival/nightForecast.ts";
+import {drawSurvivalMapMark} from "./src/game/ui/survivalLandmarkMap.ts";
+import {drawFeedingTrough,drawRepairedWell,drawRestMat} from "./src/game/textures/survivalCampProjectArt.ts";
 import {
   CHUNK_RADIUS,CHUNK_SIZE,COAL_VEIN,NATURAL_FLORA as naturalFlora,SURVIVAL_BIOMES as biomes,
   WORLD_MAX,WORLD_MIN,inOriginalMap,insideSurvivalCamp as insideCamp,originalPlayableCell,
@@ -561,6 +590,7 @@ const dayStages = [
   {name:"破晓前", ambient:[124,151,178], sky:[110,211,218], sx:-13,sy:7, shade:.27,glow:.93}
 ];
 const LEGACY_STAGE_SECONDS=12, STAGE_SECONDS=24, DAY_SECONDS=dayStages.length*STAGE_SECONDS, CLOCK_STEP_MINUTES=5;
+const DUSK_SECONDS=STAGE_SECONDS*5, BEACON_PROTECTION_TILES=18;
 const lightLayer=document.createElement("canvas");
 lightLayer.width=canvas.width;lightLayer.height=canvas.height;
 const lightCtx=lightLayer.getContext("2d");
@@ -588,6 +618,20 @@ function updateTime(){
   const minutes=(360+elapsedMinutes)%1440;
   const label=lighting.name+" "+String(Math.floor(minutes/60)).padStart(2,"0")+":"+String(minutes%60).padStart(2,"0");
   if($("dayClock").textContent!==label)$("dayClock").textContent=label;
+}
+function paintNightForecast(){
+  const forecast=survivalNightForecast(survival.age,DAY_SECONDS,DUSK_SECONDS,tuning.spawnFrequency);
+  const warning=dayTime>=DUSK_SECONDS-STAGE_SECONDS;
+  $("raidForecast").hidden=!warning;
+  $("beaconStatus").hidden=!inBeaconProtection();
+  if(!warning)return;
+  const seconds=Math.ceil(forecast.seconds??0);
+  const label=forecast.seconds!==null?(forecast.night?"下波约 ":"夜袭约 ")+seconds+" 秒":
+    forecast.waves?"本夜无后续波次":"今夜无定时夜袭";
+  const flame=$("forecastFlame");
+  flame.style.opacity=forecast.night||forecast.seconds===null ? .36 : .36+.64*forecast.seconds/STAGE_SECONDS;
+  const text=$("forecastText");
+  if(text.textContent!==label)text.textContent=label;
 }
 function impact(kind,x,y,dx,dy){
   const presets={strike:[.056,.47,"#ffe1a3"],finisher:[.091,.67,"#ffd18e"],boss:[.127,.93,"#ffd1e0"],hurt:[.087,.72,"#ff8581"]};
@@ -2651,6 +2695,29 @@ const miniColors=["#101e28","#3d674f","#7f835b","#6a6257","#3c7080","#20435c","#
 const miniLayer=makeCanvas(WIDTH*3,HEIGHT*3),miniLayerCtx=miniLayer.getContext("2d");
 let miniOrigin=null;
 let selectedOre="";
+const campMapMark={...camp,kind:"camp"};
+function paintLandmarkControls(){
+  const select=$("landmarkTarget");
+  select.replaceChildren(new Option("篝火营地",CAMP_LANDMARK),...survival.landmarks.map(mark=>
+    new Option(landmarkKinds[mark.kind].name+" · "+mark.x+", "+mark.y,landmarkId(mark))));
+  select.value=survival.landmarkTarget;
+  $("removeLandmark").disabled=survival.landmarkTarget===CAMP_LANDMARK;
+}
+function drawLandmarks(left,top,position){
+  const origin={x:left,y:top};
+  const playerDot={x:(player.x/SIZE-left)*3,y:(player.y/SIZE-top)*3};
+  let target=campMapMark;
+  for(const mark of survival.landmarks){
+    if(landmarkId(mark)===survival.landmarkTarget)target=mark;
+    else drawSurvivalMapMark(mini,mark,origin,playerDot,false);
+  }
+  if(target!==campMapMark)drawSurvivalMapMark(mini,campMapMark,origin,playerDot,false);
+  drawSurvivalMapMark(mini,target,origin,playerDot,true);
+  const {distance,direction}=landmarkBearing(position,target);
+  const label=distance?direction+" · "+distance+" 格":"已到达";
+  const bearing=$("landmarkBearing");
+  if(bearing.textContent!==label)bearing.textContent=label;
+}
 function updateMiniLayer(left,top){
   if(miniOrigin?.left===left&&miniOrigin.top===top)return;
   const previous=miniOrigin;
@@ -2691,6 +2758,8 @@ function drawMini(){
   mini.drawImage(miniLayer,0,0);
   if(mode==="survival"&&survival){
     $("mapCoordinates").textContent=playerX+", "+playerY;
+    drawLandmarks(left,top,{x:playerX,y:playerY});
+    paintNightForecast();
   }
   else{
   for(let i=0;i<altars.length;i++){
@@ -2718,7 +2787,10 @@ function draw(){
   camera.y=Math.round(camSY+(shakeEnabled?impulseY:0)+Math.sin(tick*47+1.2)*5*shaking);
   rect(tileColors[0],0,0,384,224);
   ctx.save();ctx.translate(-camera.x,-camera.y);tiles();
-  const c=point(camp.x,camp.y);flame(c.x,c.y,"#f49a59");
+  const c=point(camp.x,camp.y);
+  if(survival&&campProjectDone("restCorner"))drawRestMat(rect,c.x,c.y);
+  flame(c.x,c.y,"#f49a59");
+  if(survival&&campProjectDone("feedingTrough"))drawFeedingTrough(rect,c.x+1,c.y+1);
   if(mode==="adventure"){
     altars.forEach(altarDraw);gateDraw();
     const p=point(core.x,core.y);rect("#9a7774",p.x-7,p.y+2,14,5);flame(p.x,p.y-4,"#ffaf72");
@@ -2805,7 +2877,7 @@ window.addEventListener("keydown",event=>{
     event.preventDefault();if(!event.repeat){if(mode==="adventure")openGear();else openPack();}return;
   }
   if((event.target.tagName==="SELECT"||event.target.tagName==="OPTION")&&!(event.target.id==="blueprint"&&phase==="play"&&["w","a","s","d","e","shift"].includes(key)))return;
-  if(key===" "&&event.target.closest?.("#quickSlots"))return;
+  if(key===" "&&event.target.closest?.("#quickSlots,#mapLandmarks"))return;
   const slot=/^[1-8]$/.test(key)?Number(key)-1:-1;
   if(mode==="survival"&&phase==="play"&&(key==="f"||slot>=0)){
     event.preventDefault();
@@ -2929,7 +3001,8 @@ function unloadDistantChunks(){
   }
 }
 const generateSurvivalTerrain=seed=>generateCoreSurvivalTerrain(seed,tuning.resourceDensity);
-const basicStock={wood:3,stone:1,coal:0,seed:4,water:6,wheat:2,egg:0,bread:2,wool:0,bandage:0,boiled:0};
+const WATER_CAPACITY=6;
+const basicStock={wood:3,stone:1,coal:0,seed:4,water:WATER_CAPACITY,wheat:2,egg:0,bread:2,wool:0,bandage:0,boiled:0};
 const initialStock={...basicStock};
 for(const entry of contentById.values())if(entry.group==="stock")initialStock[entry.key]??=0;
 const stockLabels=Object.fromEntries(Object.keys(initialStock).map(key=>[key,contentEntry("stock",key).name]));
@@ -3033,6 +3106,7 @@ function makeSurvival(seed=null){
   const animal=(kind,x,y)=>({kind,...point(x,y),home:point(x,y),feed:0,ready:false});
   return {
     seed,stock:scaledStock(initialStock,tuning.startingSupplyMultiplier),quickbar:defaultQuickbar.slice(),research:[],wildPlantTimers:{},wildFeed:{},
+    campProjects:{},landmarks:[],landmarkTarget:CAMP_LANDMARK,
     hunger:100,age:0,plots:{},builds,removed:[],open:{},groundItems:{},animals:[animal(henId,12,19),animal(sheepId,13,20)]
   };
 }
@@ -3089,6 +3163,9 @@ function readSave(id=activeWorld){
       for(const key of Object.keys(stockLabels))data.stock[key]??=0;
       data.quickbar=normalizeQuickbar(data.quickbar);
       data.research??=[];
+      data.campProjects=normalizeCampProjects(data.campProjects);
+      data.landmarks=normalizeLandmarks(data.landmarks);
+      if(!data.landmarks.some(mark=>landmarkId(mark)===data.landmarkTarget))data.landmarkTarget=CAMP_LANDMARK;
       data.wildPlantTimers??={};
       data.wildFeed??={};
       data.weather??=null;
@@ -3167,15 +3244,15 @@ function changeMode(next,worldId=activeWorld){
   $("weatherLabel").textContent=weatherMods.name;
   $("weatherLabel").hidden=false;
   setMessage(saved?"已载入"+worldLabel(activeWorld)+"。":"左键长按采集，右键开垦。建造研究台后可按 T 研究科技。");
-  if(dayTime>=STAGE_SECONDS*5)spawnNight();
+  if(dayTime>=DUSK_SECONDS)spawnNight();
   $("worldSeed").textContent=worldLabel(activeWorld);
   registerWorld();writeSave();
   saveTime=0;survivalUI="";
-  for(const id of ["survivalPanel","quickbar","mapCoordinates","oreFilterLabel","biomeLegend","survivalKeys"])$(id).hidden=false;
+  for(const id of ["survivalPanel","quickbar","mapCoordinates","oreFilterLabel","biomeLegend","mapLandmarks","survivalKeys"])$(id).hidden=false;
   $("biomeLegend").innerHTML=biomes.map(b=>'<span><i style="background:'+b.map+'"></i>'+b.name+'</span>').join("");
   $("ecologyEntries").innerHTML=biomes.map(b=>"<dt>"+b.name+"</dt><dd>"+habitatSummary(b)+"</dd>").join("");
   $("gameMode").textContent="生存";
-  updateTime();renderHud();survivalHud();drawMini();
+  updateTime();renderHud();survivalHud();paintLandmarkControls();drawMini();
 }
 function modeMenu(){
   menuReturnPhase=phase;
@@ -3563,6 +3640,32 @@ function techProblem(tech,nearDesk){
   if(survival.research.includes(tech.contentId))return "已研究";
   return unlockProblem(tech.requires)||(!nearDesk?"需要靠近研究台":!stockCanPay(tech.cost)?"材料不足":"");
 }
+function campProjectDone(id){return campProjectComplete(survival.campProjects,id);}
+function paintCampProjects(nearDesk=nearResearchDesk()){
+  const progress=survival.campProjects;
+  $("campProjectList").innerHTML=Object.entries(campProjects).map(([id,project])=>{
+    const done=campProjectDone(id);
+    const canDonate=nearDesk&&!done&&Object.keys(campProjectContribution(progress,id,survival.stock)).length>0;
+    const label=done?"已完成":!nearDesk?"需靠近研究台":canDonate?"交付现有材料":"缺少所需材料";
+    const materials=Object.entries(project.cost).map(([item,needed])=>{
+      const count=progress[id]?.[item]??0;
+      return '<li data-complete="'+(count===needed)+'"><span>'+stockLabels[item]+'</span><span>'+count+' / '+needed+
+        '</span><progress max="'+needed+'" value="'+count+'" aria-label="'+stockLabels[item]+'交付进度"></progress></li>';
+    }).join("");
+    return '<article class="tech-node" data-learned="'+done+'" data-project="'+id+'" tabindex="-1"><h4>'+project.name+
+      '</h4><p>'+project.detail+'</p><ul class="camp-materials">'+materials+'</ul><button type="button" data-donate="'+id+
+      '"'+(canDonate?"":" disabled")+'>'+label+'</button></article>';
+  }).join("");
+}
+function contributeCampProject(id){
+  if(phase!=="tech"||!Object.hasOwn(campProjects,id)||!nearResearchDesk())return;
+  if(!donateCampMaterials(survival.campProjects,id,survival.stock))return;
+  const done=campProjectDone(id),name=campProjects[id].name;
+  const message=done?"已完成「"+name+"」。"+campProjects[id].detail:"已为「"+name+"」交付材料。";
+  $("techStatus").textContent=message;
+  say(message,done?"seal":"stone");survivalHud();writeSave();paintTechTree();
+  $("campProjectList").querySelector('[data-project="'+id+'"]').focus({preventScroll:true});
+}
 function paintTechTree(){
   const nearDesk=nearResearchDesk();
   const node=key=>{
@@ -3575,11 +3678,12 @@ function paintTechTree(){
   const branches=technologyBranches.map(branch=>'<section class="tech-branch" style="--branch:'+branch.color+'"><h3>'+branch.name+
     '</h3>'+branch.nodes.map(node).join('<div class="tech-arrow" aria-hidden="true">↓</div>')+'</section>').join("");
   $("techTree").innerHTML=node("workshop")+'<div class="tech-arrow" aria-hidden="true">↓</div><div class="tech-branches">'+branches+'</div>';
+  paintCampProjects(nearDesk);
 }
 function openTechTree(){
   if(mode!=="survival"||phase!=="play"||craftJob)return;
   phase="tech";keys.clear();attackBuffer=0;interactionBuffered=false;clearPointer();
-  $("techStatus").textContent=nearResearchDesk()?"选一项科技，使用材料研究。":"建造研究台并走到 5 格内即可研究。";
+  $("techStatus").textContent=nearResearchDesk()?"交付修缮材料，或选择一项科技研究。":"建造研究台并走到 5 格内即可研究或修缮。";
   paintTechTree();$("techDialog").showModal();
 }
 function closeTechTree(){
@@ -3950,7 +4054,7 @@ function actSurvival(cell=interactCell(),tool=heldTool()){
       actionAt("reach",at,"hand");sparks(at.x,at.y-1,"#bd8d5d",4,"wood");
       s.seed--;plot.crop=wheatCropId;say("已播种。浇水后开始生长。","grass");break;
     case "water":
-      if(type===5||sameTile(cell,well)){actionAt("reach",at,"can");s.water=6;say("水壶已装满。","heal");break;}
+      if(type===5||sameTile(cell,well)){actionAt("reach",at,"can");s.water=WATER_CAPACITY;say("水壶已装满。","heal");break;}
       if(plant){
         if(s.water<=0){say("水壶空了。在水井或池边装水。","denied");return;}
         if(!waterPlantAt(plantRegistry,x,y)){say(plant.stage===2?"这株植物无需浇水。":"土壤已经湿润。","denied");return;}
@@ -4053,10 +4157,11 @@ function useHand(cell,id,at,plot,build){
   }
   if(build==="researchDesk"){openTechTree();return false;}
   if(build==="bed"){
-    if(dayTime<DAY_SECONDS*5/8){say("天还亮着。薄暮之后才能睡觉。","denied");return false;}
+    if(dayTime<DUSK_SECONDS){say("天还亮着。薄暮之后才能睡觉。","denied");return false;}
     const rest=DAY_SECONDS-dayTime;
+    const savedHunger=insideCamp(cell.x,cell.y)&&campProjectDone("restCorner")?campProjectEffects.restHungerSaved:0;
     survival.age+=rest;dayTime=0;clearNightThreats();emberBrazierTime=0;player.hp=Math.min(MAX_HP,player.hp+2);
-    survival.hunger=Math.max(1,survival.hunger-10);
+    survival.hunger=Math.max(1,survival.hunger-(10-savedHunger));
     for(const animal of survival.animals)progressAnimal(animal,rest);
     updateTime();renderHud();say("你睡到了第二天黎明。","heal");return true;
   }
@@ -4079,7 +4184,9 @@ function useHand(cell,id,at,plot,build){
 function careFor(animal){
   const s=survival.stock,name=contentById.get(animal.kind).name,hen=animal.kind===henId;
   if(animal.ready){
-    dropGroundItems(animal,hen?{egg:2}:{wool:1});
+    const home=worldCell(animal.home);
+    const bonus=hen&&insideCamp(home.x,home.y)&&campProjectDone("feedingTrough")?campProjectEffects.bonusEggs:0;
+    dropGroundItems(animal,hen?{egg:2+bonus}:{wool:1});
     animal.ready=false;say(hen?"鸡蛋已掉落，靠近拾取。":"羊毛已掉落，靠近拾取。","seal");return true;
   }
   if(animal.feed>0){say(name+"已喂过了，还需约 "+Math.ceil(animal.feed)+" 秒。");return false;}
@@ -4124,6 +4231,7 @@ function nearbyStructure(kind,tiles){
   }
   return false;
 }
+function inBeaconProtection(){return nearbyStructure("miniBeacon",BEACON_PROTECTION_TILES);}
 function spawnNight(){
   clearNightThreats();
   const day=Math.floor(survival.age/DAY_SECONDS)+1,sites=[],origin=worldCell(player);
@@ -4135,7 +4243,7 @@ function spawnNight(){
   const seed=survival.seed??0;
   sites.sort(([x,y],[a,b])=>seededValue(seed,x,y,day+31)-seededValue(seed,a,b,day+31));
   nightSpawnOrigin={x:player.x,y:player.y};
-  const suppressed=nearbyStructure("miniBeacon",18);
+  const suppressed=inBeaconProtection();
   const pool=[...getSharedSurvivalEnemies(day)];
   const waveSize=Math.floor(3*weatherMods.spawnRateMult+seededValue(seed,origin.x,origin.y,day+109));
   enemies=sites.slice(0,Math.min(pool.length,suppressed?1:waveSize)).map(([x,y],index)=>{
@@ -4156,12 +4264,12 @@ function updateSurvival(dt){
   tickPlants(plantRegistry,dt,weatherMods,survivalHeatSources(),SIZE,canMatureSurvivalPlant);
   updateWildlife();
   dayTime=survival.age%DAY_SECONDS;
-  const night=dayTime>=STAGE_SECONDS*5;
+  const night=dayTime>=DUSK_SECONDS;
   updateTime();
-  const dusk=STAGE_SECONDS*5, waves=nightWaves(Math.floor(survival.age/DAY_SECONDS)+1,tuning.spawnFrequency);
-  const nextWave=waves>1 && waveSlot(dayTime,dusk,DAY_SECONDS-dusk,waves)>waveSlot(previous,dusk,DAY_SECONDS-dusk,waves);
-  if(night&&(nextWave||previous<STAGE_SECONDS*5||nightSpawnOrigin&&distance(player,nightSpawnOrigin)>SIZE*24))spawnNight();
-  if(!night&&previous>=STAGE_SECONDS*5){clearNightThreats();setMessage("天亮了，夜行怪退回林中。");}
+  const waves=nightWaves(Math.floor(survival.age/DAY_SECONDS)+1,tuning.spawnFrequency);
+  const nextWave=waves>1 && waveSlot(dayTime,DUSK_SECONDS,DAY_SECONDS-DUSK_SECONDS,waves)>waveSlot(previous,DUSK_SECONDS,DAY_SECONDS-DUSK_SECONDS,waves);
+  if(night&&(nextWave||previous<DUSK_SECONDS||nightSpawnOrigin&&distance(player,nightSpawnOrigin)>SIZE*24))spawnNight();
+  if(!night&&previous>=DUSK_SECONDS){clearNightThreats();setMessage("天亮了，夜行怪退回林中。");}
   if(weatherEvent)say("天气转变为："+weatherEvent.name);
   survival.hunger=Math.max(0,survival.hunger-dt*(player.moving?.84:.60)*LEGACY_STAGE_SECONDS/STAGE_SECONDS);
   if(survival.hunger===0&&player.hurt===0){
@@ -4191,8 +4299,11 @@ function updateSurvival(dt){
     const len=distance(a,aim);
     if(len>1)move(a,(aim.x-a.x)/len*7*dt,(aim.y-a.y)/len*7*dt,3);
   });
+  const autoRefill=survival.stock.water<WATER_CAPACITY&&heldTool()==="water"&&campProjectDone("wellhead")&&
+    distance(player,point(well.x,well.y))<=campProjectEffects.wellAutoRefillTiles*SIZE;
+  if(autoRefill){survival.stock.water=WATER_CAPACITY;sound("heal");}
   saveTime+=dt;
-  if(collectGroundItems()||saveTime>=5){saveTime=0;writeSave();}
+  if(collectGroundItems()||autoRefill||saveTime>=5){saveTime=0;writeSave();}
   survivalHud();
 }
 function respawnSurvival(){
@@ -4386,6 +4497,7 @@ function addSurvivalActors(actors){
     rect("#243c4a",x-5,y-5,10,5);rect("#508b9e",x-4,y-3,8,2);
     rect("#acc0b5",x-6,y-7,10,1);rect("#87c1c4",x-3,y-3,4,1);
     rect("#394954",x-7,y+2,14,1);rect("#758287",x-3,y+3,1,2);
+    if(campProjectDone("wellhead"))drawRepairedWell(rect,x,y);
   }});
   for(const [id,kind] of visibleSurvivalCells().builds){
     const at=tilePoint(id);
@@ -4901,6 +5013,10 @@ $("techTree").addEventListener("click",event=>{
   const key=event.target.closest("button[data-research]")?.dataset.research;
   if(key&&researchTechnology(key))($("techTree").querySelector("button:enabled")??$("closeTech")).focus();
 });
+$("campProjectList").addEventListener("click",event=>{
+  const id=event.target.closest("button[data-donate]")?.dataset.donate;
+  if(id)contributeCampProject(id);
+});
 $("closePack").addEventListener("click",()=>$("packDialog").close());
 $("packDialog").addEventListener("close",()=>{
   if(phase!=="pack")return;
@@ -4921,6 +5037,33 @@ oreFilter.addEventListener("change",()=>{
   selectedOre=oreFilter.value;
   miniOrigin=null;
   drawMini();
+});
+const landmarkKind=$("landmarkKind"),landmarkTarget=$("landmarkTarget");
+for(const [kind,def] of Object.entries(landmarkKinds))landmarkKind.add(new Option(def.name,kind));
+function saveLandmarkTarget(id){
+  survival.landmarkTarget=id;
+  $("removeLandmark").disabled=id===CAMP_LANDMARK;
+  drawMini();writeSave();
+}
+landmarkTarget.addEventListener("change",()=>{
+  if(phase!=="play"){landmarkTarget.value=survival.landmarkTarget;return;}
+  saveLandmarkTarget(landmarkTarget.value);
+});
+$("addLandmark").addEventListener("click",()=>{
+  if(phase!=="play")return;
+  const mark={...worldCell(player),kind:landmarkKind.value};
+  const id=landmarkId(mark),existing=survival.landmarks.find(entry=>landmarkId(entry)===id);
+  if(existing)existing.kind=mark.kind;
+  else survival.landmarks.push(mark);
+  saveLandmarkTarget(id);
+  paintLandmarkControls();
+});
+$("removeLandmark").addEventListener("click",()=>{
+  if(phase!=="play"||survival.landmarkTarget===CAMP_LANDMARK)return;
+  survival.landmarks=survival.landmarks.filter(mark=>landmarkId(mark)!==survival.landmarkTarget);
+  saveLandmarkTarget(CAMP_LANDMARK);
+  paintLandmarkControls();
+  landmarkTarget.focus();
 });
 $("openWorld").addEventListener("click",openWorldPicker);
 $("closeWorld").addEventListener("click",()=>$("worldDialog").close());
