@@ -1,27 +1,10 @@
+import type { LightGrid } from "@/systems/world/lightGrid";
 import { registerCanvasTexture } from "@/vfx/proceduralTextures";
 import type Phaser from "phaser";
 import { ATMOSPHERE_PRESETS } from "../atmosphere/atmospherePresets";
-import { makePixelHole } from "../atmosphere/pixelLightMask";
 import { RENDER_DEPTH } from "../renderDepth";
 
-export interface LightSpot {
-  x: number;
-  y: number;
-  radius: number;
-  alpha: number;
-}
-
-type Visit = (light: {
-  canvas: CanvasImageSource;
-  x: number;
-  y: number;
-  radius: number;
-  alpha: number;
-}) => void;
-
 const KEY = "emberwood-night-overlay";
-/** The visible light reaches a bit past the nominal fire radius because the halo fades out. */
-const LIGHT_SPREAD = 1.25;
 const { duskColor, nightColor, maxNightAlpha } = ATMOSPHERE_PRESETS.nightTint;
 const mix = (a: number, b: number, t: number): number =>
   Math.round(a + (b - a) * t);
@@ -33,9 +16,9 @@ const mix = (a: number, b: number, t: number): number =>
  */
 export class NightOverlay {
   darkness = 0;
-  heroLight: LightSpot | null = null;
+  grid?: LightGrid;
   private readonly canvas = document.createElement("canvas");
-  private readonly halo = makePixelHole();
+
   private readonly texture: Phaser.Textures.CanvasTexture;
   private readonly image: Phaser.GameObjects.Image;
   private readonly webgl: boolean;
@@ -43,7 +26,6 @@ export class NightOverlay {
   constructor(
     private readonly scene: Phaser.Scene,
     private readonly camera: Phaser.Cameras.Scene2D.Camera,
-    private readonly forEachLight: (visit: Visit) => void,
   ) {
     this.canvas.width = 1;
     this.canvas.height = 1;
@@ -87,19 +69,11 @@ export class NightOverlay {
     g.fillRect(0, 0, w, h);
     g.globalCompositeOperation = "destination-out";
     g.imageSmoothingEnabled = false;
-    const erase = (light: LightSpot): void => {
-      const r = Math.max(1, Math.round(light.radius * LIGHT_SPREAD));
-      g.globalAlpha = light.alpha * 0.76;
-      g.drawImage(
-        this.halo,
-        Math.round(light.x) - x - r,
-        Math.round(light.y) - y - r,
-        r * 2,
-        r * 2,
-      );
-    };
-    this.forEachLight(erase);
-    if (this.heroLight) erase(this.heroLight);
+    const grid = this.grid;
+    grid?.forEachLitTile({ x, y, width: w, height: h }, (left, top, level) => {
+      g.globalAlpha = level <= 2 ? 0.025 * level : 0.18 + (0.65 * level) / 15;
+      g.fillRect(left - x, top - y, grid.tileSize, grid.tileSize);
+    });
     g.globalAlpha = 1;
     g.globalCompositeOperation = "source-over";
     if (this.webgl) this.texture.refresh();

@@ -1,4 +1,6 @@
+import type { PlacedEncounter } from "./encounterPlan";
 import { WORLD_MAX, WORLD_MIN } from "./survivalBiomes";
+import { seededValue } from "./survivalNoise";
 
 export const landmarkKinds = {
   mine: {
@@ -81,4 +83,40 @@ export function landmarkEdge(
       : ((dy > 0 ? height - padding : padding) - y) / dy;
   const t = Math.min(tx, ty);
   return { x: x + dx * t, y: y + dy * t, angle: Math.atan2(dy, dx) };
+}
+
+export interface EncounterProgress {
+  discovered: string[];
+  spent: string[];
+}
+export function discoverEncounter(
+  progress: EncounterProgress,
+  site: PlacedEncounter,
+  player: Point,
+) {
+  if (
+    Math.hypot(site.x - player.x, site.y - player.y) > 6 ||
+    progress.discovered.includes(site.id)
+  )
+    return false;
+  progress.discovered.push(site.id);
+  return true;
+}
+export function activateEncounter(
+  progress: EncounterProgress,
+  site: PlacedEncounter,
+  seed: number,
+) {
+  if (
+    !progress.discovered.includes(site.id) ||
+    progress.spent.includes(site.id)
+  )
+    return null;
+  progress.spent.push(site.id);
+  const loot: Record<string, number> = {};
+  site.trigger.loot.forEach((e, i) => {
+    if (seededValue(seed, site.x, site.y, 912 + i) < e.probability)
+      loot[e.itemId] = (loot[e.itemId] ?? 0) + e.count;
+  });
+  return { event: site.trigger.event, loot };
 }

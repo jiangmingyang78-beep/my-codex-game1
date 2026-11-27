@@ -1,12 +1,4 @@
-import { resourceRoll } from "../survivalTuning";
-import {
-  CHUNK_RADIUS,
-  CHUNK_SIZE,
-  COAL_VEIN,
-  SURVIVAL_BIOMES,
-  SURVIVAL_CAMP,
-} from "./survivalBiomes";
-
+import { CHUNK_SIZE } from "./survivalBiomes";
 export interface SurvivalChunk {
   x: number;
   y: number;
@@ -16,7 +8,8 @@ export interface SurvivalChunk {
 
 const lerp = (a: number, b: number, t: number): number => a + (b - a) * t;
 
-export function seededValue(
+// Hash signed grid coordinates directly, so loading order never affects the seed.
+export function chunkHash(
   seed: number,
   x: number,
   y: number,
@@ -29,7 +22,16 @@ export function seededValue(
     Math.imul(salt, 0x27d4eb2f);
   n = Math.imul(n ^ (n >>> 16), 0x7feb352d);
   n = Math.imul(n ^ (n >>> 15), 0x846ca68b);
-  return ((n ^ (n >>> 16)) >>> 0) / 4294967296;
+  return (n ^ (n >>> 16)) >>> 0;
+}
+
+export function seededValue(
+  seed: number,
+  x: number,
+  y: number,
+  salt: number,
+): number {
+  return chunkHash(seed, x, y, salt) / 0x100000000;
 }
 
 export function terrainNoise(
@@ -72,80 +74,79 @@ export function seedFromText(
   return String(value >>> 0);
 }
 
-export function expandedBiome(seed: number, x: number, y: number): number {
-  const heat = terrainNoise(seed, x / 79, y / 79, 20);
-  const moisture = terrainNoise(seed, x / 64, y / 64, 21);
-  const relief = terrainNoise(seed, x / 54, y / 54, 22);
-  if (heat < 0.26) return 4;
-  if (heat < 0.43 && moisture > 0.34) return 5;
-  if (relief > 0.72) return 3;
-  if (heat > 0.61 && moisture < 0.42) return 6;
-  if (moisture > 0.76) return heat > 0.52 ? 8 : 2;
-  if (moisture > 0.6) return 1;
-  if (moisture > 0.43 && relief < 0.53) return 7;
-  return 0;
-}
-
 export const chunkCellIndex = (
   chunk: Pick<SurvivalChunk, "x" | "y">,
   x: number,
   y: number,
 ): number => (y - chunk.y * CHUNK_SIZE) * CHUNK_SIZE + x - chunk.x * CHUNK_SIZE;
 
-export function buildSurvivalChunk(
-  cx: number,
-  cy: number,
-  seed: number,
-  resourceDensity = 1,
-  camp: { readonly x: number; readonly y: number } = SURVIVAL_CAMP,
-): SurvivalChunk {
-  const chunk: SurvivalChunk = {
-    x: cx,
-    y: cy,
-    terrain: new Uint8Array(CHUNK_SIZE ** 2),
-    regions: new Uint8Array(CHUNK_SIZE ** 2),
-  };
-  for (let ly = 0; ly < CHUNK_SIZE; ly++) {
-    for (let lx = 0; lx < CHUNK_SIZE; lx++) {
-      const x = cx * CHUNK_SIZE + lx;
-      const y = cy * CHUNK_SIZE + ly;
-      const i = ly * CHUNK_SIZE + lx;
-      const region = expandedBiome(seed, x, y);
-      const biome = SURVIVAL_BIOMES[region];
-      const roll = resourceRoll(seededValue(seed, x, y, 23), resourceDensity);
-      chunk.regions[i] = region;
-      if (x === camp.x || y === camp.y) chunk.terrain[i] = biome.floor;
-      else if (
-        biome.lake &&
-        terrainNoise(seed, x / 10, y / 10, 24) < biome.lake
-      )
-        chunk.terrain[i] = 5;
-      else if (region === 3 && roll < 0.12) chunk.terrain[i] = COAL_VEIN;
-      else if (roll < biome.rock) chunk.terrain[i] = 6;
-      else chunk.terrain[i] = roll < biome.rock + biome.tree ? 0 : biome.floor;
-    }
+const diagonal = Math.SQRT1_2;
+const gradients = [
+  [1, 0],
+  [-1, 0],
+  [0, 1],
+  [0, -1],
+  [diagonal, diagonal],
+  [-diagonal, diagonal],
+  [diagonal, -diagonal],
+  [-diagonal, -diagonal],
+];
+const fade = (t: number) => t * t * t * (t * (t * 6 - 15) + 10);
+const unit = (t: number) => Math.min(1, Math.max(0, t));
+
+function gradient2D(seed: number, x: number, y: number, salt: number): number {
+  const ix = Math.floor(x);
+  const iy = Math.floor(y);
+  const u = x - ix;
+  const v = y - iy;
+  function dot(dx: number, dy: number) {
+    const [gx, gy] = gradients[chunkHash(seed, ix + dx, iy + dy, salt) & 7];
+    return gx * (u - dx) + gy * (v - dy);
   }
-  return chunk;
+  return lerp(
+    lerp(dot(0, 0), dot(1, 0), fade(u)),
+    lerp(dot(0, 1), dot(1, 1), fade(u)),
+    fade(v),
+  );
 }
 
-export function getOrCreateSurvivalChunk(
-  chunks: Map<string, SurvivalChunk>,
-  tx: number,
-  ty: number,
+export interface Climate {
+  elevation: number;
+  temperature: number;
+  moisture: number;
+}
+
+/** Zero for the first nine tiles, one from tile 34. The same envelope
+ * damps terrain variation and the chance of ordinary solid features. */
+export function campWildness(
+  x: number,
+  y: number,
+  camp: { x: number; y: number },
+): number {
+  const t = unit((Math.hypot(x - camp.x, y - camp.y) - 9) / 25);
+  return t * t * (3 - 2 * t);
+}
+
+export function sampleClimate(
   seed: number,
-  resourceDensity = 1,
-  camp: { readonly x: number; readonly y: number } = SURVIVAL_CAMP,
-): SurvivalChunk {
-  const cx = Math.floor(tx / CHUNK_SIZE);
-  const cy = Math.floor(ty / CHUNK_SIZE);
-  const key = `${cx},${cy}`;
-  const cached = chunks.get(key);
-  if (cached) return cached;
-  const chunk = buildSurvivalChunk(cx, cy, seed, resourceDensity, camp);
-  if (chunks.size >= (CHUNK_RADIUS * 2 + 3) ** 2) {
-    const oldest = chunks.keys().next().value;
-    if (oldest !== undefined) chunks.delete(oldest);
+  x: number,
+  y: number,
+  camp: { x: number; y: number },
+): Climate {
+  const wx = x + 21 * gradient2D(seed, x / 57 + 0.31, y / 57 + 0.64, 101);
+  const wy = y + 21 * gradient2D(seed, x / 57 + 0.73, y / 57 + 0.17, 102);
+  const wild = campWildness(x, y, camp);
+  function channel(scale: number, salt: number, campValue: number) {
+    const u = wx / scale + 0.37;
+    const v = wy / scale + 0.63;
+    const noise =
+      0.78 * gradient2D(seed, u, v, salt) +
+      0.22 * gradient2D(seed, u * 2 + 0.7, v * 2 + 0.2, salt + 1);
+    return lerp(campValue, unit(0.5 + noise), wild);
   }
-  chunks.set(key, chunk);
-  return chunk;
+  return {
+    elevation: channel(38, 111, 0.52),
+    temperature: channel(72, 121, 0.55),
+    moisture: channel(53, 131, 0.48),
+  };
 }

@@ -18,7 +18,7 @@
 | 常驻刷怪 | 同文件的 addedSpawns、removedSpawnIds、movedSpawns、editedSpawns | 点位 id 对应世界 spawnId。enemyId 选择怪物，按新坐标推导 regionId，也可手工指定归属。运行时区域常驻表同步更新 |
 | 数量上限与再生物资 | balance.json 的 limits.activeEnemies、limits.activeProjectiles；regions.json 的 dawnRenewal.renewableItemIds | 同屏个数、黎明可再生的物品 ID |
 | 区域刷怪 | regions.json 的 regions[].residentSpawns[]、nightSpawns[] | spawnId 与 enemyId。地图覆写调整常驻表，规则面板可编辑夜间敌种 |
-| 怪物基础与掉落 | enemies.json、legacyEnemies.json 的 enemies[].maxHp、attackDamage、moveSpeedPxPerSec、drops[] | 生命、单击伤害、像素/秒。掉落表使用 itemId、count、probability |
+| 怪物基础与掉落 | 控制台 enemies.json、legacyEnemies.json（以同一个 enemies.json 落盘）的 enemies[].maxHp、attackDamage、moveSpeedPxPerSec、drops[] | 生命、单击伤害、像素/秒。掉落表使用 itemId、count、probability |
 | 近战与突进 | attack.reachTiles、triggerTiles、distanceTiles、windupSec、cooldownSec、dashDurationSec、recoverSec | 格与秒。突进循环使用前摇、突进时长和恢复，不额外添加近战冷却 |
 | 远程与旧版攻击 | attack.preferredTiles、radiusTiles、projectileSpeedPxPerSec、projectileLifetimeSec、triggerRangeTiles、rangeTiles、arcDegrees、activeSec、travelSec、recoverySec、intervalSec | 施法距离、爆发半径、弹速/寿命、横扫角度或攻击周期，按敌种显示现有字段 |
 | 分阶段和交替攻击 | phases[].hpThreshold、phases[].overrides.attack、attack.moves[]、attack.enrage | 分阶段 DPS 按生命比例加权。交替招式按平均动作时长，狂暴按其生命阈值计入 |
@@ -29,9 +29,9 @@
 | 独立生成方案 | encounters.json 的 waves.intervalSec/count、resources.renewalLimit/cooldownSec、weights[regionId] | 黄昏为首波，后续按游戏秒计时，仍受同屏上限约束；权重乘以所在区域的夜间刷点数，小数部分按日和波次确定性取整 |
 | 单点刷新方案 | worldOverrides.json 的 renewalLimit、respawnCooldownSec | 物资点单独设定的次数与冷却优先于全局设置。缺省时可再生物资在黎明刷新、次数不限 |
 | 范围参考与急步方案 | encounters.json 的 perception.aggroTiles/leashTiles、dash.distanceTiles/cooldownSec | 蓝灰圈对应常驻怪索敌和脱战距离。夜袭怪沿用追击规则。默认急步随移速变化，显式距离按格数计算，仍经过碰撞检测 |
-| 生存独立覆盖 | public/survival-balance.json 的 resourceDensity、spawnFrequency、startingSupplyMultiplier | 生存页启动时读取，缺省均为 1。密度影响程序生成的矿木格；频率控制每夜波数；补给倍率只应用于新世界 |
+| 生存独立覆盖 | public/survival-balance.json 的可选数值（字段表见 README） | 生存页启动时与 balance.json 的 survival 合并。密度影响程序生成的矿木格；频率控制每夜波数；补给倍率只应用于新世界 |
 
-固定点位覆写作用于程序生成的冒险世界。生存的核心盆地与 Chunk 预览、永恒竞技场使用各自原有适配器。生存既有存档保留背包；重新生成的基础地形应用当前密度。
+固定点位覆写作用于程序生成的冒险世界。生存新世界和控制台共享 16×16 区块生成器。悬停可读群系与地物，地标图层标出奇遇预留区，出生图层标出生态巢穴。新世界在建档时记录资源密度，同一种子和密度可以重现原始布局。旧存档沿用原有地形算法。
 
 ## 架构审查
 
@@ -72,6 +72,6 @@
 | 普通与旧版敌人 | 索敌 8 → 11 格，10 格距离由待机变为追击。脱战 16 → 12 格，13 格距离由追击变为待机 |
 | 营地夜袭 | 默认 1 波 2 只；设 2 波共 4 只。第二波间隔从 0.25 秒改为 0.1 秒后提前抵达；区域权重 1 → 0.5 时首波 2 → 1 只 |
 | 再生 | 缺省连续两个黎明都再生。全局冷却 10 秒，第 9 秒仍未刷新；单点设 2 秒、上限 1 次后，读档仍在第 2 秒刷新，第二次采完不再刷新 |
-| 生存生产页，无头 Edge | 同为种子 42，三项倍率 1 → 2。核心地形资源格 285 → 546，开局木材 3 → 6，静止玩家一夜触发 1 → 2 波。观测钩子仅加载在测试浏览器响应中 |
+| 生存旧版生成器，无头 Edge（历史基线） | 同为种子 42，三项倍率 1 → 2。核心地形资源格 285 → 546，开局木材 3 → 6，静止玩家一夜触发 1 → 2 波。观测钩子仅加载在测试浏览器响应中 |
 
 资源计时采用游戏内经过时间，暂停期间不推进。生存固定道路、营地保底补给格与剧情地形继续优先于资源密度。构建发布后，冒险 JSON 修改需要重新构建；生存公开 JSON 在页面加载时读取。

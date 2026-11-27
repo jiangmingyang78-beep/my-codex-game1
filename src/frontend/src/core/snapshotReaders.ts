@@ -98,6 +98,17 @@ export function readEnemies(
     out[id] = {
       id,
       enemyId: def.id,
+      persistent:
+        e.persistent === true || sys.world.spawns.has(String(e.spawnId)),
+      taskLocked: e.taskLocked === true,
+      playerInteracted: e.playerInteracted === true,
+      boss: e.boss === true || Boolean(def.phases),
+      category:
+        e.category === "neutral" ||
+        e.category === "elite" ||
+        e.category === "hostile"
+          ? e.category
+          : undefined,
       spawnId: str(e.spawnId, "spawn_id"),
       homeX: num(e.homeX, "enemy_pos"),
       homeY: num(e.homeY, "enemy_pos"),

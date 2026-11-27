@@ -78,6 +78,12 @@ export function bakeTerrainCanvas(snap: MapSnapshot): HTMLCanvasElement {
         ctx.fillStyle = acc;
         ctx.fillRect(px + (h % 4) + 1, py + ((h * 3) % 4) + 1, 1, 1);
       }
+      const feature = snap.featureIds && snap.featureStyles?.[snap.featureIds[idx]];
+      if (feature) {
+        ctx.fillStyle = feature.color;
+        ctx.fillRect(px + 1, py + 1, 2, 2);
+        ctx.fillRect(px + 3, py + 3, 1, 1);
+      }
     }
   }
   return c;

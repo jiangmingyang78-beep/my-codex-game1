@@ -188,3 +188,27 @@ export function clearRun(storage: StorageLike | null): boolean {
     return false;
   }
 }
+
+/** Survival worlds have independent slots. Both directions use the same JSON-safe representation. */
+export function encounterProgressForSave(
+  value: unknown,
+): import("../systems/survival/landmarks").EncounterProgress {
+  const data = isRecord(value) ? value : {};
+  const ids = (list: unknown): string[] =>
+    Array.isArray(list)
+      ? [
+          ...new Set(
+            list.filter(
+              (v): v is string =>
+                typeof v === "string" &&
+                /^[a-z][a-z0-9_]*@-?\d+,-?\d+$/.test(v),
+            ),
+          ),
+        ]
+      : [];
+  const discovered = ids(data.discovered);
+  return {
+    discovered,
+    spent: ids(data.spent).filter((id) => discovered.includes(id)),
+  };
+}

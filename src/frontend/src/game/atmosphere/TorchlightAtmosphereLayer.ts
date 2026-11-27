@@ -1,21 +1,20 @@
 import type { RunState, Systems } from "@/core/types";
 import { particleBudget } from "@/core/vfxBridge";
 import { forEachFireSource } from "@/systems/campCircle";
-import { heroLightRadiusMultiplier } from "@/systems/itemEffects";
+import { syncRunLight } from "@/systems/world/runLight";
 import Phaser from "phaser";
+import { drawSpawnDebug } from "../dev/spawnDebug";
 import { RENDER_DEPTH } from "../renderDepth";
 import { darknessAt } from "../world/darkness";
 import { ATMOSPHERE_PRESETS, type FlamePalette } from "./atmospherePresets";
-import { makePixelHole } from "./pixelLightMask";
 
 interface TorchlightOptions {
   reducedMotion?: boolean;
-  manageDarknessMask?: boolean;
   haloDepth?: number;
   emberDepth?: number;
 }
 
-const { flicker, nightTint, vignette } = ATMOSPHERE_PRESETS;
+const { flicker, vignette } = ATMOSPHERE_PRESETS;
 const EMBER_CAPACITY = 24;
 const EMBER_MAX_LIFE = 1.5;
 const clamp01 = (value: number): number => Math.max(0, Math.min(1, value));
@@ -24,106 +23,11 @@ function createEmber() {
   return { x: 0, y: 0, sway: 0, rise: 0, age: 0, life: 0 };
 }
 
-class PixelNightMask {
-  private readonly holeTexture = makePixelHole();
-  private readonly texture: Phaser.Textures.CanvasTexture;
-  private readonly image: Phaser.GameObjects.Image;
-  private readonly holes: number[] = [];
-  private tint = "";
-  private alpha = 0;
-
-  constructor(scene: Phaser.Scene) {
-    const key = `atmosphere-night-${Phaser.Utils.String.UUID()}`;
-    const texture = scene.textures.createCanvas(key, 1, 1);
-    if (!texture) throw new Error("无法创建夜幕纹理");
-    this.texture = texture;
-    texture.setFilter(Phaser.Textures.FilterMode.NEAREST);
-    this.image = scene.add
-      .image(0, 0, key)
-      .setOrigin(0)
-      .setDepth(RENDER_DEPTH.night)
-      .setVisible(false);
-  }
-
-  sync(elapsedSec: number, clock: Systems["data"]["balance"]["clock"]): void {
-    this.holes.length = 0;
-    const { daySec, nightSec } = clock;
-    const cycleSec = daySec + nightSec;
-    const time = elapsedSec % cycleSec;
-    const nightTime = time - daySec;
-    const dusk = clamp01(1 + nightTime / (daySec * 0.2));
-    const nightBlend = clamp01(nightTime / (nightSec * 0.4));
-    const dawn = clamp01((cycleSec - time) / (nightSec * 0.2));
-    this.alpha =
-      nightTint.maxNightAlpha * dusk * (0.5 + 0.5 * nightBlend) * dawn;
-    const visible = this.alpha > 0;
-    this.image.setVisible(visible);
-    if (!visible) return;
-
-    const start = nightTint.duskColor;
-    const end = nightTint.nightColor;
-    const r = Math.round(
-      Phaser.Math.Linear(start >> 16, end >> 16, nightBlend),
-    );
-    const g = Math.round(
-      Phaser.Math.Linear((start >> 8) & 255, (end >> 8) & 255, nightBlend),
-    );
-    const b = Math.round(
-      Phaser.Math.Linear(start & 255, end & 255, nightBlend),
-    );
-    this.tint = `rgb(${r}, ${g}, ${b})`;
-  }
-
-  addHole(x: number, y: number, radius: number, strength: number): void {
-    if (this.alpha > 0) this.holes.push(x, y, radius, strength);
-  }
-
-  render(camera: Phaser.Cameras.Scene2D.Camera): void {
-    if (this.alpha <= 0) return;
-    const view = camera.worldView;
-    const x = Math.floor(view.x) - 2;
-    const y = Math.floor(view.y) - 2;
-    const width = Math.ceil(view.width) + 4;
-    const height = Math.ceil(view.height) + 4;
-    if (this.texture.width !== width || this.texture.height !== height) {
-      this.texture.setSize(width, height);
-      this.image.setSizeToFrame().setOrigin(0);
-    }
-    this.image.setPosition(x, y);
-    const context = this.texture.getContext();
-    context.clearRect(0, 0, width, height);
-    context.fillStyle = this.tint;
-    context.globalAlpha = this.alpha;
-    context.fillRect(0, 0, width, height);
-    context.globalCompositeOperation = "destination-out";
-    context.imageSmoothingEnabled = false;
-    for (let i = 0; i < this.holes.length; i += 4) {
-      const radius = this.holes[i + 2];
-      const left = this.holes[i] - x - radius;
-      const top = this.holes[i + 1] - y - radius;
-      const size = radius * 2;
-      if (left >= width || top >= height || left + size <= 0 || top + size <= 0)
-        continue;
-      context.globalAlpha = this.holes[i + 3];
-      context.drawImage(this.holeTexture, left, top, size, size);
-    }
-    context.globalAlpha = 1;
-    context.globalCompositeOperation = "source-over";
-    this.texture.refresh();
-  }
-
-  destroy(): void {
-    this.image.destroy();
-    this.texture.destroy();
-  }
-}
-
 export class TorchlightAtmosphereLayer {
   private readonly camera: Phaser.Cameras.Scene2D.Camera;
   private readonly halo: Phaser.GameObjects.Graphics;
   private readonly emberGraphics: Phaser.GameObjects.Graphics;
   private readonly edge: Phaser.GameObjects.Graphics;
-  private readonly night: PixelNightMask | null;
   private readonly reducedMotion: boolean;
   private readonly viewOrigin = new Phaser.Math.Vector2();
   private readonly embers: ReturnType<typeof createEmber>[];
@@ -133,7 +37,6 @@ export class TorchlightAtmosphereLayer {
   private sourceCount = 0;
   private emberSource = 0;
   private emberCredit = 1;
-  private smoothLight = 0;
   private edgeAlpha = 0;
   private destroyed = false;
 
@@ -147,7 +50,6 @@ export class TorchlightAtmosphereLayer {
       { length: this.reducedMotion ? EMBER_CAPACITY / 2 : EMBER_CAPACITY },
       createEmber,
     );
-    this.night = options?.manageDarknessMask ? new PixelNightMask(scene) : null;
     this.halo = scene.add
       .graphics()
       .setDepth(options?.haloDepth ?? RENDER_DEPTH.torchHalo);
@@ -181,13 +83,11 @@ export class TorchlightAtmosphereLayer {
     const smoothing = 1 - Math.exp(-8 * dt);
     if (this.runId !== state.runId) {
       this.runId = state.runId;
-      this.smoothLight = light;
       this.edgeAlpha = 0;
       this.emberSource = 0;
       this.emberCredit = 1;
       for (const ember of this.embers) ember.life = 0;
     }
-    this.smoothLight += (light - this.smoothLight) * smoothing;
     const cold = hero.inFire
       ? 0
       : clamp01(1 - light / flicker.lowLightThreshold);
@@ -200,30 +100,17 @@ export class TorchlightAtmosphereLayer {
         0.8 *
           clamp01(darknessAt(state.elapsedSec, sys.data.balance.clock) / 0.8),
     );
-    this.night?.sync(state.elapsedSec, sys.data.balance.clock);
     this.sourceCount = 0;
     forEachFireSource(state, sys, this.recordFire);
-    for (let i = 0; i < this.sourceCount; i++) {
-      const { x, y, radius } = this.sources[i];
-      this.drawLight(x, y, radius, 1, timeSec + (x + y) * 0.021, 1);
-    }
-    if (this.smoothLight > 0.001) {
-      const multiplier = heroLightRadiusMultiplier(
-        sys.data,
-        state.inventory,
-        state.heroId,
-      );
-      const radius =
-        sys.data.tileSize * 2.75 * multiplier * Math.sqrt(this.smoothLight);
-      this.drawLight(
-        hero.x,
-        hero.y,
-        radius,
-        Math.sqrt(this.smoothLight),
-        timeSec,
-        0.45 + cold,
-      );
-    }
+    const grid = syncRunLight(state, sys);
+    const pulse = this.reducedMotion ? 1 : 0.96 + 0.04 * Math.sin(timeSec * 7);
+    grid.forEachLitTile(this.camera.worldView, (x, y, level) => {
+      if (level <= 2) return;
+      this.halo
+        .fillStyle(this.palette.ember, pulse * (0.035 + (0.12 * level) / 15))
+        .fillRect(x, y, grid.tileSize, grid.tileSize);
+    });
+    if (import.meta.env.DEV) drawSpawnDebug(state, sys, grid, this.halo);
 
     const normalBudget = Math.min(
       EMBER_CAPACITY,
@@ -254,47 +141,6 @@ export class TorchlightAtmosphereLayer {
       this.sources[index] = { x, y, radius };
     }
   };
-
-  private drawLight(
-    x: number,
-    y: number,
-    radius: number,
-    strength: number,
-    time: number,
-    motion: number,
-  ): void {
-    const wave = this.reducedMotion
-      ? 0
-      : Math.sin(time * flicker.speedA) * 0.66 +
-        Math.sin(time * flicker.speedB) * 0.34;
-    const cx = Math.round(x);
-    const cy = Math.round(y);
-    const r = Math.max(
-      1,
-      Math.round(radius + wave * flicker.radiusJitterPx * motion),
-    );
-    const alpha = clamp01(strength + wave * flicker.alphaJitter * motion);
-    this.fillLightBand(cx, cy, r, this.palette.ember, alpha * 0.06);
-    this.fillLightBand(cx, cy, r * 0.68, this.palette.mid, alpha * 0.1);
-    this.fillLightBand(cx, cy, r * 0.32, this.palette.core, alpha * 0.08);
-    this.night?.addHole(cx, cy, r, alpha);
-  }
-
-  private fillLightBand(
-    x: number,
-    y: number,
-    radius: number,
-    color: number,
-    alpha: number,
-  ): void {
-    const cells = Math.max(1, Math.round(radius / 2));
-    this.halo.fillStyle(color, alpha);
-    for (let row = -cells; row < cells; row++) {
-      const halfWidth =
-        2 * Math.round(Math.sqrt(cells ** 2 - (row + 0.5) ** 2));
-      this.halo.fillRect(x - halfWidth, y + 2 * row, 2 * halfWidth, 2);
-    }
-  }
 
   private syncEmbers(budget: number, dt: number): void {
     this.emberGraphics.clear();
@@ -341,7 +187,6 @@ export class TorchlightAtmosphereLayer {
   }
 
   private renderOverlays(): void {
-    this.night?.render(this.camera);
     if (!this.edge.visible) return;
     const camera = this.camera;
     const width = Math.ceil(camera.width / camera.zoomX);
@@ -382,6 +227,5 @@ export class TorchlightAtmosphereLayer {
     this.halo.destroy();
     this.emberGraphics.destroy();
     this.edge.destroy();
-    this.night?.destroy();
   }
 }

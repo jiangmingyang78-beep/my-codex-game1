@@ -1,0 +1,205 @@
+{
+  "树木": [["shumu-0001", "terrain", "0", "树木"]],
+  "自然矿物": [
+    ["kuangwu-0001", "terrain", "6", "岩石"],
+    ["kuangwu-0002", "terrain", "8", "煤脉"],
+    ["kuangwu-0003", "vein", "quartz", "石英脉"],
+    ["kuangwu-0004", "vein", "copper", "铜矿脉"],
+    ["kuangwu-0005", "vein", "clay", "黏土矿"],
+    ["kuangwu-0006", "vein", "iron", "铁矿脉"],
+    ["kuangwu-0007", "vein", "frostOre", "霜晶脉"],
+    ["kuangwu-0008", "vein", "salt", "岩盐矿"]
+  ],
+  "地形": [
+    ["dixing-0001", "terrain", "1", "草地"],
+    ["dixing-0002", "terrain", "2", "林径"],
+    ["dixing-0003", "terrain", "3", "岩地"],
+    ["dixing-0004", "terrain", "4", "湿地地面"],
+    ["dixing-0005", "terrain", "5", "水域"],
+    ["dixing-0006", "terrain", "7", "遗迹地面"]
+  ],
+  "作物": [["zuowu-0001", "crop", "wheat", "小麦植株"]],
+  "野生植物": [
+    ["zhiwu-0001", "wildPlant", "berry", "野莓丛"],
+    ["zhiwu-0002", "wildPlant", "herb", "银叶草"],
+    ["zhiwu-0003", "wildPlant", "reed", "芦苇"],
+    ["zhiwu-0004", "wildPlant", "rockBloom", "石瓣花"],
+    ["zhiwu-0005", "wildPlant", "frostBerry", "霜莓丛"],
+    ["zhiwu-0006", "wildPlant", "pinecone", "矮松"],
+    ["zhiwu-0007", "wildPlant", "sandFruit", "沙果棘"],
+    ["zhiwu-0008", "wildPlant", "nectar", "蜜花"],
+    ["zhiwu-0009", "wildPlant", "glowcap", "夜光菇"]
+  ],
+  "材料": [
+    ["cailiao-0001", "stock", "wood", "木材"],
+    ["cailiao-0002", "stock", "stone", "石料"],
+    ["cailiao-0003", "stock", "coal", "煤炭"],
+    ["cailiao-0004", "stock", "seed", "种子"],
+    ["cailiao-0005", "stock", "water", "水"],
+    ["cailiao-0006", "stock", "wheat", "小麦"],
+    ["cailiao-0007", "stock", "wool", "羊毛"],
+    ["cailiao-0008", "stock", "quartz", "石英"],
+    ["cailiao-0009", "stock", "copper", "铜矿石"],
+    ["cailiao-0010", "stock", "clay", "黏土"],
+    ["cailiao-0011", "stock", "iron", "铁矿石"],
+    ["cailiao-0012", "stock", "frostOre", "霜晶"],
+    ["cailiao-0013", "stock", "salt", "岩盐"],
+    ["cailiao-0014", "stock", "herb", "银叶草叶"],
+    ["cailiao-0015", "stock", "reed", "苇茎"],
+    ["cailiao-0016", "stock", "rockBloom", "石花瓣"],
+    ["cailiao-0017", "stock", "pinecone", "松果"],
+    ["cailiao-0018", "stock", "nectar", "花蜜"],
+    ["cailiao-0019", "stock", "glowcap", "荧菇"],
+    ["cailiao-0020", "stock", "fur", "柔毛"],
+    ["cailiao-0021", "stock", "antler", "鹿角"],
+    ["cailiao-0022", "stock", "slime", "凝胶"],
+    ["cailiao-0023", "stock", "shell", "甲片"],
+    ["cailiao-0024", "stock", "rope", "苇绳"],
+    ["cailiao-0025", "stock", "fiber", "粗纤维"],
+    ["cailiao-0026", "stock", "resin", "松脂"],
+    ["cailiao-0027", "stock", "ember_dust", "余烬尘"],
+    ["cailiao-0028", "stock", "pine_cone", "霜松球果"],
+    ["cailiao-0029", "stock", "birch_sapling", "灰桦树苗"],
+    ["cailiao-0030", "stock", "ember_acorn", "余烬松实"],
+    ["cailiao-0031", "stock", "berry_cutting", "雪莓插条"],
+    ["cailiao-0032", "stock", "grass_tuft", "韧草根簇"],
+    ["cailiao-0033", "stock", "herb_seed", "苦草种子"],
+    ["cailiao-0034", "stock", "reed_root", "冰沼苇根"],
+    ["cailiao-0035", "stock", "spore_cap", "冷光孢子"],
+    ["cailiao-0036", "stock", "ash_compost", "灰烬堆肥"],
+    ["cailiao-0037", "stock", "ember_mulch", "余烬暖肥"]
+  ],
+  "食物": [
+    ["shiwu-0001", "stock", "egg", "鸡蛋"],
+    ["shiwu-0002", "stock", "bread", "面包"],
+    ["shiwu-0003", "stock", "boiled", "煮鸡蛋"],
+    ["shiwu-0004", "stock", "berry", "野莓"],
+    ["shiwu-0005", "stock", "frostBerry", "霜莓"],
+    ["shiwu-0006", "stock", "sandFruit", "沙果"],
+    ["shiwu-0007", "stock", "honey", "蜂蜜"],
+    ["shiwu-0008", "stock", "trailmix", "巡林干粮"]
+  ],
+  "治疗物品": [
+    ["zhiliao-0001", "stock", "bandage", "绷带"],
+    ["zhiliao-0002", "pickup", "heal", "生命补给"],
+    ["zhiliao-0003", "stock", "salve", "银叶药膏"],
+    ["zhiliao-0004", "stock", "tonic", "霜露合剂"]
+  ],
+  "工具": [
+    ["gongju-0001", "tool", "axe", "伐木斧"],
+    ["gongju-0002", "tool", "pick", "矿镐"],
+    ["gongju-0003", "tool", "hoe", "锄头"],
+    ["gongju-0004", "tool", "can", "水壶"],
+    ["gongju-0005", "tool", "hammer", "锤子"],
+    ["gongju-0006", "tool", "pan", "平底锅"],
+    ["gongju-0007", "stock", "copperPick", "铜镐"]
+  ],
+  "武器与弹体": [
+    ["wuqi-0001", "equipment", "worn", "旅人剑"],
+    ["wuqi-0002", "equipment", "sword", "阔刃剑"],
+    ["wuqi-0003", "equipment", "dagger", "短匕"],
+    ["wuqi-0004", "equipment", "spear", "长矛"],
+    ["wuqi-0005", "equipment", "axe", "战斧"],
+    ["wuqi-0006", "equipment", "bow", "长弓"],
+    ["wuqi-0007", "projectile", "arrow", "箭矢"],
+    ["wuqi-0008", "stock", "ironEdge", "锻铁剑"],
+    ["wuqi-0009", "stock", "emberBlade", "淬烬刃"]
+  ],
+  "护甲": [
+    ["hujia-0001", "equipment", "leather", "旅林皮甲"],
+    ["hujia-0002", "equipment", "mail", "锻纹锁甲"]
+  ],
+  "靴子": [
+    ["xuezi-0001", "equipment", "runner", "巡林靴"],
+    ["xuezi-0002", "equipment", "swift", "踏风靴"],
+    ["xuezi-0003", "stock", "trailBoots", "远行靴"]
+  ],
+  "护符": [
+    ["hufu-0001", "equipment", "ember", "烬火护符"],
+    ["hufu-0002", "equipment", "heart", "青心护符"]
+  ],
+  "生物": [
+    ["shengwu-0001", "creature", "hero", "旅人"],
+    ["shengwu-0002", "creature", "scout", "斥候"],
+    ["shengwu-0003", "creature", "moss", "苔林守卫"],
+    ["shengwu-0004", "creature", "bat", "蝙蝠"],
+    ["shengwu-0005", "creature", "shield", "盾卫"],
+    ["shengwu-0006", "creature", "stone", "赤石守卫"],
+    ["shengwu-0007", "creature", "frost", "寒潭守卫"],
+    ["shengwu-0008", "creature", "keeper", "灰烬守卫"],
+    ["shengwu-0009", "creature", "hen", "鸡"],
+    ["shengwu-0010", "creature", "sheep", "羊"],
+    ["shengwu-0011", "creature", "hare", "草兔"],
+    ["shengwu-0012", "creature", "deer", "林鹿"],
+    ["shengwu-0013", "creature", "frog", "沼蛙"],
+    ["shengwu-0014", "creature", "goat", "岩羊"],
+    ["shengwu-0015", "creature", "fox", "雪狐"],
+    ["shengwu-0016", "creature", "squirrel", "松鼠"],
+    ["shengwu-0017", "creature", "lizard", "沙蜥"],
+    ["shengwu-0018", "creature", "bee", "花蜂"],
+    ["shengwu-0019", "creature", "beetle", "菌甲虫"]
+  ],
+  "可建造物": [
+    ["jianzhu-0001", "build", "floor", "木地板"],
+    ["jianzhu-0002", "build", "wall", "木墙"],
+    ["jianzhu-0003", "build", "fence", "围栏"],
+    ["jianzhu-0004", "build", "gate", "木栅门"],
+    ["jianzhu-0005", "build", "torch", "火把"],
+    ["jianzhu-0006", "build", "coop", "畜棚"],
+    ["jianzhu-0007", "build", "bed", "床"],
+    ["jianzhu-0008", "build", "researchDesk", "研究台"],
+    ["jianzhu-0009", "build", "brazier", "营地火盆"],
+    ["jianzhu-0010", "build", "emberBrazier", "余烬火坛"],
+    ["jianzhu-0011", "build", "miniBeacon", "微型烽火台"]
+  ],
+  "固定设施": [
+    ["sheshi-0001", "site", "camp", "篝火"],
+    ["sheshi-0002", "site", "gate", "封印门"],
+    ["sheshi-0003", "site", "well", "水井"],
+    ["sheshi-0004", "site", "board", "营地委托牌"],
+    ["sheshi-0005", "site", "plot", "耕地"]
+  ],
+  "祭坛": [
+    ["jitan-0001", "altar", "moss", "苔林祭坛"],
+    ["jitan-0002", "altar", "stone", "赤石祭坛"],
+    ["jitan-0003", "altar", "frost", "寒潭祭坛"],
+    ["jitan-0004", "blessing", "vigor", "生息祭坛"],
+    ["jitan-0005", "blessing", "might", "锋刃祭坛"],
+    ["jitan-0006", "blessing", "ward", "磐石祭坛"],
+    ["jitan-0007", "blessing", "wind", "疾风祭坛"]
+  ],
+  "群系地标": [
+    ["dibiao-0001", "landmark", "root", "苔林古根"],
+    ["dibiao-0002", "landmark", "watch", "赤石望台"],
+    ["dibiao-0003", "landmark", "mirror", "寒潭冰镜"]
+  ],
+  "宝箱": [
+    ["baoxiang-0001", "chest", "camp", "营地木箱"],
+    ["baoxiang-0002", "chest", "moss", "苔林木箱"],
+    ["baoxiang-0003", "chest", "westRuins", "赤石西侧铁箱"],
+    ["baoxiang-0004", "chest", "eastRuins", "赤石东侧铁箱"],
+    ["baoxiang-0005", "chest", "frost", "寒潭铁箱"],
+    ["baoxiang-0006", "chest", "southBank", "南岸晶箱"],
+    ["baoxiang-0007", "chest", "oldPath", "旧林径晶箱"],
+    ["baoxiang-0008", "chest", "sealedRuins", "封印遗迹古金箱"]
+  ],
+  "任务物品": [
+    ["renwuwu-0001", "pickup", "core", "火种"],
+    ["renwuwu-0002", "pickup", "sealMoss", "苔林印记"],
+    ["renwuwu-0003", "pickup", "sealStone", "赤石印记"],
+    ["renwuwu-0004", "pickup", "sealFrost", "寒潭印记"]
+  ],
+  "委托": [
+    ["weituo-0001", "quest", "survey", "勘察三处群系地标"],
+    ["weituo-0002", "quest", "shields", "击败两名盾卫"]
+  ],
+  "科技": [
+    ["keji-0001", "tech", "workshop", "木作工艺"],
+    ["keji-0002", "tech", "herbalism", "草药学"],
+    ["keji-0003", "tech", "distilling", "霜露调和"],
+    ["keji-0004", "tech", "foraging", "野外补给"],
+    ["keji-0005", "tech", "trailgear", "远行装备"],
+    ["keji-0006", "tech", "metallurgy", "铜石工艺"],
+    ["keji-0007", "tech", "smithing", "铁器锻造"]
+  ]
+}

@@ -33,6 +33,11 @@ export interface ObjectChange {
 export type EnemyPhase = "idle" | "chase" | "windup" | "attack" | "recovery";
 
 export interface EnemyState {
+  persistent?: boolean;
+  taskLocked?: boolean;
+  playerInteracted?: boolean;
+  boss?: boolean;
+  category?: import("../systems/combat/spawnRules").Category;
   id: string;
   enemyId: string;
   spawnId: string;
@@ -156,6 +161,7 @@ export interface StepRequest {
 
 /** Everything the rule systems read: static configuration plus the generated world. */
 export interface Systems {
+  spawnView?: import("../systems/combat/spawnRules").View;
   data: GameData;
   world: World;
 }

@@ -176,11 +176,17 @@ export function moveHero(
   const dashing = dash.activeSec > 0;
   const { data } = sys;
   const mods = evaluateRegionModifiers(state, sys);
+  const tileSize = sys.world.tileSize;
+  const surface = sys.world.getTileMeta?.(
+    Math.floor(hero.x / tileSize),
+    Math.floor(hero.y / tileSize),
+  );
   const base =
     data.balance.hero.moveSpeedPxPerSec *
     (getHero(data, state.heroId).traits.moveSpeedMult ?? 1) *
     heroMoveSpeedMultiplier(data, state.inventory) *
-    mods.speedMult;
+    mods.speedMult *
+    (surface?.walkSpeedMultiplier ?? 1);
 
   let slide = slideByRun.get(state);
   if (!slide) {

@@ -1,7 +1,7 @@
 import { EVT, makeEvent } from "@/core/events";
 import { getHero } from "@/core/gameData";
 import type { EnemyState, GameEvent, RunState, Systems } from "@/core/types";
-import { hitEnemy } from "../EnemyManager.js";
+import { hitEnemy } from "../EnemyManager";
 import { countOf } from "../inventory";
 import { ownedStatBonus } from "../itemEffects";
 import { detonateResinBarrel } from "../world/regionEffects";

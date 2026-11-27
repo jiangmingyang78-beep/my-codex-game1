@@ -1,5 +1,4 @@
 import { EVT, type StepInputState } from "@/core";
-import { heroLightRadiusMultiplier } from "@/systems/itemEffects";
 import { getDashCooldownState } from "@/systems/movement";
 import { nearestInteractable } from "@/systems/world/interact";
 import { TILE } from "@/systems/world/worldTypes";
@@ -171,6 +170,13 @@ export class GameScene extends Phaser.Scene {
       this.queued = { interact: false, attack: false };
       this.inputBuffer.record(rawStep, deltaMs);
       const { state, sys } = this.session;
+      const cam = this.cameras.main;
+      sys.spawnView = {
+        x: cam.scrollX + (cam.width - cam.width / cam.zoom) / 2,
+        y: cam.scrollY + (cam.height - cam.height / cam.zoom) / 2,
+        width: cam.width / cam.zoom,
+        height: cam.height / cam.zoom,
+      };
       const resolved = this.inputBuffer.resolve(rawStep, {
         canAttack: state.hero.attackCooldownSec <= 0,
         canDash: getDashCooldownState(state, sys).remainingSec <= 0,
@@ -215,16 +221,6 @@ export class GameScene extends Phaser.Scene {
     this.telegraphLayer?.syncFromState(state, sys, timeSec);
     this.combatFeel?.syncHudOverlays(state, sys, timeSec);
     scenery.update(state, sec, darkness);
-    const { stats } = sys.data.balance;
-    const glow = 22 + 40 * (state.hero.light / stats.light.max);
-    scenery.overlay.heroLight = {
-      x: state.hero.x,
-      y: state.hero.y - 6,
-      radius:
-        glow *
-        heroLightRadiusMultiplier(sys.data, state.inventory, state.heroId),
-      alpha: 0.85,
-    };
     if (this.screen === "playing")
       publishPrompt(currentPrompt(state, sys, this.cameras.main));
     this.hudClock += sec;

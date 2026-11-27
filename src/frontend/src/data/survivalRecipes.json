@@ -1,0 +1,100 @@
+{
+  "bread": {
+    "cost": {
+      "wheat": 2
+    },
+    "count": 1,
+    "camp": true
+  },
+  "boiled": {
+    "cost": {
+      "egg": 1,
+      "water": 1
+    },
+    "count": 1,
+    "camp": true
+  },
+  "bandage": {
+    "cost": {
+      "wool": 1
+    },
+    "count": 1
+  },
+  "seed": {
+    "cost": {
+      "wheat": 1
+    },
+    "count": 2
+  },
+  "rope": {
+    "tech": "workshop",
+    "cost": {
+      "reed": 2
+    },
+    "count": 1
+  },
+  "salve": {
+    "tech": "herbalism",
+    "cost": {
+      "herb": 1,
+      "slime": 1
+    },
+    "count": 1
+  },
+  "tonic": {
+    "tech": "distilling",
+    "cost": {
+      "frostBerry": 1,
+      "honey": 1
+    },
+    "count": 1,
+    "camp": true
+  },
+  "trailmix": {
+    "tech": "foraging",
+    "cost": {
+      "berry": 2,
+      "salt": 1
+    },
+    "count": 1,
+    "camp": true
+  },
+  "trailBoots": {
+    "tech": "trailgear",
+    "cost": {
+      "fur": 2,
+      "rope": 1
+    },
+    "count": 1,
+    "unique": true
+  },
+  "copperPick": {
+    "tech": "metallurgy",
+    "cost": {
+      "copper": 2,
+      "wood": 1
+    },
+    "count": 1,
+    "unique": true
+  },
+  "ironEdge": {
+    "tech": "smithing",
+    "cost": {
+      "iron": 2,
+      "coal": 1
+    },
+    "count": 1,
+    "camp": true,
+    "unique": true
+  },
+  "emberBlade": {
+    "metaUnlock": "unlock_warden_blade",
+    "cost": {
+      "iron": 2,
+      "coal": 2
+    },
+    "count": 1,
+    "camp": true,
+    "unique": true
+  }
+}

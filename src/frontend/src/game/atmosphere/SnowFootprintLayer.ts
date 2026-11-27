@@ -1,5 +1,6 @@
 import type { RunState, Systems } from "@/core/types";
 import { isHeroDashActive } from "@/systems/movement";
+import { supportsSnowFootprint } from "@/systems/world/worldTypes";
 import Phaser from "phaser";
 import { ATMOSPHERE_PRESETS } from "./atmospherePresets";
 
@@ -98,10 +99,12 @@ export class SnowFootprintLayer {
   }
 
   private canMark(x: number, y: number, world: Systems["world"]): boolean {
-    if (!this.snowTileIds) return true;
     const { tileSize, widthTiles, heightTiles, tiles } = world;
     const tx = Math.floor(x / tileSize);
     const ty = Math.floor(y / tileSize);
+    if (world.getTileMeta)
+      return supportsSnowFootprint(world.getTileMeta(tx, ty));
+    if (!this.snowTileIds) return true;
     return (
       tx >= 0 &&
       tx < widthTiles &&

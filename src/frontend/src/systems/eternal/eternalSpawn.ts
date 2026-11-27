@@ -1,8 +1,7 @@
 import { EVT, makeEvent } from "@/core/events";
 import { rollRun } from "@/core/rng";
 import type { EnemyState, GameEvent, RunState, Systems } from "@/core/types";
-import { ENEMY_RADIUS } from "../combat/combatMath";
-import { blockedAt } from "../world/collision";
+import { enemyPool, spawnPoint } from "../combat/spawnPopulation";
 import { ETERNAL, type EternalRunRuntime } from "./eternalTypes";
 
 interface PoolEntry {
@@ -54,32 +53,6 @@ function unlockedPool(sys: Systems, combatSec: number): PoolEntry[] {
   );
 }
 
-/** A walkable point 10-13 tiles from the campfire and at least 6 tiles from the hero. */
-function edgePoint(
-  state: RunState,
-  sys: Systems,
-): { x: number; y: number } | null {
-  const { world, data } = sys;
-  const span = ETERNAL.spawnMaxTiles - ETERNAL.spawnMinTiles;
-  for (let attempt = 0; attempt < 30; attempt++) {
-    const angle = rollRun(state) * Math.PI * 2;
-    const radius =
-      (ETERNAL.spawnMinTiles + rollRun(state) * span) * data.tileSize;
-    const x = world.campfire.x + Math.cos(angle) * radius;
-    const y = world.campfire.y + Math.sin(angle) * radius;
-    const nearHero =
-      Math.hypot(x - state.hero.x, y - state.hero.y) <
-      ETERNAL.safeHeroTiles * data.tileSize;
-    if (
-      nearHero ||
-      blockedAt(world, state.changesByObjectId, x, y, ENEMY_RADIUS)
-    )
-      continue;
-    return { x, y };
-  }
-  return null;
-}
-
 /** Spawns one chasing enemy (nightRound 1 keeps the shared AI from idling it). */
 function spawnEnemy(
   state: RunState,
@@ -89,16 +62,18 @@ function spawnEnemy(
   events: GameEvent[],
 ): boolean {
   const def = sys.data.enemies.get(enemyId);
-  const point = edgePoint(state, sys);
-  if (!def || !point) return false;
-  const id = `eternal_${state.idCounter++}`;
+  if (!def) return false;
   const isBoss =
     (ETERNAL.bossOrder as readonly string[]).includes(enemyId) ||
     Boolean(def.phases);
+  const point = spawnPoint(state, sys, enemyId, undefined, isBoss);
+  if (!point) return false;
+  const id = `eternal_${state.idCounter++}`;
   const scaled = isBoss
     ? def.maxHp
     : Math.ceil(def.maxHp * eternalHpMultiplier(combatSec));
-  const enemy: EnemyState = {
+  const enemy = enemyPool.acquire({
+    boss: isBoss,
     id,
     enemyId,
     spawnId: "eternal",
@@ -115,7 +90,8 @@ function spawnEnemy(
     moveIndex: 0,
     hitDone: false,
     nightRound: 1,
-  };
+  });
+  scaledMaxHp.delete(enemy);
   state.enemiesById[id] = enemy;
   if (scaled !== def.maxHp) scaledMaxHp.set(enemy, scaled);
   events.push(

@@ -1,5 +1,6 @@
 import type { RunState, Systems } from "@/core";
-import { EnemyEntity } from "@/entities/EnemyEntity.js";
+import { EnemyEntity } from "@/entities/EnemyEntity";
+import { despawnAlpha, spawnRadii } from "@/systems/combat/spawnRules";
 import { eternalEnemyMaxHp } from "@/systems/eternal/eternalSpawn";
 import { isHeroDashActive, isHeroDashInvulnerable } from "@/systems/movement";
 import { getBucklerCooldownSec } from "@/systems/survival";
@@ -181,6 +182,11 @@ export class EntityViews {
 
   private syncEnemies(state: RunState): void {
     this.bars.clear();
+    const { despawn } = spawnRadii(
+      this.sys.data.balance.survival,
+      this.sys.data.tileSize,
+      this.sys.spawnView,
+    );
     for (const [id, body] of this.enemies) {
       if (state.enemiesById[id]) continue;
       body.destroy();
@@ -201,6 +207,15 @@ export class EntityViews {
         this.enemies.set(e.id, body);
       }
       body.sync(e, this.sys.data.tileSize, state, this.sys);
+      const alpha = despawnAlpha(
+        e,
+        state.hero,
+        despawn,
+        this.sys.data.tileSize,
+      );
+      body.sprite.setAlpha(body.sprite.alpha * alpha);
+      body.shadow.setAlpha(alpha);
+      body.telegraph.setAlpha(alpha);
       const max =
         eternalEnemyMaxHp(e) ??
         this.sys.data.enemies.get(e.enemyId)?.maxHp ??

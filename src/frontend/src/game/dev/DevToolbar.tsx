@@ -2,8 +2,10 @@ import { useEffect, useState } from "react";
 import { PixelButton } from "../ui/PixelButton";
 import { type DevEnemyOption, commands } from "../ui/commands";
 import { toast } from "../ui/toastBridge";
+import { spawnDebug } from "./spawnDebug";
 
 export function DevToolbar() {
+  const [debug, setDebug] = useState(spawnDebug.enabled);
   const [open, setOpen] = useState(false);
   const [godMode, setGodMode] = useState(
     () => commands.dev?.isGodMode() ?? false,
@@ -127,6 +129,25 @@ export function DevToolbar() {
           {godMode ? "无敌：开" : "无敌：关"}
         </PixelButton>
       </div>
+      <label>
+        <input
+          type="checkbox"
+          checked={debug}
+          onChange={(e) => {
+            spawnDebug.enabled = e.target.checked;
+            setDebug(e.target.checked);
+          }}
+        />{" "}
+        显示安全光区与刷怪环
+      </label>
+      {debug && (
+        <canvas
+          id="spawn-debug-map"
+          width={150}
+          height={150}
+          aria-label="安全光区、视口与刷怪双环"
+        />
+      )}
       <div className="flex items-center gap-1.5">
         <select
           aria-label="选择怪物"

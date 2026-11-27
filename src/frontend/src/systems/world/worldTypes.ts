@@ -53,7 +53,30 @@ export interface SpawnPoint {
   y: number;
 }
 
+export interface TileMeta {
+  biomeId: number;
+  material:
+    | "grass"
+    | "trail"
+    | "stone"
+    | "ash"
+    | "mud"
+    | "snow"
+    | "water"
+    | "cliff"
+    | "rubble";
+  /** Normalized snow cover and the fraction of normal walking speed. */
+  snowDepth: number;
+  walkSpeedMultiplier: number;
+}
+export const supportsSnowFootprint = (meta: TileMeta): boolean =>
+  meta.snowDepth >= 0.18 &&
+  meta.material !== "water" &&
+  meta.material !== "cliff";
+
 export interface World {
+  /** Integer world tile coordinates, including negative coordinates. */
+  getTileMeta?(x: number, y: number): TileMeta;
   widthTiles: number;
   heightTiles: number;
   tileSize: number;

@@ -1,3 +1,4 @@
+import {encounterById} from "@/systems/survival/encounterCatalog";
 /**
  * 生存模式地图适配器（直接复用 @/systems/survival 单一真源，零算法副本）
  */
@@ -7,22 +8,18 @@ import {
   SURVIVAL_CAMP,
   SURVIVAL_HEIGHT,
   SURVIVAL_WIDTH,
-  inOriginalMap,
   solidSurvivalTerrain,
 } from "@/systems/survival/survivalBiomes";
-import {
-  type SurvivalChunk,
-  chunkCellIndex,
-  getOrCreateSurvivalChunk,
-  seedFromText,
-} from "@/systems/survival/survivalNoise";
+import { seedFromText } from "@/systems/survival/survivalNoise";
 import {
   applyClassicSurvivalTerrain,
   buildBaseClassicWorld,
   carveCampPassages,
-  generateSurvivalTerrain,
+  createSurvivalWorld,
 } from "@/systems/survival/survivalWorldGen";
+import { FEATURE } from "@/systems/survival/survivalPasses";
 import type {
+  MapObject,
   MapRegion,
   MapSnapshot,
   MapSpawn,
@@ -41,6 +38,7 @@ const SURVIVAL_PALETTE: Record<number, TilePaletteEntry> = {
   6: { id: 6, key: "rock", name: "岩石（阻挡）", color: "#5e4c3a", accent: "#8c745b", solid: true },
   7: { id: 7, key: "ruin", name: "遗迹地面", color: "#4e4452", accent: "#6d5f73", solid: false },
   8: { id: 8, key: "coal_vein", name: "煤脉（阻挡）", color: "#22242d", accent: "#ff7a2f", solid: true },
+  9: { id: 9, key: "wall", name: "岩壁（阻挡）", color: "#41444d", accent: "#a1a2a8", solid: true },
 };
 
 function buildClassicSnapshot(): MapSnapshot {
@@ -98,13 +96,7 @@ export function buildSurvivalSnapshot(seedText: string, resourceDensity = 1): Ma
   const seed = Number(resolvedId);
   const label = clean && clean !== resolvedId ? `${clean} (#${resolvedId})` : resolvedId;
 
-  const core = generateSurvivalTerrain(seed, resourceDensity);
-  carveCampPassages(
-    core.tiles,
-    (x, y) => SURVIVAL_BIOMES[core.regions[y]?.[x] ?? 0]?.floor ?? 1,
-    SURVIVAL_CAMP,
-  );
-
+  const world = createSurvivalWorld(seed, resourceDensity);
   const w = SURVIVAL_WIDTH + WINDOW_PAD * 2;
   const h = SURVIVAL_HEIGHT + WINDOW_PAD * 2;
   const ox = -WINDOW_PAD;
@@ -112,28 +104,18 @@ export function buildSurvivalSnapshot(seedText: string, resourceDensity = 1): Ma
   const tiles = new Uint8Array(w * h);
   const solidMask = new Uint8Array(w * h);
   const biomeIds = new Uint8Array(w * h);
-  const chunkCache = new Map<string, SurvivalChunk>();
+  const featureIds = new Uint8Array(w * h);
 
   for (let gy = 0; gy < h; gy++) {
     const wy = oy + gy;
     for (let gx = 0; gx < w; gx++) {
       const wx = ox + gx;
       const idx = gy * w + gx;
-      let tile = 1;
-      let bId = 0;
-      if (inOriginalMap(wx, wy)) {
-        tile = core.tiles[wy][wx];
-        bId = core.regions[wy][wx];
-      } else {
-        const chunk = getOrCreateSurvivalChunk(chunkCache, wx, wy, seed, resourceDensity, SURVIVAL_CAMP);
-        const ci = chunkCellIndex(chunk, wx, wy);
-        tile = chunk.terrain[ci];
-        bId = chunk.regions[ci];
-        if (chunkCache.size > CHUNK_SIZE * 4) chunkCache.clear();
-      }
-      tiles[idx] = tile;
-      biomeIds[idx] = bId;
-      if (solidSurvivalTerrain(tile)) solidMask[idx] = 1;
+      const meta = world.getTileMeta(wx, wy);
+      tiles[idx] = meta.tile;
+      featureIds[idx] = meta.feature;
+      biomeIds[idx] = meta.biomeId;
+      if (solidSurvivalTerrain(meta.tile)) solidMask[idx] = 1;
     }
   }
 
@@ -142,16 +124,32 @@ export function buildSurvivalSnapshot(seedText: string, resourceDensity = 1): Ma
     { id: "expanded_window", name: `流式外域预览窗口 (${w}×${h})`, x: ox, y: oy, w, h, dashed: true },
   ];
   const spawns: MapSpawn[] = [
-    { id: "hero_camp", kind: "hero", label: "玩家出生点", tx: SURVIVAL_CAMP.x, ty: SURVIVAL_CAMP.y },
-    ...core.sites.map((s, i) => ({
-      id: `site_${i}`,
-      kind: "site" as const,
-      label: `核心群系锚点·${SURVIVAL_BIOMES[s.type].name}`,
-      tx: s.x,
-      ty: s.y,
-      detail: `Voronoi 种子点 (${s.x}, ${s.y})`,
-    })),
+    { id: "hero_camp", kind: "hero", label: "玩家出生点", tx: SURVIVAL_CAMP.x - 1, ty: SURVIVAL_CAMP.y },
   ];
+  const landmarks: MapObject[] = [];
+  const visible = (x: number, y: number) =>
+    x >= ox && y >= oy && x < ox + w && y < oy + h;
+  const lastX = Math.floor((ox + w - 1) / CHUNK_SIZE);
+  const lastY = Math.floor((oy + h - 1) / CHUNK_SIZE);
+  for (let cy = Math.floor(oy / CHUNK_SIZE); cy <= lastY; cy++) {
+    for (let cx = Math.floor(ox / CHUNK_SIZE); cx <= lastX; cx++) {
+      const chunk = world.getChunk(cx, cy);
+      for (const {kind, x, y} of chunk.landmarks) {
+        if (kind === "encounter" && visible(x, y)) {
+          const site=world.encounters.find(p=>p.x===x && p.y===y);
+          landmarks.push({ id: site?.id??`encounter_${x}_${y}`, kind: "landmark", label: site?encounterById.get(site.templateId)!.name:"奇遇预留地", tx: x, ty: y });
+        }
+      }
+      for (const {kind, x, y} of chunk.anchors) {
+        if (!visible(x, y)) continue;
+        if (kind === "nest") {
+          spawns.push({ id: `nest_${x}_${y}`, kind: "resident", label: "生态巢穴", tx: x, ty: y });
+        } else {
+          landmarks.push({ id: `supply_${x}_${y}`, kind: kind === "coal" ? "ore" : kind, label: "营地初始补给", tx: x, ty: y });
+        }
+      }
+    }
+  }
 
   return {
     mode: "survival",
@@ -166,10 +164,18 @@ export function buildSurvivalSnapshot(seedText: string, resourceDensity = 1): Ma
     solidMask,
     palette: SURVIVAL_PALETTE,
     biomeIds,
+    featureIds,
+    featureStyles: {
+      [FEATURE.berry]: { name: "浆果灌木", color: "#f39a91" },
+      [FEATURE.flora]: { name: "原生植物生长点", color: "#a8ce92" },
+      [FEATURE.forage]: { name: "可采集野生植物", color: "#e3cd84" },
+      [FEATURE.rubble]: { name: "遗迹碎石", color: "#b5a2a9" },
+    },
     biomeNames: SURVIVAL_BIOMES.map((b) => b.name),
     biomeColors: SURVIVAL_BIOMES.map((b) => b.land),
     regions,
     objects: [
+      ...landmarks,
       { id: "camp", kind: "campfire", label: "主营地篝火", tx: SURVIVAL_CAMP.x, ty: SURVIVAL_CAMP.y, radiusTiles: 5, detail: "生存模式营地中心 (6, 16)" },
       { id: "board", kind: "board", label: "委托告示牌", tx: 5, ty: 15, detail: "接取营地委托" },
     ],

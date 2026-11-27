@@ -1,3 +1,5 @@
+import balance from "@/data/balance.json";
+import { resolveSurvivalTuning } from "./survivalOverrides";
 export const resourceRoll = (roll: number, density: number) =>
   density > 0 ? roll / density : Number.POSITIVE_INFINITY;
 type Stock = Record<string, number>;
@@ -17,21 +19,16 @@ export function waveSlot(
 ) {
   return Math.floor(((age - dusk) * count) / length);
 }
-export async function loadSurvivalTuning() {
-  const base = {
-    resourceDensity: 1,
-    spawnFrequency: 1,
-    startingSupplyMultiplier: 1,
-  };
-  const response = await fetch("./survival-balance.json", {
-    cache: "no-store",
-  });
-  if (response.status === 404) return base;
-  if (!response.ok) throw Error("生存配置读取失败");
-  const config = await response.json();
-  for (const key of Object.keys(base) as (keyof typeof base)[]) {
-    if (Number.isFinite(config[key]) && config[key] >= 0)
-      base[key] = config[key];
+export async function loadSurvivalTuning(request?: typeof fetch) {
+  try {
+    const response = await (request ?? globalThis.fetch)(
+      "/survival-balance.json",
+      { cache: "no-store" },
+    );
+    if (response.ok)
+      return resolveSurvivalTuning(balance.survival, await response.json());
+  } catch {
+    // Offline, malformed or invalid overrides use the complete built-in profile.
   }
-  return base;
+  return { ...balance.survival };
 }

@@ -1,19 +1,21 @@
 import type balance from "@/data/balance.json";
 import type current from "@/data/enemies.json";
-import type legacy from "@/data/legacyEnemies.json";
+type EnemyRow = (typeof current.enemies)[number];
+type ModernRow = Extract<EnemyRow,{seedType: string}>;
+type LegacyRow = Exclude<EnemyRow,ModernRow>;
 import type heroes from "@/data/heroes.json";
 import type regions from "@/data/regions.json";
 import type { WorldOverrides } from "@/systems/world/worldOverrides";
 
 export interface Draft {
   "balance.json": typeof balance;
-  "enemies.json": typeof current;
-  "legacyEnemies.json": typeof legacy;
+  "enemies.json": {enemies: ModernRow[]};
+  "legacyEnemies.json": {enemies: LegacyRow[]; encounterRewards: typeof current.encounterRewards};
   "heroes.json": typeof heroes;
   "regions.json": typeof regions;
   "worldOverrides.json": WorldOverrides;
-  "survival-balance.json": Record<string, number>;
-  "encounters.json": Record<string, Record<string, number>>;
+  "survival-balance.json": Partial<Omit<typeof balance.survival,"categoryCap">> & {categoryCap?:Partial<typeof balance.survival.categoryCap>};
+  "encounters.json": typeof import("@/systems/runtimeRules").rules & {setPieces?:typeof import("@/data/encounters.json").setPieces};
 }
 export type FileKey = keyof Draft;
 export const files: FileKey[] = [

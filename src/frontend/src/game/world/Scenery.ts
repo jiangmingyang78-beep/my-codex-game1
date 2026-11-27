@@ -6,6 +6,7 @@ import {
   toVfxEvent,
 } from "@/core";
 import { TILE } from "@/systems";
+import { syncRunLight } from "@/systems/world/runLight";
 import { createEffects } from "@/vfx/particles";
 import type Phaser from "phaser";
 import { RENDER_DEPTH } from "../renderDepth";
@@ -31,11 +32,10 @@ export class Scenery {
   private readonly view: WorldView;
   private readonly fires: CampFires;
   private readonly snowClock: SnowClockArt | null;
-  private darkness = 0;
 
   constructor(
     scene: Phaser.Scene,
-    sys: Systems,
+    private readonly sys: Systems,
     gen: TextureGenerator,
     state: RunState,
     showSnowClock = false,
@@ -51,7 +51,7 @@ export class Scenery {
       tileSize: data.tileSize,
       bodyDepth: RENDER_DEPTH.combatParticles,
       glowDepth: RENDER_DEPTH.combatGlow,
-      lightStrength: () => 0.2 + 0.8 * Math.min(1, this.darkness / 0.6),
+      lightStrength: (): number => 0, // NightOverlay and the atmosphere layer paint the authoritative grid.
       ambientAt: (tx: number, ty: number) => {
         const tile = world.tiles[ty * world.widthTiles + tx];
         return tx >= 0 &&
@@ -64,17 +64,15 @@ export class Scenery {
     } as Parameters<typeof createEffects>[1];
     this.fx = createEffects(scene, options);
     this.fires = new CampFires(this.fx, sys, state);
-    this.overlay = new NightOverlay(scene, scene.cameras.main, (visit) =>
-      this.fx.forEachCampLight(visit),
-    );
+    this.overlay = new NightOverlay(scene, scene.cameras.main);
     this.snowClock = showSnowClock
       ? new SnowClockArt(scene, world, data.balance.clock)
       : null;
   }
 
   update(state: RunState, sec: number, darkness: number): void {
-    this.darkness = darkness;
     this.overlay.darkness = darkness;
+    this.overlay.grid = syncRunLight(state, this.sys);
     this.view.sync(state);
     this.snowClock?.sync(state.elapsedSec);
     this.fires.sync(state);

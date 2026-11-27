@@ -27,6 +27,7 @@ export default {
     fs: {
       allow: [
         toolDir,
+        path.join(repoRoot, "src/frontend/public/survival-balance.schema.json"),
         ...["src/frontend/src", "src/frontend/node_modules", "node_modules"].map((p) => path.join(repoRoot, p)),
       ],
     },

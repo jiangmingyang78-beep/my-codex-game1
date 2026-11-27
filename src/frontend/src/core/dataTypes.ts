@@ -157,6 +157,7 @@ export interface StatDef {
 
 export interface BalanceData {
   schemaVersion: number;
+  survival: import("../systems/survivalOverrides").SurvivalTuning;
   world: {
     mapKey: string;
     widthTiles: number;

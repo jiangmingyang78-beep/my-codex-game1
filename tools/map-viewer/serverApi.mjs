@@ -5,6 +5,8 @@ import path from "node:path";
 import {setTimeout as delay} from "node:timers/promises";
 import { fileURLToPath } from "node:url";
 
+import { enemyDocuments, mergeEnemyDocuments } from "./enemyDocuments.mjs";
+
 const root = fileURLToPath(new URL("../../", import.meta.url));
 const files = new Map(
   ["balance", "enemies", "legacyEnemies", "heroes", "regions", "encounters", "worldOverrides"].map((key) => [
@@ -24,8 +26,11 @@ async function read(file) {
     throw e;
   }
 }
+const isEnemyDocument = file => file === "enemies.json" || file === "legacyEnemies.json";
 async function readAll() {
-  return Object.fromEntries(await Promise.all([...files.keys()].map(async (k) => [k, await read(k)])));
+  const docs = Object.fromEntries(await Promise.all([...files.keys()].filter(k => k !== "legacyEnemies.json").map(async k => [k, await read(k)])));
+  const physicalEnemies = docs["enemies.json"];
+  return { documents: { ...docs, ...enemyDocuments(physicalEnemies) }, physicalEnemies };
 }
 async function body(req) {
   if (!/^application\/json(?:;|$)/i.test(req.headers["content-type"] ?? "")) throw reject("需要 application/json", 415);
@@ -98,7 +103,7 @@ export function consoleApi(server) {
       const route = req.url.split("?")[0];
       if (req.method === "GET" && route === "/health") return respond(200, { ready: true });
       if (req.method === "GET" && route === "/data") {
-        const data = await readAll();
+        const { documents: data } = await readAll();
         return respond(200, { data, baseline: data });
       }
       if (req.method !== "POST" || !["/save", "/balance-check"].includes(route)) throw reject("未知接口", 404);
@@ -109,7 +114,7 @@ export function consoleApi(server) {
         !Number(req.headers["content-length"]);
       const payload = emptyReport ? {} : await body(req);
       const result = await serialized(async () => {
-        const disk = await readAll();
+        const { documents: disk, physicalEnemies } = await readAll();
         if (route === "/balance-check") {
           const make = await worldSource();
           return report(payload.full === true, make(disk["worldOverrides.json"], disk));
@@ -129,13 +134,16 @@ export function consoleApi(server) {
               .join("\n"),
             422,
           );
-        const target = files.get(file);
+        const physicalFile = isEnemyDocument(file) ? "enemies.json" : file;
+        const target = files.get(physicalFile);
+        const before = isEnemyDocument(file) ? physicalEnemies : disk[file];
+        const after = isEnemyDocument(file) ? mergeEnemyDocuments({ ...disk, [file]: data }, physicalEnemies) : data;
         if ((await realpath(path.dirname(target))) !== path.dirname(target)) throw reject("拒绝链接目录", 403);
         const tmp = target + "." + randomUUID() + ".tmp";
         try {
-          await writeFile(tmp, JSON.stringify(data, null, 2) + "\n", { flag: "wx" });
+          await writeFile(tmp, JSON.stringify(after, null, 2) + "\n", { flag: "wx" });
           for(let attempt=0;;attempt++){
-            if(JSON.stringify(await read(file))!==JSON.stringify(disk[file]))throw reject(file+" 在写入前已更改",409);
+            if(JSON.stringify(await read(physicalFile))!==JSON.stringify(before))throw reject(file+" 在写入前已更改",409);
             try{await rename(tmp,target);break;}catch(e){
               if(attempt===4 || !["EPERM","EBUSY"].includes(e.code))throw e;
               await delay(30*(attempt+1));

@@ -216,3 +216,67 @@ export function buildWorldFromLdtk(
     campfire,
   };
 }
+
+export { stampSetPieceIntoWorld } from "./setPieceStamp";
+export type { StampableSetPiece } from "./setPieceStamp";
+import type { StampableSetPiece } from "./setPieceStamp";
+
+/** SurvivalTerrain uses the survival tile catalogue (IntGrid = tile + 1). */
+export function setPieceFromLdtk(
+  project: LdtkProjectJson,
+  ref: string,
+): StampableSetPiece {
+  const layers = project.levels.find(
+    (l) => l.identifier === ref,
+  )?.layerInstances;
+  const ground = layers?.find(
+    (l) => l.__identifier === "SurvivalTerrain" && l.__type === "IntGrid",
+  );
+  const actors = layers?.find(
+    (l) => l.__identifier === "Entities" && l.__type === "Entities",
+  )?.entityInstances;
+  if (!ground?.intGridCsv || !actors)
+    throw new Error(`LDtk 奇遇缺少图层：${ref}`);
+  const { __cWid: w, __cHei: h, intGridCsv: csv } = ground;
+  if (
+    !Number.isInteger(w) ||
+    !Number.isInteger(h) ||
+    w < 1 ||
+    h < 1 ||
+    w > 15 ||
+    h > 15 ||
+    csv.length !== w * h ||
+    csv.some((n) => !Number.isInteger(n) || n < 1 || n > 10)
+  )
+    throw new Error(`LDtk 奇遇地形无效：${ref}`);
+  const stamp: StampableSetPiece = {
+    footprint: { w, h },
+    tiles: Array.from({ length: h }, (_, y) =>
+      csv
+        .slice(y * w, (y + 1) * w)
+        .map((n) => n - 1)
+        .join(""),
+    ),
+    props: [],
+    entities: [],
+  };
+  for (const e of actors) {
+    const [x, y] = e.__grid;
+    if (e.__identifier === "Prop")
+      stamp.props.push({
+        x,
+        y,
+        kind: field(e, "kind", ""),
+        interactive: field(e, "interactive", false),
+      });
+    else if (e.__identifier === "Plant" || e.__identifier === "Enemy")
+      stamp.entities.push({
+        x,
+        y,
+        kind: e.__identifier.toLowerCase(),
+        ref: field(e, "ref", ""),
+      });
+    else throw new Error(`未知奇遇实体：${e.__identifier}`);
+  }
+  return stamp;
+}

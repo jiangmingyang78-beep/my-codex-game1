@@ -1,3 +1,4 @@
+import {enemyDocuments} from "../tools/map-viewer/enemyDocuments.mjs";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { buildGameData } from "@/core/gameData";
@@ -16,7 +17,7 @@ import { it } from "./fixtures/it";
 
 const clean = Object.fromEntries(
   await Promise.all(
-    files.map(async (file) => {
+    files.filter(file=> file !== "legacyEnemies.json").map(async (file) => {
       if (file === "worldOverrides.json")
         return [file, structuredClone(emptyOverrides)];
       const directory =
@@ -34,6 +35,7 @@ const clean = Object.fromEntries(
     }),
   ),
 );
+Object.assign(clean, enemyDocuments(clean["enemies.json"]));
 const source = adventureSource();
 const map = source();
 const node = map.objects.find((object) => object.itemId === "ore");
@@ -201,4 +203,16 @@ it("命令历史保留最近 50 步，并可复原字段和导出预设", () => 
   assert.equal(store.changes().length, 0);
   assert.equal(store.history.redoCount, 0);
   assert.deepEqual(JSON.parse(store.preset()).files, store.draft);
+});
+
+it("地图控制台新旧怪物文档可分别编辑并合回同一物理表", async () => {
+  const {mergeEnemyDocuments}=await import("../tools/map-viewer/enemyDocuments.mjs");
+  const original=JSON.parse(await readFile(new URL("../src/frontend/src/data/enemies.json",import.meta.url),"utf8"));
+  const docs=enemyDocuments(structuredClone(original));
+  assert.deepEqual(mergeEnemyDocuments(docs),original);
+  docs["enemies.json"].enemies[0].maxHp+=1;
+  docs["legacyEnemies.json"].enemies[0].attackDamage+=1;
+  const roundTrip=enemyDocuments(mergeEnemyDocuments(docs));
+  assert.deepEqual(roundTrip,docs);
+  assert.deepEqual(roundTrip["legacyEnemies.json"].encounterRewards,original.encounterRewards);
 });

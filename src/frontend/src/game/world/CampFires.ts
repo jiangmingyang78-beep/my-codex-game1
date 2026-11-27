@@ -1,5 +1,5 @@
 import type { RunState, Systems } from "@/core";
-import { campRadiusPx } from "@/systems";
+import { campRadiusPx, fixtureRadius } from "@/systems/campCircle";
 import type { createEffects } from "@/vfx/particles";
 import { RENDER_DEPTH } from "../renderDepth";
 
@@ -20,9 +20,7 @@ export class CampFires {
     private readonly sys: Systems,
     state: RunState,
   ) {
-    const { world, data } = sys;
-    const relayRadius = data.balance.camp.relayRadiusTiles * data.tileSize;
-    const lampRadius = 4.5 * data.tileSize;
+    const { world } = sys;
     for (const o of world.objectList) {
       if (
         o.kind !== "relay_socket" &&
@@ -32,7 +30,7 @@ export class CampFires {
         continue;
       const lit = state.changesByObjectId[o.id]?.lit === true;
       const handle = fx.addCampfire(o.x, o.y + 5, {
-        radius: o.kind === "mirror_lamp" ? lampRadius : relayRadius,
+        radius: fixtureRadius(o.kind, sys),
         depth: RENDER_DEPTH.campFlame,
         active: lit,
       });

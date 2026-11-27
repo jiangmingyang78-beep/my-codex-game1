@@ -1,5 +1,5 @@
-import balance from "../data/balance.json";
-import unlockDefs from "../data/metaUnlocks.json";
+import { loadDataFiles } from "@/core/gameData";
+const { balance, metaUnlocks: unlockDefs } = loadDataFiles();
 
 export const META_SCHEMA_VERSION = 1;
 export const META_STORAGE_KEY = balance.storage.metaKey;

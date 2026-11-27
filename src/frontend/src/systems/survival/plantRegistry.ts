@@ -1,22 +1,41 @@
-import plantData from "../../data/plants.json";
+import { loadDataFiles } from "@/core/gameData";
+const plantData = loadDataFiles().plants;
 
+export type PlantDef = (typeof plantData.plants)[number];
+export interface Plant {
+  key: string;
+  plantId: string;
+  tx: number;
+  ty: number;
+  stage: number;
+  wild: boolean;
+  growthSec: number;
+  hp: number;
+  stump: boolean;
+  wateredSec: number;
+  fertilizedSec: number;
+  fertilizeMult: number;
+  frostProofSec: number;
+  hitShakeSec: number;
+}
+export type PlantRegistry = Map<string, Plant>;
 export const ALL_PLANT_DEFS = plantData.plants;
 const byId = new Map(ALL_PLANT_DEFS.map((def) => [def.id, def]));
 const bySeed = new Map(ALL_PLANT_DEFS.map((def) => [def.seedItemId, def]));
 const fertilizers = new Map(Object.entries(plantData.fertilizers));
 
-export const tileKey = (tx, ty) => `${tx},${ty}`;
-export const getPlantDef = (id) => byId.get(id);
-export const getPlantBySeed = (id) => bySeed.get(id);
-export const getFertilizerDef = (id) => fertilizers.get(id);
-export const createPlantRegistry = () => new Map();
+export const tileKey = (tx: number, ty: number) => `${tx},${ty}`;
+export const getPlantDef = (id: string) => byId.get(id);
+export const getPlantBySeed = (id: string) => bySeed.get(id);
+export const getFertilizerDef = (id: string) => fertilizers.get(id);
+export const createPlantRegistry = (): PlantRegistry => new Map();
 
 export function canPlantAt(
-  registry,
-  tx,
-  ty,
-  plantId,
-  terrain,
+  registry: PlantRegistry,
+  tx: number,
+  ty: number,
+  plantId: string,
+  terrain: string,
   nearWater = false,
 ) {
   const def = getPlantDef(plantId);
@@ -31,10 +50,10 @@ export function canPlantAt(
 }
 
 export function spawnPlant(
-  registry,
-  plantId,
-  tx,
-  ty,
+  registry: PlantRegistry,
+  plantId: string,
+  tx: number,
+  ty: number,
   { stage = 0, wild = false } = {},
 ) {
   const def = getPlantDef(plantId);
@@ -68,11 +87,11 @@ export function spawnPlant(
 }
 
 export function plantFromSeed(
-  registry,
-  tx,
-  ty,
-  itemId,
-  terrain,
+  registry: PlantRegistry,
+  tx: number,
+  ty: number,
+  itemId: string,
+  terrain: string,
   nearWater = false,
 ) {
   const def = getPlantBySeed(itemId);

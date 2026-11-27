@@ -77,7 +77,7 @@ export const SURVIVAL_BIOMES: readonly SurvivalBiome[] = [
     veins: ["copper"],
   },
   {
-    name: "湿地",
+    name: "冻沼泽",
     floor: 4,
     land: "#34483e",
     detail: "#4b6b55",
@@ -91,7 +91,7 @@ export const SURVIVAL_BIOMES: readonly SurvivalBiome[] = [
     veins: ["clay"],
   },
   {
-    name: "岩脊",
+    name: "风蚀岩坡",
     floor: 3,
     land: "#4b423d",
     detail: "#746350",
@@ -106,7 +106,7 @@ export const SURVIVAL_BIOMES: readonly SurvivalBiome[] = [
     coal: true,
   },
   {
-    name: "霜原",
+    name: "极寒冻原",
     floor: 4,
     land: "#50616e",
     detail: "#829399",
@@ -120,7 +120,7 @@ export const SURVIVAL_BIOMES: readonly SurvivalBiome[] = [
     veins: ["frostOre"],
   },
   {
-    name: "松林",
+    name: "深雪松林",
     floor: 1,
     land: "#273d3d",
     detail: "#445c58",
@@ -134,7 +134,7 @@ export const SURVIVAL_BIOMES: readonly SurvivalBiome[] = [
     veins: ["copper", "quartz"],
   },
   {
-    name: "赤沙荒地",
+    name: "灰烬焦土",
     floor: 3,
     land: "#694c3b",
     detail: "#967354",
@@ -199,7 +199,7 @@ export const insideSurvivalCamp = (x: number, y: number): boolean =>
   x >= 2 && x <= 16 && y >= 12 && y <= 22;
 
 export const solidSurvivalTerrain = (tile: number): boolean =>
-  tile === 0 || tile === 5 || tile === 6 || tile === COAL_VEIN;
+  tile === 0 || tile === 5 || tile === 6 || tile === COAL_VEIN || tile === 9;
 
 export const survivalCellKey = (x: number, y: number): number | string =>
   inOriginalMap(x, y) ? y * SURVIVAL_WIDTH + x : `${x},${y}`;
@@ -211,4 +211,32 @@ export function survivalCellCoordinates(id: number | string): [number, number] {
   }
   const index = Number(id);
   return [index % SURVIVAL_WIDTH, Math.floor(index / SURVIVAL_WIDTH)];
+}
+
+// Rows run from cold to warm and columns from dry to wet. The middle
+// rows separate tundra and ash. At altitude the rock belt cuts across rows.
+const CLIMATE_BIOMES = [
+  [4, 4, 5, 5],
+  [0, 1, 5, 2],
+  [0, 0, 7, 2],
+  [6, 0, 1, 8],
+] as const;
+
+export function climateBiome(
+  elevation: number,
+  temperature: number,
+  moisture: number,
+): number {
+  if (elevation > 0.75) return 3;
+  const row =
+    temperature < 0.31
+      ? 0
+      : temperature < 0.46
+        ? 1
+        : temperature < 0.66
+          ? 2
+          : 3;
+  const col =
+    moisture < 0.35 ? 0 : moisture < 0.54 ? 1 : moisture < 0.69 ? 2 : 3;
+  return CLIMATE_BIOMES[row][col];
 }

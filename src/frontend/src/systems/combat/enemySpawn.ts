@@ -1,6 +1,7 @@
 import { EVT, makeEvent } from "@/core/events";
 import type { EnemyState, GameEvent, RunState, Systems } from "@/core/types";
 import { rules } from "../runtimeRules";
+import { spawnPoint } from "./spawnPopulation";
 
 function createEnemy(
   id: string,
@@ -27,6 +28,7 @@ function createEnemy(
     dirY: 1,
     moveIndex: 0,
     hitDone: false,
+    persistent: true,
     nightRound,
   };
 }
@@ -103,19 +105,21 @@ export function spawnNightRaid(
     const suffix = wave || i >= slots.length ? `_w${wave}_${i}` : "";
     const id = `night${round}_${s.spawnId}${suffix}`;
     if (!point || !def || state.enemiesById[id]) continue;
+    const at = spawnPoint(state, sys, def.id, point, Boolean(def.phases));
+    if (!at) continue;
     state.enemiesById[id] = createEnemy(
       id,
       s.enemyId,
       s.spawnId,
-      point.x,
-      point.y,
+      at.x,
+      at.y,
       def.maxHp,
       round,
     );
     state.enemiesById[id].phase = "chase";
     raid.spawnedIds.push(id);
     events.push(
-      makeEvent(EVT.enemySpawned, point.x, point.y, {
+      makeEvent(EVT.enemySpawned, at.x, at.y, {
         id,
         enemyId: s.enemyId,
         night: round,
@@ -133,7 +137,14 @@ export function trimNightRaid(state: RunState, sys: Systems): void {
   const { x, y } = state.hero;
   const distance = (e: EnemyState) => Math.hypot(e.x - x, e.y - y);
   const raiders = Object.values(state.enemiesById)
-    .filter((e) => e.nightRound === state.day)
+    .filter(
+      (e) =>
+        !e.persistent &&
+        !e.playerInteracted &&
+        !e.taskLocked &&
+        !e.boss &&
+        e.nightRound === state.day,
+    )
     .sort((a, b) => distance(b) - distance(a));
   for (const e of raiders.slice(0, excess)) delete state.enemiesById[e.id];
 }

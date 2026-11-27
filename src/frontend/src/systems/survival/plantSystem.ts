@@ -1,10 +1,12 @@
+import type { Plant, PlantDef, PlantRegistry } from "./plantRegistry";
 import {
   createPlantRegistry,
   getFertilizerDef,
   getPlantDef,
   spawnPlant,
   tileKey,
-} from "./plantRegistry.js";
+} from "./plantRegistry";
+import type { getWeatherModifiers } from "./weatherSystem";
 
 export {
   ALL_PLANT_DEFS,
@@ -16,9 +18,9 @@ export {
   plantFromSeed,
   spawnPlant,
   tileKey,
-} from "./plantRegistry.js";
+} from "./plantRegistry";
 
-export function waterPlantAt(registry, tx, ty) {
+export function waterPlantAt(registry: PlantRegistry, tx: number, ty: number) {
   const plant = registry.get(tileKey(tx, ty));
   if (!plant || plant.stump || plant.stage === 2 || plant.wateredSec >= 30)
     return false;
@@ -26,7 +28,11 @@ export function waterPlantAt(registry, tx, ty) {
   return true;
 }
 
-function advanceStages(plant, def, canMature = undefined) {
+function advanceStages(
+  plant: Plant,
+  def: PlantDef,
+  canMature?: (plant: Plant) => boolean,
+) {
   while (plant.stage < 2 && plant.growthSec >= def.stageSec[plant.stage]) {
     const duration = def.stageSec[plant.stage];
     if (plant.stage === 1 && def.solid && canMature?.(plant) === false) {
@@ -42,11 +48,16 @@ function advanceStages(plant, def, canMature = undefined) {
   }
 }
 
-export function fertilizePlantAt(registry, tx, ty, itemId) {
+export function fertilizePlantAt(
+  registry: PlantRegistry,
+  tx: number,
+  ty: number,
+  itemId: string,
+) {
   const plant = registry.get(tileKey(tx, ty));
   const fertilizer = getFertilizerDef(itemId);
   if (!plant || plant.stump || plant.stage === 2 || !fertilizer) return null;
-  const def = getPlantDef(plant.plantId);
+  const def = getPlantDef(plant.plantId)!;
   plant.growthSec = fertilizer.advanceFullStage
     ? def.stageSec[plant.stage]
     : plant.growthSec + fertilizer.instantGrowthSec;
@@ -57,7 +68,11 @@ export function fertilizePlantAt(registry, tx, ty, itemId) {
   return plant;
 }
 
-function rollDrops(entries, rng, drops = {}) {
+function rollDrops(
+  entries: PlantDef["drops"],
+  rng: () => number,
+  drops: Record<string, number> = {},
+) {
   for (const { itemId, min, max, probability } of entries) {
     if (probability < 1 && rng() >= probability) continue;
     const count = min === max ? min : min + Math.floor(rng() * (max - min + 1));
@@ -66,16 +81,21 @@ function rollDrops(entries, rng, drops = {}) {
   return drops;
 }
 
-export function chopPlantAt(registry, tx, ty, rng = Math.random) {
+export function chopPlantAt(
+  registry: PlantRegistry,
+  tx: number,
+  ty: number,
+  rng = Math.random,
+) {
   const key = tileKey(tx, ty);
   const plant = registry.get(key);
   if (!plant) return null;
-  const def = getPlantDef(plant.plantId);
+  const def = getPlantDef(plant.plantId)!;
   if (def.harvestMode === "gather_regrow" || plant.stage < 2) {
     const drops =
       def.harvestMode === "fell"
         ? { [def.seedItemId]: 1 }
-        : rollDrops(def.digDrops, rng);
+        : rollDrops(def.digDrops ?? [], rng);
     if (plant.stage === 2) rollDrops(def.drops, rng, drops);
     registry.delete(key);
     return { plant, action: "removed", drops };
@@ -86,18 +106,27 @@ export function chopPlantAt(registry, tx, ty, rng = Math.random) {
   if (plant.hp > 0) return { plant, action: "hit", drops: {} };
   if (plant.stump) {
     registry.delete(key);
-    return { plant, action: "removed", drops: rollDrops(def.stumpDrops, rng) };
+    return {
+      plant,
+      action: "removed",
+      drops: rollDrops(def.stumpDrops ?? [], rng),
+    };
   }
 
   plant.stump = true;
-  plant.hp = def.stumpHp;
+  plant.hp = def.stumpHp!;
   return { plant, action: "felled", drops: rollDrops(def.drops, rng) };
 }
 
-export function harvestPlantAt(registry, tx, ty, rng = Math.random) {
+export function harvestPlantAt(
+  registry: PlantRegistry,
+  tx: number,
+  ty: number,
+  rng = Math.random,
+) {
   const plant = registry.get(tileKey(tx, ty));
   if (!plant || plant.stage !== 2 || plant.stump) return null;
-  const def = getPlantDef(plant.plantId);
+  const def = getPlantDef(plant.plantId)!;
   if (def.harvestMode !== "gather_regrow") return null;
   plant.stage = 0;
   plant.growthSec = 0;
@@ -105,15 +134,21 @@ export function harvestPlantAt(registry, tx, ty, rng = Math.random) {
   return { plant, action: "gathered", drops: rollDrops(def.drops, rng) };
 }
 
-export function isPlantSolidAt(registry, tx, ty) {
+export function isPlantSolidAt(
+  registry: PlantRegistry,
+  tx: number,
+  ty: number,
+) {
   const plant = registry.get(tileKey(tx, ty));
-  return plant?.stage === 2 && !plant.stump && getPlantDef(plant.plantId).solid;
+  return (
+    plant?.stage === 2 && !plant.stump && getPlantDef(plant.plantId)!.solid
+  );
 }
 
-export function* collectPlantLights(registry, tileSize) {
+export function* collectPlantLights(registry: PlantRegistry, tileSize: number) {
   for (const plant of registry.values()) {
     if (plant.stage !== 2 || plant.stump) continue;
-    const radius = getPlantDef(plant.plantId).lightRadiusPx;
+    const radius = getPlantDef(plant.plantId)!.lightRadiusPx;
     if (radius)
       yield {
         x: (plant.tx + 0.5) * tileSize,
@@ -124,7 +159,7 @@ export function* collectPlantLights(registry, tileSize) {
   }
 }
 
-function elapseBuffs(plant, dt) {
+function elapseBuffs(plant: Plant, dt: number) {
   plant.wateredSec = Math.max(0, plant.wateredSec - dt);
   plant.fertilizedSec = Math.max(0, plant.fertilizedSec - dt);
   plant.frostProofSec = Math.max(0, plant.frostProofSec - dt);
@@ -132,19 +167,19 @@ function elapseBuffs(plant, dt) {
 }
 
 export function tickPlants(
-  registry,
-  dt,
-  weatherMods,
-  heatSources,
-  tileSize,
-  canMature,
+  registry: PlantRegistry,
+  dt: number,
+  weatherMods: Partial<ReturnType<typeof getWeatherModifiers>>,
+  heatSources: readonly { x: number; y: number; radius: number }[],
+  tileSize: number,
+  canMature?: (plant: Plant) => boolean,
 ) {
   if (!Number.isFinite(dt) || dt <= 0) return;
   for (const plant of registry.values()) {
     plant.hitShakeSec = Math.max(0, plant.hitShakeSec - dt);
     let remaining = dt;
     if (!plant.stump && plant.stage < 2) {
-      const def = getPlantDef(plant.plantId);
+      const def = getPlantDef(plant.plantId)!;
       const x = (plant.tx + 0.5) * tileSize;
       const y = (plant.ty + 0.5) * tileSize;
       const warm = heatSources.some(
@@ -185,12 +220,12 @@ export function tickPlants(
   }
 }
 
-export function isPristineWildPlant(plant) {
+export function isPristineWildPlant(plant: Plant) {
   return (
     plant.wild &&
     !plant.stump &&
     plant.stage === 2 &&
-    plant.hp === getPlantDef(plant.plantId).chopHp &&
+    plant.hp === getPlantDef(plant.plantId)!.chopHp &&
     !plant.wateredSec &&
     !plant.fertilizedSec &&
     !plant.frostProofSec &&
@@ -198,7 +233,7 @@ export function isPristineWildPlant(plant) {
   );
 }
 
-export function serializePlants(registry) {
+export function serializePlants(registry: PlantRegistry) {
   return Array.from(registry.values(), (p) => [
     p.plantId,
     p.tx,
@@ -216,10 +251,12 @@ export function serializePlants(registry) {
   ]);
 }
 
-const nonnegative = (value, fallback = 0) =>
-  Number.isFinite(value) && value >= 0 ? value : fallback;
+const nonnegative = (value: unknown, fallback = 0) =>
+  typeof value === "number" && Number.isFinite(value) && value >= 0
+    ? value
+    : fallback;
 
-export function deserializePlants(raw) {
+export function deserializePlants(raw: unknown) {
   const registry = createPlantRegistry();
   if (!Array.isArray(raw)) return registry;
   for (const row of raw) {
@@ -239,14 +276,21 @@ export function deserializePlants(raw) {
       shake,
       wild,
     ] = row;
+    if (
+      typeof id !== "string" ||
+      typeof tx !== "number" ||
+      typeof ty !== "number" ||
+      typeof stage !== "number"
+    )
+      continue;
     const plant = spawnPlant(registry, id, tx, ty, {
       stage,
       wild: wild === true,
     });
     if (!plant) continue;
-    const def = getPlantDef(id);
+    const def = getPlantDef(id)!;
     plant.stump = stump === true && def.harvestMode === "fell" && stage === 2;
-    const maxHp = plant.stump ? def.stumpHp : def.chopHp;
+    const maxHp = plant.stump ? def.stumpHp! : def.chopHp;
     plant.hp = Math.max(1, Math.min(maxHp, nonnegative(hp, maxHp)));
     plant.growthSec =
       stage < 2 ? Math.min(def.stageSec[stage], nonnegative(growth)) : 0;

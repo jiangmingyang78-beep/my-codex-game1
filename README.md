@@ -43,3 +43,38 @@ pnpm build
 ```
 
 The production build is written to `src/frontend/dist/`.
+
+## 生存模式与数据校验
+
+`src/frontend/survival.html` 是标题页和暂停菜单使用的生存模式入口，随 Vite 构建独立输出。它的库存目录和配方分别位于 `src/frontend/src/data/survivalCatalog.json` 和 `survivalRecipes.json`。冒险物品与生存库存各用自己的 ID（例如营地工程使用生存库存中的 `wheat`）。
+
+游戏启动时先检查 JSON 字段，再按 ID 建立索引，最后验证引用、数量与掉落规则。配置错误会显示文件名及字段路径，例如 `regions.json.regions[0].residentSpawns[0].enemyId`。所有怪物和遭遇奖励都在 `enemies.json`。地图控制台仍可通过原有两个文档名分别编辑怪物。
+
+生存数值默认值位于 `src/frontend/src/data/balance.json` 的 `survival` 段。编辑 `src/frontend/public/survival-balance.json` 后刷新生存页即可生效。文件可只填写要覆盖的字段。请求失败、JSON 损坏或任一字段非法时，整份覆写回退到默认值。运行 `node tools/balance-report.mjs --summary` 可查看有效昼夜时长、饥饿速率、资源刷新周期和刷怪数值。
+
+| 覆写字段 | 生存规则 |
+|---|---|
+| `dayDurationMultiplier`、`nightDurationMultiplier` | 分别调整默认 120 秒白昼和 72 秒夜晚 |
+| `fuelConsumptionMultiplier` | 营火配方的耗煤倍率，按整份配方向上取整 |
+| `coldHungerPerSecond` | 暴雪中处于热源外时每秒额外消耗的饱食点数。默认 0 |
+| `hungerRateMultiplier` | 持续饥饿流失倍率。默认静止每秒 0.30 点、移动每秒 0.42 点 |
+| `spawnFrequency`、`spawnDensity` | 分别调整夜袭波次和每波基础敌人数 |
+| `resourceDensity`、`resourceRefreshMultiplier` | 分别调整资源格生成密度和野生资源再生速率 |
+| `startingSupplyMultiplier` | 新世界初始库存倍率 |
+
+字段类型和取值范围见 `src/frontend/public/survival-balance.schema.json`。倍率默认 1，昼夜时长和资源再生速率倍率必须大于 0。
+
+### 光照与刷怪
+
+冒险夜袭、永恒战斗和独立生存页共用双环选点规则。配置位于 `balance.json` 的 `survival` 段。独立生存页也读取 `public/survival-balance.json`，允许仅覆写一个分类上限。
+
+| 配置 | 默认值 | 含义 |
+| --- | --- | --- |
+| minSpawnRadius | 15 格 | 实际近环至少比当前视口半对角线多一格 |
+| maxSpawnRadius | 22 格 | 候选点距玩家的最远距离 |
+| despawnRadius | 30 格 | 每游戏秒回收超距普通敌人 |
+| categoryCap | hostile 12、elite 4、neutral 12 | 普通敌对、精英和野生中立动物各自的数量上限，0 表示停止生成该类 |
+
+半径必须满足近环 < 外环 < 回收距离。普通夜怪需要天空光 ≤ 7、方块光 ≤ 2，煤影与暗影猞猁需要天空光 ≤ 7、方块光为 0。无合法位置时本次生成跳过。冒险剧情常驻敌人按原图预置，固定夜袭优先尝试原入口。永恒模式开战后进入夜间，选点失败会保留刷怪预算。
+
+开发版进入游戏后打开 DEV，勾选「显示安全光区与刷怪环」。小图中金色为普通夜怪安全区，暗紫色为仅能阻止暗影怪的微光，青色与橙色分别为近环和外环，白框为实际视口。

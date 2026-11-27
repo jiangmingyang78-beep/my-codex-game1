@@ -1,6 +1,9 @@
+import type { EnemyAttack } from "@/core/dataTypes";
 import { EVT, makeEvent } from "@/core/events";
+import type { EnemyState, GameEvent, RunState, Systems } from "@/core/types";
 import { getAdventureSpecial } from "@/entities/adventureSpecialEnemies";
-import { enemySeeds } from "@/entities/enemySeeds.js";
+import type { Point } from "@/entities/enemySeeds";
+import { enemySeeds } from "@/entities/enemySeeds";
 import { applyEnemyHit, tickEnemyImpact } from "@/shared/monsterCatalog.js";
 import { ENEMY_RADIUS, inCone } from "./combat/combatMath";
 import { updateLegacyEnemy, updateProjectiles } from "./combat/enemyAi";
@@ -12,7 +15,7 @@ import { blockedAt, moveWithCollision } from "./world/collision";
 export {
   validateEnemyDrops,
   validateEnemySeeds,
-} from "./combat/enemyValidation.js";
+} from "./combat/enemyValidation";
 export {
   spawnResidents,
   spawnNightRaid,
@@ -20,7 +23,13 @@ export {
 } from "./combat/enemySpawn";
 
 const scratch = { x: 0, y: 0 };
-function moveBy(state, sys, enemy, dx, dy) {
+function moveBy(
+  state: RunState,
+  sys: Systems,
+  enemy: EnemyState,
+  dx: number,
+  dy: number,
+) {
   moveWithCollision(
     sys.world,
     state.changesByObjectId,
@@ -35,7 +44,14 @@ function moveBy(state, sys, enemy, dx, dy) {
   enemy.y = scratch.y;
 }
 
-function clearPath(state, sys, ax, ay, bx, by) {
+function clearPath(
+  state: RunState,
+  sys: Systems,
+  ax: number,
+  ay: number,
+  bx: number,
+  by: number,
+) {
   const length = Math.hypot(bx - ax, by - ay);
   const samples = Math.ceil(length / (sys.data.tileSize / 2));
   for (let i = 1; i <= samples; i++) {
@@ -54,7 +70,15 @@ function clearPath(state, sys, ax, ay, bx, by) {
   return true;
 }
 
-function spawnThreat(state, sys, events, enemy, aim, attack, damage) {
+function spawnThreat(
+  state: RunState,
+  sys: Systems,
+  events: GameEvent[],
+  enemy: EnemyState,
+  aim: Point,
+  attack: EnemyAttack,
+  damage: number,
+) {
   if (attack.mode === "aoe") {
     const radius = (attack.radiusTiles ?? 1.2) * sys.data.tileSize;
     events.push(
@@ -91,7 +115,13 @@ function spawnThreat(state, sys, events, enemy, aim, attack, damage) {
   });
 }
 
-export function hitEnemy(state, sys, enemy, damage, events) {
+export function hitEnemy(
+  state: RunState,
+  sys: Systems,
+  enemy: EnemyState,
+  damage: number,
+  events: GameEvent[],
+) {
   const config = sys.data.enemies.get(enemy.enemyId);
   if (!config || state.enemiesById[enemy.id] !== enemy) return;
   const special = getAdventureSpecial(enemy.enemyId, config.specialKey);
@@ -112,6 +142,7 @@ export function hitEnemy(state, sys, enemy, damage, events) {
     if (decision?.blocked) return;
     if (typeof decision?.damage === "number") finalDamage = decision.damage;
   }
+  enemy.playerInteracted = true;
   applyEnemyHit(enemy, finalDamage, state.hero, {
     config,
     emitEvent: (type, x, y, payload) =>
@@ -131,10 +162,16 @@ export function hitEnemy(state, sys, enemy, damage, events) {
   });
 }
 
-export function updateEnemies(state, sys, dt, events) {
+export function updateEnemies(
+  state: RunState,
+  sys: Systems,
+  dt: number,
+  events: GameEvent[],
+) {
   const tileSize = sys.data.tileSize;
   const hero = state.hero;
-  const move = (enemy, dx, dy) => moveBy(state, sys, enemy, dx, dy);
+  const move = (enemy: EnemyState, dx: number, dy: number) =>
+    moveBy(state, sys, enemy, dx, dy);
   for (const enemy of Object.values(state.enemiesById)) {
     const config = sys.data.enemies.get(enemy.enemyId);
     if (!config) continue;
@@ -195,7 +232,7 @@ export function updateEnemies(state, sys, dt, events) {
         source,
         reach = ENEMY_RADIUS + HERO_RADIUS + 3,
         damage = config.attackDamage,
-        coneDeg = undefined,
+        coneDeg?: number,
       ) =>
         (coneDeg
           ? inCone(

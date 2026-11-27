@@ -1,18 +1,31 @@
+import type { EnemyDef } from "@/core/dataTypes";
+import type { EnemyState, RunState, Systems } from "@/core/types";
 import { RENDER_DEPTH, entityDepthAt } from "@/game/renderDepth";
 import { ENEMY_RADIUS } from "@/systems/combat/combatMath";
+import type Phaser from "phaser";
 import { getAdventureSpecial } from "./adventureSpecialEnemies";
 
 /** Phaser view and body. The rules layer owns position and tile collision. */
 export class EnemyEntity {
-  constructor(scene, key, origin, shadowKey, definition) {
-    this.definition = definition;
+  readonly sprite: Phaser.GameObjects.Sprite;
+  readonly shadow: Phaser.GameObjects.Image;
+  readonly telegraph: Phaser.GameObjects.Graphics;
+  readonly body: Phaser.Physics.Arcade.Body;
+
+  constructor(
+    scene: Phaser.Scene,
+    key: string,
+    origin: { x: number; y: number },
+    shadowKey: string,
+    readonly definition?: EnemyDef,
+  ) {
     this.sprite = scene.add.sprite(0, 0, key).setOrigin(origin.x, origin.y);
     this.shadow = scene.add.image(0, 0, shadowKey).setOrigin(0.5);
     this.telegraph = scene.add
       .graphics()
       .setDepth(RENDER_DEPTH.legacyTelegraph);
     scene.physics.add.existing(this.sprite);
-    this.body = this.sprite.body;
+    this.body = this.sprite.body as Phaser.Physics.Arcade.Body;
     this.body.moves = false;
     this.body.setCircle(
       ENEMY_RADIUS,
@@ -21,7 +34,7 @@ export class EnemyEntity {
     );
   }
 
-  sync(enemy, tileSize, state, sys) {
+  sync(enemy: EnemyState, tileSize: number, state: RunState, sys: Systems) {
     const { x, y } = enemy;
     const depth = entityDepthAt(y, sys.world.heightTiles * tileSize);
     this.sprite
@@ -34,7 +47,8 @@ export class EnemyEntity {
     this.body.updateFromGameObject();
     this.sprite.clearTint().setAlpha(1);
     this.telegraph.clear();
-    if (enemy.hurtTimer > 0) this.sprite.setTintFill(0xffffff).setAlpha(0.65);
+    if ((enemy.hurtTimer ?? 0) > 0)
+      this.sprite.setTintFill(0xffffff).setAlpha(0.65);
     else if (enemy.phase === "windup") this.sprite.setTint(0xff9a8a);
     const special = getAdventureSpecial(
       enemy.enemyId,

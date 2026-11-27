@@ -3,7 +3,7 @@ import { afterEach, describe } from "node:test";
 import { step } from "@/core/run";
 import { loadRun, saveRun } from "@/core/save";
 import type { EnemyState, RunState } from "@/core/types";
-import { updateEnemies } from "@/systems/EnemyManager.js";
+import { updateEnemies } from "@/systems/EnemyManager";
 import { getDashCooldownState, moveHero } from "@/systems/movement";
 import { rules } from "@/systems/runtimeRules";
 import { recordHarvest, renewAtDawn, renewTimed } from "@/systems/world/dawn";

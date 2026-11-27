@@ -1,3 +1,6 @@
+import {dataFiles} from "@/core/gameData";
+import {validateGameData} from "@/core/dataValidator";
+import tuningSchema from "../../../src/frontend/public/survival-balance.schema.json";
 import items from "@/data/items.json";
 import type { MapSnapshot } from "../types";
 import { type Draft, type FileKey, type Issue, type Path, files, isRecord, safeKey, valueAt } from "./documents";
@@ -60,6 +63,8 @@ export function validateDraft(draft: Draft, baseline: Draft, map: MapSnapshot): 
           ),
         );
       } else if (typeof v === "number" && typeof base === "number") {
+        if (file === "survival-balance.json" && "exclusiveMinimum" in (tuningSchema.properties[key as keyof typeof tuningSchema.properties] ?? {}) && v <= 0) bad("倍率必须大于零");
+        if(parent==="categoryCap" && !Number.isSafeInteger(v))bad("数量上限须为非负整数");
         if (!Number.isFinite(v)) bad("必须为有限数值");
         const signed = key.endsWith("Delta") || key === "pushDirX" || key === "pushDirY";
         if (!signed && v < 0) bad("数值不能为负");
@@ -90,9 +95,17 @@ export function validateDraft(draft: Draft, baseline: Draft, map: MapSnapshot): 
     }
     if (file === "encounters.json") {
       const template = { ...scenarioDefaults, weights: Object.fromEntries([...regions].map((id) => [id, 1])) };
-      walk(doc, template, []);
+      const { setPieces, ...rules } = draft[file];
+      if(setPieces!==undefined) {
+        try {validateGameData({...dataFiles,encounters:doc});}
+        catch(error){fail(file,["setPieces"],String(error));}
+      }
+      walk(rules, template, []);
     } else walk(doc, file === "survival-balance.json" ? survivalDefaults : baseline[file], []);
   }
+  const ring={...survivalDefaults,...draft["survival-balance.json"]};
+  if(!(ring.minSpawnRadius<ring.maxSpawnRadius && ring.maxSpawnRadius<ring.despawnRadius))
+    fail("survival-balance.json",["maxSpawnRadius"],"须满足近环 < 外环 < 回收距离");
   const hp = valueAt(draft["balance.json"], ["stats", "hp", "max"]);
   const heroes = valueAt(draft["heroes.json"], ["heroes"]);
   if (typeof hp === "number" && Array.isArray(heroes))

@@ -1,0 +1,88 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "生存模式运行时覆写",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "dayDurationMultiplier": {
+      "type": "number",
+      "exclusiveMinimum": 0,
+      "description": "白天阶段时长倍率"
+    },
+    "nightDurationMultiplier": {
+      "type": "number",
+      "exclusiveMinimum": 0,
+      "description": "夜间阶段时长倍率"
+    },
+    "fuelConsumptionMultiplier": {
+      "type": "number",
+      "minimum": 0,
+      "description": "营火制作消耗煤炭的倍率，数量向上取整"
+    },
+    "coldHungerPerSecond": {
+      "type": "number",
+      "minimum": 0,
+      "description": "暴雪中远离热源时每秒额外消耗的饱食点数，0 保留原有饥饿规则"
+    },
+    "hungerRateMultiplier": {
+      "type": "number",
+      "minimum": 0,
+      "description": "持续饥饿流失速率倍率"
+    },
+    "spawnDensity": {
+      "type": "number",
+      "minimum": 0,
+      "description": "夜袭每波敌人数量倍率"
+    },
+    "resourceRefreshMultiplier": {
+      "type": "number",
+      "exclusiveMinimum": 0,
+      "description": "野生资源再生速率倍率"
+    },
+    "resourceDensity": {
+      "type": "number",
+      "minimum": 0,
+      "description": "世界初始资源密度倍率"
+    },
+    "spawnFrequency": {
+      "type": "number",
+      "minimum": 0,
+      "description": "夜袭波次频率倍率"
+    },
+    "startingSupplyMultiplier": {
+      "type": "number",
+      "minimum": 0,
+      "description": "初始库存数量倍率"
+    },
+    "minSpawnRadius": {
+      "type": "number",
+      "exclusiveMinimum": 0
+    },
+    "maxSpawnRadius": {
+      "type": "number",
+      "exclusiveMinimum": 0
+    },
+    "despawnRadius": {
+      "type": "number",
+      "exclusiveMinimum": 0
+    },
+    "categoryCap": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "hostile": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "elite": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "neutral": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    }
+  }
+}

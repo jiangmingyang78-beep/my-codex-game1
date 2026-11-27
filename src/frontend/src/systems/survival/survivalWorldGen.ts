@@ -1,6 +1,6 @@
-import { resourceRoll } from "../survivalTuning";
+import type { TileMeta } from "../world/worldTypes";
 import {
-  COAL_VEIN,
+  CHUNK_SIZE,
   INITIAL_CLASSIC_ROCKS,
   INITIAL_CLASSIC_TREES,
   SURVIVAL_BIOMES,
@@ -8,11 +8,20 @@ import {
   SURVIVAL_HEIGHT,
   SURVIVAL_WIDTH,
   type SurvivalBiome,
-  originalPlayableCell,
+  inOriginalMap,
   solidSurvivalTerrain,
   survivalCellKey,
 } from "./survivalBiomes";
-import { seededValue, terrainNoise } from "./survivalNoise";
+import { chunkCellIndex } from "./survivalNoise";
+import {
+  MICROCLIMATES,
+  biomePass,
+  encounterPlan,
+  featurePass,
+  landmarkPass,
+  spawnAnchorPass,
+  terrainPass,
+} from "./survivalPasses";
 
 export interface SurvivalSite {
   x: number;
@@ -26,8 +35,6 @@ export interface GeneratedSurvivalTerrain {
   trail: Set<number | string>;
   sites: SurvivalSite[];
 }
-
-const lerp = (a: number, b: number, t: number): number => a + (b - a) * t;
 
 export function fillTileRect(
   grid: number[][],
@@ -104,124 +111,6 @@ export function carveCampPassages(
   }
 }
 
-export function generateSurvivalTerrain(
-  seed: number,
-  resourceDensity = 1,
-): GeneratedSurvivalTerrain {
-  const types = [0, 1, 2, 3, 4];
-  for (let i = types.length - 1; i > 0; i--) {
-    const j = Math.floor(seededValue(seed, i, 0, 1) * (i + 1));
-    [types[i], types[j]] = [types[j], types[i]];
-  }
-  const sites: SurvivalSite[] = [
-    [9, 6],
-    [26, 7],
-    [41, 7],
-    [11, 26],
-    [35, 24],
-  ].map(([x, y], i) => ({
-    x: x + Math.floor(seededValue(seed, x, y, 2) * 7) - 3,
-    y: y + Math.floor(seededValue(seed, x, y, 3) * 5) - 2,
-    type: types[i],
-  }));
-  const regions = Array.from({ length: SURVIVAL_HEIGHT }, () =>
-    Array<number>(SURVIVAL_WIDTH).fill(0),
-  );
-  const tiles = regions.map((row, y) =>
-    Array.from(row, (_, x) => {
-      const wx = x + (terrainNoise(seed, x / 6, y / 6, 4) - 0.5) * 12;
-      const wy = y + (terrainNoise(seed, x / 6, y / 6, 5) - 0.5) * 12;
-      const site = sites.reduce((best, n) =>
-        Math.hypot(wx - n.x, wy - n.y) < Math.hypot(wx - best.x, wy - best.y)
-          ? n
-          : best,
-      );
-      const biome = SURVIVAL_BIOMES[site.type];
-      regions[y][x] = site.type;
-      if (
-        !originalPlayableCell(x, y) ||
-        terrainNoise(seed, x / 5, y / 5, 6) < biome.lake
-      )
-        return 5;
-      const placement = resourceRoll(
-        seededValue(seed, x, y, 7),
-        resourceDensity,
-      );
-      if (site.type === 3 && placement < 0.13) return COAL_VEIN;
-      if (placement < biome.rock) return 6;
-      return placement < biome.rock + biome.tree ? 0 : biome.floor;
-    }),
-  );
-
-  const trail = new Set<number | string>();
-  const carve = (x: number, y: number) => {
-    tiles[y][x] = SURVIVAL_BIOMES[regions[y][x]].floor;
-    trail.add(survivalCellKey(x, y));
-  };
-  for (const site of sites) {
-    const steps = Math.max(Math.abs(site.x - 6), Math.abs(site.y - 16));
-    let oldX = 6;
-    let oldY = 16;
-    carve(oldX, oldY);
-    for (let i = 0; i <= steps; i++) {
-      const t = i / steps;
-      const x = Math.round(lerp(6, site.x, t));
-      const y = Math.round(lerp(16, site.y, t) + Math.sin(t * Math.PI) * 2);
-      while (oldY !== y) {
-        oldY += Math.sign(y - oldY);
-        carve(oldX, oldY);
-      }
-      while (oldX !== x) {
-        oldX += Math.sign(x - oldX);
-        carve(oldX, oldY);
-      }
-    }
-  }
-  for (let y = 12; y <= 22; y++) {
-    for (let x = 2; x <= 16; x++) {
-      tiles[y][x] = 1;
-      regions[y][x] = 0;
-    }
-  }
-  const supplies: [number, number][] = [
-    [3, 13],
-    [4, 14],
-    [5, 12],
-    [8, 13],
-    [3, 19],
-    [5, 20],
-    [7, 19],
-    [8, 17],
-  ];
-  supplies.sort(
-    ([x, y], [a, b]) =>
-      Number(trail.has(survivalCellKey(x, y))) -
-        Number(trail.has(survivalCellKey(a, b))) ||
-      seededValue(seed, x, y, 8) - seededValue(seed, a, b, 8),
-  );
-  supplies.slice(0, 4).forEach(([x, y], i) => {
-    tiles[y][x] = i < 2 ? 0 : 6;
-  });
-  const coal = sites.find((site) => site.type === 3);
-  if (coal) {
-    const coalCell = [
-      [1, 0],
-      [-1, 0],
-      [0, 1],
-      [0, -1],
-    ]
-      .map(([dx, dy]) => ({ x: coal.x + dx, y: coal.y + dy }))
-      .find(
-        ({ x, y }) =>
-          !trail.has(survivalCellKey(x, y)) &&
-          !(y >= 12 && y <= 22 && x >= 2 && x <= 16) &&
-          originalPlayableCell(x, y),
-      );
-    if (coalCell) tiles[coalCell.y][coalCell.x] = COAL_VEIN;
-  }
-  return { tiles, regions, trail, sites };
-}
-
 export function resolveEcologyBiome(
   x: number,
   y: number,
@@ -231,4 +120,108 @@ export function resolveEcologyBiome(
   if (y < 12) return SURVIVAL_BIOMES[x > 17 ? 3 : 1];
   if (y >= 23) return SURVIVAL_BIOMES[x <= 22 ? 2 : 4];
   return SURVIVAL_BIOMES[0];
+}
+
+export {
+  terrainPass,
+  biomePass,
+  landmarkPass,
+  featurePass,
+  spawnAnchorPass,
+} from "./survivalPasses";
+
+export function generateChunk(
+  seed: number,
+  cx: number,
+  cy: number,
+  density = 1,
+  encounters = encounterPlan(seed),
+) {
+  const terrain = terrainPass(seed, cx, cy);
+  const biomes = biomePass(terrain);
+  const landmarks = landmarkPass(biomes, encounters);
+  const features = featurePass(landmarks, density);
+  return spawnAnchorPass(features);
+}
+
+export function createSurvivalWorld(
+  seed: number,
+  density = 1,
+  enableEncounters = true,
+) {
+  const encounters = enableEncounters ? encounterPlan(seed) : [];
+  const cache = new Map<string, ReturnType<typeof generateChunk>>();
+  function getChunk(cx: number, cy: number) {
+    const key = `${cx},${cy}`;
+    let chunk = cache.get(key);
+    if (!chunk) {
+      chunk = generateChunk(seed, cx, cy, density, encounters);
+      const first = cache.keys().next();
+      if (cache.size >= 64 && !first.done) cache.delete(first.value);
+      cache.set(key, chunk);
+    }
+    return chunk;
+  }
+  function getTileMeta(x: number, y: number) {
+    const chunk = getChunk(
+      Math.floor(x / CHUNK_SIZE),
+      Math.floor(y / CHUNK_SIZE),
+    );
+    const i = chunkCellIndex(chunk, x, y);
+    const tile = chunk.terrain[i];
+    const biomeId = chunk.regions[i];
+    const snowDepth = chunk.snow[i] / 255;
+    let material: TileMeta["material"];
+    if (tile === 5) material = "water";
+    else if (tile === 9) material = "cliff";
+    else if (tile === 2) material = "trail";
+    else if (tile === 7) material = "rubble";
+    else if (snowDepth >= 0.18) material = "snow";
+    else if (biomeId === 6) material = "ash";
+    else if (biomeId === 3) material = "stone";
+    else if (biomeId === 2 || biomeId === 8) material = "mud";
+    else material = "grass";
+    const walkSpeedMultiplier =
+      (material === "mud" ? 0.88 : material === "rubble" ? 0.94 : 1) *
+      (1 - 0.3 * snowDepth);
+    return {
+      tile,
+      biomeId,
+      material,
+      snowDepth,
+      walkSpeedMultiplier,
+      microclimate: MICROCLIMATES[chunk.microclimate[i]],
+      feature: chunk.features[i],
+      reservation: chunk.reserved[i],
+    };
+  }
+  return { getChunk, getTileMeta, encounters };
+}
+
+// The Canvas page keeps its original mutable core grid for harvested tiles.
+// Both sides of that window now sample the same deterministic chunk source.
+export function generateSurvivalTerrain(
+  seed: number,
+  density = 1,
+  source = createSurvivalWorld(seed, density),
+): GeneratedSurvivalTerrain {
+  const trail = new Set<number | string>();
+  const sites: SurvivalSite[] = [];
+  const regions = Array.from({ length: SURVIVAL_HEIGHT }, () =>
+    Array<number>(SURVIVAL_WIDTH),
+  );
+  const tiles = regions.map((row, y) =>
+    Array.from({ length: SURVIVAL_WIDTH }, (_, x) => {
+      const meta = source.getTileMeta(x, y);
+      row[x] = meta.biomeId;
+      if (meta.reservation) trail.add(survivalCellKey(x, y));
+      return meta.tile;
+    }),
+  );
+  for (let cy = 0; cy < Math.ceil(SURVIVAL_HEIGHT / CHUNK_SIZE); cy++)
+    for (let cx = 0; cx < Math.ceil(SURVIVAL_WIDTH / CHUNK_SIZE); cx++) {
+      for (const { x, y } of source.getChunk(cx, cy).landmarks)
+        if (inOriginalMap(x, y)) sites.push({ x, y, type: regions[y][x] });
+    }
+  return { tiles, regions, trail, sites };
 }

@@ -23,12 +23,24 @@ export function configureCamera(
   const fit = (): void => {
     const { width, height } = scene.scale;
     cam.setSize(width, height);
-    cam.setZoom(zoomFor(width, height));
+    // Keep the entire arena from fitting on a wide display.
+    const arenaZoom =
+      world.textureKey === "world-ground-eternal"
+        ? Math.ceil(Math.hypot(width, height) / (24 * world.tileSize))
+        : 1;
+    const ringZoom = target
+      ? Math.ceil(
+          Math.hypot(width, height) /
+            (2 * sys.data.balance.survival.minSpawnRadius * world.tileSize),
+        )
+      : 1;
+    cam.setZoom(Math.max(arenaZoom, ringZoom, zoomFor(width, height)));
   };
   fit();
   if (target) cam.startFollow(target, true, 0.2, 0.2);
   scene.scale.on("resize", fit);
   return () => {
     scene.scale.off("resize", fit);
+    sys.spawnView = undefined;
   };
 }

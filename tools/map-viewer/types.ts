@@ -87,6 +87,8 @@ export interface MapSnapshot {
   solidMask: Uint8Array;
   palette: Record<number, TilePaletteEntry>;
   biomeIds?: Uint8Array;
+  featureIds?: Uint8Array;
+  featureStyles?: Record<number, { name: string; color: string }>;
   biomeNames?: readonly string[];
   biomeColors?: readonly string[];
   regions: MapRegion[];

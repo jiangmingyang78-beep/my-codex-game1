@@ -1,1 +1,486 @@
-{}
+{
+  "setPieces": [
+    {
+      "id": "frozen_lumber_camp",
+      "name": "冻僵的伐木营",
+      "allowedBiomes": [0, 1, 5],
+      "minDistanceFromCamp": 18,
+      "minSpacingSameId": 64,
+      "maxCountPerWorld": 3,
+      "weight": 4,
+      "footprint": {
+        "w": 7,
+        "h": 5
+      },
+      "tiles": ["1111111", "1331331", "1222221", "1331331", "1111111"],
+      "props": [
+        {
+          "x": 3,
+          "y": 2,
+          "kind": "logs",
+          "interactive": true
+        },
+        {
+          "x": 1,
+          "y": 1,
+          "kind": "logs",
+          "interactive": false
+        },
+        {
+          "x": 5,
+          "y": 3,
+          "kind": "logs",
+          "interactive": false
+        }
+      ],
+      "entities": [
+        {
+          "x": 1,
+          "y": 3,
+          "kind": "plant",
+          "ref": "frost_pine"
+        }
+      ],
+      "lootTable": [
+        {
+          "itemId": "wood",
+          "count": 2,
+          "probability": 1
+        },
+        {
+          "itemId": "pine_cone",
+          "count": 1,
+          "probability": 0.65
+        }
+      ],
+      "triggerEvent": {
+        "kind": "cache",
+        "message": "木楔松动，冻木下露出伐木人的冬储。"
+      },
+      "rotate": true,
+      "mirror": true,
+      "color": "#bb9165",
+      "icon": ["#####", "#...#", "#####", ".##..", "##..."]
+    },
+    {
+      "id": "cold_furnace",
+      "name": "熄灭的古炉坛",
+      "allowedBiomes": [3, 6, 0],
+      "minDistanceFromCamp": 30,
+      "minSpacingSameId": 64,
+      "maxCountPerWorld": 2,
+      "weight": 2,
+      "footprint": {
+        "w": 5,
+        "h": 5
+      },
+      "tiles": ["77377", "73337", "33233", "73337", "77377"],
+      "props": [
+        {
+          "x": 2,
+          "y": 2,
+          "kind": "furnace",
+          "interactive": true
+        },
+        {
+          "x": 1,
+          "y": 1,
+          "kind": "furnace",
+          "interactive": false
+        },
+        {
+          "x": 3,
+          "y": 3,
+          "kind": "furnace",
+          "interactive": false
+        }
+      ],
+      "entities": [],
+      "lootTable": [
+        {
+          "itemId": "ember_dust",
+          "count": 2,
+          "probability": 1
+        },
+        {
+          "itemId": "stone",
+          "count": 1,
+          "probability": 0.65
+        }
+      ],
+      "triggerEvent": {
+        "kind": "cache",
+        "message": "掀开封炉石，冷灰里还有一块温热的余烬。"
+      },
+      "rotate": true,
+      "mirror": true,
+      "color": "#ee9369",
+      "icon": ["..#..", ".###.", "#####", "#...#", "#####"]
+    },
+    {
+      "id": "snare_grove",
+      "name": "猎人捕兽夹林地",
+      "allowedBiomes": [1, 5, 7],
+      "minDistanceFromCamp": 25,
+      "minSpacingSameId": 64,
+      "maxCountPerWorld": 2,
+      "weight": 3,
+      "footprint": {
+        "w": 7,
+        "h": 5
+      },
+      "tiles": ["1121111", "1122111", "1112211", "1111221", "1111121"],
+      "props": [
+        {
+          "x": 3,
+          "y": 2,
+          "kind": "snare",
+          "interactive": true
+        },
+        {
+          "x": 1,
+          "y": 1,
+          "kind": "snare",
+          "interactive": false
+        },
+        {
+          "x": 5,
+          "y": 3,
+          "kind": "snare",
+          "interactive": false
+        }
+      ],
+      "entities": [
+        {
+          "x": 1,
+          "y": 3,
+          "kind": "plant",
+          "ref": "tundra_grass"
+        }
+      ],
+      "lootTable": [
+        {
+          "itemId": "fiber",
+          "count": 2,
+          "probability": 1
+        },
+        {
+          "itemId": "bandage",
+          "count": 1,
+          "probability": 0.65
+        }
+      ],
+      "triggerEvent": {
+        "kind": "trap",
+        "message": "枯叶下的兽夹突然合拢，旧猎袋从枝头跌落。"
+      },
+      "rotate": true,
+      "mirror": true,
+      "color": "#a9bc81",
+      "icon": ["#...#", ".#.#.", "..#..", ".#.#.", "#####"]
+    },
+    {
+      "id": "collapsed_kiln",
+      "name": "倒塌的炭窑",
+      "allowedBiomes": [3, 6, 1],
+      "minDistanceFromCamp": 32,
+      "minSpacingSameId": 64,
+      "maxCountPerWorld": 2,
+      "weight": 2,
+      "footprint": {
+        "w": 5,
+        "h": 5
+      },
+      "tiles": ["77737", "77333", "73333", "33377", "37777"],
+      "props": [
+        {
+          "x": 2,
+          "y": 2,
+          "kind": "kiln",
+          "interactive": true
+        },
+        {
+          "x": 1,
+          "y": 1,
+          "kind": "kiln",
+          "interactive": false
+        },
+        {
+          "x": 3,
+          "y": 3,
+          "kind": "kiln",
+          "interactive": false
+        }
+      ],
+      "entities": [],
+      "lootTable": [
+        {
+          "itemId": "resin",
+          "count": 2,
+          "probability": 1
+        },
+        {
+          "itemId": "wood",
+          "count": 1,
+          "probability": 0.65
+        }
+      ],
+      "triggerEvent": {
+        "kind": "cache",
+        "message": "松动的窑砖后藏着封存的树脂。"
+      },
+      "rotate": true,
+      "mirror": true,
+      "color": "#b78672",
+      "icon": [".###.", "#####", "##.##", "#...#", "##.##"]
+    },
+    {
+      "id": "ice_sled",
+      "name": "冰封物资雪橇",
+      "allowedBiomes": [4, 5, 0],
+      "minDistanceFromCamp": 20,
+      "minSpacingSameId": 64,
+      "maxCountPerWorld": 2,
+      "weight": 3,
+      "footprint": {
+        "w": 5,
+        "h": 5
+      },
+      "tiles": ["42424", "42424", "42224", "42424", "42424"],
+      "props": [
+        {
+          "x": 2,
+          "y": 2,
+          "kind": "sled",
+          "interactive": true
+        },
+        {
+          "x": 1,
+          "y": 1,
+          "kind": "sled",
+          "interactive": false
+        },
+        {
+          "x": 3,
+          "y": 3,
+          "kind": "sled",
+          "interactive": false
+        }
+      ],
+      "entities": [],
+      "lootTable": [
+        {
+          "itemId": "berry",
+          "count": 2,
+          "probability": 1
+        },
+        {
+          "itemId": "bandage",
+          "count": 1,
+          "probability": 0.65
+        }
+      ],
+      "triggerEvent": {
+        "kind": "cache",
+        "message": "割断结霜的捆绳，雪橇上还剩一袋补给。"
+      },
+      "rotate": true,
+      "mirror": true,
+      "color": "#97ccdf",
+      "icon": [".#.#.", "#####", "#...#", "#####", ".#.#."],
+      "ldtkLevelRef": "IceSled"
+    },
+    {
+      "id": "keeper_bivouac",
+      "name": "守火人遗骸营",
+      "allowedBiomes": [0, 4, 5],
+      "minDistanceFromCamp": 28,
+      "minSpacingSameId": 64,
+      "maxCountPerWorld": 2,
+      "weight": 2,
+      "footprint": {
+        "w": 5,
+        "h": 5
+      },
+      "tiles": ["41114", "12221", "12321", "12221", "41114"],
+      "props": [
+        {
+          "x": 2,
+          "y": 2,
+          "kind": "lantern",
+          "interactive": true
+        },
+        {
+          "x": 1,
+          "y": 1,
+          "kind": "lantern",
+          "interactive": false
+        },
+        {
+          "x": 3,
+          "y": 3,
+          "kind": "lantern",
+          "interactive": false
+        }
+      ],
+      "entities": [
+        {
+          "x": 1,
+          "y": 3,
+          "kind": "plant",
+          "ref": "frost_herb_cluster"
+        }
+      ],
+      "lootTable": [
+        {
+          "itemId": "bandage",
+          "count": 2,
+          "probability": 1
+        },
+        {
+          "itemId": "ember_dust",
+          "count": 1,
+          "probability": 0.65
+        }
+      ],
+      "triggerEvent": {
+        "kind": "cache",
+        "message": "灯罩下压着守火人的最后一卷药布。"
+      },
+      "rotate": true,
+      "mirror": true,
+      "color": "#ebc77c",
+      "icon": ["..#..", ".###.", ".#.#.", ".###.", "#####"]
+    },
+    {
+      "id": "shade_circle",
+      "name": "暗影侵蚀石阵",
+      "allowedBiomes": [8, 6, 2],
+      "minDistanceFromCamp": 42,
+      "minSpacingSameId": 64,
+      "maxCountPerWorld": 2,
+      "weight": 1,
+      "footprint": {
+        "w": 7,
+        "h": 5
+      },
+      "tiles": ["7337337", "3711173", "3122213", "3711173", "7337337"],
+      "props": [
+        {
+          "x": 3,
+          "y": 2,
+          "kind": "monolith",
+          "interactive": true
+        },
+        {
+          "x": 1,
+          "y": 1,
+          "kind": "monolith",
+          "interactive": false
+        },
+        {
+          "x": 5,
+          "y": 3,
+          "kind": "monolith",
+          "interactive": false
+        }
+      ],
+      "entities": [
+        {
+          "x": 1,
+          "y": 3,
+          "kind": "plant",
+          "ref": "glow_cap"
+        },
+        {
+          "x": 5,
+          "y": 1,
+          "kind": "enemy",
+          "ref": "shadow_lynx"
+        }
+      ],
+      "lootTable": [
+        {
+          "itemId": "spore_cap",
+          "count": 2,
+          "probability": 1
+        },
+        {
+          "itemId": "ember_dust",
+          "count": 1,
+          "probability": 0.65
+        }
+      ],
+      "triggerEvent": {
+        "kind": "ambush",
+        "message": "石阵的刻痕亮起，暗影猞猁从裂隙中跃出。"
+      },
+      "rotate": true,
+      "mirror": true,
+      "color": "#b59bdd",
+      "icon": ["..#..", ".###.", ".###.", "#####", "#...#"]
+    },
+    {
+      "id": "spring_ruins",
+      "name": "温泉残迹",
+      "allowedBiomes": [2, 7, 0],
+      "minDistanceFromCamp": 32,
+      "minSpacingSameId": 64,
+      "maxCountPerWorld": 2,
+      "weight": 2,
+      "footprint": {
+        "w": 5,
+        "h": 5
+      },
+      "tiles": ["53435", "34443", "44244", "34443", "53435"],
+      "props": [
+        {
+          "x": 2,
+          "y": 2,
+          "kind": "spring",
+          "interactive": true
+        },
+        {
+          "x": 1,
+          "y": 1,
+          "kind": "spring",
+          "interactive": false
+        },
+        {
+          "x": 3,
+          "y": 3,
+          "kind": "spring",
+          "interactive": false
+        }
+      ],
+      "entities": [
+        {
+          "x": 1,
+          "y": 3,
+          "kind": "plant",
+          "ref": "mire_reed"
+        }
+      ],
+      "lootTable": [
+        {
+          "itemId": "herb",
+          "count": 2,
+          "probability": 1
+        },
+        {
+          "itemId": "reed_root",
+          "count": 1,
+          "probability": 0.65
+        }
+      ],
+      "triggerEvent": {
+        "kind": "heal",
+        "message": "拨开池口的碎石，暖泉涌出，恢复两点生命。"
+      },
+      "rotate": true,
+      "mirror": true,
+      "color": "#83d6c5",
+      "icon": [".#.#.", "#.#..", ".....", ".###.", "#####"]
+    }
+  ]
+}

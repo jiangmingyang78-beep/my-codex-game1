@@ -1,3 +1,4 @@
+import { encounterById } from "@/systems/survival/encounterCatalog";
 import {
   type Landmark,
   landmarkEdge,
@@ -5,7 +6,11 @@ import {
 } from "@/systems/survival/landmarks";
 
 type Point = { x: number; y: number };
-type MapMark = Point & { kind: Landmark["kind"] | "camp" };
+type MapMark = Point &
+  (
+    | { kind: Landmark["kind"] | "camp" }
+    | { kind: "encounter"; templateId: string }
+  );
 const campMark = {
   color: "#ffe2a3",
   pixels: ["..#..", ".#.#.", ".###.", "#.#.#", "#####"],
@@ -21,7 +26,15 @@ export function drawSurvivalMapMark(
   const x = (mark.x - origin.x) * 3 + 1;
   const y = (mark.y - origin.y) * 3 + 1;
   const { width, height } = ctx.canvas;
-  const art = mark.kind === "camp" ? campMark : landmarkKinds[mark.kind];
+  const piece =
+    mark.kind === "encounter" ? encounterById.get(mark.templateId) : null;
+  const art =
+    mark.kind === "encounter"
+      ? piece && { pixels: piece.icon, color: piece.color }
+      : mark.kind === "camp"
+        ? campMark
+        : landmarkKinds[mark.kind];
+  if (!art) return;
   const edge = landmarkEdge(player, { x, y }, width, height, 7);
   if (edge) {
     if (!selected) return;

@@ -64,8 +64,11 @@ export function mapInteraction(s: Session) {
       id("statusCoords").textContent =
         "格 (" + tx + ", " + ty + ") · 像素 (" + (tx + 0.5) * m.tileSize + ", " + (ty + 0.5) * m.tileSize + ")";
       id("statusRegion").textContent =
+        (m.biomeIds && m.biomeNames?.[m.biomeIds[k]]) ??
         m.regions.find((r) => tx >= r.x && ty >= r.y && tx < r.x + r.w && ty < r.y + r.h)?.name ?? "界外";
-      id("statusTerrain").textContent = m.palette[m.tiles[k]]?.name ?? "—";
+      const terrain = m.palette[m.tiles[k]]?.name ?? "—";
+      const feature = m.featureIds && m.featureStyles?.[m.featureIds[k]];
+      id("statusTerrain").textContent = feature ? `${terrain} · ${feature.name}` : terrain;
       id("statusSolid").textContent = solid ? "阻挡" : "可通行";
       id("statusSolid").classList.toggle("danger", solid);
       id("statusItem").textContent = hit(tx, ty)?.label ?? "";

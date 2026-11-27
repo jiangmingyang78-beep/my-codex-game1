@@ -1,8 +1,10 @@
-import enemyData from "../data/enemies.json";
-import { applyEnemyHit, enemySeeds } from "../entities/enemySeeds.js";
+import { loadDataFiles } from "@/core/gameData";
+import { applyEnemyHit, enemySeeds } from "../entities/enemySeeds";
 import { ENEMY_TEXTURE_DEFS } from "../vfx/enemyTextures.js";
 
-export const ALL_SEED_ENEMIES = enemyData.enemies;
+export const ALL_SEED_ENEMIES = loadDataFiles().enemies.enemies.filter(
+  (def) => def.seedType,
+);
 export { ENEMY_TEXTURE_DEFS, applyEnemyHit };
 
 const enemyById = new Map(ALL_SEED_ENEMIES.map((def) => [def.id, def]));

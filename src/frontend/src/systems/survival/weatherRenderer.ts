@@ -1,3 +1,4 @@
+import type { getWeatherModifiers } from "./weatherSystem";
 const MAX_PARTICLES = 120;
 const REDUCED_PARTICLES = 30;
 
@@ -12,10 +13,10 @@ export function createWeatherRenderer() {
   let width = 0;
   let height = 0;
   let kind = "none";
-  let context = null;
-  let edgeFog = null;
+  let context: CanvasRenderingContext2D | null = null;
+  let edgeFog: CanvasGradient | null = null;
 
-  function reset(particle, spread) {
+  function reset(particle: (typeof pool)[number], spread: boolean) {
     particle.x = Math.random() * width;
     particle.y = spread ? Math.random() * height : -8;
     particle.speed = 0.55 + Math.random() * 0.9;
@@ -23,7 +24,11 @@ export function createWeatherRenderer() {
     particle.opacity = 0.35 + Math.random() * 0.6;
   }
 
-  function drawParticle(ctx, p, windX) {
+  function drawParticle(
+    ctx: CanvasRenderingContext2D,
+    p: (typeof pool)[number],
+    windX: number,
+  ) {
     const x = Math.round(p.x);
     const y = Math.round(p.y);
     ctx.globalAlpha = p.opacity;
@@ -42,7 +47,14 @@ export function createWeatherRenderer() {
   }
 
   return {
-    updateAndDraw(ctx, viewWidth, viewHeight, dt, mods, reducedMotion) {
+    updateAndDraw(
+      ctx: CanvasRenderingContext2D,
+      viewWidth: number,
+      viewHeight: number,
+      dt: number,
+      mods: ReturnType<typeof getWeatherModifiers>,
+      reducedMotion: boolean,
+    ) {
       if (width !== viewWidth || height !== viewHeight || context !== ctx) {
         width = viewWidth;
         height = viewHeight;

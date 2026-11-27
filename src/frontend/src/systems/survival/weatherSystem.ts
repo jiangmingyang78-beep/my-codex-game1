@@ -1,20 +1,32 @@
-import weatherData from "../../data/weather.json";
+import { loadDataFiles } from "@/core/gameData";
+import { isRecord } from "@/core/saveMigration";
+const weatherData = loadDataFiles().weather;
 
 const { defaultWeatherId, transitionDurationSec, weathers } = weatherData;
-const weatherById = new Map(weathers.map((def) => [def.id, def]));
+type WeatherDef = Omit<(typeof weathers)[number], "transitions"> & {
+  transitions: Record<string, number>;
+};
+export type WeatherState = ReturnType<typeof createWeatherState>;
+const weatherById = new Map<string, WeatherDef>(
+  weathers.map((def) => [def.id, def]),
+);
 const TAU = Math.PI * 2;
 
 export function getWeatherDef(id = defaultWeatherId) {
-  return weatherById.get(id) ?? weatherById.get(defaultWeatherId);
+  return weatherById.get(id) ?? weatherById.get(defaultWeatherId)!;
 }
 
-function nextRoll(state, rng) {
+function nextRoll(state: { rngState: number }, rng?: () => number) {
   if (rng) return Math.max(0, Math.min(1 - Number.EPSILON, rng()));
   state.rngState = (Math.imul(state.rngState, 1664525) + 1013904223) >>> 0;
   return state.rngState / 4294967296;
 }
 
-function duration(def, state, rng) {
+function duration(
+  def: WeatherDef,
+  state: { rngState: number },
+  rng?: () => number,
+) {
   const [min, max] = def.durationSec;
   return min + (max - min) * nextRoll(state, rng);
 }
@@ -32,7 +44,12 @@ export function createWeatherState(seed = 0) {
   return state;
 }
 
-function nextWeather(def, day, state, rng) {
+function nextWeather(
+  def: WeatherDef,
+  day: number,
+  state: WeatherState,
+  rng?: () => number,
+) {
   const candidates = weathers.filter(
     (entry) => entry.minDay <= day && def.transitions[entry.id] > 0,
   );
@@ -48,10 +65,19 @@ function nextWeather(def, day, state, rng) {
   return getWeatherDef();
 }
 
-export function tickWeather(state, dt, day, rng) {
+export function tickWeather(
+  state: WeatherState,
+  dt: number,
+  day: number,
+  rng?: () => number,
+) {
   if (!Number.isFinite(dt) || dt <= 0) return null;
   state.gustPhase = (state.gustPhase + dt * 0.8) % TAU;
-  let event = null;
+  let event: {
+    type: "weather.changed";
+    weatherId: string;
+    name: string;
+  } | null = null;
   let remaining = dt;
   while (remaining > 0) {
     const step = Math.min(remaining, state.remainingSec);
@@ -75,11 +101,11 @@ export function tickWeather(state, dt, day, rng) {
   return event;
 }
 
-export function getWeatherModifiers(state) {
+export function getWeatherModifiers(state: WeatherState) {
   const current = getWeatherDef(state.weatherId);
   const previous = getWeatherDef(state.previousWeatherId);
   const alpha = state.transitionAlpha;
-  const mix = (a, b) => a + (b - a) * alpha;
+  const mix = (a: number, b: number) => a + (b - a) * alpha;
   const particle = alpha < 0.5 ? previous : current;
   const particleCount =
     previous.particleKind === current.particleKind
@@ -109,30 +135,44 @@ export function getWeatherModifiers(state) {
   };
 }
 
-export function serializeWeather(state) {
+export function serializeWeather(state: WeatherState) {
   return { ...state };
 }
 
-export function deserializeWeather(raw, seed = 0) {
+export function deserializeWeather(raw: unknown, seed = 0): WeatherState {
   const state = createWeatherState(seed);
-  if (!raw || !weatherById.has(raw.weatherId)) return state;
+  if (
+    !isRecord(raw) ||
+    typeof raw.weatherId !== "string" ||
+    !weatherById.has(raw.weatherId)
+  )
+    return state;
   const def = getWeatherDef(raw.weatherId);
-  const alpha = Number.isFinite(raw.transitionAlpha)
-    ? Math.max(0, Math.min(1, raw.transitionAlpha))
-    : 1;
+  const alpha =
+    typeof raw.transitionAlpha === "number" &&
+    Number.isFinite(raw.transitionAlpha)
+      ? Math.max(0, Math.min(1, raw.transitionAlpha))
+      : 1;
   return {
     weatherId: def.id,
     previousWeatherId:
-      alpha < 1 && weatherById.has(raw.previousWeatherId)
+      alpha < 1 &&
+      typeof raw.previousWeatherId === "string" &&
+      weatherById.has(raw.previousWeatherId)
         ? raw.previousWeatherId
         : def.id,
-    remainingSec: Number.isFinite(raw.remainingSec)
-      ? Math.max(0, Math.min(def.durationSec[1], raw.remainingSec))
-      : duration(def, state),
+    remainingSec:
+      typeof raw.remainingSec === "number" && Number.isFinite(raw.remainingSec)
+        ? Math.max(0, Math.min(def.durationSec[1], raw.remainingSec))
+        : duration(def, state),
     transitionAlpha: alpha,
-    gustPhase: Number.isFinite(raw.gustPhase) ? raw.gustPhase % TAU : 0,
-    rngState: Number.isInteger(raw.rngState)
-      ? raw.rngState >>> 0
-      : state.rngState,
+    gustPhase:
+      typeof raw.gustPhase === "number" && Number.isFinite(raw.gustPhase)
+        ? raw.gustPhase % TAU
+        : 0,
+    rngState:
+      typeof raw.rngState === "number" && Number.isInteger(raw.rngState)
+        ? raw.rngState >>> 0
+        : state.rngState,
   };
 }

@@ -160,6 +160,7 @@ button:active{transform:translateY(1px)}
 .item-icon{filter:drop-shadow(0 1px 0 #0009)}
 .resource-grid .stock-item,.pickup-bar li{box-shadow:inset 0 1px 0 #ffffff0a}
 button,kbd,.tech-node,.quick-slot,.quickbar .build-controls{border-radius:0}
+#encounterToast{position:fixed;top:16%;left:50%;transform:translateX(-50%);z-index:5;padding:.45em 1em;background:#1c202b;color:#ffe5a6;border:1px solid #ad936e;pointer-events:none}
 </style>
 </head>
 <body>
@@ -254,6 +255,7 @@ button,kbd,.tech-node,.quick-slot,.quickbar .build-controls{border-radius:0}
 </details>
 <div id="techTree" class="tech-tree"></div>
 </dialog>
+<div id="encounterToast" role="status" hidden></div>
 <dialog id="worldDialog" aria-labelledby="worldTitle">
 <div class="gear-heading"><h2 id="worldTitle">生存世界</h2><button id="closeWorld" type="button" autofocus>返回游戏</button></div>
 <label for="savedWorlds">已有世界</label>
@@ -262,6 +264,12 @@ button,kbd,.tech-node,.quick-slot,.quickbar .build-controls{border-radius:0}
 <div class="world-controls"><input id="seedInput" type="text" maxlength="32" autocomplete="off" placeholder="例如 2048"><button id="createWorld" type="button">进入世界</button></div>
 </dialog>
 <script type="module">
+import {encounterById} from "./src/systems/survival/encounterCatalog.ts";
+import {activateEncounter,discoverEncounter} from "./src/systems/survival/landmarks.ts";
+import {encounterProgressForSave} from "./src/core/save.ts";
+import {drawEncounterProp} from "./src/game/textures/encounterProps.ts";
+import {LightGrid} from "./src/systems/world/lightGrid.ts";
+import {despawnAlpha,categoryOf,hasCapacity,inRing,MobPool,shouldDespawn,spawnLightAllowed,spawnRadii} from "./src/systems/combat/spawnRules.ts";
 import {loadSurvivalTuning,scaledStock,nightWaves,waveSlot} from "./src/systems/survivalTuning.ts";
 import {campProjects,campProjectEffects,campProjectComplete,campProjectContribution,donateCampMaterials,normalizeCampProjects} from "./src/systems/survival/campProjects.ts";
 import {CAMP_LANDMARK,landmarkBearing,landmarkId,landmarkKinds,normalizeLandmarks} from "./src/systems/survival/landmarks.ts";
@@ -274,13 +282,20 @@ import {
   solidSurvivalTerrain as solidTerrain,survivalCellCoordinates as cellCoordinates,survivalCellKey as cellKey
 } from "./src/systems/survival/survivalBiomes.ts";
 import {
-  chunkCellIndex,getOrCreateSurvivalChunk,seedFromText as parseSeedFromText,seededValue
+  chunkCellIndex,seedFromText as parseSeedFromText,seededValue
 } from "./src/systems/survival/survivalNoise.ts";
 import {
-  applyClassicSurvivalTerrain,buildBaseClassicWorld,carveCampPassages,
+  applyClassicSurvivalTerrain,buildBaseClassicWorld,carveCampPassages,createSurvivalWorld,
   generateSurvivalTerrain as generateCoreSurvivalTerrain,resolveEcologyBiome
 } from "./src/systems/survival/survivalWorldGen.ts";
+import {getOrCreateSurvivalChunk,generateLegacyTerrain} from "./src/systems/survival/legacySurvivalGen.ts";
+import {FEATURE} from "./src/systems/survival/survivalPasses.ts";
+import {supportsSnowFootprint} from "./src/systems/world/worldTypes.ts";
+import {loadDataFiles} from "./src/core/gameData.ts";
+const {survivalCatalog:catalogDefinitions,survivalRecipes,recipes:survivalRecipeData}=loadDataFiles();
+import {survivalRates} from "./src/systems/survivalOverrides.js";
 const tuning=await loadSurvivalTuning();
+const rates=survivalRates(tuning);
 import {
   ENEMY_TEXTURE_DEFS,
   applyEnemyHit,
@@ -290,16 +305,16 @@ import {
 } from "./src/shared/monsterCatalog.js";
 import {META_STORAGE_KEY,getUnlockDef,readCrossModeUnlocks} from "./src/shared/metaUnlocks.js";
 
-import survivalRecipeData from "./src/data/recipes.json";
+
 import {
   createWeatherState,deserializeWeather,getWeatherModifiers,serializeWeather,tickWeather
-} from "./src/systems/survival/weatherSystem.js";
+} from "./src/systems/survival/weatherSystem.ts";
 import {
   canPlantAt,chopPlantAt,collectPlantLights,createPlantRegistry,deserializePlants,fertilizePlantAt,
   getFertilizerDef,getPlantBySeed,getPlantDef,harvestPlantAt,isPlantSolidAt,isPristineWildPlant,
   plantFromSeed,serializePlants,spawnPlant,tickPlants,tileKey,waterPlantAt
-} from "./src/systems/survival/plantSystem.js";
-import {createWeatherRenderer} from "./src/systems/survival/weatherRenderer.js";
+} from "./src/systems/survival/plantSystem.ts";
+import {createWeatherRenderer} from "./src/systems/survival/weatherRenderer.ts";
 import {PLANT_TEXTURE_DEFS} from "./src/vfx/plantTextures.js";
 import {createSurvivalRockArt} from "./src/game/textures/survivalRockArt.ts";
 
@@ -311,222 +326,12 @@ const weatherRenderer=createWeatherRenderer();
 const $ = id => document.getElementById(id);
 const GAME_VERSION="1.11.0";
 $("version").textContent="v"+GAME_VERSION;
-const catalogDefinitions = /* catalog:start */ {
-  "树木": [
-    ["shumu-0001", "terrain", "0", "树木"]
-  ],
-  "自然矿物": [
-    ["kuangwu-0001", "terrain", "6", "岩石"],
-    ["kuangwu-0002", "terrain", "8", "煤脉"],
-    ["kuangwu-0003", "vein", "quartz", "石英脉"],
-    ["kuangwu-0004", "vein", "copper", "铜矿脉"],
-    ["kuangwu-0005", "vein", "clay", "黏土矿"],
-    ["kuangwu-0006", "vein", "iron", "铁矿脉"],
-    ["kuangwu-0007", "vein", "frostOre", "霜晶脉"],
-    ["kuangwu-0008", "vein", "salt", "岩盐矿"]
-  ],
-  "地形": [
-    ["dixing-0001", "terrain", "1", "草地"],
-    ["dixing-0002", "terrain", "2", "林径"],
-    ["dixing-0003", "terrain", "3", "岩地"],
-    ["dixing-0004", "terrain", "4", "湿地地面"],
-    ["dixing-0005", "terrain", "5", "水域"],
-    ["dixing-0006", "terrain", "7", "遗迹地面"]
-  ],
-  "作物": [
-    ["zuowu-0001", "crop", "wheat", "小麦植株"]
-  ],
-  "野生植物": [
-    ["zhiwu-0001", "wildPlant", "berry", "野莓丛"],
-    ["zhiwu-0002", "wildPlant", "herb", "银叶草"],
-    ["zhiwu-0003", "wildPlant", "reed", "芦苇"],
-    ["zhiwu-0004", "wildPlant", "rockBloom", "石瓣花"],
-    ["zhiwu-0005", "wildPlant", "frostBerry", "霜莓丛"],
-    ["zhiwu-0006", "wildPlant", "pinecone", "矮松"],
-    ["zhiwu-0007", "wildPlant", "sandFruit", "沙果棘"],
-    ["zhiwu-0008", "wildPlant", "nectar", "蜜花"],
-    ["zhiwu-0009", "wildPlant", "glowcap", "夜光菇"]
-  ],
-  "材料": [
-    ["cailiao-0001", "stock", "wood", "木材"],
-    ["cailiao-0002", "stock", "stone", "石料"],
-    ["cailiao-0003", "stock", "coal", "煤炭"],
-    ["cailiao-0004", "stock", "seed", "种子"],
-    ["cailiao-0005", "stock", "water", "水"],
-    ["cailiao-0006", "stock", "wheat", "小麦"],
-    ["cailiao-0007", "stock", "wool", "羊毛"],
-    ["cailiao-0008", "stock", "quartz", "石英"],
-    ["cailiao-0009", "stock", "copper", "铜矿石"],
-    ["cailiao-0010", "stock", "clay", "黏土"],
-    ["cailiao-0011", "stock", "iron", "铁矿石"],
-    ["cailiao-0012", "stock", "frostOre", "霜晶"],
-    ["cailiao-0013", "stock", "salt", "岩盐"],
-    ["cailiao-0014", "stock", "herb", "银叶草叶"],
-    ["cailiao-0015", "stock", "reed", "苇茎"],
-    ["cailiao-0016", "stock", "rockBloom", "石花瓣"],
-    ["cailiao-0017", "stock", "pinecone", "松果"],
-    ["cailiao-0018", "stock", "nectar", "花蜜"],
-    ["cailiao-0019", "stock", "glowcap", "荧菇"],
-    ["cailiao-0020", "stock", "fur", "柔毛"],
-    ["cailiao-0021", "stock", "antler", "鹿角"],
-    ["cailiao-0022", "stock", "slime", "凝胶"],
-    ["cailiao-0023", "stock", "shell", "甲片"],
-    ["cailiao-0024", "stock", "rope", "苇绳"],
-    ["cailiao-0025", "stock", "fiber", "粗纤维"],
-    ["cailiao-0026", "stock", "resin", "松脂"],
-    ["cailiao-0027", "stock", "ember_dust", "余烬尘"],
-    ["cailiao-0028", "stock", "pine_cone", "霜松球果"],
-    ["cailiao-0029", "stock", "birch_sapling", "灰桦树苗"],
-    ["cailiao-0030", "stock", "ember_acorn", "余烬松实"],
-    ["cailiao-0031", "stock", "berry_cutting", "雪莓插条"],
-    ["cailiao-0032", "stock", "grass_tuft", "韧草根簇"],
-    ["cailiao-0033", "stock", "herb_seed", "苦草种子"],
-    ["cailiao-0034", "stock", "reed_root", "冰沼苇根"],
-    ["cailiao-0035", "stock", "spore_cap", "冷光孢子"],
-    ["cailiao-0036", "stock", "ash_compost", "灰烬堆肥"],
-    ["cailiao-0037", "stock", "ember_mulch", "余烬暖肥"]
-  ],
-  "食物": [
-    ["shiwu-0001", "stock", "egg", "鸡蛋"],
-    ["shiwu-0002", "stock", "bread", "面包"],
-    ["shiwu-0003", "stock", "boiled", "煮鸡蛋"],
-    ["shiwu-0004", "stock", "berry", "野莓"],
-    ["shiwu-0005", "stock", "frostBerry", "霜莓"],
-    ["shiwu-0006", "stock", "sandFruit", "沙果"],
-    ["shiwu-0007", "stock", "honey", "蜂蜜"],
-    ["shiwu-0008", "stock", "trailmix", "巡林干粮"]
-  ],
-  "治疗物品": [
-    ["zhiliao-0001", "stock", "bandage", "绷带"],
-    ["zhiliao-0002", "pickup", "heal", "生命补给"],
-    ["zhiliao-0003", "stock", "salve", "银叶药膏"],
-    ["zhiliao-0004", "stock", "tonic", "霜露合剂"]
-  ],
-  "工具": [
-    ["gongju-0001", "tool", "axe", "伐木斧"],
-    ["gongju-0002", "tool", "pick", "矿镐"],
-    ["gongju-0003", "tool", "hoe", "锄头"],
-    ["gongju-0004", "tool", "can", "水壶"],
-    ["gongju-0005", "tool", "hammer", "锤子"],
-    ["gongju-0006", "tool", "pan", "平底锅"],
-    ["gongju-0007", "stock", "copperPick", "铜镐"]
-  ],
-  "武器与弹体": [
-    ["wuqi-0001", "equipment", "worn", "旅人剑"],
-    ["wuqi-0002", "equipment", "sword", "阔刃剑"],
-    ["wuqi-0003", "equipment", "dagger", "短匕"],
-    ["wuqi-0004", "equipment", "spear", "长矛"],
-    ["wuqi-0005", "equipment", "axe", "战斧"],
-    ["wuqi-0006", "equipment", "bow", "长弓"],
-    ["wuqi-0007", "projectile", "arrow", "箭矢"],
-    ["wuqi-0008", "stock", "ironEdge", "锻铁剑"],
-    ["wuqi-0009", "stock", "emberBlade", "淬烬刃"]
-  ],
-  "护甲": [
-    ["hujia-0001", "equipment", "leather", "旅林皮甲"],
-    ["hujia-0002", "equipment", "mail", "锻纹锁甲"]
-  ],
-  "靴子": [
-    ["xuezi-0001", "equipment", "runner", "巡林靴"],
-    ["xuezi-0002", "equipment", "swift", "踏风靴"],
-    ["xuezi-0003", "stock", "trailBoots", "远行靴"]
-  ],
-  "护符": [
-    ["hufu-0001", "equipment", "ember", "烬火护符"],
-    ["hufu-0002", "equipment", "heart", "青心护符"]
-  ],
-  "生物": [
-    ["shengwu-0001", "creature", "hero", "旅人"],
-    ["shengwu-0002", "creature", "scout", "斥候"],
-    ["shengwu-0003", "creature", "moss", "苔林守卫"],
-    ["shengwu-0004", "creature", "bat", "蝙蝠"],
-    ["shengwu-0005", "creature", "shield", "盾卫"],
-    ["shengwu-0006", "creature", "stone", "赤石守卫"],
-    ["shengwu-0007", "creature", "frost", "寒潭守卫"],
-    ["shengwu-0008", "creature", "keeper", "灰烬守卫"],
-    ["shengwu-0009", "creature", "hen", "鸡"],
-    ["shengwu-0010", "creature", "sheep", "羊"],
-    ["shengwu-0011", "creature", "hare", "草兔"],
-    ["shengwu-0012", "creature", "deer", "林鹿"],
-    ["shengwu-0013", "creature", "frog", "沼蛙"],
-    ["shengwu-0014", "creature", "goat", "岩羊"],
-    ["shengwu-0015", "creature", "fox", "雪狐"],
-    ["shengwu-0016", "creature", "squirrel", "松鼠"],
-    ["shengwu-0017", "creature", "lizard", "沙蜥"],
-    ["shengwu-0018", "creature", "bee", "花蜂"],
-    ["shengwu-0019", "creature", "beetle", "菌甲虫"]
-  ],
-  "可建造物": [
-    ["jianzhu-0001", "build", "floor", "木地板"],
-    ["jianzhu-0002", "build", "wall", "木墙"],
-    ["jianzhu-0003", "build", "fence", "围栏"],
-    ["jianzhu-0004", "build", "gate", "木栅门"],
-    ["jianzhu-0005", "build", "torch", "火把"],
-    ["jianzhu-0006", "build", "coop", "畜棚"],
-    ["jianzhu-0007", "build", "bed", "床"],
-    ["jianzhu-0008", "build", "researchDesk", "研究台"],
-    ["jianzhu-0009", "build", "brazier", "营地火盆"],
-    ["jianzhu-0010", "build", "emberBrazier", "余烬火坛"],
-    ["jianzhu-0011", "build", "miniBeacon", "微型烽火台"]
-  ],
-  "固定设施": [
-    ["sheshi-0001", "site", "camp", "篝火"],
-    ["sheshi-0002", "site", "gate", "封印门"],
-    ["sheshi-0003", "site", "well", "水井"],
-    ["sheshi-0004", "site", "board", "营地委托牌"],
-    ["sheshi-0005", "site", "plot", "耕地"]
-  ],
-  "祭坛": [
-    ["jitan-0001", "altar", "moss", "苔林祭坛"],
-    ["jitan-0002", "altar", "stone", "赤石祭坛"],
-    ["jitan-0003", "altar", "frost", "寒潭祭坛"],
-    ["jitan-0004", "blessing", "vigor", "生息祭坛"],
-    ["jitan-0005", "blessing", "might", "锋刃祭坛"],
-    ["jitan-0006", "blessing", "ward", "磐石祭坛"],
-    ["jitan-0007", "blessing", "wind", "疾风祭坛"]
-  ],
-  "群系地标": [
-    ["dibiao-0001", "landmark", "root", "苔林古根"],
-    ["dibiao-0002", "landmark", "watch", "赤石望台"],
-    ["dibiao-0003", "landmark", "mirror", "寒潭冰镜"]
-  ],
-  "宝箱": [
-    ["baoxiang-0001", "chest", "camp", "营地木箱"],
-    ["baoxiang-0002", "chest", "moss", "苔林木箱"],
-    ["baoxiang-0003", "chest", "westRuins", "赤石西侧铁箱"],
-    ["baoxiang-0004", "chest", "eastRuins", "赤石东侧铁箱"],
-    ["baoxiang-0005", "chest", "frost", "寒潭铁箱"],
-    ["baoxiang-0006", "chest", "southBank", "南岸晶箱"],
-    ["baoxiang-0007", "chest", "oldPath", "旧林径晶箱"],
-    ["baoxiang-0008", "chest", "sealedRuins", "封印遗迹古金箱"]
-  ],
-  "任务物品": [
-    ["renwuwu-0001", "pickup", "core", "火种"],
-    ["renwuwu-0002", "pickup", "sealMoss", "苔林印记"],
-    ["renwuwu-0003", "pickup", "sealStone", "赤石印记"],
-    ["renwuwu-0004", "pickup", "sealFrost", "寒潭印记"]
-  ],
-  "委托": [
-    ["weituo-0001", "quest", "survey", "勘察三处群系地标"],
-    ["weituo-0002", "quest", "shields", "击败两名盾卫"]
-  ],
-  "科技": [
-    ["keji-0001", "tech", "workshop", "木作工艺"],
-    ["keji-0002", "tech", "herbalism", "草药学"],
-    ["keji-0003", "tech", "distilling", "霜露调和"],
-    ["keji-0004", "tech", "foraging", "野外补给"],
-    ["keji-0005", "tech", "trailgear", "远行装备"],
-    ["keji-0006", "tech", "metallurgy", "铜石工艺"],
-    ["keji-0007", "tech", "smithing", "铁器锻造"]
-  ]
-} /* catalog:end */;
+
 
 const contentById=new Map(), contentByKey=new Map();
 for(const rows of Object.values(catalogDefinitions)){
   for(const [id,group,key,name] of rows){
     const lookup=group+":"+key;
-    if(!/^[a-z]+-(?!0000)\d{4}$/.test(id)||contentById.has(id)||contentByKey.has(lookup))
-      throw new Error("余烬林编号无效或重复："+id+" / "+lookup);
     const entry=Object.freeze({id,group,key,name});
     contentById.set(id,entry);contentByKey.set(lookup,entry);
   }
@@ -589,8 +394,9 @@ const dayStages = [
   {name:"深夜", ambient:[102,124,177], sky:[108,171,255], sx:-8,sy:9, shade:.31,glow:1.14},
   {name:"破晓前", ambient:[124,151,178], sky:[110,211,218], sx:-13,sy:7, shade:.27,glow:.93}
 ];
-const LEGACY_STAGE_SECONDS=12, STAGE_SECONDS=24, DAY_SECONDS=dayStages.length*STAGE_SECONDS, CLOCK_STEP_MINUTES=5;
-const DUSK_SECONDS=STAGE_SECONDS*5, BEACON_PROTECTION_TILES=18;
+const LEGACY_STAGE_SECONDS=12, STAGE_SECONDS=24, CLOCK_STEP_MINUTES=5;
+const dayStageSec=rates.daySec/5, nightStageSec=rates.nightSec/(dayStages.length-5);
+const DUSK_SECONDS=rates.daySec, DAY_SECONDS=rates.daySec+rates.nightSec, BEACON_PROTECTION_TILES=18;
 const lightLayer=document.createElement("canvas");
 lightLayer.width=canvas.width;lightLayer.height=canvas.height;
 const lightCtx=lightLayer.getContext("2d");
@@ -603,7 +409,8 @@ let shakeEnabled=!(window.matchMedia?.("(prefers-reduced-motion: reduce)").match
 const lerp=(a,b,t)=>a+(b-a)*t;
 const rgb=(color,alpha=1)=>"rgba("+color.map(Math.round).join(",")+","+alpha+")";
 function lightAt(seconds){
-  const step=((seconds%DAY_SECONDS)+DAY_SECONDS)%DAY_SECONDS/STAGE_SECONDS;
+  const elapsed=((seconds%DAY_SECONDS)+DAY_SECONDS)%DAY_SECONDS;
+  const step=elapsed<DUSK_SECONDS?elapsed/dayStageSec:5+(elapsed-DUSK_SECONDS)/nightStageSec;
   const index=Math.floor(step), a=dayStages[index], b=dayStages[(index+1)%dayStages.length];
   const blend=clamp((step-index-.13)/.87,0,1), ease=blend*blend*blend*(blend*(blend*6-15)+10);
   return {
@@ -621,7 +428,7 @@ function updateTime(){
 }
 function paintNightForecast(){
   const forecast=survivalNightForecast(survival.age,DAY_SECONDS,DUSK_SECONDS,tuning.spawnFrequency);
-  const warning=dayTime>=DUSK_SECONDS-STAGE_SECONDS;
+  const warning=dayTime>=DUSK_SECONDS-dayStageSec;
   $("raidForecast").hidden=!warning;
   $("beaconStatus").hidden=!inBeaconProtection();
   if(!warning)return;
@@ -629,7 +436,7 @@ function paintNightForecast(){
   const label=forecast.seconds!==null?(forecast.night?"下波约 ":"夜袭约 ")+seconds+" 秒":
     forecast.waves?"本夜无后续波次":"今夜无定时夜袭";
   const flame=$("forecastFlame");
-  flame.style.opacity=forecast.night||forecast.seconds===null ? .36 : .36+.64*forecast.seconds/STAGE_SECONDS;
+  flame.style.opacity=forecast.night||forecast.seconds===null ? .36 : .36+.64*forecast.seconds/dayStageSec;
   const text=$("forecastText");
   if(text.textContent!==label)text.textContent=label;
 }
@@ -729,51 +536,45 @@ function postProcess(){
   ctx.restore();
 }
 const buildLightRadius={torch:44,brazier:77,emberBrazier:105,miniBeacon:140};
+const survivalGrid=new LightGrid(SIZE);
+const nightMobPool=new MobPool();
+let nightSerial=0;
+let survivalLamps=[];
+const spawnView=()=>({x:camera.x,y:camera.y,width:canvas.width,height:canvas.height});
+function syncSurvivalLight(){
+  const sources=survivalHeatSources().map(light=>({...light,id:"fire:"+light.x+","+light.y,radius:Math.round(light.radius*weatherMods.lightRadiusMult),color:[255,176,82]}));
+  for(const light of collectPlantLights(plantRegistry,SIZE))
+    sources.push({...light,id:"plant:"+light.x+","+light.y,color:light.plantId==="glow_cap"?[110,225,255]:[255,130,70]});
+  const ambient=lightAt(survival.age%DAY_SECONDS).ambient[0];
+  const dark=Math.max(0,(188-ambient)/120);
+  if(dark>0)sources.push({id:"player",x:player.x,y:player.y,radius:62,color:[175,197,255]});
+  survivalLamps=sources;
+  survivalGrid.sync((ambient-85)/10-12*weatherMods.fogAlpha,sources);
+  return survivalGrid;
+}
 function applyLighting(){
   lightCtx.globalCompositeOperation="source-over";
-  lightCtx.fillStyle=rgb(lighting.ambient);lightCtx.fillRect(0,0,384,224);
-  const lamps=[{...point(camp.x,camp.y),radius:64,color:[255,170,75],strength:1,fire:true}];
-  altars.forEach((a,i)=>{
-    if(lit.has(a.sealId))lamps.push({...point(a.x,a.y),radius:47,color:i===0?[119,255,173]:i===1?[255,171,85]:[125,199,255],strength:.83});
-  });
+  lightCtx.fillStyle=rgb(lighting.ambient);lightCtx.fillRect(0,0,canvas.width,canvas.height);
   if(survival){
-    for(const [id,kind] of visibleSurvivalCells().builds){
-      const radius=buildLightRadius[kind];
-      if(!radius)continue;
-      const at=tilePoint(id);
-      if(inView(at.x,at.y,radius))lamps.push({...at,radius,color:[255,183,92],strength:.92,fire:true});
+    const grid=syncSurvivalLight();
+    lightCtx.globalCompositeOperation="lighter";
+    lightCtx.save();lightCtx.beginPath();
+    grid.forEachLitTile(spawnView(),(x,y,level)=>{
+      if(level<=2){lightCtx.fillStyle=rgb([130,118,145],.02*level);lightCtx.fillRect(x-camera.x,y-camera.y,SIZE,SIZE);return;}
+      lightCtx.rect(x-camera.x,y-camera.y,SIZE,SIZE);
+      lightCtx.fillStyle=rgb([255,184,100],lighting.glow*.05);
+      lightCtx.fillRect(x-camera.x,y-camera.y,SIZE,SIZE);
+    });
+    lightCtx.clip();
+    for(const lamp of survivalLamps){
+      const strength=lighting.glow*(.91+.05*Math.sin(tick*8+lamp.x));
+      radial(lightCtx,lamp.x-camera.x,lamp.y-camera.y,lamp.radius,lamp.color,strength);
     }
+    lightCtx.restore();
   }
-  if(mode==="adventure"){
-    for(const item of blessings){
-      if(loadout().used.has(item.contentId))continue;
-      const at=point(item.x,item.y);
-      if(inView(at.x,at.y)){
-        const color=item.color.slice(1).match(/../g).map(value=>parseInt(value,16));
-        lamps.push({...at,radius:27,color,strength:.48});
-      }
-    }
-  }
-  if(lit.size===3)lamps.push({...point(core.x,core.y),radius:55,color:[255,181,92],strength:.95,fire:true});
-  if(survival){
-    for(const light of collectPlantLights(plantRegistry,SIZE)){
-      if(inView(light.x,light.y,light.radius))lamps.push({...light,
-        color:light.plantId==="glow_cap"?[110,225,255]:[255,130,70],strength:.86});
-    }
-  }
-  lightCtx.globalCompositeOperation="lighter";
-  for(const lamp of lamps){
-    if(lamp.fire){lamp.radius*=weatherMods.lightRadiusMult;lamp.strength/=weatherMods.fireDrainMult;}
-    const ph=lamp.x*.37+lamp.y*.11,fire=lamp.fire?1:.35;
-    lamp.pulse=.95+fire*(Math.sin(tick*8+ph)*.032+Math.sin(tick*13.7+ph*1.7)*.022+Math.sin(tick*29+ph*2.3)*.014)+Math.sin(tick*1.6+ph)*.012;
-    radial(lightCtx,lamp.x-camera.x,lamp.y-camera.y-5,lamp.radius*lamp.pulse,lamp.color,Math.min(.93,lighting.glow*lamp.strength*(.96+(lamp.pulse-.95)*1.6)));
-  }
-  const dark=Math.max(0,(188-lighting.ambient[0])/120);
-  if(dark>0)radial(lightCtx,player.x-camera.x,player.y-camera.y,62,[175,197,255],dark*.47);
   ctx.save();
   ctx.globalCompositeOperation="multiply";ctx.drawImage(lightLayer,0,0);
   ctx.globalCompositeOperation="screen";
-  for(const lamp of lamps)radial(ctx,lamp.x-camera.x,lamp.y-camera.y-7,lamp.radius*.79*lamp.pulse,lamp.color,lighting.glow*.22);
   radial(ctx,lighting.sx>0?384:0,0,300,lighting.sky,.115);
   ctx.restore();
 }
@@ -1280,6 +1081,7 @@ function interact(){
   if(phase!=="play")return;
   if(mode==="survival"){
     const cell=interactCell(),tool=heldTool();
+    if(examineSite(cell,true))return;
     if(cell&&keys.has("shift")&&cultivatedAt(cell.x,cell.y))actSurvival(cell,"chopPlant");
     else actSurvival(cell,tool==="plant"||tool==="fertilize"?"hand":tool);
     return;
@@ -1435,7 +1237,8 @@ function update(dt){
     x/=len;y/=len;player.dx=x;player.dy=y;
     const previousX=player.x,previousY=player.y;
     const baseSpeed=loadout()?.stats?.move??(survival?.stock.trailBoots>0?91*1.12:91);
-    const speed=baseSpeed*weatherMods.moveSpeedMult;
+    const surface=seededWorld?.getTileMeta(Math.floor(player.x/SIZE),Math.floor(player.y/SIZE));
+    const speed=baseSpeed*weatherMods.moveSpeedMult*(surface?.walkSpeedMultiplier??1);
     move(player,x*speed*dt,y*speed*dt,4);
     const travel=Math.hypot(player.x-previousX,player.y-previousY);
     player.moving=travel>.001;player.walk=(player.walk+travel)%40;
@@ -1444,7 +1247,11 @@ function update(dt){
       footTravel-=20;
       const type=tileAt(player.x,player.y);
       sound(type===3||type===7?"stone":type===4?"frost":"grass");
-      if(type===4){
+      if(surface&&supportsSnowFootprint(surface)){
+        const side=player.walk<20?2:-2;
+        snowTracks.push({x:player.x-y*side,y:player.y+x*side+3,born:tick});
+        if(snowTracks.length>24)snowTracks.shift();
+      }else if(type===4){
         spawn(PT.ripple,player.x,player.y+3,0,0,0,0,.75,"#d8f6f8","#4f8ea6",1,9,0,0);
         spawn(PT.ripple,player.x,player.y+3,0,0,0,0,.55,"#bfe9ee","#4f8ea6",1,5,0,0);
         sparks(player.x,player.y+2,"#9ce8ff",2,"water",-x,-y);
@@ -2427,7 +2234,7 @@ function tiles(){
     for(let tx=x0;tx<=x1;tx++){
       if(!containsTile(tx,ty))continue;
       const type=terrainTile(tx,ty),x=tx*SIZE,y=ty*SIZE,r=hash(tx,ty),biome=biomeAt(tx,ty);
-      const land=type===5?tileColors[5]:(biome?.land??tileColors[type]);
+      const land=type===5?tileColors[5]:seededWorld&&type===2?"#52614e":(biome?.land??tileColors[type]);
       const detail=biome?.detail??(type===2?"#526348":type===4?"#34606a":"#3d5840");
       const variant=Math.floor(hash(tx,ty,11)*6);
       if(type===5)ctx.drawImage(waterTexture(variant&1,waterFrame),x,y);
@@ -2437,12 +2244,14 @@ function tiles(){
       drawShores(x,y,type,edge,waterFrame);
       if(type===5){
         continue;
+      }else if(type===9){
+        rect("#444752",x,y,16,16);rect("#838792",x,y+1,14,3);rect("#30333a",x+2,y+11,14,4);
       }else if(type===6||type===COAL_VEIN){
         const material=rockMaterial(tx,ty,type,biome);
         const variant=seededValue(survival?.seed??0,tx,ty,104);
         const hits=naturalHits.get(cellKey(tx,ty))??0;
         ctx.drawImage(rockArt.frame(material,variant,hits),x,y);
-      }else if(!biome&&(type===3||type===7)){
+      }else if((!biome&&(type===3||type===7))||(seededWorld&&type===7)){
         rect(type===3?"#4d4b45":"#5d505e",x+1,y+1,14,1);
         rect("#2a2b34",x,y+15,16,1);rect("#282936",x+(ty%2?4:12),y+2,1,9);
         if(r>.67)rect("#786450",x+3,y+11,2,1);
@@ -2668,6 +2477,10 @@ function drawEnemyThreats(){
 }
 function drawEnemy(e){
   if(e.hp<=0||!inView(e.x,e.y)||e.id==="keeper"&&lit.size<3)return;
+  if(e._def){
+    const alpha=despawnAlpha(e,player,spawnRadii(tuning,SIZE,spawnView()).despawn,SIZE);
+    ctx.save();ctx.globalAlpha*=alpha;
+  }
   const {x,y}=e,boss=e.id==="keeper",bat=e.id==="bat",shield=e.id==="shield",elite=e.max>2;
   const bob=Math.floor(tick*7+e.index)%2;
   shadow(x,y,boss?21:14);
@@ -2690,23 +2503,30 @@ function drawEnemy(e){
     const w=boss?26:15;rect("#211923",x-w/2,y-(boss?25:20),w,3);
     rect("#ed927a",x-w/2,y-(boss?25:20),Math.round(w*e.hp/e.max),2);
   }
+  if(e._def)ctx.restore();
 }
 const miniColors=["#101e28","#3d674f","#7f835b","#6a6257","#3c7080","#20435c","#423943","#69536e"];
 const miniLayer=makeCanvas(WIDTH*3,HEIGHT*3),miniLayerCtx=miniLayer.getContext("2d");
 let miniOrigin=null;
 let selectedOre="";
 const campMapMark={...camp,kind:"camp"};
+const encounterMarks=()=>(seededWorld?.encounters??[]).filter(site=>survival.encounterProgress.discovered.includes(site.id));
 function paintLandmarkControls(){
   const select=$("landmarkTarget");
   select.replaceChildren(new Option("篝火营地",CAMP_LANDMARK),...survival.landmarks.map(mark=>
-    new Option(landmarkKinds[mark.kind].name+" · "+mark.x+", "+mark.y,landmarkId(mark))));
+    new Option(landmarkKinds[mark.kind].name+" · "+mark.x+", "+mark.y,landmarkId(mark))),...encounterMarks().map(site=>new Option(encounterById.get(site.templateId).name+" · "+site.x+", "+site.y,site.id)));
   select.value=survival.landmarkTarget;
-  $("removeLandmark").disabled=survival.landmarkTarget===CAMP_LANDMARK;
+  $("removeLandmark").disabled=survival.landmarkTarget===CAMP_LANDMARK||survival.encounterProgress.discovered.includes(survival.landmarkTarget);
 }
 function drawLandmarks(left,top,position){
   const origin={x:left,y:top};
   const playerDot={x:(player.x/SIZE-left)*3,y:(player.y/SIZE-top)*3};
   let target=campMapMark;
+  for(const site of encounterMarks()){
+    const mark={kind:"encounter",templateId:site.templateId,x:site.x,y:site.y};
+    if(site.id===survival.landmarkTarget)target=mark;
+    else drawSurvivalMapMark(mini,mark,origin,playerDot,false);
+  }
   for(const mark of survival.landmarks){
     if(landmarkId(mark)===survival.landmarkTarget)target=mark;
     else drawSurvivalMapMark(mini,mark,origin,playerDot,false);
@@ -2787,6 +2607,11 @@ function draw(){
   camera.y=Math.round(camSY+(shakeEnabled?impulseY:0)+Math.sin(tick*47+1.2)*5*shaking);
   rect(tileColors[0],0,0,384,224);
   ctx.save();ctx.translate(-camera.x,-camera.y);tiles();
+  for(const mark of snowTracks){
+    const alpha=Math.max(0,1-(tick-mark.born)/6);
+    if(alpha>0){ctx.globalAlpha=alpha*.55;rect("#617889",Math.floor(mark.x),Math.floor(mark.y),3,2);}
+  }
+  ctx.globalAlpha=1;
   const c=point(camp.x,camp.y);
   if(survival&&campProjectDone("restCorner"))drawRestMat(rect,c.x,c.y);
   flame(c.x,c.y,"#f49a59");
@@ -2975,7 +2800,8 @@ const wildAnimalArt=Object.fromEntries(Object.values(wildSpecies).map(animal=>[
   animal.contentId,pixelArt(animal.art,{b:animal.color,a:"#453a41",l:"#e5d4b9",e:"#191e26"},4,6,0,"pad")
 ]));
 const wildSpeciesById=new Map(Object.values(wildSpecies).map(animal=>[animal.contentId,animal]));
-let biomeGrid=null,survivalBaseTerrain=null;
+let biomeGrid=null,survivalBaseTerrain=null,seededWorld=null;
+const snowTracks=[];
 const chunks=new Map(),removedResources=new Set();
 let activeChunk=null,nightSpawnOrigin=null,wildlife=[],wildlifeSector="";
 let activePlantChunk=null,survivalRoads=new Set(),heatSourcesCache=null;
@@ -2990,7 +2816,7 @@ function biomeAt(x,y){
   return biomes[chunk.regions[index]];
 }
 const groundTile=(x,y)=>biomeAt(x,y)?.floor??1;
-const survivalChunk=(tx,ty)=>getOrCreateSurvivalChunk(chunks,tx,ty,survival.seed??0,tuning.resourceDensity,camp);
+const survivalChunk=(tx,ty)=>seededWorld?.getChunk(Math.floor(tx/CHUNK_SIZE),Math.floor(ty/CHUNK_SIZE))??getOrCreateSurvivalChunk(chunks,tx,ty,survival.seed??0,tuning.resourceDensity,camp);
 function unloadDistantChunks(){
   if(mode!=="survival")return;
   const x=Math.floor(player.x/(SIZE*CHUNK_SIZE)),y=Math.floor(player.y/(SIZE*CHUNK_SIZE));
@@ -3000,7 +2826,7 @@ function unloadDistantChunks(){
     if(Math.abs(chunk.x-x)>CHUNK_RADIUS||Math.abs(chunk.y-y)>CHUNK_RADIUS)chunks.delete(key);
   }
 }
-const generateSurvivalTerrain=seed=>generateCoreSurvivalTerrain(seed,tuning.resourceDensity);
+
 const WATER_CAPACITY=6;
 const basicStock={wood:3,stone:1,coal:0,seed:4,water:WATER_CAPACITY,wheat:2,egg:0,bread:2,wool:0,bandage:0,boiled:0};
 const initialStock={...basicStock};
@@ -3019,21 +2845,10 @@ const gardenRecipes=Object.fromEntries(survivalRecipeData.recipes
     cost:Object.fromEntries(Object.entries(recipe.inputs).map(([id,count])=>[survivalStockKey(id),count])),
     count:recipe.output.count,camp:true
   }]));
-const recipes={
-  ...gardenRecipes,
-  bread:{cost:{wheat:2},count:1,camp:true},
-  boiled:{cost:{egg:1,water:1},count:1,camp:true},
-  bandage:{cost:{wool:1},count:1},
-  seed:{cost:{wheat:1},count:2},
-  rope:{tech:"workshop",cost:{reed:2},count:1},
-  salve:{tech:"herbalism",cost:{herb:1,slime:1},count:1},
-  tonic:{tech:"distilling",cost:{frostBerry:1,honey:1},count:1,camp:true},
-  trailmix:{tech:"foraging",cost:{berry:2,salt:1},count:1,camp:true},
-  trailBoots:{tech:"trailgear",cost:{fur:2,rope:1},count:1,unique:true},
-  copperPick:{tech:"metallurgy",cost:{copper:2,wood:1},count:1,unique:true},
-  ironEdge:{tech:"smithing",cost:{iron:2,coal:1},count:1,camp:true,unique:true},
-  emberBlade:{metaUnlock:"unlock_warden_blade",cost:{iron:2,coal:2},count:1,camp:true,unique:true}
-};
+const recipes={...gardenRecipes,...structuredClone(survivalRecipes)};
+for(const recipe of Object.values(recipes)){
+  if(recipe.camp && recipe.cost.coal)recipe.cost.coal=Math.ceil(recipe.cost.coal*tuning.fuelConsumptionMultiplier);
+}
 const plans={
   floor:defineContent("build","floor",{cost:{wood:1}}),
   wall:defineContent("build","wall",{cost:{wood:2}}),
@@ -3105,7 +2920,7 @@ function makeSurvival(seed=null){
   builds[cellKey(14,19)]="coop";
   const animal=(kind,x,y)=>({kind,...point(x,y),home:point(x,y),feed:0,ready:false});
   return {
-    seed,stock:scaledStock(initialStock,tuning.startingSupplyMultiplier),quickbar:defaultQuickbar.slice(),research:[],wildPlantTimers:{},wildFeed:{},
+    seed,generationVersion:3,encounterProgress:encounterProgressForSave(null),generationDensity:tuning.resourceDensity,stock:scaledStock(initialStock,tuning.startingSupplyMultiplier),quickbar:defaultQuickbar.slice(),research:[],wildPlantTimers:{},wildFeed:{},
     campProjects:{},landmarks:[],landmarkTarget:CAMP_LANDMARK,
     hunger:100,age:0,plots:{},builds,removed:[],open:{},groundItems:{},animals:[animal(henId,12,19),animal(sheepId,13,20)]
   };
@@ -3122,7 +2937,7 @@ function convertSurvivalSave(data,encode){
   const groundItems=Object.fromEntries(Object.entries(data.groundItems).map(([cell,pile])=>[
     cell,{...pile,items:mapStock(pile.items)}
   ]));
-  return {...data,stock:mapStock(data.stock),builds,groundItems};
+  return {...data,encounterProgress:encounterProgressForSave(data.encounterProgress),stock:mapStock(data.stock),builds,groundItems};
 }
 function writeSave(report=false){
   if(mode!=="survival"||!survival)return false;
@@ -3164,8 +2979,9 @@ function readSave(id=activeWorld){
       data.quickbar=normalizeQuickbar(data.quickbar);
       data.research??=[];
       data.campProjects=normalizeCampProjects(data.campProjects);
+      data.encounterProgress=encounterProgressForSave(data.encounterProgress);
       data.landmarks=normalizeLandmarks(data.landmarks);
-      if(!data.landmarks.some(mark=>landmarkId(mark)===data.landmarkTarget))data.landmarkTarget=CAMP_LANDMARK;
+      if(!data.encounterProgress.discovered.includes(data.landmarkTarget)&&!data.landmarks.some(mark=>landmarkId(mark)===data.landmarkTarget))data.landmarkTarget=CAMP_LANDMARK;
       data.wildPlantTimers??={};
       data.wildFeed??={};
       data.weather??=null;
@@ -3202,19 +3018,22 @@ function openWorldPicker(){
   $("worldDialog").showModal();
 }
 function resetTerrain(){
+  previousEncounterCell=null;clearTimeout(discoveryTimer);$("encounterToast").hidden=true;
+  seededWorld=survival.seed!==null&&[2,3].includes(survival.generationVersion)?createSurvivalWorld(survival.seed,survival.generationDensity??tuning.resourceDensity,survival.generationVersion===3):null;
+  snowTracks.length=0;
   biomeGrid=null;survivalBaseTerrain=null;chunks.clear();removedResources.clear();activeChunk=null;nightSpawnOrigin=null;
   activePlantChunk=null;seededPlantChunks.clear();survivalRoads.clear();heatSourcesCache=null;
   edgeCache.clear();miniOrigin=null;visibleCells=null;
   wildlife=[];wildlifeSector="";
   if(survival.seed!==null){
-    const generated=generateSurvivalTerrain(survival.seed);
+    const generated=seededWorld?generateCoreSurvivalTerrain(survival.seed,tuning.resourceDensity,seededWorld):generateLegacyTerrain(survival.seed,tuning.resourceDensity);
     generated.tiles.forEach((row,y)=>world[y]=row);
     biomeGrid=generated.regions;survivalRoads=generated.trail;
   }else{
     applyClassicSurvivalTerrain(world,baseWorld);
   }
   // The four passages connect old save coordinates to the streamed terrain.
-  carveCampPassages(world,groundTile,camp);
+  if(!seededWorld)carveCampPassages(world,groundTile,camp);
   survivalBaseTerrain=world.map(row=>row.slice());
   for(const id of survival.removed){
     const [x,y]=cellCoordinates(id);removedResources.add(String(id));
@@ -3403,11 +3222,14 @@ function canMatureSurvivalPlant(plant){
 function seedPlantChunk(cx,cy){
   const seed=survival.seed??0;
   for(let y=cy*CHUNK_SIZE;y<(cy+1)*CHUNK_SIZE;y++)for(let x=cx*CHUNK_SIZE;x<(cx+1)*CHUNK_SIZE;x++){
-    if(!validCell(x,y)||x===camp.x||y===camp.y||seededValue(seed,x,y,94)>.045)continue;
+    if(!validCell(x,y))continue;
+    if(seededWorld){
+      if(seededWorld.getTileMeta(x,y).feature!==FEATURE.flora)continue;
+    }else if(x===camp.x||y===camp.y||seededValue(seed,x,y,94)>.045)continue;
     const id=cellKey(x,y),tile=terrainTile(x,y);
     if(tile===2||solidTerrain(tile)||survivalRoads.has(id)||removedResources.has(String(id))||
        survival.plots[id]||survival.builds[id]||cultivatedAt(x,y)||featureAt({x,y})||
-       (!insideCamp(x,y)&&seededValue(seed,x,y,41)<.09))continue;
+       (!seededWorld&&!insideCamp(x,y)&&seededValue(seed,x,y,41)<.09))continue;
     const nearWater=isSurvivalNearWater(x,y),terrain=getSurvivalTerrainTag(x,y,nearWater);
     const flora=naturalFlora[biomes.indexOf(ecologyBiome(x,y))];
     const first=Math.floor(seededValue(seed,x,y,95)*flora.length);
@@ -3456,10 +3278,11 @@ function habitatSummary(biome){
 }
 function wildPlantAt(x,y,tile=terrainTile(x,y),biome){
   if(mode!=="survival"||!survival||solidTerrain(tile)||insideCamp(x,y)||!containsTile(x,y))return null;
-  if(seededValue(survival.seed??0,x,y,41)>=.09)return null;
+  const feature=seededWorld?.getTileMeta(x,y).feature;
+  if(seededWorld?feature!==FEATURE.berry&&feature!==FEATURE.forage:seededValue(survival.seed??0,x,y,41)>=.09)return null;
   const id=cellKey(x,y);
   if(survival.builds[id]||survival.plots[id]||cultivatedAt(x,y)||survival.wildPlantTimers[id]>survival.age)return null;
-  return ecologyBiome(x,y,biome).plant;
+  return feature===FEATURE.berry?"berry":ecologyBiome(x,y,biome).plant;
 }
 function veinAt(x,y,tile=terrainTile(x,y),biome){
   if(mode!=="survival"||!survival||tile!==6||insideCamp(x,y))return null;
@@ -3477,12 +3300,27 @@ function wildlifeGround(x,y){
   return chunk.terrain[chunkCellIndex(chunk,x,y)];
 }
 function updateWildlife(){
-  const {x,y}=worldCell(player),step=7,seed=survival.seed??0;
+  const {x,y}=worldCell(player),step=seededWorld?CHUNK_SIZE:7,seed=survival.seed??0;
   const sx=Math.floor(x/step),sy=Math.floor(y/step),sector=sx+","+sy;
   if(sector!==wildlifeSector){
     wildlifeSector=sector;
-    wildlife=[];
-    for(let row=sy-2;row<=sy+2;row++)for(let col=sx-2;col<=sx+2;col++){
+    const view=spawnView(),ring=spawnRadii(tuning,SIZE,view);
+    const range=Math.min(12,Math.ceil(ring.max/SIZE/step));
+    const known=new Set(wildlife.map(a=>a.id));
+    const eligible=(id,home)=>!known.has(id) && wildlife.length<tuning.categoryCap.neutral &&
+      clearAt(home.x,home.y) && (survival.wildFeed[id]!==undefined || inRing(home,player,ring,view));
+    for(let row=sy-range;row<=sy+range;row++)for(let col=sx-range;col<=sx+range;col++){
+      if(seededWorld){
+        for(const anchor of seededWorld.getChunk(col,row).anchors){
+          if(anchor.kind!=="nest"||!validCell(anchor.x,anchor.y))continue;
+          const id=cellKey(anchor.x,anchor.y),home=point(anchor.x,anchor.y);
+          if(survival.builds[id]||survival.plots[id]||cultivatedAt(anchor.x,anchor.y))continue;
+          const species=wildSpecies[ecologyBiome(anchor.x,anchor.y).animal];
+          if(!eligible(id,home))continue;
+          wildlife.push({id,playerInteracted:survival.wildFeed[id]!==undefined,kind:species.contentId,...home,home,cycle:seededValue(seed,col,row,43)*49});
+        }
+        continue;
+      }
       const area=step*step,start=Math.floor(seededValue(seed,col,row,43)*area);
       for(let attempt=0;attempt<area;attempt++){
         const offset=(start+attempt*11)%area;
@@ -3492,7 +3330,8 @@ function updateWildlife(){
         const id=cellKey(tx,ty),home=point(tx,ty);
         if(survival.builds[id]||survival.plots[id])break;
         const species=wildSpecies[ecologyBiome(tx,ty).animal];
-        wildlife.push({id,kind:species.contentId,...home,home,cycle:start});
+        if(!eligible(id,home))break;
+        wildlife.push({id,playerInteracted:survival.wildFeed[id]!==undefined,kind:species.contentId,...home,home,cycle:start});
         break;
       }
     }
@@ -3512,6 +3351,7 @@ function tendWildAnimal(animal){
     say(stockLabels[species.yield]+"已掉落，靠近拾取。","seal");return true;
   }
   if(survival.stock[species.food]<1){say("用 "+stockLabels[species.food]+" 喂"+species.name+"。","denied");return false;}
+  animal.playerInteracted=true;
   survival.stock[species.food]--;
   survival.wildFeed[animal.id]=survival.age+species.time;
   say("喂了"+species.name+"，约 "+species.time+" 秒后可收取产物。","heal");return true;
@@ -3848,6 +3688,7 @@ function advanceCraft(dt){
 }
 function featureAt(cell){
   if(sameTile(cell,survivalCamp)||sameTile(cell,well))return true;
+  if(seededWorld?.encounters.some(site=>site.props.some(p=>sameTile(cell,p))))return true;
   return false;
 }
 function cellOverlaps(entity,at){
@@ -3958,6 +3799,7 @@ function holdPointer(){
 }
 function actSurvival(cell=interactCell(),tool=heldTool()){
   if(craftJob)return;
+  if(examineSite(cell))return;
   if(!canReachCell(cell)){say("再靠近一点。","denied");return;}
   const {x,y}=cell,id=cellKey(x,y),at=point(x,y),type=terrainTile(x,y);
   const s=survival.stock,plot=survival.plots[id],build=survival.builds[id],plant=cultivatedAt(x,y);
@@ -4129,7 +3971,7 @@ function harvestPlant(cell,plot){
   }
   const plant=wildPlantAt(x,y);
   if(!plant)return false;
-  survival.wildPlantTimers[id]=survival.age+DAY_SECONDS;
+  survival.wildPlantTimers[id]=survival.age+rates.wildRegrowthSec;
   dropGroundItems(at,{[plant]:2});
   actionAt("reach",at,"hand");sparks(at.x,at.y-3,wildPlants[plant].color,6,"wood");
   say("采下了"+stockLabels[plant]+"，靠近拾取。","grass");return true;
@@ -4233,31 +4075,90 @@ function nearbyStructure(kind,tiles){
 }
 function inBeaconProtection(){return nearbyStructure("miniBeacon",BEACON_PROTECTION_TILES);}
 function spawnNight(){
-  clearNightThreats();
-  const day=Math.floor(survival.age/DAY_SECONDS)+1,sites=[],origin=worldCell(player);
+  const day=Math.floor(survival.age/DAY_SECONDS)+1,origin=worldCell(player);
   if(!nightWaves(day,tuning.spawnFrequency))return;
-  for(let y=origin.y-12;y<=origin.y+12;y++)for(let x=origin.x-12;x<=origin.x+12;x++){
-    const p=point(x,y),range=distance(player,p);
-    if(range>=SIZE*5&&range<=SIZE*12&&validCell(x,y)&&clearAt(p.x,p.y))sites.push([x,y]);
-  }
-  const seed=survival.seed??0;
-  sites.sort(([x,y],[a,b])=>seededValue(seed,x,y,day+31)-seededValue(seed,a,b,day+31));
-  nightSpawnOrigin={x:player.x,y:player.y};
+  const seed=survival.seed??0,view=spawnView(),ring=spawnRadii(tuning,SIZE,view);
+  const grid=syncSurvivalLight(),pool=[...getSharedSurvivalEnemies(day)];
   const suppressed=inBeaconProtection();
-  const pool=[...getSharedSurvivalEnemies(day)];
-  const waveSize=Math.floor(3*weatherMods.spawnRateMult+seededValue(seed,origin.x,origin.y,day+109));
-  enemies=sites.slice(0,Math.min(pool.length,suppressed?1:waveSize)).map(([x,y],index)=>{
-    const choice=Math.floor(seededValue(seed,x,y,day+73)*pool.length);
-    const [def]=pool.splice(choice,1);
-    const at=point(x,y);
-    return createSurvivalSeedEnemy(def.id,at.x,at.y,index);
-  });
+  const waveSize=Math.floor(rates.clearNightWaveSize*weatherMods.spawnRateMult+seededValue(seed,origin.x,origin.y,day+109));
+  const wanted=Math.min(pool.length,suppressed?Math.min(1,waveSize):waveSize);
+  let spawned=0;
+  nightSpawnOrigin={x:player.x,y:player.y};
+  for(let i=0;i<128 && spawned<wanted && pool.length;i++){
+    const salt=day+Math.floor(survival.age)+i*5;
+    const angle=2*Math.PI*seededValue(seed,origin.x,origin.y,salt);
+    const radius=ring.min+(ring.max-ring.min)*seededValue(seed,origin.x,origin.y,salt+1);
+    const tx=Math.floor((player.x+radius*Math.cos(angle))/SIZE);
+    const ty=Math.floor((player.y+radius*Math.sin(angle))/SIZE);
+    const at=point(tx,ty);
+    if(!inRing(at,player,ring,view)||!validCell(tx,ty)||!clearAt(at.x,at.y))continue;
+    const choice=Math.floor(seededValue(seed,tx,ty,salt+2)*pool.length);
+    const def=pool[choice];
+    if(!hasCapacity(enemies,categoryOf(def.id),tuning)){pool.splice(choice,1);continue;}
+    if(!spawnLightAllowed(grid,at,def.id))continue;
+    enemies.push(nightMobPool.acquire(createSurvivalSeedEnemy(def.id,at.x,at.y,nightSerial++)));
+    pool.splice(choice,1);spawned++;
+  }
   if(suppressed)say("微型烽火台压制了周边的黑雾夜袭","gate");
   else if(enemies.length)say("附近出现夜行怪，挥剑防身或进围栏。","gate");
 }
+let previousEncounterCell=null;
+function observeEncounters(){
+  const here=worldCell(player);
+  if(previousEncounterCell&&sameTile(previousEncounterCell,here))return;
+  previousEncounterCell=here;
+  for(const site of seededWorld?.encounters??[]){
+    if(discoverEncounter(survival.encounterProgress,site,here)){
+      for(const e of site.entities)if(e.kind==="plant")spawnPlant(plantRegistry,e.ref,e.x,e.y,{stage:2});
+      const message="发现奇遇 · "+encounterById.get(site.templateId).name;
+      say(message);const toast=$("encounterToast");toast.textContent=message;toast.hidden=false;
+      clearTimeout(discoveryTimer);discoveryTimer=setTimeout(()=>toast.hidden=true,2800);
+      paintLandmarkControls();writeSave();
+    }
+    if(site.trigger.event.kind==="trap"&&sameTile(here,site.trigger))resolveSite(site);
+  }
+}
+let discoveryTimer;
+function resolveSite(site){
+  const result=activateEncounter(survival.encounterProgress,site,survival.seed);
+  if(!result)return false;
+  const at=point(site.trigger.x,site.trigger.y);
+  dropGroundItems(at,result.loot);
+  if(result.event.kind==="heal")player.hp=Math.min(maxHealth(),player.hp+2);
+  if(result.event.kind==="trap"){player.hp=Math.max(0,player.hp-1);player.hurt=1;}
+  for(const e of site.entities)if(e.kind==="enemy"){
+    const at=point(e.x,e.y);
+    const mob=createSurvivalSeedEnemy(e.ref,at.x,at.y,nightSerial++);mob.persistent=true;enemies.push(mob);
+  }
+  renderHud();say(result.event.message);writeSave();
+  if(player.hp<=0)finish(false);
+  return true;
+}
+function examineSite(cell,nearby=false){
+  for(const site of seededWorld?.encounters??[]){
+    const p=site.trigger;
+    if(!canReachCell(p)||(!sameTile(cell,p)&&!(nearby&&distance(player,point(p.x,p.y))<=SIZE*1.6)))continue;
+    if(!resolveSite(site))say("这里已经探索过了。");
+    return true;
+  }
+  return false;
+}
 function updateSurvival(dt){
+  observeEncounters();
+  if(phase!=="play")return;
   const previous=survival.age%DAY_SECONDS;
+  let recycled=false;
+  const lastSecond=Math.floor(survival.age);
   survival.age+=dt;
+  if(Math.floor(survival.age)!==lastSecond){
+    const radius=spawnRadii(tuning,SIZE,spawnView()).despawn;
+    enemies=enemies.filter(e=>{
+      if(e.hp>0 && !shouldDespawn(e,player,radius))return true;
+      if(e.hp>0)recycled=true;
+      nightMobPool.release(e);return false;
+    });
+    wildlife=wildlife.filter(a=>!shouldDespawn(a,player,radius));
+  }
   const weatherEvent=tickWeather(weatherState,dt,Math.floor(survival.age/DAY_SECONDS)+1);
   weatherMods=getWeatherModifiers(weatherState);
   if(weatherEvent)$("weatherLabel").textContent=weatherEvent.name;
@@ -4268,10 +4169,14 @@ function updateSurvival(dt){
   updateTime();
   const waves=nightWaves(Math.floor(survival.age/DAY_SECONDS)+1,tuning.spawnFrequency);
   const nextWave=waves>1 && waveSlot(dayTime,DUSK_SECONDS,DAY_SECONDS-DUSK_SECONDS,waves)>waveSlot(previous,DUSK_SECONDS,DAY_SECONDS-DUSK_SECONDS,waves);
-  if(night&&(nextWave||previous<DUSK_SECONDS||nightSpawnOrigin&&distance(player,nightSpawnOrigin)>SIZE*24))spawnNight();
+  if(night&&(recycled||nextWave||previous<DUSK_SECONDS||nightSpawnOrigin&&distance(player,nightSpawnOrigin)>SIZE*24))spawnNight();
   if(!night&&previous>=DUSK_SECONDS){clearNightThreats();setMessage("天亮了，夜行怪退回林中。");}
   if(weatherEvent)say("天气转变为："+weatherEvent.name);
-  survival.hunger=Math.max(0,survival.hunger-dt*(player.moving?.84:.60)*LEGACY_STAGE_SECONDS/STAGE_SECONDS);
+  survival.hunger=Math.max(0,survival.hunger-dt*(player.moving?rates.movingHungerPerSec:rates.idleHungerPerSec));
+  if(tuning.coldHungerPerSecond>0 && weatherMods.blizzard &&
+      !survivalHeatSources().some(source=>distance(player,source)<=source.radius)){
+    survival.hunger=Math.max(0,survival.hunger-dt*tuning.coldHungerPerSecond);
+  }
   if(survival.hunger===0&&player.hurt===0){
     player.hp--;player.hurt=3;flash=.22;renderHud();sound("hurt");
     if(player.hp<=0){finish(false);return;}
@@ -4486,6 +4391,18 @@ function drawCultivatedPlant(plant,x,y){
   squashed(x+sway,y,scale,scale,()=>sprite(art,x+sway,y));
 }
 function addSurvivalActors(actors){
+  for(const site of seededWorld?.encounters??[]){
+    const def=encounterById.get(site.templateId),spent=survival.encounterProgress.spent.includes(site.id);
+    for(const p of site.props){
+      const at=point(p.x,p.y);if(!inView(at.x,at.y))continue;
+      actors.push({y:at.y,draw:()=>{
+        drawEncounterProp(ctx,at.x,at.y,p.kind,def.color,p.interactive,spent&&p.interactive);
+        if(p.interactive&&!spent&&distance(player,at)<SIZE*2){
+          ctx.save();ctx.font="bold 8px monospace";ctx.textAlign="center";ctx.fillStyle="#ffe5a6";ctx.fillText("E",at.x,at.y-14);ctx.restore();
+        }
+      }});
+    }
+  }
   for(const plant of plantRegistry.values()){
     const at=point(plant.tx,plant.ty);
     if(inView(at.x,at.y))actors.push({y:at.y,draw:()=>drawCultivatedPlant(plant,at.x,at.y)});
@@ -4849,6 +4766,7 @@ function strikeEnemy(enemy,damage,dx,dy){
   return {power,x:enemy.x,y:enemy.y};
 }
 function strikeSurvivalEnemy(enemy,damage,dx,dy){
+  enemy.playerInteracted=true;
   applyEnemyHit(enemy,damage,player,{
     config:enemy._def,
     emitEvent(type,x,y,payload){
@@ -5042,7 +4960,7 @@ const landmarkKind=$("landmarkKind"),landmarkTarget=$("landmarkTarget");
 for(const [kind,def] of Object.entries(landmarkKinds))landmarkKind.add(new Option(def.name,kind));
 function saveLandmarkTarget(id){
   survival.landmarkTarget=id;
-  $("removeLandmark").disabled=id===CAMP_LANDMARK;
+  $("removeLandmark").disabled=id===CAMP_LANDMARK||survival.encounterProgress.discovered.includes(id);
   drawMini();writeSave();
 }
 landmarkTarget.addEventListener("change",()=>{

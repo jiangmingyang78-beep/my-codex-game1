@@ -60,7 +60,11 @@ export function rulePanel(root: HTMLElement, s: Session) {
   if (s.mode === "survival") {
     const survival = group(root, "生存模式 · 独立覆盖配置");
     survival.append(el("p", "落盘到 public/survival-balance.json，刷新生存页后生效，初始补给仅用于新世界。"));
-    for (const [k, v] of Object.entries(survivalDefaults))
+    for (const [k, v] of Object.entries(survivalDefaults)) {
+      if(typeof v==="object"){
+        for(const [category,cap] of Object.entries(v)) numeric(survival,s,"survival-balance.json",[k,category],({hostile:"普通敌对",elite:"精英",neutral:"中立野兽"} as Record<string,string>)[category]+"数量上限",cap);
+        continue;
+      }
       numeric(
         survival,
         s,
@@ -68,12 +72,21 @@ export function rulePanel(root: HTMLElement, s: Session) {
         [k],
         (
           {
+            dayDurationMultiplier: "白昼时长倍率",
+            nightDurationMultiplier: "夜晚时长倍率",
+            fuelConsumptionMultiplier: "营火制作燃煤倍率",
+            coldHungerPerSecond: "暴雪受寒饱食消耗（点/秒）",
+            hungerRateMultiplier: "饥饿速率倍率",
+            spawnDensity: "每波敌人密度",
+            resourceRefreshMultiplier: "野生资源再生速率",
             resourceDensity: "资源密度",
+            minSpawnRadius:"近环（格）", maxSpawnRadius:"外环（格）", despawnRadius:"回收距离（格）",
             spawnFrequency: "刷怪频率",
             startingSupplyMultiplier: "初始补给倍率",
           } as Record<string, string>
         )[k],
         v,
       );
+    }
   }
 }

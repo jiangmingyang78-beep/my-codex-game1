@@ -1,4 +1,5 @@
-import config from "@/data/encounters.json";
+import encounterConfig from "@/data/encounters.json";
+const { setPieces: _setPieces, ...config } = encounterConfig;
 export const rules: {
   dash?: { distanceTiles?: number; cooldownSec?: number };
   perception?: { aggroTiles?: number; leashTiles?: number };

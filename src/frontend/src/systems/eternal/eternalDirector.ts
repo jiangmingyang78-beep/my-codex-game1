@@ -123,6 +123,11 @@ function beginCombat(
 ): void {
   lockLoadoutForCombat(state, sys);
   rt.phase = "combat";
+  state.elapsedSec = Math.max(
+    state.elapsedSec,
+    sys.data.balance.clock.daySec + 60,
+  );
+  state.phase = "night";
   rt.prepRemainingSec = 0;
   notice(events, "黑雾合拢，永恒试炼开始！", "warn");
 }
@@ -143,9 +148,9 @@ function stepCombat(
     notice(events, "补给抵达：可补选 1 件装备", "good");
   }
   if (t >= rt.nextBossSec) {
-    rt.nextBossSec += ETERNAL.bossIntervalSec;
     const name = spawnEternalBoss(state, sys, rt, events);
-    rt.bossWaveCount++;
+    rt.nextBossSec += name ? ETERNAL.bossIntervalSec : 1;
+    if (name) rt.bossWaveCount++;
     if (name) notice(events, `首领降临：${name}`, "warn");
   }
   rt.spawnTimerSec -= dt;

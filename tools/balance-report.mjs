@@ -1,3 +1,4 @@
+import {resolveSurvivalTuning,survivalRates} from "../src/frontend/src/systems/survivalOverrides.js";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -124,13 +125,13 @@ function main() {
   const itemsData = readJson("items.json") || { items: [] };
   const recipesData = readJson("recipes.json") || { recipes: [] };
   const enemiesData = readJson("enemies.json") || { enemies: [] };
-  const legacyData = readJson("legacyEnemies.json") || { enemies: [], encounterRewards: [] };
+
   const regionsData = readJson("regions.json") || { regions: [], dawnRenewal: { renewableItemIds: [] } };
   const heroesData = readJson("heroes.json"), plantsData = readJson("plants.json"), catalogData = readJson("catalogDefinitions.json");
   const layout = parseWorldLayout(LAYOUT_PATH);
 
   const itemsMap = new Map(itemsData.items.map((x) => [x.id, x]));
-  const allEnemies = [...enemiesData.enemies.map((e) => ({ ...e, _src: "current" })), ...legacyData.enemies.map((e) => ({ ...e, _src: "legacy" }))];
+  const allEnemies = enemiesData.enemies.map(e => ({...e, _src: e.seedType ? "current" : "legacy"}));
   const spawnCounts = new Map();
   for (const reg of regionsData.regions) {
     const activeReg = layout.regions.some((r) => r.id === reg.id);
@@ -226,13 +227,13 @@ function main() {
   if (layout.renewableWoodTiles.size) nodeItems.add("wood");
   const recipeOut = new Set(recipesData.recipes.filter((r) => r.output?.type === "item").map((r) => r.output.id));
   const activeDropItems = new Set(allEnemies.filter((e) => { const s = spawnCounts.get(e.id); return s && s.res + s.night > 0; }).flatMap((e) => (e.drops || []).map((d) => d.itemId)));
-  const legacyDropItems = new Set([...allEnemies.flatMap((e) => e.drops || []), ...(legacyData.encounterRewards || []).flatMap((r) => r.drops || [])].map((d) => d.itemId));
+  const legacyDropItems = new Set([...allEnemies.flatMap((e) => e.drops || []), ...(enemiesData.encounterRewards || []).flatMap((r) => r.drops || [])].map((d) => d.itemId));
   const heroItems = new Set((heroesData?.heroes || []).flatMap((h) => Object.keys(h.startingInventory || {})));
   const plantDropItems = new Set((plantsData?.plants || []).flatMap((p) => [...(p.drops || []), ...(p.stumpDrops || []), ...(p.digDrops || [])].map((d) => d.itemId)));
   for (const it of itemsData.items) {
     const advOk = nodeItems.has(it.id) || recipeOut.has(it.id) || activeDropItems.has(it.id) || heroItems.has(it.id);
     if (!advOk && !legacyDropItems.has(it.id) && !plantDropItems.has(it.id)) addAlert("物品无来源", "🚨 严重", `${it.name} (${it.id})`, "全量数据均无获取途径");
-    else if (!advOk && legacyDropItems.has(it.id)) addAlert("物品无来源", "⚠️ 警告", `${it.name} (${it.id})`, "仅存在于未入现行地图的 legacyEnemies 掉落中");
+    else if (!advOk && legacyDropItems.has(it.id)) addAlert("物品无来源", "⚠️ 警告", `${it.name} (${it.id})`, "仅存在于非活跃敌人或遭遇奖励中");
     else if (!advOk && plantDropItems.has(it.id)) addAlert("物品无来源", "ℹ️ 提示", `${it.name} (${it.id})`, "仅生存模式植株掉落/挖掘获得");
   }
   const badRefs = [], dropErrs = []; let dropCount = 0;
@@ -252,9 +253,20 @@ function main() {
     if (missCat.length) addAlert("目录未同步", "⚠️ 警告", missCat.join(", "), "未登记在 catalogDefinitions.json");
   }
 
+  let tuning = balance.survival;
+  try {
+    const file = path.join(ROOT, "src/frontend/public/survival-balance.json");
+    tuning = resolveSurvivalTuning(tuning, fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, "utf8")) : {});
+    addAlert("生存覆写", "✅ 通过", "survival-balance.json", Object.entries(tuning).map(([k,v]) => k+"="+v).join(", "));
+  } catch (error) {
+    addAlert("生存覆写", "🚨 严重", "survival-balance.json", error.message);
+  }
+  const effective = survivalRates(tuning);
+  const survivalSummary = `白昼 ${effective.daySec}s / 夜间 ${effective.nightSec}s；静止 / 移动饥饿 ${effective.idleHungerPerSec} / ${effective.movingHungerPerSec} 点/秒；暴雪受寒额外 ${effective.coldHungerPerSec} 点/秒；野生资源刷新 ${effective.wildRegrowthSec}s；晴夜基础波量 ${effective.clearNightWaveSize}，波次倍率 ${tuning.spawnFrequency}；营火制作燃煤倍率 ${tuning.fuelConsumptionMultiplier}。`;
+  console.log("生存数值体检", survivalSummary);
   const critN = alerts.filter((a) => a.sev.includes("严重")).length, warnN = alerts.filter((a) => a.sev.includes("警告")).length;
   console.log(c.b("\n=== 《余烬林：最后一炬》数值平衡与经济体检摘要 ==="));
-  console.log(`统计范围：物品 ${c.cyan(itemsData.items.length)} | 配方 ${c.cyan(recipesData.recipes.length)} | 怪物 ${c.cyan(enemiesData.enemies.length)}+${c.dim(`${legacyData.enemies.length}旧版`)} | 实装区域 ${c.cyan(layout.regions.length)}/${regionsData.regions.length}`);
+  console.log(`统计范围：物品 ${c.cyan(itemsData.items.length)} | 配方 ${c.cyan(recipesData.recipes.length)} | 怪物 ${c.cyan(allEnemies.length)} | 实装区域 ${c.cyan(layout.regions.length)}/${regionsData.regions.length}`);
   console.log(`健康度告警：${critN ? c.red(`严重 ${critN}`) : c.green("严重 0")} | ${warnN ? c.yellow(`警告 ${warnN}`) : c.green("警告 0")} | 全部检查 ${alerts.length} 项`);
   for (const a of alerts.filter((x) => x.sev.includes("严重") || x.sev.includes("警告"))) {
     console.log(`  ${a.sev.includes("严重") ? c.red("•") : c.yellow("•")} [${a.cat}] ${a.target} — ${a.detail}`);
@@ -273,13 +285,14 @@ function main() {
   const md = [
     "# 数值平衡与经济体检报告（BALANCE_REPORT）", "",
     "> 由 `pnpm bal` (`tools/balance-report.mjs`) 只读解析 `src/frontend/src/data/*.json` 与 `worldLayout.ts` 生成。",
-    `> 统计：物品 \`${itemsData.items.length}\` 项 · 配方 \`${recipesData.recipes.length}\` 条 · 怪物 \`${enemiesData.enemies.length}\` 现行 + \`${legacyData.enemies.length}\` 遗留 · 实装区域 \`${layout.regions.length}\` 个。`, "",
+    `> 统计：物品 \`${itemsData.items.length}\` 项 · 配方 \`${recipesData.recipes.length}\` 条 · 怪物 \`${allEnemies.length}\` 项 · 实装区域 \`${layout.regions.length}\` 个。`, "",
     "## 1. 战斗 TTK 与容错表", "", mdTable(combatHeaders, combatRows), "",
     `- TTK 公式：\`(ceil(HP / 伤害) - 1) × ${cd}s\`；非格雷同时持有铁矛+淬炭短刃同为 4 伤，格雷可达 5 伤。`, "",
     "## 2. 铁矿与核心材料经济表", "",
     mdTable(["材料", "唯一/进度消耗", "可重复(单次)", "合计", "固定采集产出", "黎明再生", "其他来源", "经济诊断"], econRows), "",
     "## 3. 怪物威胁度与永恒模式参考表", "",
     mdTable(["怪物", "来源/区域", "行为", "HP", "有效伤害", "循环(s)", "攻速", "移速", "威胁分", "评级", "建议信用点", "备注"], threatRows), "",
+    "## 生存模式有效配置", "", survivalSummary, "",
     "## 4. 配置健康度告警", "",
     mdTable(["检查类别", "级别", "涉及对象", "详细说明"], alerts.map((a) => [a.cat, a.sev, a.target, a.detail])), "",
   ].join("\n");

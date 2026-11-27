@@ -20,9 +20,13 @@ export function inFireCircle(
   if (Math.hypot(x - camp.x, y - camp.y) <= r) return true;
   const relayR = data.balance.camp.relayRadiusTiles * data.tileSize;
   for (const id of data.relaySocketIds) {
-    if (!state.changesByObjectId[id]?.lit) continue;
     const socket = world.objects.get(id);
-    if (socket && Math.hypot(x - socket.x, y - socket.y) <= relayR) return true;
+    if (
+      socket &&
+      state.changesByObjectId[id]?.lit &&
+      Math.hypot(x - socket.x, y - socket.y) <= relayR
+    )
+      return true;
   }
   return false;
 }
@@ -40,15 +44,25 @@ export function forEachFireSource(
     campRadiusPx(state, sys),
     data.worldObjects.mainCampfireId,
   );
-  for (const id of data.relaySocketIds) {
-    const socket = world.objects.get(id);
-    if (socket && state.changesByObjectId[id]?.lit) {
-      visit(
-        socket.x,
-        socket.y,
-        data.balance.camp.relayRadiusTiles * data.tileSize,
-        id,
-      );
-    }
+  let fixtures = fixturesByWorld.get(world);
+  if (!fixtures) {
+    fixtures = world.objectList.filter((o) =>
+      ["relay_socket", "mirror_lamp", "beacon"].includes(o.kind),
+    );
+    fixturesByWorld.set(world, fixtures);
   }
+  for (const o of fixtures)
+    if (state.changesByObjectId[o.id]?.lit)
+      visit(o.x, o.y, fixtureRadius(o.kind, sys), o.id);
+}
+
+const fixturesByWorld = new WeakMap<
+  Systems["world"],
+  Systems["world"]["objectList"]
+>();
+export function fixtureRadius(kind: string, sys: Systems) {
+  return (
+    (kind === "mirror_lamp" ? 4.5 : sys.data.balance.camp.relayRadiusTiles) *
+    sys.data.tileSize
+  );
 }

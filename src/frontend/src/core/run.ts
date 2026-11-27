@@ -2,9 +2,10 @@ import {
   despawnNightRaid,
   spawnNightRaid,
   spawnResidents,
-} from "@/systems/EnemyManager.js";
+} from "@/systems/EnemyManager";
 import { stepCombat } from "@/systems/combat/combat";
 import { trimNightRaid } from "@/systems/combat/enemySpawn";
+import { recycleDistant } from "@/systems/combat/spawnPopulation";
 import { consumeItem } from "@/systems/inventory";
 import { heroMaxHp } from "@/systems/itemEffects";
 import { moveHero } from "@/systems/movement";
@@ -199,7 +200,10 @@ export function step(
     events,
   );
 
+  const previousSecond = Math.floor(state.elapsedSec);
   state.elapsedSec += sec;
+  if (Math.floor(state.elapsedSec) !== previousSecond)
+    recycleDistant(state, sys);
   const sameNight = state.phase === "night";
   phaseTransition(state, sys, events);
   if (sameNight && state.phase === "night" && (rules.waves?.count ?? 1) > 1) {

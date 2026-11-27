@@ -1,0 +1,82 @@
+{
+  "levels": [
+    {
+      "identifier": "IceSled",
+      "pxWid": 80,
+      "pxHei": 80,
+      "layerInstances": [
+        {
+          "__identifier": "SurvivalTerrain",
+          "__type": "IntGrid",
+          "__cWid": 5,
+          "__cHei": 5,
+          "__gridSize": 16,
+          "intGridCsv": [
+            5, 3, 5, 3, 5, 5, 3, 5, 3, 5, 5, 3, 3, 3, 5, 5, 3, 5, 3, 5, 5, 3, 5,
+            3, 5
+          ]
+        },
+        {
+          "__identifier": "Entities",
+          "__type": "Entities",
+          "__cWid": 5,
+          "__cHei": 5,
+          "__gridSize": 16,
+          "entityInstances": [
+            {
+              "__identifier": "Prop",
+              "__grid": [2, 2],
+              "px": [32, 32],
+              "width": 16,
+              "height": 16,
+              "fieldInstances": [
+                {
+                  "__identifier": "kind",
+                  "__value": "sled"
+                },
+                {
+                  "__identifier": "interactive",
+                  "__value": true
+                }
+              ]
+            },
+            {
+              "__identifier": "Prop",
+              "__grid": [1, 1],
+              "px": [16, 16],
+              "width": 16,
+              "height": 16,
+              "fieldInstances": [
+                {
+                  "__identifier": "kind",
+                  "__value": "sled"
+                },
+                {
+                  "__identifier": "interactive",
+                  "__value": false
+                }
+              ]
+            },
+            {
+              "__identifier": "Prop",
+              "__grid": [3, 3],
+              "px": [48, 48],
+              "width": 16,
+              "height": 16,
+              "fieldInstances": [
+                {
+                  "__identifier": "kind",
+                  "__value": "sled"
+                },
+                {
+                  "__identifier": "interactive",
+                  "__value": false
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

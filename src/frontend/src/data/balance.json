@@ -8,6 +8,26 @@
     "logicalWidthPx": 384,
     "logicalHeightPx": 224
   },
+  "survival": {
+    "dayDurationMultiplier": 1,
+    "nightDurationMultiplier": 1,
+    "fuelConsumptionMultiplier": 1,
+    "coldHungerPerSecond": 0,
+    "hungerRateMultiplier": 1,
+    "spawnDensity": 1,
+    "resourceRefreshMultiplier": 1,
+    "resourceDensity": 1,
+    "spawnFrequency": 1,
+    "startingSupplyMultiplier": 1,
+    "minSpawnRadius": 15,
+    "maxSpawnRadius": 22,
+    "despawnRadius": 30,
+    "categoryCap": {
+      "hostile": 12,
+      "elite": 4,
+      "neutral": 12
+    }
+  },
   "clock": {
     "daySec": 300,
     "nightSec": 150,

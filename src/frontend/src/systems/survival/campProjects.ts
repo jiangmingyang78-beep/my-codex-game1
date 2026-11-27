@@ -1,4 +1,5 @@
-import config from "@/data/survivalCampProjects.json";
+import { loadDataFiles } from "@/core/gameData";
+const config = loadDataFiles().survivalCampProjects;
 
 export const { projects: campProjects, ...campProjectEffects } = config;
 export type CampProjectId = keyof typeof campProjects;
