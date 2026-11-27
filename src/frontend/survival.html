@@ -1171,8 +1171,8 @@ function updateEnemyThreats(dt){
     if(phase!=="play")return;
   }
 }
-function clearNightThreats(){
-  enemies=[];
+function clearNightThreats(keepEncounters=false){
+  enemies=keepEncounters?enemies.filter(e=>e.encounterEnemyKey&&e.hp>0):[];
   enemyProjectiles.length=0;enemyAoeZones.length=0;
   nightSpawnOrigin=null;
 }
@@ -2945,7 +2945,10 @@ function writeSave(report=false){
     const {x,y,hp,dx,dy}=player;
     survival.weather=serializeWeather(weatherState);
     survival.plants=serializePlants(plantRegistry);
-    const state={version:SAVE_VERSION,survival:convertSurvivalSave(survival,true),hero:{x,y,hp,dx,dy}};
+    const encounterEnemies=Object.fromEntries(enemies
+      .filter(enemy=>enemy.encounterEnemyKey&&enemy.hp>0)
+      .map(enemy=>[enemy.encounterEnemyKey,{x:enemy.x,y:enemy.y,hp:enemy.hp}]));
+    const state={version:SAVE_VERSION,survival:convertSurvivalSave({...survival,encounterEnemies},true),hero:{x,y,hp,dx,dy}};
     const serialized=JSON.stringify(state);
     worldBackups.set(activeWorld,serialized);
     localStorage.setItem(worldSlot(activeWorld),serialized);
@@ -3056,6 +3059,9 @@ function changeMode(next,worldId=activeWorld){
   Object.assign(player,saved?.hero??point(5,16));
   if(player.hp<1||!clearAt(player.x,player.y)){
     Object.assign(player,point(5,16));player.hp=MAX_HP;
+  }
+  for(const site of seededWorld?.encounters??[]){
+    if(survival.encounterProgress.spent.includes(site.id))spawnEncounterEnemies(site,survival.encounterEnemies??{});
   }
   seedNearbyPlants();
   updateWildlife();
@@ -4002,7 +4008,7 @@ function useHand(cell,id,at,plot,build){
     if(dayTime<DUSK_SECONDS){say("天还亮着。薄暮之后才能睡觉。","denied");return false;}
     const rest=DAY_SECONDS-dayTime;
     const savedHunger=insideCamp(cell.x,cell.y)&&campProjectDone("restCorner")?campProjectEffects.restHungerSaved:0;
-    survival.age+=rest;dayTime=0;clearNightThreats();emberBrazierTime=0;player.hp=Math.min(MAX_HP,player.hp+2);
+    survival.age+=rest;dayTime=0;clearNightThreats(true);emberBrazierTime=0;player.hp=Math.min(MAX_HP,player.hp+2);
     survival.hunger=Math.max(1,survival.hunger-(10-savedHunger));
     for(const animal of survival.animals)progressAnimal(animal,rest);
     updateTime();renderHud();say("你睡到了第二天黎明。","heal");return true;
@@ -4119,6 +4125,23 @@ function observeEncounters(){
   }
 }
 let discoveryTimer;
+function spawnEncounterEnemies(site,saved=null){
+  for(const [index,entity] of site.entities.entries()){
+    if(entity.kind!=="enemy")continue;
+    const key=site.id+":"+index, snapshot=saved?.[key];
+    if(saved!==null&&(!Number.isFinite(snapshot?.hp)||snapshot.hp<=0))continue;
+    const origin=point(entity.x,entity.y);
+    const mob=createSurvivalSeedEnemy(entity.ref,origin.x,origin.y,nightSerial++);
+    mob.persistent=true;mob.encounterEnemyKey=key;
+    if(snapshot){
+      mob.hp=Math.min(mob.max,snapshot.hp);
+      if(Number.isFinite(snapshot.x)&&Number.isFinite(snapshot.y)&&clearAt(snapshot.x,snapshot.y)){
+        mob.x=snapshot.x;mob.y=snapshot.y;
+      }
+    }
+    enemies.push(mob);
+  }
+}
 function resolveSite(site){
   const result=activateEncounter(survival.encounterProgress,site,survival.seed);
   if(!result)return false;
@@ -4126,10 +4149,7 @@ function resolveSite(site){
   dropGroundItems(at,result.loot);
   if(result.event.kind==="heal")player.hp=Math.min(maxHealth(),player.hp+2);
   if(result.event.kind==="trap"){player.hp=Math.max(0,player.hp-1);player.hurt=1;}
-  for(const e of site.entities)if(e.kind==="enemy"){
-    const at=point(e.x,e.y);
-    const mob=createSurvivalSeedEnemy(e.ref,at.x,at.y,nightSerial++);mob.persistent=true;enemies.push(mob);
-  }
+  spawnEncounterEnemies(site);
   renderHud();say(result.event.message);writeSave();
   if(player.hp<=0)finish(false);
   return true;
@@ -4170,7 +4190,7 @@ function updateSurvival(dt){
   const waves=nightWaves(Math.floor(survival.age/DAY_SECONDS)+1,tuning.spawnFrequency);
   const nextWave=waves>1 && waveSlot(dayTime,DUSK_SECONDS,DAY_SECONDS-DUSK_SECONDS,waves)>waveSlot(previous,DUSK_SECONDS,DAY_SECONDS-DUSK_SECONDS,waves);
   if(night&&(recycled||nextWave||previous<DUSK_SECONDS||nightSpawnOrigin&&distance(player,nightSpawnOrigin)>SIZE*24))spawnNight();
-  if(!night&&previous>=DUSK_SECONDS){clearNightThreats();setMessage("天亮了，夜行怪退回林中。");}
+  if(!night&&previous>=DUSK_SECONDS){clearNightThreats(true);setMessage("天亮了，夜行怪退回林中。");}
   if(weatherEvent)say("天气转变为："+weatherEvent.name);
   survival.hunger=Math.max(0,survival.hunger-dt*(player.moving?rates.movingHungerPerSec:rates.idleHungerPerSec));
   if(tuning.coldHungerPerSecond>0 && weatherMods.blizzard &&
@@ -4214,7 +4234,7 @@ function updateSurvival(dt){
 function respawnSurvival(){
   Object.assign(player,point(5,16));player.hp=MAX_HP;player.hurt=0;
   survival.hunger=72;survival.stock.wood=Math.ceil(survival.stock.wood*.75);
-  clearNightThreats();emberBrazierTime=0;phase="play";$("overlay").hidden=true;$("pause").disabled=false;keys.clear();
+  clearNightThreats(true);emberBrazierTime=0;phase="play";$("overlay").hidden=true;$("pause").disabled=false;keys.clear();
   renderHud();writeSave();setMessage("已在营地醒来。农田和建筑仍在，遗失了部分木材。");
 }
 function drawPlots(){
@@ -4780,6 +4800,7 @@ function strikeSurvivalEnemy(enemy,damage,dx,dy){
     }
   });
   enemy.hp=Math.max(0,enemy.hp);
+  if(enemy.encounterEnemyKey&&enemy.hp===0)writeSave();
   if(survival.stock.emberBlade>0){
     enemy.knockbackVx*=1.45;enemy.knockbackVy*=1.45;enemy.knockbackTimer=.18;
     sparks(enemy.x,enemy.y-4,"#ff8a4c",8,"ember",dx,dy);
