@@ -67,7 +67,8 @@
     ["cailiao-0034", "stock", "reed_root", "冰沼苇根"],
     ["cailiao-0035", "stock", "spore_cap", "冷光孢子"],
     ["cailiao-0036", "stock", "ash_compost", "灰烬堆肥"],
-    ["cailiao-0037", "stock", "ember_mulch", "余烬暖肥"]
+    ["cailiao-0037", "stock", "ember_mulch", "余烬暖肥"],
+    ["cailiao-0038", "stock", "charBlock", "窑烧炭块"]
   ],
   "食物": [
     ["shiwu-0001", "stock", "egg", "鸡蛋"],
@@ -83,7 +84,8 @@
     ["zhiliao-0001", "stock", "bandage", "绷带"],
     ["zhiliao-0002", "pickup", "heal", "生命补给"],
     ["zhiliao-0003", "stock", "salve", "银叶药膏"],
-    ["zhiliao-0004", "stock", "tonic", "霜露合剂"]
+    ["zhiliao-0004", "stock", "tonic", "霜露合剂"],
+    ["zhiliao-0005", "stock", "driedHerb", "暖身草药包"]
   ],
   "工具": [
     ["gongju-0001", "tool", "axe", "伐木斧"],

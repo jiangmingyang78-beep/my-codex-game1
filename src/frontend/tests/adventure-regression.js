@@ -23,6 +23,14 @@ async (page) => {
       const { EntityViews } = await import(live("/src/game/world/EntityViews.ts"));
       const { toVfxEvent } = await import(live("/src/core/vfxBridge.ts"));
       const q = (window.adventureQA = { session: null, texture: "", events: [], effects: [] });
+      q.messages=[];
+      const {ToastManager}=await import(live("/src/game/ui/ToastManager.ts"));
+      const push=ToastManager.prototype.push;
+      ToastManager.prototype.push=function(input){
+        const item=push.call(this,input);
+        if(item)q.messages.push(input.label);
+        return item;
+      };
       const advance = RunSession.prototype.advance;
       const sync = EntityViews.prototype.sync;
       RunSession.prototype.advance = function (...args) {
@@ -37,6 +45,7 @@ async (page) => {
         q.texture = this.hero.texture.key;
       };
     });
+  const toast=(fragment)=>page.waitForFunction(text=>window.adventureQA.messages.some(label=>label.includes(text)),fragment);
   const resetProbe = () =>
     page.evaluate(() => {
       window.adventureQA.session = null;
@@ -44,12 +53,13 @@ async (page) => {
     });
   const waitRun = (id) =>
     page.waitForFunction(
-      (id) => window.adventureQA.session?.state.heroId === id && window.adventureQA.texture === "hero:" + id,
+      (id) => window.adventureQA.session?.state.heroId === id && ["hero:"+id,"hero_sheet:"+id].includes(window.adventureQA.texture),
       id,
     );
   const toTitle = async () => {
     await key("Escape");
     await button("返回标题").click();
+    await page.locator('[data-ocid="title.adventure_button"]').click();
     await start().waitFor();
     await resetProbe();
   };
@@ -77,14 +87,15 @@ async (page) => {
     }, target);
   await page.goto("http://127.0.0.1:4179/");
   await page.setViewportSize({ width: 1280, height: 720 });
-  await start().waitFor();
+  await page.locator('[data-ocid="title.adventure_button"]').click();
+    await start().waitFor();
   check(await resume().isDisabled(), "请在新的 Playwright 浏览器会话运行");
   await installProbe();
   check((await page.getByRole("button", { name: /已解锁|未解锁/ }).count()) === 5, "five title cards");
-  await page.getByRole("button", { name: /^格雷/ }).click();
+  await page.getByRole("button", { name: /格雷/ }).click();
   check(await start().isDisabled(), "locked new game");
   await page.getByText(/解锁条件.*旧磨坊督工/).waitFor();
-  await page.getByRole("button", { name: /^凛/ }).click();
+  await page.getByRole("button", { name: /凛/ }).click();
   await start().click();
   await start().waitFor({ state: "detached" });
   await waitRun("lin_tinder");
@@ -101,11 +112,11 @@ async (page) => {
     const x = 34.5 * sys.data.tileSize;
     const y = 24.5 * sys.data.tileSize;
     sys.data.enemies.get(enemy.enemyId).specialKey = "front_shield";
-    Object.assign(enemy, { x, y, dirX: -1, dirY: 0, phase: "chase" });
+    Object.assign(enemy, { x, y, dirX: -1, dirY: 0, cooldownSec: 4, homeX:x,homeY:y,phase: "chase" });
     Object.assign(state.hero, { x: x - 15, y, facingX: 1, facingY: 0, attackCooldownSec: 0 });
   });
   await key("Space");
-  await page.getByText(/攻击被护盾挡住/).waitFor();
+  await toast("冻木盾格挡");
   check(
     await page.evaluate(() => {
       const q = window.adventureQA;
@@ -132,10 +143,10 @@ async (page) => {
     });
   });
   await key("Space");
-  await page.getByText(/英雄解锁：格雷/).waitFor();
+  await toast("格雷");
   await page.waitForFunction(() => window.adventureQA.session.state.seals.includes("old_mill_ember_seal"));
   await toTitle();
-  await page.getByRole("button", { name: /^格雷/ }).click();
+  await page.getByRole("button", { name: /格雷/ }).click();
   check(await start().isEnabled(), "Gale unlocked from normal boss hit");
   await start().click();
   await waitRun("gale_smith");
@@ -168,16 +179,17 @@ async (page) => {
     localStorage.setItem(sys.data.balance.storage.runKey, JSON.stringify({ schemaVersion: 2, savedAt: 1, state }));
   });
   await page.reload();
-  await start().waitFor();
+  await page.locator('[data-ocid="title.adventure_button"]').click();
+    await start().waitFor();
   await installProbe();
-  await page.getByRole("button", { name: /^格雷/ }).click();
+  await page.getByRole("button", { name: /格雷/ }).click();
   await resume().click();
   await waitRun("lin_tinder");
   check(
     await page.evaluate(() => {
       const s = window.adventureQA.session.state;
       return (
-        s.schemaVersion === 3 &&
+        s.schemaVersion === 4 &&
         s.inventory.wood === 17 &&
         s.seals.length === 2 &&
         s.changesByObjectId.old_mill_gate.opened
@@ -192,43 +204,46 @@ async (page) => {
       const { runKey, runBackupKey } = window.adventureQA.session.sys.data.balance.storage;
       const run = JSON.parse(localStorage.getItem(runKey));
       return (
-        run.schemaVersion === 3 &&
+        run.schemaVersion === 4 &&
         run.state.heroId === "lin_tinder" &&
         JSON.parse(localStorage.getItem(runBackupKey)).schemaVersion === 2
       );
     }),
-    "v3 save and v2 backup",
+    "v4 save and v2 backup",
   );
   await page.reload();
-  await start().waitFor();
+  await page.locator('[data-ocid="title.adventure_button"]').click();
+    await start().waitFor();
   await installProbe();
   await resume().click();
   await waitRun("lin_tinder");
   await teleport({ x: 95.75 * 16, y: 24.5 * 16 });
-  await key("d");
-  await page.getByText(/进入：密林深处.*枝叶间有脚步声/).waitFor();
-  await teleport({ node: "berry", region: "deep_woods" });
+  await page.keyboard.down("d");
+  await page.waitForFunction(()=>window.adventureQA.session.state.regionId==="deep_woods");
+  await page.keyboard.up("d");
+  await toast("进入：幽暗冻沼");
+  await teleport({ node: "herb", region: "deep_woods" });
   await key("e");
-  await page.getByText(/获得 红莓/).waitFor();
+  await toast("雪地草药");
   await page.evaluate(() => {
     const { state, sys } = window.adventureQA.session;
     state.elapsedSec = sys.data.balance.clock.daySec - 0.01;
   });
-  await page.waitForFunction(() => window.adventureQA.session.state.nightRaid?.spawnedIds.length === 2);
+  await page.waitForFunction(() => window.adventureQA.session.state.nightRaid?.spawnedIds.length === 1);
   await teleport({ id: "frost_ridge_gate", dx: -17 });
   await key("e");
   await page.waitForFunction(() => window.adventureQA.session.state.changesByObjectId.frost_ridge_gate?.opened);
   await page.keyboard.down("d");
   await page.waitForFunction(() => window.adventureQA.session.state.regionId === "frost_ridge");
   await page.keyboard.up("d");
-  await page.getByText(/进入：霜渊山脊/).waitFor();
-  await teleport({ node: "ore", region: "frost_ridge" });
+  await toast("进入：霜冻古道");
+  await teleport({ node: "ore", region: "ice_gorge" });
   await key("e");
-  await page.getByText(/获得 铁矿/).waitFor();
+  await toast("铁矿");
   await teleport({ id: "final_beacon", dx: -16 });
   await page.getByText("E 点燃山脊烽台（需 2 枚炉印）", { exact: true }).waitFor();
   await key("e");
-  await page.getByText("需要先取得所需的炉印", { exact: true }).waitFor();
+  await toast("需要先取得所需的炉印");
   await page.evaluate(() => {
     const { state } = window.adventureQA.session;
     const boss = state.enemiesById.ridge_warden;
@@ -252,7 +267,7 @@ async (page) => {
   });
   await key("Space");
   await page.getByText(/目标：前往山脊东端，点燃烽台/).waitFor();
-  await page.getByText(/英雄解锁：艾尔文/).waitFor();
+  await toast("艾尔文");
   check(
     await page.evaluate(() => window.adventureQA.session.state.inventory.ember_seal === 3),
     "legacy seal still present",
@@ -275,5 +290,5 @@ async (page) => {
     "win settled once and unlocks camp note",
   );
   check(errors.length === 0, "page errors: " + errors.join(", "));
-  return "通过：标题选人、贴图与初始背包、护盾格挡、v2/v3 存档、两区采集与夜袭、双炉印、爆炸特效和胜利页";
+  return "通过：标题选人、贴图与初始背包、护盾格挡、v2/v4 存档、两区采集与夜袭、双炉印、爆炸特效和胜利页";
 }

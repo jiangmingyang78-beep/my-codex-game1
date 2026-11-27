@@ -1,4 +1,5 @@
 import { getBrowserStorage } from "@/core";
+import survivalSounds from "@/data/survivalSfx.json";
 import { MUTE_STORAGE_KEY } from "../config";
 import { uiStore } from "../ui/store";
 
@@ -10,6 +11,10 @@ export type SfxName =
   | "boss_phase"
   | "pickup"
   | "nightfall"
+  | "dusk"
+  | "raidWind"
+  | "raidGrowl"
+  | "raidClose"
   | "riposte_arm"
   | "riposte_strike"
   | "ui";
@@ -19,11 +24,13 @@ interface Tone {
   endFreq?: number;
   start: number;
   dur: number;
-  type: OscillatorType;
+  type: OscillatorType | "wind";
+  attackSec?: number;
   gain: number;
 }
 
 const SOUNDS: Record<SfxName, Tone[]> = {
+  ...(survivalSounds as Record<keyof typeof survivalSounds, Tone[]>),
   gather: [
     {
       freq: 220,
@@ -198,20 +205,53 @@ export function toggleMuted(): void {
 /** Plays a short generated effect. Silent until a gesture unlocked the context, or when muted. */
 export function playSfx(name: SfxName): void {
   if (muted || !context || context.state !== "running") return;
-  const ctx = context;
+  playContextSfx(context, context.destination, name);
+}
+
+export function playContextSfx(
+  ctx: AudioContext,
+  output: AudioNode,
+  name: SfxName,
+) {
   const now = ctx.currentTime;
   for (const tone of SOUNDS[name]) {
-    const osc = ctx.createOscillator();
     const gain = ctx.createGain();
-    osc.type = tone.type;
     const t0 = now + tone.start;
-    osc.frequency.setValueAtTime(tone.freq, t0);
+    let source: OscillatorNode | AudioBufferSourceNode;
+    let pitch: AudioParam;
+    if (tone.type === "wind") {
+      const noise = ctx.createBuffer(
+        1,
+        Math.ceil(ctx.sampleRate * tone.dur),
+        ctx.sampleRate,
+      );
+      const samples = noise.getChannelData(0);
+      for (let i = 0; i < samples.length; i++)
+        samples[i] = Math.random() * 2 - 1;
+      const wind = ctx.createBufferSource();
+      wind.buffer = noise;
+      const filter = ctx.createBiquadFilter();
+      filter.type = "bandpass";
+      wind.connect(filter).connect(gain);
+      source = wind;
+      pitch = filter.frequency;
+    } else {
+      const osc = ctx.createOscillator();
+      osc.type = tone.type;
+      osc.connect(gain);
+      source = osc;
+      pitch = osc.frequency;
+    }
+    pitch.setValueAtTime(tone.freq, t0);
     if (tone.endFreq)
-      osc.frequency.exponentialRampToValueAtTime(tone.endFreq, t0 + tone.dur);
-    gain.gain.setValueAtTime(tone.gain, t0);
+      pitch.exponentialRampToValueAtTime(tone.endFreq, t0 + tone.dur);
+    if (tone.attackSec) {
+      gain.gain.setValueAtTime(0, t0);
+      gain.gain.linearRampToValueAtTime(tone.gain, t0 + tone.attackSec);
+    } else gain.gain.setValueAtTime(tone.gain, t0);
     gain.gain.exponentialRampToValueAtTime(0.0001, t0 + tone.dur);
-    osc.connect(gain).connect(ctx.destination);
-    osc.start(t0);
-    osc.stop(t0 + tone.dur + 0.02);
+    gain.connect(output);
+    source.start(t0);
+    source.stop(t0 + tone.dur + 0.02);
   }
 }

@@ -160,6 +160,14 @@ export function validateGameData(input: Inputs): GameData {
     const p = `recipes.json.recipes[${i}]`;
     if (r.stationId !== worldObjects.mainCampfireId)
       invalid(`${p}.stationId`, "unknown crafting station");
+    if (r.unlockOnPickup) refs(items, r.unlockOnPickup, `${p}.unlockOnPickup`);
+    for (const project of r.unlockOnCampProject ?? []) {
+      if (
+        recipes.get(project)?.output.type !== "camp_level" &&
+        !regionList.some((r) => r.relaySocketId === project)
+      )
+        invalid(`${p}.unlockOnCampProject`, `unknown camp upgrade ${project}`);
+    }
     keys(items, r.inputs, `${p}.inputs`);
     if (r.output.type === "item")
       reference(items, r.output.id, `${p}.output.id`);

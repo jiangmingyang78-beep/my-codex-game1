@@ -4,13 +4,32 @@ import type { GameEvent } from "./types";
 
 /** Shape accepted by createEffects(...).emit(). x and y are always finite. */
 export interface VfxEvent {
-  type: "combat.hit" | "resource.collected" | "camp.lit" | "camp.ember";
+  type:
+    | "combat.hit"
+    | "resource.collected"
+    | "camp.lit"
+    | "camp.ember"
+    | "element.steam";
   x: number;
   y: number;
   payload: Record<string, unknown>;
 }
 
+export function elementMark(e: GameEvent) {
+  if (e.type !== "element.changed" || e.x === null || e.y === null) return null;
+  const surface = e.payload.surface;
+  if (
+    surface !== "burning" &&
+    surface !== "scorched" &&
+    surface !== "frost" &&
+    surface !== "melted" &&
+    surface !== "clear"
+  )
+    return null;
+  return { x: e.x, y: e.y, surface };
+}
 const FORWARDED = new Set([
+  "element.steam",
   "combat.hit",
   "resource.collected",
   "camp.lit",

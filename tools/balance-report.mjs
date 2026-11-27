@@ -1,4 +1,5 @@
 import {resolveSurvivalTuning,survivalRates} from "../src/frontend/src/systems/survivalOverrides.js";
+import { winterDay, raidBudget, raidRules, winter } from "../src/frontend/src/systems/survival/rhythm.js";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -7,6 +8,7 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const DATA_DIR = path.join(ROOT, "src", "frontend", "src", "data");
 const LAYOUT_PATH = path.join(ROOT, "src", "frontend", "src", "systems", "world", "worldLayout.ts");
 const REPORT_PATH = path.join(ROOT, "docs", "BALANCE_REPORT.md");
+const PLAYTEST_PATH = path.join(ROOT, "docs", "BALANCE_PLAYTEST.md");
 const SUMMARY_ONLY = process.argv.includes("--summary");
 const c = {
   b: (s) => `\x1b[1m${s}\x1b[0m`, cyan: (s) => `\x1b[36m${s}\x1b[0m`,
@@ -262,8 +264,19 @@ function main() {
     addAlert("生存覆写", "🚨 严重", "survival-balance.json", error.message);
   }
   const effective = survivalRates(tuning);
-  const survivalSummary = `白昼 ${effective.daySec}s / 夜间 ${effective.nightSec}s；静止 / 移动饥饿 ${effective.idleHungerPerSec} / ${effective.movingHungerPerSec} 点/秒；暴雪受寒额外 ${effective.coldHungerPerSec} 点/秒；野生资源刷新 ${effective.wildRegrowthSec}s；晴夜基础波量 ${effective.clearNightWaveSize}，波次倍率 ${tuning.spawnFrequency}；营火制作燃煤倍率 ${tuning.fuelConsumptionMultiplier}。`;
-  console.log("生存数值体检", survivalSummary);
+  const survivalSummary = `昼夜基础权重 ${effective.daySec} / ${effective.nightSec}（周期 ${effective.daySec+effective.nightSec}s）；静止 / 移动饥饿 ${effective.idleHungerPerSec} / ${effective.movingHungerPerSec} 点/秒；暴雪受寒额外 ${effective.coldHungerPerSec} 点/秒；野生资源刷新 ${effective.wildRegrowthSec}s；晴夜基础波量 ${effective.clearNightWaveSize}，波次倍率 ${tuning.spawnFrequency}；营火制作燃煤倍率 ${tuning.fuelConsumptionMultiplier}。`;
+  const blizzard=readJson("weather.json").weathers.find(w=>w.id==="blizzard");
+  const pressureRows=[[1,0,0],[5,2,0],[12,4,blizzard.winterShift]].map(([day,tier,shift])=>{
+    const clock=winterDay(day,effective.daySec,effective.nightSec,shift);
+    return [day,shift?blizzard.name:"晴冷微风","T"+tier,clock.duskStart.toFixed(1),
+      (clock.nightStart-clock.duskStart).toFixed(1),(clock.cycle-clock.nightStart).toFixed(1),
+      (clock.cold*(winter.exposedNightHunger+(shift?tuning.coldHungerPerSecond:0))).toFixed(3),
+      raidBudget(day,tier,effective.clearNightWaveSize,shift?blizzard.spawnRateMult:1)];
+  });
+  const pressure=mdTable(["生存日","黎明天气","营地","白昼秒","黄昏秒","长夜秒","暴露额外饥饿/秒","袭营预算（若触发）"],pressureRows);
+  const interval=tuning.spawnFrequency>0?[ -1,1 ].map(sign=>Math.max(1,Math.round((raidRules.intervalDays+sign*raidRules.jitterDays)/tuning.spawnFrequency))).join("–")+" 天":"已关闭";
+  const raidSummary="袭营间隔 "+interval+"，提前 "+raidRules.warningMinSec+"–"+raidRules.warningMaxSec+" 秒预警。";
+  console.log("生存数值体检", survivalSummary,"\n"+raidSummary+"\n"+pressure);
   const critN = alerts.filter((a) => a.sev.includes("严重")).length, warnN = alerts.filter((a) => a.sev.includes("警告")).length;
   console.log(c.b("\n=== 《余烬林：最后一炬》数值平衡与经济体检摘要 ==="));
   console.log(`统计范围：物品 ${c.cyan(itemsData.items.length)} | 配方 ${c.cyan(recipesData.recipes.length)} | 怪物 ${c.cyan(allEnemies.length)} | 实装区域 ${c.cyan(layout.regions.length)}/${regionsData.regions.length}`);
@@ -282,9 +295,10 @@ function main() {
     console.log("\n@@CONSOLE@@" + JSON.stringify({ alerts, ttkRisks, materials: econRows.map(r => r[0] + " · " + r[7]) }));
   };
   if (SUMMARY_ONLY) { console.log(c.dim("\n[--summary] 仅终端打印，未改写 docs/BALANCE_REPORT.md。\n")); emit(); return; }
+  const playtest = fs.existsSync(PLAYTEST_PATH) ? fs.readFileSync(PLAYTEST_PATH, "utf8").trim() : "";
   const md = [
     "# 数值平衡与经济体检报告（BALANCE_REPORT）", "",
-    "> 由 `pnpm bal` (`tools/balance-report.mjs`) 只读解析 `src/frontend/src/data/*.json` 与 `worldLayout.ts` 生成。",
+    "> 由 `pnpm bal`（`tools/balance-report.mjs`）生成。配置指标来自游戏数据，实测记录来自 `docs/BALANCE_PLAYTEST.md`。",
     `> 统计：物品 \`${itemsData.items.length}\` 项 · 配方 \`${recipesData.recipes.length}\` 条 · 怪物 \`${allEnemies.length}\` 项 · 实装区域 \`${layout.regions.length}\` 个。`, "",
     "## 1. 战斗 TTK 与容错表", "", mdTable(combatHeaders, combatRows), "",
     `- TTK 公式：\`(ceil(HP / 伤害) - 1) × ${cd}s\`；非格雷同时持有铁矛+淬炭短刃同为 4 伤，格雷可达 5 伤。`, "",
@@ -292,7 +306,8 @@ function main() {
     mdTable(["材料", "唯一/进度消耗", "可重复(单次)", "合计", "固定采集产出", "黎明再生", "其他来源", "经济诊断"], econRows), "",
     "## 3. 怪物威胁度与永恒模式参考表", "",
     mdTable(["怪物", "来源/区域", "行为", "HP", "有效伤害", "循环(s)", "攻速", "移速", "威胁分", "评级", "建议信用点", "备注"], threatRows), "",
-    "## 生存模式有效配置", "", survivalSummary, "",
+    "## 生存模式有效配置", "", survivalSummary, "", raidSummary, "", pressure, "",
+    ...(playtest ? [playtest, ""] : []),
     "## 4. 配置健康度告警", "",
     mdTable(["检查类别", "级别", "涉及对象", "详细说明"], alerts.map((a) => [a.cat, a.sev, a.target, a.detail])), "",
   ].join("\n");

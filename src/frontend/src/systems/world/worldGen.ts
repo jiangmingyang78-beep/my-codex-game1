@@ -179,6 +179,7 @@ export function generateWorld(
   add({
     id: data.worldObjects.mainCampfireId,
     kind: "campfire",
+    fireproof: true,
     regionId: data.balance.starting.regionId,
     ...pos(campfire),
   });

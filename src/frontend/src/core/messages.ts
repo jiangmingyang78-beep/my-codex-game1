@@ -5,6 +5,7 @@ import type { LoreData } from "./dataTypes";
 const REASONS: Record<string, string> = {
   unknown_item: "未知物品",
   unknown_recipe: "未知配方",
+  recipe_locked: "尚未解锁这个配方",
   not_usable: "这个物品不能直接使用",
   not_owned: "背包里没有这个物品",
   stat_full: "生命已满，无需使用",

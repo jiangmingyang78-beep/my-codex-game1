@@ -19,6 +19,7 @@ type SurvivalFiles = Pick<
   | "survivalCampProjects"
   | "survivalCatalog"
   | "survivalRecipes"
+  | "survivalRhythm"
   | "metaUnlocks"
 >;
 export function validateSurvivalReferences(
@@ -80,6 +81,26 @@ export function validateSurvivalReferences(
       if (group === "stock") stock.add(key);
       if (group === "build") builds.add(key);
     });
+  const { raid } = files.survivalRhythm;
+  if (
+    !(
+      raid.urgentSec < raid.nearSec &&
+      raid.nearSec < raid.warningMinSec &&
+      raid.warningMinSec <= raid.warningMaxSec
+    )
+  )
+    invalid("survivalRhythm.json.raid", "invalid warning stages");
+  if (raid.jitterDays >= raid.intervalDays)
+    invalid(
+      "survivalRhythm.json.raid.jitterDays",
+      "must be less than intervalDays",
+    );
+  const projectIds = new Set(Object.keys(files.survivalCampProjects.projects));
+  keys(
+    stock,
+    files.survivalCampProjects.hearth.fuelValues,
+    "survivalCampProjects.json.hearth.fuelValues",
+  );
   for (const id of ["wellhead", "restCorner", "feedingTrough"]) {
     if (!Object.hasOwn(files.survivalCampProjects.projects, id))
       invalid(
@@ -89,8 +110,32 @@ export function validateSurvivalReferences(
   }
   for (const [id, project] of Object.entries(
     files.survivalCampProjects.projects,
-  ))
-    keys(stock, project.cost, `survivalCampProjects.json.projects.${id}.cost`);
+  )) {
+    const path = `survivalCampProjects.json.projects.${id}`;
+    keys(stock, project.cost, `${path}.cost`);
+    if ("legacyCredit" in project) {
+      const materials = new Set(Object.keys(project.cost));
+      keys(materials, project.legacyCredit, `${path}.legacyCredit`);
+      for (const [item, legacyItem] of Object.entries(project.legacyCredit)) {
+        reference(stock, legacyItem, `${path}.legacyCredit.${item}`);
+        if (materials.has(legacyItem))
+          invalid(
+            `${path}.legacyCredit.${item}`,
+            "expected a retired material",
+          );
+      }
+    }
+    if ("requires" in project)
+      for (const parent of project.requires) {
+        reference(projectIds, parent, `${path}.requires`);
+        const def =
+          files.survivalCampProjects.projects[
+            parent as keyof typeof files.survivalCampProjects.projects
+          ];
+        if (!("tier" in def) || def.tier >= project.tier)
+          invalid(`${path}.requires`, "expected an earlier tier");
+      }
+  }
   const unlocks = index(files.metaUnlocks, (r) => r.id, "metaUnlocks.json");
   const survivalRecipes = new Set(Object.keys(files.survivalRecipes));
   for (const [id, recipe] of Object.entries(files.survivalRecipes)) {
@@ -98,6 +143,8 @@ export function validateSurvivalReferences(
     reference(stock, id, path);
     keys(stock, recipe.cost, `${path}.cost`);
     if ("tech" in recipe) reference(technologies, recipe.tech, `${path}.tech`);
+    if ("project" in recipe)
+      reference(projectIds, recipe.project, `${path}.project`);
     if ("metaUnlock" in recipe)
       reference(unlocks, recipe.metaUnlock, `${path}.metaUnlock`);
   }

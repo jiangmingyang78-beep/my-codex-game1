@@ -9,6 +9,7 @@ export function createWeatherRenderer() {
     speed: 1,
     size: 1,
     opacity: 1,
+    landingY: 0,
   }));
   let width = 0;
   let height = 0;
@@ -22,6 +23,11 @@ export function createWeatherRenderer() {
     particle.speed = 0.55 + Math.random() * 0.9;
     particle.size = Math.random() < 0.68 ? 1 : 2;
     particle.opacity = 0.35 + Math.random() * 0.6;
+    if (kind === "rain") {
+      particle.landingY = spread
+        ? particle.y + Math.random() * (height - particle.y)
+        : Math.random() * height;
+    }
   }
 
   function drawParticle(
@@ -54,6 +60,7 @@ export function createWeatherRenderer() {
       dt: number,
       mods: ReturnType<typeof getWeatherModifiers>,
       reducedMotion: boolean,
+      onRainImpact?: (x: number, y: number) => void,
     ) {
       if (width !== viewWidth || height !== viewHeight || context !== ctx) {
         width = viewWidth;
@@ -102,7 +109,17 @@ export function createWeatherRenderer() {
           p.y += mods.fallSpeed * p.speed * dt;
           if (p.x < -8) p.x += width + 16;
           else if (p.x > width + 8) p.x -= width + 16;
-          if (p.y > height + 8) reset(p, false);
+          const rainTip = p.y + 4 + p.size * 2;
+          if (
+            kind === "rain" &&
+            dt > 0 &&
+            onRainImpact &&
+            i % 3 === 0 &&
+            rainTip >= p.landingY
+          ) {
+            if (p.x >= 0 && p.x < width) onRainImpact(p.x, p.landingY);
+            reset(p, false);
+          } else if (p.y > height + 8) reset(p, false);
           drawParticle(ctx, p, mods.windX);
         }
       }

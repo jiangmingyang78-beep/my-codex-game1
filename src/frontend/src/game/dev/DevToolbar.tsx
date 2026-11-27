@@ -2,9 +2,11 @@ import { useEffect, useState } from "react";
 import { PixelButton } from "../ui/PixelButton";
 import { type DevEnemyOption, commands } from "../ui/commands";
 import { toast } from "../ui/toastBridge";
+import { renderMetrics } from "./renderMetrics";
 import { spawnDebug } from "./spawnDebug";
 
 export function DevToolbar() {
+  const [renderMs, setRenderMs] = useState(0);
   const [debug, setDebug] = useState(spawnDebug.enabled);
   const [open, setOpen] = useState(false);
   const [godMode, setGodMode] = useState(
@@ -17,6 +19,24 @@ export function DevToolbar() {
     () =>
       enemies.find((e) => e.id === "mill_overseer")?.id ?? enemies[0]?.id ?? "",
   );
+
+  useEffect(() => {
+    if (!open) return;
+    const id = window.setInterval(() => setRenderMs(renderMetrics.cpuMs), 500);
+    return () => window.clearInterval(id);
+  }, [open]);
+  const syncDevList = () => {
+    const list = commands.dev?.listEnemies() ?? [];
+    if (list.length > 0) {
+      setEnemies(list);
+      setSelectedEnemy(
+        (prev) =>
+          prev ||
+          (list.find((e) => e.id === "mill_overseer")?.id ?? list[0].id),
+      );
+    }
+    setGodMode(commands.dev?.isGodMode() ?? false);
+  };
 
   useEffect(() => {
     if (!import.meta.env.DEV) return;
@@ -35,7 +55,22 @@ export function DevToolbar() {
       if (tag === "INPUT" || tag === "TEXTAREA") return;
       if (event.code === "Backquote") {
         event.preventDefault();
-        setOpen((prev) => !prev);
+        setOpen((prev) => {
+          if (!prev) {
+            const refreshed = commands.dev?.listEnemies() ?? [];
+            if (refreshed.length > 0) {
+              setEnemies(refreshed);
+              setSelectedEnemy(
+                (sel) =>
+                  sel ||
+                  (refreshed.find((e) => e.id === "mill_overseer")?.id ??
+                    refreshed[0].id),
+              );
+            }
+            setGodMode(commands.dev?.isGodMode() ?? false);
+          }
+          return !prev;
+        });
       }
     };
     window.addEventListener("keydown", onKeyDown);
@@ -55,7 +90,10 @@ export function DevToolbar() {
         <PixelButton
           variant="ghost"
           aria-label="打开 DEV 调试面板"
-          onClick={() => setOpen(true)}
+          onClick={() => {
+            syncDevList();
+            setOpen(true);
+          }}
           className="font-pixel px-2 py-1 text-xs text-frost"
         >
           DEV
@@ -71,7 +109,7 @@ export function DevToolbar() {
     >
       <div className="flex items-center justify-between gap-2">
         <span className="font-pixel font-bold text-ember">
-          DEV 调试浮条 (`)
+          DEV · 渲染 CPU {renderMs.toFixed(2)} ms
         </span>
         <PixelButton
           variant="ghost"

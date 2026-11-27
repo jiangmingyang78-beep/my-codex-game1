@@ -16,6 +16,7 @@ import type {
 
 const PHASES: readonly EnemyPhase[] = [
   "idle",
+  "SKIRT_LIGHT",
   "chase",
   "windup",
   "attack",
@@ -98,6 +99,10 @@ export function readEnemies(
     out[id] = {
       id,
       enemyId: def.id,
+      targetId: typeof e.targetId === "string" ? e.targetId : undefined,
+      threatId: typeof e.threatId === "string" ? e.threatId : undefined,
+      threatUntil: num(e.threatUntil ?? 0, "threat_time", 0),
+      retreating: e.retreating === true,
       persistent:
         e.persistent === true || sys.world.spawns.has(String(e.spawnId)),
       taskLocked: e.taskLocked === true,
@@ -153,6 +158,8 @@ export function readExtras(
     .map((v) => {
       const p = rec(v, "projectile");
       return {
+        targetId: typeof p.targetId === "string" ? p.targetId : undefined,
+        sourceId: typeof p.sourceId === "string" ? p.sourceId : undefined,
         id: str(p.id, "projectile"),
         x: num(p.x, "projectile"),
         y: num(p.y, "projectile"),

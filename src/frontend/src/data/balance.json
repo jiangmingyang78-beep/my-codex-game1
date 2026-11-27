@@ -9,6 +9,9 @@
     "logicalHeightPx": 224
   },
   "survival": {
+    "brightCost": 2,
+    "fireCost": 12,
+    "hearingTiles": 2,
     "dayDurationMultiplier": 1,
     "nightDurationMultiplier": 1,
     "fuelConsumptionMultiplier": 1,

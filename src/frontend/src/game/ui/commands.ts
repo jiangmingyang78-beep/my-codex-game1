@@ -38,6 +38,7 @@ export interface GameCommands {
   save(): boolean;
   toTitle(): void;
   restart(): void;
+  viewRecipe(recipeId: string): void;
   craft(recipeId: string): void;
   quickUse(slot: number): void;
   interact(): void;
@@ -62,6 +63,7 @@ function freshCommands(): GameCommands {
     save: () => false,
     toTitle: returnToTitle,
     restart: noop,
+    viewRecipe: noop,
     craft: noop,
     quickUse: noop,
     interact: noop,

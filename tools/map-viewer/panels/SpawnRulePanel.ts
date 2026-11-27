@@ -72,6 +72,7 @@ export function rulePanel(root: HTMLElement, s: Session) {
         [k],
         (
           {
+            brightCost:"强光绕行代价",fireCost:"火焰绕行代价",hearingTiles:"听觉距离（格）",
             dayDurationMultiplier: "白昼时长倍率",
             nightDurationMultiplier: "夜晚时长倍率",
             fuelConsumptionMultiplier: "营火制作燃煤倍率",

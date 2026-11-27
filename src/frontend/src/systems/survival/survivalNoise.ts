@@ -6,7 +6,9 @@ export interface SurvivalChunk {
   regions: Uint8Array;
 }
 
-const lerp = (a: number, b: number, t: number): number => a + (b - a) * t;
+export function lerp(a: number, b: number, t: number): number {
+  return a + (b - a) * t;
+}
 
 // Hash signed grid coordinates directly, so loading order never affects the seed.
 export function chunkHash(

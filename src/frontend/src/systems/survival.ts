@@ -45,7 +45,8 @@ export function damageHero(
     return false;
   }
   if (hero.invulnerableSec > 0) return false;
-  const isEnvDamage = cause === "hunger" || cause === "darkness";
+  const isEnvDamage =
+    cause === "hunger" || cause === "darkness" || cause === "burn";
   if (!isEnvDamage) {
     const blockCooldown = bucklerBlockCooldown(sys.data, state.inventory);
     if (blockCooldown !== null && (bucklerTimers.get(state) ?? 0) <= 0) {
@@ -171,7 +172,14 @@ export function tickSurvival(
     hero.darknessDamageSec = 0;
     return;
   }
-  const regionDrain = evaluateRegionModifiers(state, sys).lightDrainMult;
+  const warmEmbers =
+    state.elements.size &&
+    state.elements.at(
+      Math.floor(hero.x / sys.data.tileSize),
+      Math.floor(hero.y / sys.data.tileSize),
+    )?.scorched;
+  const regionDrain =
+    evaluateRegionModifiers(state, sys).lightDrainMult * (warmEmbers ? 0.8 : 1);
   hero.light = Math.max(
     0,
     hero.light -

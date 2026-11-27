@@ -2,6 +2,7 @@
   "enemies": [
     {
       "id": "snow_weasel",
+      "faction": "beast",
       "name": "雪鼬",
       "regionIds": ["camp_edge", "old_mill"],
       "scope": "shared",
@@ -37,6 +38,8 @@
     },
     {
       "id": "frost_rat",
+      "elementResistance": { "chill": 1 },
+      "faction": "beast",
       "name": "霜毛雪鼠",
       "regionIds": ["camp_edge"],
       "scope": "shared",
@@ -62,6 +65,8 @@
     },
     {
       "id": "ash_wolf",
+      "faction": "beast",
+      "territoryRadius": 10,
       "name": "灰烬恶狼",
       "regionIds": ["old_mill", "deep_woods", "frozen_brook", "burnt_caravan"],
       "scope": "shared",
@@ -92,6 +97,9 @@
     },
     {
       "id": "shadow_lynx",
+      "faction": "shadow",
+      "activeWindow": "night",
+      "fearLightThreshold": 7,
       "name": "黑雾山猫",
       "regionIds": ["deep_woods", "frost_ridge", "herbalist_hollow"],
       "scope": "shared",
@@ -122,6 +130,7 @@
     },
     {
       "id": "rotted_woodcutter",
+      "faction": "construct",
       "name": "迷雾朽木人",
       "regionIds": ["camp_edge", "old_mill", "frozen_brook"],
       "scope": "shared",
@@ -150,6 +159,8 @@
     },
     {
       "id": "cinder_husk",
+      "elementResistance": { "burn": 1 },
+      "faction": "shadow",
       "name": "余烬焦尸",
       "regionIds": ["old_mill", "deep_woods"],
       "scope": "shared",
@@ -178,6 +189,8 @@
     },
     {
       "id": "frozen_guard",
+      "elementResistance": { "chill": 1 },
+      "faction": "construct",
       "name": "霜甲卫兵",
       "regionIds": ["frost_ridge"],
       "scope": "shared",
@@ -207,6 +220,7 @@
     },
     {
       "id": "frost_crow",
+      "faction": "beast",
       "name": "寒鸦投掷者",
       "regionIds": ["old_mill", "deep_woods"],
       "scope": "shared",
@@ -236,6 +250,7 @@
     },
     {
       "id": "bog_spitter",
+      "faction": "beast",
       "name": "冻沼毒孢怪",
       "regionIds": ["deep_woods", "herbalist_hollow"],
       "scope": "shared",
@@ -265,6 +280,8 @@
     },
     {
       "id": "ember_wisp",
+      "elementResistance": { "burn": 1 },
+      "faction": "shadow",
       "name": "游离鬼火灵",
       "regionIds": ["deep_woods", "frost_ridge", "ice_gorge", "blackened_outpost"],
       "scope": "shared",
@@ -289,6 +306,7 @@
     },
     {
       "id": "mill_overseer",
+      "faction": "construct",
       "name": "旧磨坊督工（炉印守卫）",
       "regionIds": ["old_mill"],
       "scope": "adventure_only",
@@ -343,6 +361,7 @@
     },
     {
       "id": "summit_pyre_warden",
+      "faction": "construct",
       "name": "霜渊守炬者（最终守卫）",
       "regionIds": ["frost_ridge"],
       "scope": "adventure_only",
@@ -411,6 +430,7 @@
     },
     {
       "id": "frost_shield_bearer",
+      "faction": "construct",
       "name": "冻木盾卫",
       "scope": "adventure_only",
       "specialKey": "front_shield",
@@ -443,6 +463,8 @@
     },
     {
       "id": "scarred_alpha",
+      "faction": "beast",
+      "territoryRadius": 10,
       "name": "焦毛狼王",
       "scope": "adventure_only",
       "specialKey": "pack_howl",
@@ -474,6 +496,7 @@
     },
     {
       "id": "spore_matriarch",
+      "faction": "beast",
       "name": "寒孢母体",
       "scope": "adventure_only",
       "specialKey": "immobile_turret",
@@ -505,6 +528,7 @@
     },
     {
       "id": "mirror_wisp",
+      "faction": "shadow",
       "name": "折镜鬼火",
       "scope": "adventure_only",
       "specialKey": "light_phase",
@@ -530,6 +554,7 @@
     },
     {
       "id": "mill_spider",
+      "faction": "construct",
       "name": "磨坊蛛",
       "regionIds": ["old_mill"],
       "maxHp": 3,
@@ -554,6 +579,9 @@
     },
     {
       "id": "ice_ram",
+      "elementResistance": { "chill": 1 },
+      "faction": "neutral",
+      "territoryRadius": 10,
       "name": "冰角兽",
       "regionIds": ["ice_gorge"],
       "maxHp": 4,
@@ -578,6 +606,7 @@
     },
     {
       "id": "coal_shade",
+      "faction": "shadow",
       "name": "煤影",
       "regionIds": ["ice_gorge"],
       "maxHp": 3,
@@ -604,6 +633,7 @@
     },
     {
       "id": "beacon_keeper",
+      "faction": "construct",
       "name": "烽台守卫",
       "regionIds": ["beacon"],
       "maxHp": 18,

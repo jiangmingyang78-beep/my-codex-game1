@@ -4,7 +4,7 @@ const weatherData = loadDataFiles().weather;
 
 const { defaultWeatherId, transitionDurationSec, weathers } = weatherData;
 type WeatherDef = Omit<(typeof weathers)[number], "transitions"> & {
-  transitions: Record<string, number>;
+  transitions: Partial<Record<string, number>>;
 };
 export type WeatherState = ReturnType<typeof createWeatherState>;
 const weatherById = new Map<string, WeatherDef>(
@@ -51,15 +51,15 @@ function nextWeather(
   rng?: () => number,
 ) {
   const candidates = weathers.filter(
-    (entry) => entry.minDay <= day && def.transitions[entry.id] > 0,
+    (entry) => entry.minDay <= day && (def.transitions[entry.id] ?? 0) > 0,
   );
   const total = candidates.reduce(
-    (sum, entry) => sum + def.transitions[entry.id],
+    (sum, entry) => sum + (def.transitions[entry.id] ?? 0),
     0,
   );
   let roll = nextRoll(state, rng) * total;
   for (const entry of candidates) {
-    roll -= def.transitions[entry.id];
+    roll -= def.transitions[entry.id] ?? 0;
     if (roll < 0) return entry;
   }
   return getWeatherDef();
@@ -114,6 +114,10 @@ export function getWeatherModifiers(state: WeatherState) {
   return {
     weatherId: current.id,
     name: current.name,
+    fireDecay: mix(previous.fireDecay ?? 1, current.fireDecay ?? 1),
+    spreadMult: mix(previous.spreadMult ?? 1, current.spreadMult ?? 1),
+    snowfall: mix(previous.snowfall ?? 0, current.snowfall ?? 0),
+    winterShift: mix(previous.winterShift, current.winterShift),
     lightRadiusMult: mix(previous.lightRadiusMult, current.lightRadiusMult),
     fireDrainMult: mix(previous.fireDrainMult, current.fireDrainMult),
     moveSpeedMult: mix(previous.moveSpeedMult, current.moveSpeedMult),
@@ -175,4 +179,12 @@ export function deserializeWeather(raw: unknown, seed = 0): WeatherState {
         ? raw.rngState >>> 0
         : state.rngState,
   };
+}
+
+export function fieldTorchRadius(state: { weather: WeatherState }) {
+  const w = state.weather;
+  const a = getWeatherDef(w.previousWeatherId).lightRadiusMult;
+  return (
+    a + (getWeatherDef(w.weatherId).lightRadiusMult - a) * w.transitionAlpha
+  );
 }

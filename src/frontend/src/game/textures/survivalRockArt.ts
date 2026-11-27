@@ -2,7 +2,7 @@ import rockArt from "@/data/survivalRockArt.json";
 
 const TILE_SIZE = 16;
 
-export function createSurvivalRockArt(
+export function createSurvivalRockArt<T extends { image: HTMLCanvasElement }>(
   ores: Record<string, { color: string }>,
   pixelArt: (
     pattern: string,
@@ -11,7 +11,7 @@ export function createSurvivalRockArt(
     anchorY: number,
     size: number,
     refine: boolean,
-  ) => { image: HTMLCanvasElement },
+  ) => T,
   makeCanvas: (width: number, height: number) => HTMLCanvasElement,
 ) {
   const chipColors: Record<string, string> = {
@@ -20,6 +20,7 @@ export function createSurvivalRockArt(
   };
   for (const [id, ore] of Object.entries(ores)) chipColors[id] = ore.color;
 
+  const icons: Record<string, T> = {};
   const framesByMaterial = Object.fromEntries(
     Object.entries(rockArt).map(([id, art]) => {
       const palette = {
@@ -34,6 +35,16 @@ export function createSurvivalRockArt(
               : chipColors[id],
         h: art.light,
       };
+      if ("icon" in art) {
+        icons[id] = pixelArt(
+          art.icon,
+          { ...palette, o: art.dark },
+          0,
+          0,
+          12,
+          false,
+        );
+      }
       const variants = art.forms.map((form, variant) => {
         const { image } = pixelArt(form, palette, 0, 0, 0, false);
         const intact = makeCanvas(TILE_SIZE, TILE_SIZE);
@@ -75,6 +86,7 @@ export function createSurvivalRockArt(
   );
 
   return {
+    icons,
     chipColor: (material: string) => chipColors[material] ?? chipColors.stone,
     frame(
       material: string,

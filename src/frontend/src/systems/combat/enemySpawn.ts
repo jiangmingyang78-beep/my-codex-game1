@@ -1,37 +1,7 @@
 import { EVT, makeEvent } from "@/core/events";
 import type { EnemyState, GameEvent, RunState, Systems } from "@/core/types";
 import { rules } from "../runtimeRules";
-import { spawnPoint } from "./spawnPopulation";
-
-function createEnemy(
-  id: string,
-  enemyId: string,
-  spawnId: string,
-  x: number,
-  y: number,
-  hp: number,
-  nightRound: number | null,
-): EnemyState {
-  return {
-    id,
-    enemyId,
-    spawnId,
-    homeX: x,
-    homeY: y,
-    x,
-    y,
-    hp,
-    phase: "idle",
-    phaseSec: 0,
-    cooldownSec: 0,
-    dirX: 0,
-    dirY: 1,
-    moveIndex: 0,
-    hitDone: false,
-    persistent: true,
-    nightRound,
-  };
-}
+import { acquireEnemy, enemyPool, spawnPoint } from "./spawnPopulation";
 
 /** Resident (guard) enemies for every implemented region that are not recorded as defeated. */
 export function spawnResidents(state: RunState, sys: Systems): void {
@@ -46,7 +16,7 @@ export function spawnResidents(state: RunState, sys: Systems): void {
         state.enemiesById[s.spawnId]
       )
         continue;
-      state.enemiesById[s.spawnId] = createEnemy(
+      state.enemiesById[s.spawnId] = acquireEnemy(
         s.spawnId,
         s.enemyId,
         s.spawnId,
@@ -107,7 +77,7 @@ export function spawnNightRaid(
     if (!point || !def || state.enemiesById[id]) continue;
     const at = spawnPoint(state, sys, def.id, point, Boolean(def.phases));
     if (!at) continue;
-    state.enemiesById[id] = createEnemy(
+    state.enemiesById[id] = acquireEnemy(
       id,
       s.enemyId,
       s.spawnId,
@@ -116,6 +86,7 @@ export function spawnNightRaid(
       def.maxHp,
       round,
     );
+    state.enemiesById[id].persistent = wave === 0 && i < slots.length;
     state.enemiesById[id].phase = "chase";
     raid.spawnedIds.push(id);
     events.push(
@@ -146,13 +117,20 @@ export function trimNightRaid(state: RunState, sys: Systems): void {
         e.nightRound === state.day,
     )
     .sort((a, b) => distance(b) - distance(a));
-  for (const e of raiders.slice(0, excess)) delete state.enemiesById[e.id];
+  for (const e of raiders.slice(0, excess)) {
+    delete state.enemiesById[e.id];
+    enemyPool.release(e);
+  }
 }
 
 /** Dawn: surviving raid enemies leave; resident enemies and their HP stay. */
 export function despawnNightRaid(state: RunState): void {
   for (const id in state.enemiesById) {
-    if (state.enemiesById[id].nightRound !== null) delete state.enemiesById[id];
+    const enemy = state.enemiesById[id];
+    if (enemy.nightRound !== null) {
+      delete state.enemiesById[id];
+      enemyPool.release(enemy);
+    }
   }
   state.nightRaid = null;
 }

@@ -9,12 +9,16 @@ import { recycleDistant } from "@/systems/combat/spawnPopulation";
 import { consumeItem } from "@/systems/inventory";
 import { heroMaxHp } from "@/systems/itemEffects";
 import { moveHero } from "@/systems/movement";
+import { discoverRecipes } from "@/systems/recipeBook";
 import { rules } from "@/systems/runtimeRules";
 import { tickHeroTimers, tickSurvival } from "@/systems/survival";
+import { createWeatherState } from "@/systems/survival/weatherSystem";
 import { regionIdAt } from "@/systems/world/collision";
 import { renewAtDawn, renewTimed } from "@/systems/world/dawn";
+import { ElementGrid } from "@/systems/world/elementGrid";
 import { interact } from "@/systems/world/interact";
 import { tickRegionEffects } from "@/systems/world/regionEffects";
+import { stepRunEnvironment } from "@/systems/world/runElements";
 import { clampStep, dayAt, phaseAt } from "./clock";
 import { runCommands } from "./commands";
 import { EVT, makeEvent } from "./events";
@@ -40,6 +44,8 @@ function freshState(sys: Systems, config: RunConfig): RunState {
   const inventory = { ...hero.startingInventory };
   const seed = (config.seed ?? Math.floor(Math.random() * 4294967296)) >>> 0;
   return {
+    elements: new ElementGrid(sys.data.tileSize, seed),
+    weather: createWeatherState(seed),
     schemaVersion: RUN_SCHEMA_VERSION,
     runId: config.runId ?? newRunId(seed),
     seed,
@@ -68,6 +74,8 @@ function freshState(sys: Systems, config: RunConfig): RunState {
       darknessDamageSec: 0,
       inFire: true,
     },
+    unlockedRecipeIds: new Set(),
+    unreadRecipeIds: new Set(),
     inventory,
     campLevel: balance.starting.campLevel,
     seals: [],
@@ -95,7 +103,8 @@ export function createRun(
   const state =
     snapshot === undefined
       ? freshState(sys, config)
-      : sanitizeRunState(JSON.parse(JSON.stringify(snapshot)), sys);
+      : sanitizeRunState(snapshot, sys);
+  if (snapshot === undefined) discoverRecipes(state, sys);
   spawnResidents(state, sys);
   if (state.phase === "day") despawnNightRaid(state);
   else trimNightRaid(state, sys);
@@ -172,6 +181,7 @@ export function step(
     request.frame?.hero,
   );
   tickRegionEffects(state, sys, sec, events);
+  stepRunEnvironment(state, sys, sec, events);
 
   const region = regionIdAt(sys.world, hero.x, hero.y);
   if (region && region !== state.regionId) {

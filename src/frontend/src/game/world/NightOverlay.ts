@@ -2,6 +2,7 @@ import type { LightGrid } from "@/systems/world/lightGrid";
 import { registerCanvasTexture } from "@/vfx/proceduralTextures";
 import type Phaser from "phaser";
 import { ATMOSPHERE_PRESETS } from "../atmosphere/atmospherePresets";
+import { eraseLitPixels } from "../atmosphere/pixelLightMask";
 import { RENDER_DEPTH } from "../renderDepth";
 
 const KEY = "emberwood-night-overlay";
@@ -16,6 +17,12 @@ const mix = (a: number, b: number, t: number): number =>
  */
 export class NightOverlay {
   darkness = 0;
+  private lastX = Number.NaN;
+  private lastY = Number.NaN;
+  private lastRevision = -1;
+  private lastTint = -1;
+  private lastGrid?: LightGrid;
+
   grid?: LightGrid;
   private readonly canvas = document.createElement("canvas");
 
@@ -47,10 +54,29 @@ export class NightOverlay {
       this.image.setVisible(false);
       return;
     }
-    const x = Math.floor(view.x) - 1;
-    const y = Math.floor(view.y) - 1;
-    const w = Math.ceil(view.width) + 3;
-    const h = Math.ceil(view.height) + 3;
+    const tile = this.grid?.tileSize ?? 16;
+    const x = Math.floor(view.x / tile) * tile;
+    const y = Math.floor(view.y / tile) * tile;
+    const w = Math.ceil(view.width) + tile + 1;
+    const h = Math.ceil(view.height) + tile + 1;
+    const tint = Math.round(63 * Math.min(1, this.darkness / 0.8));
+    this.image.setVisible(true).setAlpha(Math.min(1, this.darkness / 0.8));
+    const revision = this.grid?.revision ?? 0;
+    if (
+      this.texture.width === w &&
+      this.texture.height === h &&
+      x === this.lastX &&
+      y === this.lastY &&
+      revision === this.lastRevision &&
+      this.grid === this.lastGrid &&
+      tint === this.lastTint
+    )
+      return;
+    this.lastX = x;
+    this.lastY = y;
+    this.lastRevision = revision;
+    this.lastGrid = this.grid;
+    this.lastTint = tint;
     if (this.texture.width !== w || this.texture.height !== h) {
       this.texture.setSize(w, h);
       this.image.setSizeToFrame().setOrigin(0);
@@ -61,21 +87,13 @@ export class NightOverlay {
     g.globalCompositeOperation = "source-over";
     g.globalAlpha = 1;
     g.clearRect(0, 0, w, h);
-    const t = Math.min(1, this.darkness / 0.8);
+    const t = tint / 63;
     const r = mix(duskColor >> 16, nightColor >> 16, t);
     const green = mix((duskColor >> 8) & 255, (nightColor >> 8) & 255, t);
     const b = mix(duskColor & 255, nightColor & 255, t);
-    g.fillStyle = `rgba(${r},${green},${b},${t * maxNightAlpha})`;
+    g.fillStyle = `rgba(${r},${green},${b},${maxNightAlpha})`;
     g.fillRect(0, 0, w, h);
-    g.globalCompositeOperation = "destination-out";
-    g.imageSmoothingEnabled = false;
-    const grid = this.grid;
-    grid?.forEachLitTile({ x, y, width: w, height: h }, (left, top, level) => {
-      g.globalAlpha = level <= 2 ? 0.025 * level : 0.18 + (0.65 * level) / 15;
-      g.fillRect(left - x, top - y, grid.tileSize, grid.tileSize);
-    });
-    g.globalAlpha = 1;
-    g.globalCompositeOperation = "source-over";
+    if (this.grid) eraseLitPixels(g, this.grid, { x, y, width: w, height: h });
     if (this.webgl) this.texture.refresh();
   };
 

@@ -1,11 +1,13 @@
 import { EVT, makeEvent } from "@/core/events";
 import { reasonMessage } from "@/core/messages";
 import type { ActionResult, GameEvent, RunState, Systems } from "@/core/types";
+import { discoverRecipes } from "@/systems/recipeBook";
 import { addItem, canAdd, countOf, removeItems } from "../inventory";
 import { BEACON_SEAL_IDS, countBeaconSeals } from "./beacon";
 import { recordHarvest } from "./dawn";
 import { materialFor } from "./materials";
 import { detonateResinBarrel } from "./regionEffects";
+import { appearanceChanged } from "./worldTypes";
 import type { WorldObject } from "./worldTypes";
 
 /** Nearest interactable object within balance.hero.interactRangeTiles, or null. */
@@ -61,6 +63,7 @@ function gather(state: RunState, sys: Systems, o: WorldObject): ActionResult {
   }
   addItem(sys.data, state.inventory, itemId, count);
   recordHarvest(state, o);
+  appearanceChanged(state);
   state.changesByObjectId[o.id] = { ...change, gathered: true };
   const events: GameEvent[] = [
     makeEvent(EVT.collected, o.x, o.y, {
@@ -72,9 +75,11 @@ function gather(state: RunState, sys: Systems, o: WorldObject): ActionResult {
     }),
     makeEvent(EVT.itemPicked, o.x, o.y, { itemId, count }),
   ];
+  discoverRecipes(state, sys, events);
   return { ok: true, events };
 }
 
+import { obstaclesChanged } from "./collision";
 function openGate(state: RunState, sys: Systems, o: WorldObject): ActionResult {
   const region = sys.data.regionList.find((r) => r.entry.gateId === o.id);
   if (!region) return refused(o, EVT.gateRefused, "nothing_nearby");
@@ -88,6 +93,8 @@ function openGate(state: RunState, sys: Systems, o: WorldObject): ActionResult {
   if (!region.entry.requiredPickupIds.every((id) => state.seals.includes(id))) {
     return refused(o, EVT.gateRefused, "missing_seal");
   }
+  obstaclesChanged(state);
+  appearanceChanged(state);
   state.changesByObjectId[o.id] = {
     ...state.changesByObjectId[o.id],
     opened: true,
@@ -103,7 +110,11 @@ function openGate(state: RunState, sys: Systems, o: WorldObject): ActionResult {
   };
 }
 
-function igniteRelay(state: RunState, o: WorldObject): ActionResult {
+function igniteRelay(
+  state: RunState,
+  sys: Systems,
+  o: WorldObject,
+): ActionResult {
   if (state.changesByObjectId[o.id]?.lit)
     return refused(o, EVT.interactRefused, "already_lit");
   if (countOf(state.inventory, "relay_kit") < 1)
@@ -113,10 +124,11 @@ function igniteRelay(state: RunState, o: WorldObject): ActionResult {
     ...state.changesByObjectId[o.id],
     lit: true,
   };
-  return {
-    ok: true,
-    events: [makeEvent(EVT.campLit, o.x, o.y, { objectId: o.id, count: 6 })],
-  };
+  const events = [
+    makeEvent(EVT.campLit, o.x, o.y, { objectId: o.id, count: 6 }),
+  ];
+  discoverRecipes(state, sys, events);
+  return { ok: true, events };
 }
 
 function igniteBeacon(
@@ -170,6 +182,7 @@ function inspectStoryProp(
     const count = o.yield ?? 1;
     if (canAdd(sys.data, state.inventory, o.itemId, count)) {
       addItem(sys.data, state.inventory, o.itemId, count);
+      discoverRecipes(state, sys, events);
       state.collectedPickups.push(o.pickupId);
       events.push(
         makeEvent(EVT.itemPicked, o.x, o.y, {
@@ -241,7 +254,7 @@ export function interact(
     case "gate":
       return openGate(state, sys, o);
     case "relay_socket":
-      return igniteRelay(state, o);
+      return igniteRelay(state, sys, o);
     case "beacon":
       return igniteBeacon(state, sys, o);
     case "story_prop":

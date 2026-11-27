@@ -10,7 +10,7 @@ export const impactPresets=Object.freeze({
 
 export function createParticleSimulation({maxParticles=120,random=Math.random,createCanvas=createBrowserCanvas}={}) {
   if(!Number.isInteger(maxParticles)||maxParticles<1)throw new RangeError("maxParticles must be a positive integer.");
-  const particles=[],rings=[],particleFree=[];
+  const particles=[],rings=[],particleFree=Array.from({length:maxParticles},()=>({}));
   const ramps=new Map(),glowCache=new Map(),softCache=new Map();
   let evictCursor=0,ambientCount=0,ambientAcc=0,tick=0;
   const windAt=(x,y)=>Math.sin(tick*1.1+x*.012+y*.009)*.55+Math.sin(tick*.37+x*.004)*.45;

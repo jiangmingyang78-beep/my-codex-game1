@@ -21,6 +21,9 @@ export function createParticlePresets({spawn,random}) {
     const aim=()=>directed?heading+(random()-.5)*1.7:random()*6.2832;
     const bright=lightOf(color,.55),deep=lightOf(color,-.55);
     switch(kind){
+      case "steam":
+        spawn(PT.puff,x,y,1,rr(-2,2),0,9,.55,color,"#9faeae",1,3,0,1);
+        break;
       case "metal":
         for(let i=0;i<n;i++){
           const a=aim(),sp=rr(50,130);

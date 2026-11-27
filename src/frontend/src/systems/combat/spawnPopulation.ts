@@ -2,14 +2,13 @@ import { rollRun } from "@/core/rng";
 import type { EnemyState, RunState, Systems } from "@/core/types";
 import { blockedAt } from "../world/collision";
 import { syncRunLight } from "../world/runLight";
+import { spawnDirector } from "../world/worldContext";
 import { ENEMY_RADIUS } from "./combatMath";
 import {
   MobPool,
   categoryOf,
   hasCapacity,
-  inRing,
   shouldDespawn,
-  spawnLightAllowed,
   spawnRadii,
 } from "./spawnRules";
 
@@ -31,10 +30,16 @@ export function spawnPoint(
   if (!boss && !hasCapacity(active, categoryOf(id), settings)) return null;
   const grid = syncRunLight(state, sys);
   const ring = spawnRadii(settings, sys.data.tileSize, sys.spawnView);
-  const valid = (p: { x: number; y: number }) =>
-    inRing(p, state.hero, ring, sys.spawnView) &&
-    spawnLightAllowed(grid, p, id) &&
-    !blockedAt(sys.world, state.changesByObjectId, p.x, p.y, ENEMY_RADIUS);
+  const director = spawnDirector(
+    grid,
+    state.hero,
+    settings,
+    sys.spawnView,
+    active,
+    (p) =>
+      !blockedAt(sys.world, state.changesByObjectId, p.x, p.y, ENEMY_RADIUS),
+  );
+  const valid = (p: { x: number; y: number }) => director.accepts(p, id, boss);
   if (preferred && valid(preferred)) return preferred;
   for (let i = 0; i < 96; i++) {
     const angle = rollRun(state) * 2 * Math.PI;
@@ -63,4 +68,32 @@ export function recycleDistant(state: RunState, sys: Systems) {
     delete state.enemiesById[mob.id];
     enemyPool.release(mob);
   }
+}
+
+export function acquireEnemy(
+  id: string,
+  enemyId: string,
+  spawnId: string,
+  x: number,
+  y: number,
+  hp: number,
+  nightRound: number | null,
+): EnemyState {
+  const enemy = enemyPool.take() ?? ({} as EnemyState);
+  enemy.id = id;
+  enemy.enemyId = enemyId;
+  enemy.spawnId = spawnId;
+  enemy.homeX = enemy.x = x;
+  enemy.homeY = enemy.y = y;
+  enemy.hp = hp;
+  enemy.phase = "idle";
+  enemy.phaseSec = 0;
+  enemy.cooldownSec = 0;
+  enemy.dirX = 0;
+  enemy.dirY = 1;
+  enemy.moveIndex = 0;
+  enemy.hitDone = false;
+  enemy.persistent = nightRound === null;
+  enemy.nightRound = nightRound;
+  return enemy;
 }

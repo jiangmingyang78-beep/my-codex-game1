@@ -45,6 +45,9 @@ export class EntityViews {
   private flashUntilSec = 0;
   private readonly enemies = new Map<string, EnemyEntity>();
   private readonly loot = new Map<string, Phaser.GameObjects.Image>();
+  private readonly freeShots: Phaser.GameObjects.Image[] = [];
+  private readonly liveShots = new Set<string>();
+  private readonly freeEnemies = new Map<string, EnemyEntity[]>();
   private readonly shots = new Map<string, Phaser.GameObjects.Image>();
 
   constructor(
@@ -83,16 +86,26 @@ export class EntityViews {
       x: l.x,
       y: l.y - 2 + Math.sin(timeSec * 4 + l.x) * 1.5,
     }));
-    this.syncSet(
-      this.shots,
-      Object.fromEntries(state.projectiles.map((p) => [p.id, p])),
-      RENDER_DEPTH.projectile,
-      (p) => ({
-        key: TEX.projectile,
-        x: p.x,
-        y: p.y,
-      }),
-    );
+    this.liveShots.clear();
+    for (const shot of state.projectiles) {
+      this.liveShots.add(shot.id);
+      let image = this.shots.get(shot.id);
+      if (!image) {
+        image =
+          this.freeShots.pop() ??
+          this.scene.add
+            .image(0, 0, TEX.projectile)
+            .setDepth(RENDER_DEPTH.projectile);
+        image.setVisible(true);
+        this.shots.set(shot.id, image);
+      }
+      image.setPosition(shot.x, shot.y);
+    }
+    for (const [id, image] of this.shots)
+      if (!this.liveShots.has(id)) {
+        this.freeShots.push(image.setVisible(false));
+        this.shots.delete(id);
+      }
   }
 
   private syncHero(state: RunState, timeSec: number): void {
@@ -189,21 +202,32 @@ export class EntityViews {
     );
     for (const [id, body] of this.enemies) {
       if (state.enemiesById[id]) continue;
-      body.destroy();
+      const key = body.sprite.texture.key;
+      let bucket = this.freeEnemies.get(key);
+      if (!bucket) {
+        bucket = [];
+        this.freeEnemies.set(key, bucket);
+      }
+      body.setActive(false);
+      bucket.push(body);
       this.enemies.delete(id);
     }
-    for (const e of Object.values(state.enemiesById)) {
+    for (const id in state.enemiesById) {
+      const e = state.enemiesById[id];
       let body = this.enemies.get(e.id);
       if (!body) {
         const key = TEX.enemy(e.enemyId);
         const o = originOf(key);
-        body = new EnemyEntity(
-          this.scene,
-          key,
-          o,
-          TEX.shadow,
-          this.sys.data.enemies.get(e.enemyId),
-        );
+        body =
+          this.freeEnemies.get(key)?.pop() ??
+          new EnemyEntity(
+            this.scene,
+            key,
+            o,
+            TEX.shadow,
+            this.sys.data.enemies.get(e.enemyId),
+          );
+        body.setActive(true);
         this.enemies.set(e.id, body);
       }
       body.sync(e, this.sys.data.tileSize, state, this.sys);

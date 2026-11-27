@@ -14,13 +14,32 @@ const FILTERS: readonly { id: CraftFilter; label: string }[] = [
 ];
 
 function RecipeCard({ row }: { row: RecipeRow }) {
+  if (!row.unlocked)
+    return (
+      <li className="pixel-panel-flat border-dashed p-3 text-muted-foreground">
+        <h3>未解锁 · {row.name}</h3>
+        <p className="text-xs">
+          {row.hint} · 需营火 Lv.{row.minCampLevel}
+        </p>
+      </li>
+    );
   const disabled = row.blockedReason !== null || row.shortfallText !== null;
   const note = row.blockedReason ?? row.shortfallText;
   return (
     <li className="pixel-panel-flat flex flex-col gap-2 p-3">
       <div className="flex items-start justify-between gap-2">
         <h3 className="font-pixel text-sm font-bold text-ember-glow">
-          {row.name}
+          {row.name}{" "}
+          {row.unread && (
+            <button
+              type="button"
+              aria-label={`查看新配方：${row.name}`}
+              className="border border-ember px-1 text-xs text-ember"
+              onClick={() => commands.viewRecipe(row.id)}
+            >
+              新 · 查看
+            </button>
+          )}
         </h3>
         <span className="font-pixel shrink-0 text-xs text-frost">
           需营火 Lv.{row.minCampLevel}
@@ -52,7 +71,10 @@ function RecipeCard({ row }: { row: RecipeRow }) {
         </p>
         <PixelButton
           disabled={disabled}
-          onClick={() => commands.craft(row.id)}
+          onClick={() => {
+            commands.viewRecipe(row.id);
+            commands.craft(row.id);
+          }}
           className="shrink-0 px-3 py-1.5"
         >
           制作
@@ -65,6 +87,7 @@ function RecipeCard({ row }: { row: RecipeRow }) {
 export function CraftPanel() {
   const craft = useUi((s) => s.craft);
   const [filter, setFilter] = useState<CraftFilter>("all");
+  const [showLocked, setShowLocked] = useState(false);
   if (!craft) return null;
   const rows =
     filter === "all"
@@ -120,10 +143,20 @@ export function CraftPanel() {
             );
           })}
         </div>
+        <label className="text-xs text-frost">
+          <input
+            type="checkbox"
+            checked={showLocked}
+            onChange={(e) => setShowLocked(e.target.checked)}
+          />{" "}
+          显示未解锁剪影
+        </label>
         <ul className="grid min-h-0 flex-1 grid-cols-1 gap-3 overflow-y-auto pr-1 md:grid-cols-2 lg:grid-cols-3">
-          {rows.map((row) => (
-            <RecipeCard key={row.id} row={row} />
-          ))}
+          {rows
+            .filter((row) => row.unlocked || showLocked)
+            .map((row) => (
+              <RecipeCard key={row.id} row={row} />
+            ))}
         </ul>
         <p className="text-xs text-muted-foreground">
           面板打开期间时间暂停。接力火盆在废磨坊火盆旁按 E 点燃。

@@ -133,6 +133,9 @@ export const adventureSchemas = {
     recipes: list(
       shape({
         ...named,
+        starterUnlocked: optional(boolean),
+        unlockOnPickup: optional(list(string, 1)),
+        unlockOnCampProject: optional(list(string, 1)),
         stationId: string,
         minCampLevel: count,
         inputs: stock,
@@ -154,6 +157,13 @@ export const adventureSchemas = {
     enemies: list(
       shape({
         ...named,
+        elementResistance: optional(
+          shape({ burn: optional(ratio), chill: optional(ratio) }),
+        ),
+        faction: optional(oneOf("shadow", "beast", "construct", "neutral")),
+        activeWindow: optional(oneOf("any", "day", "night")),
+        territoryRadius: optional(positive),
+        fearLightThreshold: optional(number(0, 15, true)),
         regionIds: ids,
         maxHp: positive,
         attackDamage: nonnegative,

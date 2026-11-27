@@ -45,3 +45,55 @@ export function lightDrainMultiplier(state: RunState, sys: Systems): number {
   }
   return m;
 }
+
+export interface ThermalActor {
+  hp: number;
+  thermal?: {
+    burnUntil: number;
+    chillUntil: number;
+    chill: number;
+    burnCharge: number;
+  };
+}
+export interface ElementResistance {
+  burn?: number;
+  chill?: number;
+}
+export function chillSpeed(actor: ThermalActor, time: number) {
+  return actor.thermal && actor.thermal.chillUntil > time
+    ? 1 - actor.thermal.chill
+    : 1;
+}
+
+/** One fixed exposure step; fractional resistance affects burn frequency, never fractional HP. */
+export function tickExposure(
+  actor: ThermalActor,
+  time: number,
+  dt: number,
+  tile: { burning: number; frostZone: number } | undefined,
+  resist: ElementResistance | undefined,
+  damage: () => void,
+) {
+  if (!actor.thermal && !tile?.burning && !tile?.frostZone) return;
+  actor.thermal ??= {
+    burnUntil: 0,
+    chillUntil: 0,
+    chill: 0,
+    burnCharge: 0,
+  };
+  const status = actor.thermal;
+  if (tile?.burning && (resist?.burn ?? 0) < 1) status.burnUntil = time + 1.25;
+  if (tile?.frostZone) {
+    status.chillUntil = time + 1;
+    status.chill = 0.35 * (1 - (resist?.chill ?? 0));
+  }
+  if (time < status.burnUntil) {
+    status.burnCharge += dt * (1 - (resist?.burn ?? 0));
+    if (status.burnCharge >= 1) {
+      status.burnCharge -= 1;
+      damage();
+    }
+  } else status.burnCharge = 0;
+  if (time >= status.burnUntil && time >= status.chillUntil)
+    actor.thermal = undefined;
+}

@@ -1,9 +1,11 @@
 import type { RunState, Systems } from "@/core/types";
 import { forEachFireSource } from "../campCircle";
 import { heroLightRadiusMultiplier } from "../itemEffects";
+import { fieldTorchRadius } from "../survival/weatherSystem";
 import { darknessAt } from "./darkness";
 import { LightGrid, type LightSource } from "./lightGrid";
 
+import { obstacleRevision, opaqueAt } from "./collision";
 const grids = new WeakMap<RunState, LightGrid>();
 const burning = new WeakMap<
   RunState,
@@ -17,9 +19,12 @@ export function ignite(state: RunState, source: LightSource, seconds: number) {
 export function syncRunLight(state: RunState, sys: Systems) {
   let grid = grids.get(state);
   if (!grid) {
-    grid = new LightGrid(sys.data.tileSize);
+    grid = new LightGrid(sys.data.tileSize, (x, y) =>
+      opaqueAt(sys.world, state.changesByObjectId, x, y),
+    );
     grids.set(state, grid);
   }
+  grid.invalidate(obstacleRevision(state));
   const sources: LightSource[] = [];
   forEachFireSource(state, sys, (x, y, radius, id) =>
     sources.push({ id, x, y, radius }),
@@ -30,14 +35,17 @@ export function syncRunLight(state: RunState, sys: Systems) {
   );
   sources.push({
     id: "held-torch",
-    x: state.hero.x,
-    y: state.hero.y,
-    radius:
-      sys.data.tileSize *
-      2.75 *
-      Math.sqrt(fraction) *
-      heroLightRadiusMultiplier(sys.data, state.inventory, state.heroId),
+    x: (Math.floor(state.hero.x / sys.data.tileSize) + 0.5) * sys.data.tileSize,
+    y: (Math.floor(state.hero.y / sys.data.tileSize) + 0.5) * sys.data.tileSize,
+    radius: Math.round(
+      fieldTorchRadius(state) *
+        sys.data.tileSize *
+        2.75 *
+        Math.sqrt(fraction) *
+        heroLightRadiusMultiplier(sys.data, state.inventory, state.heroId),
+    ),
   });
+  grid.syncElements(state.elements);
   const fires = burning.get(state);
   if (fires)
     for (const [id, fire] of fires) {

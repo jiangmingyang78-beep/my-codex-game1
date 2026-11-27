@@ -81,7 +81,7 @@ function scenario(high: boolean) {
   // Stage a resident near the open mill gate, then cross with actual movement input.
   run.state.changesByObjectId.old_mill_gate = { opened: true };
   const resident = run.state.enemiesById.camp_edge_weasel;
-  Object.assign(resident, { x: tile(42), y: tile(24), phase: "idle", cooldownSec: 4 });
+  Object.assign(resident, { x: tile(42), y: tile(24), homeX:tile(42),homeY:tile(24),nextSense:0,targetId:undefined,phase: "idle", cooldownSec: 4 });
   move(tile(46), tile(24));
   advance();
   const before = resident.phase;

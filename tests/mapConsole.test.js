@@ -1,4 +1,4 @@
-import {enemyDocuments} from "../tools/map-viewer/enemyDocuments.mjs";
+import {enemyDocuments, mergeEnemyDocuments} from "../tools/map-viewer/enemyDocuments.mjs";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { buildGameData } from "@/core/gameData";
@@ -206,7 +206,6 @@ it("命令历史保留最近 50 步，并可复原字段和导出预设", () => 
 });
 
 it("地图控制台新旧怪物文档可分别编辑并合回同一物理表", async () => {
-  const {mergeEnemyDocuments}=await import("../tools/map-viewer/enemyDocuments.mjs");
   const original=JSON.parse(await readFile(new URL("../src/frontend/src/data/enemies.json",import.meta.url),"utf8"));
   const docs=enemyDocuments(structuredClone(original));
   assert.deepEqual(mergeEnemyDocuments(docs),original);

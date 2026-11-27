@@ -1,3 +1,4 @@
+export const HERO_RADIUS = 5;
 export const ENEMY_RADIUS = 6;
 
 /** Angle in degrees between a direction vector (dirX, dirY) and the vector (tx, ty). */

@@ -21,6 +21,9 @@ export interface MaterialRow {
 export type RecipeCategory = "equipment" | "supply" | "camp";
 
 export interface RecipeRow {
+  unlocked: boolean;
+  unread: boolean;
+  hint: string;
   id: string;
   name: string;
   description: string;

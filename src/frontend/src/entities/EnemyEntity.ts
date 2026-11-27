@@ -46,7 +46,7 @@ export class EnemyEntity {
       .setDepth(depth + RENDER_DEPTH.entityOffset.shadow);
     this.body.updateFromGameObject();
     this.sprite.clearTint().setAlpha(1);
-    this.telegraph.clear();
+    if (this.telegraph.visible) this.telegraph.clear();
     if ((enemy.hurtTimer ?? 0) > 0)
       this.sprite.setTintFill(0xffffff).setAlpha(0.65);
     else if (enemy.phase === "windup") this.sprite.setTint(0xff9a8a);
@@ -54,15 +54,23 @@ export class EnemyEntity {
       enemy.enemyId,
       this.definition?.specialKey,
     );
+    this.telegraph.setVisible(false);
     if (
-      special &&
+      special?.renderOverlay &&
       (!special.isUnlocked ||
         (state && sys && special.isUnlocked(enemy, state, sys)))
     ) {
-      special.renderOverlay?.(this.telegraph, enemy, tileSize);
+      this.telegraph.setVisible(true);
+      special.renderOverlay(this.telegraph, enemy, tileSize);
     }
   }
 
+  setActive(value: boolean) {
+    this.sprite.setVisible(value).setActive(value);
+    this.shadow.setVisible(value);
+    this.telegraph.clear().setVisible(value);
+    this.body.enable = value;
+  }
   destroy() {
     this.sprite.destroy();
     this.shadow.destroy();

@@ -3,5 +3,6 @@ import App from "./App";
 import { loadGameData } from "./core/gameData";
 import "./index.css";
 
-loadGameData();
+import { loadSurvivalTuning } from "./systems/survivalTuning";
+loadGameData().balance.survival = await loadSurvivalTuning();
 ReactDOM.createRoot(document.getElementById("root")!).render(<App />);

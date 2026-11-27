@@ -1,11 +1,14 @@
 import { getHero } from "@/core/gameData";
 import type { RunState, StepInputState, Systems } from "@/core/types";
+import { chillSpeed } from "./buffs";
 import { heroMoveSpeedMultiplier, ownedStatBonus } from "./itemEffects";
 import { rules } from "./runtimeRules";
 import { type MoveOut, moveWithCollision } from "./world/collision";
 import { evaluateRegionModifiers } from "./world/regionEffects";
+import { runContext } from "./world/runContext";
 
-export const HERO_RADIUS = 5;
+import { HERO_RADIUS } from "./combat/combatMath";
+export { HERO_RADIUS } from "./combat/combatMath";
 const scratch: MoveOut = { x: 0, y: 0 };
 const slideByRun = new WeakMap<RunState, { vx: number; vy: number }>();
 
@@ -31,6 +34,16 @@ export function normalizeMove(
   return out;
 }
 
+const chaseStep = { x: 0, y: 0 };
+export function chaseDisplacement(
+  state: RunState,
+  sys: Systems,
+  enemy: { x: number; y: number },
+  dx: number,
+  dy: number,
+) {
+  return runContext(state, sys).steer(enemy, dx, dy, chaseStep);
+}
 const dirScratch: MoveOut = { x: 0, y: 0 };
 
 interface DashState {
@@ -177,16 +190,21 @@ export function moveHero(
   const { data } = sys;
   const mods = evaluateRegionModifiers(state, sys);
   const tileSize = sys.world.tileSize;
-  const surface = sys.world.getTileMeta?.(
-    Math.floor(hero.x / tileSize),
-    Math.floor(hero.y / tileSize),
-  );
+  const tx = Math.floor(hero.x / tileSize);
+  const ty = Math.floor(hero.y / tileSize);
+  const surface = sys.world.getTileMeta?.(tx, ty);
   const base =
     data.balance.hero.moveSpeedPxPerSec *
     (getHero(data, state.heroId).traits.moveSpeedMult ?? 1) *
     heroMoveSpeedMultiplier(data, state.inventory) *
     mods.speedMult *
-    (surface?.walkSpeedMultiplier ?? 1);
+    chillSpeed(hero, state.elapsedSec) *
+    state.elements.speed(
+      tx,
+      ty,
+      surface?.walkSpeedMultiplier ?? 1,
+      surface?.snowDepth ?? 0,
+    );
 
   let slide = slideByRun.get(state);
   if (!slide) {

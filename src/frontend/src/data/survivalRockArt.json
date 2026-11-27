@@ -1,5 +1,6 @@
 {
   "quartz": {
+    "icon": "....o..... ...ohbo... ...ohbso.. .o.ohbso.. ohbohbso.. ohbsbbso.o .bbshbsobo ..bshbsobo ..osbbssso ...osssso. ....oooo..",
     "rock": "#827887",
     "shade": "#575568",
     "dark": "#343443",
@@ -10,6 +11,7 @@
     ]
   },
   "copper": {
+    "icon": ".......ooo .....ohhbo ...ohhbbso .ohhbbbrso ohbbbrssso obbrshbso. .rshhbso.. .obbsoo... ..ooo.....",
     "rock": "#99765e",
     "shade": "#68505a",
     "dark": "#40333e",
@@ -20,6 +22,7 @@
     ]
   },
   "clay": {
+    "icon": "..ooooo... .ohhbbbo.. .obrrsso.. ..ossoooo. .ohbbbhhbo ohbbrrrbso .osssssso. ..oooooo..",
     "rock": "#a06857",
     "shade": "#844f49",
     "dark": "#523b45",
@@ -30,6 +33,7 @@
     ]
   },
   "iron": {
+    "icon": "....oooo.. ..ohhhhbo. .ohbbbbbro ohbbbbrsso obbbbrssso obbrrssrso .rssssrsso ..osrrsso. ...ooooo..",
     "rock": "#766d70",
     "shade": "#555465",
     "dark": "#333646",
@@ -40,6 +44,7 @@
     ]
   },
   "frostOre": {
+    "icon": ".......ho. ..h...hbo. ..hb.hbs.. o..b.hbs.h hb.bsbs.hb .hbsbs.hbs ..hbsbbbs. ...bbsss.. ....bso... ....os....",
     "rock": "#607a86",
     "shade": "#405869",
     "dark": "#293b50",
@@ -50,6 +55,7 @@
     ]
   },
   "salt": {
+    "icon": ".....ooooo .....ohhho .ooo.obbbo ohhhoobsso obbboossoo obssso.... .sssohhhho ..ooohbbbo ....obssso .....oooo.",
     "rock": "#a39283",
     "shade": "#776b71",
     "dark": "#554d58",
@@ -60,6 +66,7 @@
     ]
   },
   "coal": {
+    "icon": "..ooo..... .ohbso.oo. obbbbsorbo obbsssobso .sssoosso. ..ohrrso.. .orbbssoo. .obbbssrbo ..osssbbso ...oooooo.",
     "rock": "#595b6c",
     "shade": "#343542",
     "dark": "#1a1c29",

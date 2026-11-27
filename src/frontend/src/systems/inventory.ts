@@ -9,8 +9,10 @@ import type {
   RunState,
   Systems,
 } from "@/core/types";
+import { discoverRecipes } from "@/systems/recipeBook";
 import { setNightLightBuff } from "./buffs";
 import { heroMaxHp } from "./itemEffects";
+import { igniteRunTile } from "./world/runElements";
 
 export function countOf(inventory: Inventory, itemId: string): number {
   return inventory[itemId] ?? 0;
@@ -89,12 +91,11 @@ export function pickUp(
       detail: { itemId, count },
     };
   }
-  return {
-    ok: true,
-    events: [
-      makeEvent(EVT.itemPicked, state.hero.x, state.hero.y, { itemId, count }),
-    ],
-  };
+  const events = [
+    makeEvent(EVT.itemPicked, state.hero.x, state.hero.y, { itemId, count }),
+  ];
+  discoverRecipes(state, sys, events);
+  return { ok: true, events };
 }
 
 /** Quick-use slot (1-based) to item id from balance.hero.quickUseItemIds. */
@@ -155,5 +156,13 @@ export function consumeItem(
   const events: GameEvent[] = [
     makeEvent(EVT.itemUsed, hero.x, hero.y, { itemId }),
   ];
+  if (itemId === "resin_torch")
+    igniteRunTile(
+      state,
+      sys,
+      hero.x + hero.facingX * data.tileSize,
+      hero.y + hero.facingY * data.tileSize,
+      events,
+    );
   return { ok: true, events };
 }

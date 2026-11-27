@@ -110,10 +110,18 @@ export class MobPool<T extends object> {
   release(mob: T) {
     if (this.free.length < 128) this.free.push(mob);
   }
-  acquire(initial: T): T {
+  take(): T | undefined {
     const mob = this.free.pop();
+    if (mob) this.reset(mob);
+    return mob;
+  }
+  private reset(mob: T) {
+    for (const key in mob)
+      if (Object.hasOwn(mob, key)) Reflect.deleteProperty(mob, key);
+  }
+  acquire(initial: T): T {
+    const mob = this.take();
     if (!mob) return initial;
-    for (const key of Object.keys(mob)) Reflect.deleteProperty(mob, key);
     return Object.assign(mob, initial);
   }
 }

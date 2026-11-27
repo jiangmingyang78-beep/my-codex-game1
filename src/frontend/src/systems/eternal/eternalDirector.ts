@@ -156,7 +156,7 @@ function stepCombat(
   rt.spawnTimerSec -= dt;
   if (rt.spawnTimerSec > 0) return;
   rt.spawnTimerSec = spawnInterval(t);
-  if (eternalEnemyCount(state) < ETERNAL.enemyCap)
+  if (eternalEnemyCount(state) < sys.data.balance.limits.activeEnemies)
     spawnEternalWave(state, sys, rt, events);
 }
 

@@ -1,0 +1,73 @@
+{
+  "dusk": [
+    {
+      "type": "sine",
+      "freq": 392,
+      "endFreq": 294,
+      "start": 0,
+      "dur": 1.4,
+      "attackSec": 0.25,
+      "gain": 0.065
+    }
+  ],
+  "raidWind": [
+    {
+      "type": "wind",
+      "freq": 850,
+      "endFreq": 470,
+      "start": 0,
+      "dur": 1.8,
+      "attackSec": 0.5,
+      "gain": 0.17
+    }
+  ],
+  "raidGrowl": [
+    {
+      "type": "wind",
+      "freq": 900,
+      "endFreq": 420,
+      "start": 0,
+      "dur": 1.5,
+      "attackSec": 0.35,
+      "gain": 0.21
+    },
+    {
+      "type": "sawtooth",
+      "freq": 62,
+      "endFreq": 39,
+      "start": 0.4,
+      "dur": 0.8,
+      "attackSec": 0.15,
+      "gain": 0.055
+    }
+  ],
+  "raidClose": [
+    {
+      "type": "wind",
+      "freq": 1000,
+      "endFreq": 400,
+      "start": 0,
+      "dur": 1.2,
+      "attackSec": 0.2,
+      "gain": 0.25
+    },
+    {
+      "type": "sawtooth",
+      "freq": 72,
+      "endFreq": 32,
+      "start": 0.1,
+      "dur": 0.8,
+      "attackSec": 0.08,
+      "gain": 0.08
+    },
+    {
+      "type": "triangle",
+      "freq": 84,
+      "endFreq": 44,
+      "start": 0.7,
+      "dur": 0.6,
+      "attackSec": 0.06,
+      "gain": 0.12
+    }
+  ]
+}

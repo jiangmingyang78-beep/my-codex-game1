@@ -13,9 +13,14 @@ export function normalizeCampProjects(saved: unknown): Contributions {
   for (const id of Object.keys(campProjects) as CampProjectId[]) {
     const materials = progress[id];
     if (!materials || typeof materials !== "object") continue;
+    const project = campProjects[id];
+    const legacyCredit: Record<string, string> =
+      "legacyCredit" in project ? project.legacyCredit : {};
     normalized[id] = Object.fromEntries(
-      Object.entries(campProjects[id].cost).map(([item, needed]) => {
-        const count = materials[item];
+      Object.entries(project.cost).map(([item, needed]) => {
+        const legacyItem = legacyCredit[item];
+        const count =
+          materials[item] ?? (legacyItem ? materials[legacyItem] : 0);
         return [
           item,
           Number.isFinite(count)
@@ -37,11 +42,94 @@ export function campProjectComplete(
   );
 }
 
+export function missingCampProjects(
+  progress: Contributions,
+  id: CampProjectId,
+) {
+  const project = campProjects[id];
+  return "requires" in project
+    ? (project.requires as CampProjectId[]).filter(
+        (parent) => !campProjectComplete(progress, parent),
+      )
+    : [];
+}
+
+export function campTier(progress: Contributions) {
+  let tier = 0;
+  for (const key of Object.keys(progress) as CampProjectId[]) {
+    const project = campProjects[key];
+    if (project && "tier" in project && campProjectComplete(progress, key))
+      tier = Math.max(tier, project.tier);
+  }
+  return tier;
+}
+
+export const hearth = campProjectEffects.hearth;
+
+export function beaconGuardsAngle(angle: number) {
+  const [dx, dy] = hearth.beaconOffsetTiles;
+  return (
+    Math.cos(angle - Math.atan2(dy, dx)) >
+    Math.cos((hearth.guardHalfAngleDeg * Math.PI) / 180)
+  );
+}
+
+export function fireDrainRate(
+  wind: number,
+  sheltered: boolean,
+  multiplier: number,
+) {
+  const weather =
+    wind > 1 && sheltered ? 1 + (wind - 1) * hearth.windPenaltyFraction : wind;
+  return hearth.baseDrain * multiplier * weather;
+}
+
+export function feedHearth(
+  state: { fuel: number; stock: Stock },
+  item: keyof typeof hearth.fuelValues,
+) {
+  if (
+    !Object.hasOwn(hearth.fuelValues, item) ||
+    !(state.stock[item] > 0) ||
+    state.fuel >= hearth.capacity
+  )
+    return false;
+  state.stock[item]--;
+  state.fuel = Math.min(hearth.capacity, state.fuel + hearth.fuelValues[item]);
+  return true;
+}
+
+export function tickHearth(
+  state: { fuel: number; stock: Stock; campProjects: Contributions },
+  sec: number,
+  wind: number,
+  multiplier: number,
+  night: boolean,
+) {
+  const drain = fireDrainRate(
+    wind,
+    campProjectComplete(state.campProjects, "windHearth"),
+    multiplier,
+  );
+  state.fuel = Math.max(0, state.fuel - sec * drain);
+  if (
+    night &&
+    state.fuel <= hearth.autoFeedThreshold &&
+    campProjectComplete(state.campProjects, "stoker")
+  ) {
+    for (const item of Object.keys(
+      hearth.fuelValues,
+    ) as (keyof typeof hearth.fuelValues)[])
+      if (feedHearth(state, item)) break;
+  }
+}
+
 export function campProjectContribution(
   progress: Contributions,
   id: CampProjectId,
   stock: Stock,
 ): Stock {
+  if (missingCampProjects(progress, id).length) return {};
   return Object.fromEntries(
     Object.entries(campProjects[id].cost)
       .map(

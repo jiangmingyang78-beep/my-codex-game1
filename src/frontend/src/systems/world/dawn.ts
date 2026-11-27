@@ -1,5 +1,6 @@
 import type { RunState, Systems } from "@/core/types";
 import { rules } from "../runtimeRules";
+import { appearanceChanged } from "./worldTypes";
 import type { WorldObject } from "./worldTypes";
 type Node = WorldObject & {
   renewalLimit?: number;
@@ -40,6 +41,7 @@ function renew(state: RunState, sys: Systems, o: Node, dawn: boolean) {
     if (state.elapsedSec - (clock.renewals ?? 0) / 1000 < sec) return false;
     delete state.changesByObjectId[key(o.id)];
   }
+  appearanceChanged(state);
   state.changesByObjectId[o.id] = {
     ...c,
     gathered: false,

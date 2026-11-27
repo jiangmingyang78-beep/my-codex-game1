@@ -146,7 +146,8 @@ export function createEffects(scene, {
   }
 
   function emit({ type, x, y, payload = {} }) {
-    if (type === "combat.hit") emitHit(x, y, payload);
+    if (type === "element.steam") sparking(x,y,"#c5d4d2",1,"steam");
+    else if (type === "combat.hit") emitHit(x, y, payload);
     else if (type === "resource.collected") emitGather(x, y, payload);
     else if (type === "camp.lit") emitCampfire(x, y, { count: 6, ...payload });
     else if (type === "camp.ember") emitCampfire(x, y, payload);
@@ -258,7 +259,8 @@ export function createEffects(scene, {
     view = next;
     dirty = false;
     const { particles, rings } = simulation;
-    const litCamps = [...camps].filter(camp => camp.active && visible(view, camp.x, camp.y, camp.radius));
+    const strength=clamp(lightStrength(),0,1);
+    const litCamps = strength>0 && [...camps].filter(camp => camp.active && visible(view, camp.x, camp.y, camp.radius));
     combatParticles.length = 0;
     ambientParticles.length = 0;
     for (const particle of particles) {
@@ -272,8 +274,7 @@ export function createEffects(scene, {
     paintLayer(glow, view, combatParticles.some(particle => particle.glow > 0), webgl, context => {
       drawParticleGlows(context, combatParticles);
     });
-    paintLayer(fireLight, view, litCamps.length > 0, webgl, context => {
-      const strength = clamp(lightStrength(), 0, 1);
+    paintLayer(fireLight, view, litCamps && litCamps.length > 0, webgl, context => {
       for (const camp of litCamps) drawCampHalo(context, camp, strength);
     });
     paintLayer(ambience, view, ambientParticles.length > 0, webgl, context => {

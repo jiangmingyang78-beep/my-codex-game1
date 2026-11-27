@@ -58,6 +58,15 @@ export function bindSceneCommands(hooks: SceneCommandHooks): () => void {
         mode: session.eternal ? "eternal" : "new",
         heroId: session.state.heroId,
       }),
+    viewRecipe: (id) => {
+      if (
+        hooks.getScreen() === "craft" &&
+        session.state.unreadRecipeIds.delete(id)
+      ) {
+        session.save();
+        hooks.refreshCraft();
+      }
+    },
     craft: (id) => {
       if (hooks.getScreen() !== "craft") return;
       hooks.present(session.craft(id));

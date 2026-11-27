@@ -30,21 +30,11 @@ interface Feedback {
 function describe(e: GameEvent, sys: Systems): Feedback | null {
   const p = e.payload;
   switch (e.type) {
-    case EVT.collected: {
-      const itemId = text(p.itemId);
-      return {
-        toast: {
-          kind: "loot",
-          itemId,
-          label: itemName(sys.data, itemId),
-          delta: Number(p.count) || 1,
-        },
-        sfx: "gather",
-      };
-    }
+    case EVT.collected:
     case EVT.itemPicked: {
+      const isPickup = e.type === EVT.itemPicked;
       // 采集已触发 collected，只有地面掉落物才带 pickupId
-      if (!("pickupId" in p)) return null;
+      if (isPickup && !("pickupId" in p)) return null;
       const itemId = text(p.itemId);
       return {
         toast: {
@@ -53,7 +43,7 @@ function describe(e: GameEvent, sys: Systems): Feedback | null {
           label: itemName(sys.data, itemId),
           delta: Number(p.count) || 1,
         },
-        sfx: "pickup",
+        sfx: isPickup ? "pickup" : "gather",
       };
     }
     case EVT.pickupRefused:

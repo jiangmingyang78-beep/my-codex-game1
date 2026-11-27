@@ -167,7 +167,12 @@ export function saveRun(
       savedAt: Date.now(),
       state,
     };
-    storage.setItem(run, JSON.stringify(envelope));
+    storage.setItem(
+      run,
+      JSON.stringify(envelope, (_key, value) =>
+        value instanceof Set ? [...value] : value,
+      ),
+    );
     return { ok: true };
   } catch {
     return { ok: false, reason: "storage_error" };

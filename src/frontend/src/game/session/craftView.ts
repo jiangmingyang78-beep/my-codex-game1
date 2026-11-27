@@ -88,6 +88,19 @@ function rowFor(state: RunState, sys: Systems, recipe: RecipeDef): RecipeRow {
   return {
     id: recipe.id,
     name: recipe.name,
+    unlocked: state.unlockedRecipeIds.has(recipe.id),
+    unread: state.unreadRecipeIds.has(recipe.id),
+    hint: [
+      ...(recipe.unlockOnPickup ?? []).map(
+        (id) => `获得${itemName(sys.data, id)}`,
+      ),
+      ...(recipe.unlockOnCampProject ?? []).map((id) => {
+        const upgrade = sys.data.recipes.get(id);
+        if (upgrade) return `完成「${upgrade.name}」`;
+        const region = sys.data.regionList.find((r) => r.relaySocketId === id);
+        return `点亮${region?.name ?? ""}接力火盆`;
+      }),
+    ].join("或"),
     description,
     category: categoryFor(sys, recipe),
     materials: Object.entries(recipe.inputs).map(([itemId, need]) => ({

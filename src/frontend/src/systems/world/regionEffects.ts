@@ -4,7 +4,9 @@ import { hitEnemy } from "../EnemyManager";
 import { countOf } from "../inventory";
 import { ownedStatBonus } from "../itemEffects";
 import { type MoveOut, moveWithCollision } from "./collision";
+import { igniteRunTile } from "./runElements";
 import { ignite } from "./runLight";
+import { appearanceChanged } from "./worldTypes";
 import { TILE } from "./worldTypes";
 
 const HERO_PUSH_RADIUS = 5;
@@ -125,7 +127,9 @@ export function detonateResinBarrel(
     (rule?.type === "explosive_barrels" ? rule.blastRadiusTiles : 2.5) *
     sys.data.tileSize;
   const damage = rule?.type === "explosive_barrels" ? rule.blastDamage : 4;
+  appearanceChanged(state);
   state.changesByObjectId[barrelId] = { opened: true };
+  igniteRunTile(state, sys, barrel.x, barrel.y, events);
   ignite(
     state,
     { id: barrelId, x: barrel.x, y: barrel.y, radius: radiusPx },

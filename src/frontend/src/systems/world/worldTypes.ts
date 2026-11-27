@@ -22,6 +22,7 @@ export type ObjectKind =
   | "mirror_lamp";
 
 export interface WorldObject {
+  fireproof?: boolean;
   id: string;
   kind: ObjectKind;
   regionId: string;
@@ -92,4 +93,11 @@ export interface World {
   campfire: { x: number; y: number };
   /** Optional baked-texture key; worlds other than the adventure map use their own. */
   textureKey?: string;
+}
+
+const appearanceRevisions = new WeakMap<object, number>();
+export const appearanceRevision = (owner: object) =>
+  appearanceRevisions.get(owner) ?? 0;
+export function appearanceChanged(owner: object) {
+  appearanceRevisions.set(owner, appearanceRevision(owner) + 1);
 }

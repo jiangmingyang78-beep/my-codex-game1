@@ -1,3 +1,4 @@
+import type { ThermalActor } from "../systems/buffs";
 import type { World } from "../systems/world/worldTypes";
 import type { GameData } from "./dataTypes";
 
@@ -5,7 +6,7 @@ export type RunStatus = "playing" | "won" | "dead" | "storm_lost";
 export type DayPhase = "day" | "night";
 export type Inventory = Record<string, number>;
 
-export interface HeroState {
+export interface HeroState extends ThermalActor {
   x: number;
   y: number;
   facingX: number;
@@ -30,9 +31,20 @@ export interface ObjectChange {
   defeated?: boolean;
 }
 
-export type EnemyPhase = "idle" | "chase" | "windup" | "attack" | "recovery";
+export type EnemyPhase =
+  | "idle"
+  | "SKIRT_LIGHT"
+  | "chase"
+  | "windup"
+  | "attack"
+  | "recovery";
 
-export interface EnemyState {
+export interface EnemyState extends ThermalActor {
+  targetId?: string;
+  threatId?: string;
+  threatUntil?: number;
+  nextSense?: number;
+  retreating?: boolean;
   persistent?: boolean;
   taskLocked?: boolean;
   playerInteracted?: boolean;
@@ -64,6 +76,8 @@ export interface EnemyState {
 }
 
 export interface Projectile {
+  targetId?: string;
+  sourceId?: string;
   id: string;
   x: number;
   y: number;
@@ -96,6 +110,8 @@ export interface NightRaid {
 }
 
 export interface RunState {
+  elements: import("../systems/world/elementGrid").ElementGrid;
+  weather: import("../systems/survival/weatherSystem").WeatherState;
   schemaVersion: number;
   runId: string;
   seed: number;
@@ -107,6 +123,8 @@ export interface RunState {
   regionId: string;
   heroId: string;
   hero: HeroState;
+  unlockedRecipeIds: Set<string>;
+  unreadRecipeIds: Set<string>;
   inventory: Inventory;
   campLevel: number;
   seals: string[];

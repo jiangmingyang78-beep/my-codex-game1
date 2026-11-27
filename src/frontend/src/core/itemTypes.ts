@@ -74,6 +74,9 @@ export type RecipeOutput =
   | { type: "camp_level"; level: number };
 
 export interface RecipeDef {
+  starterUnlocked?: boolean;
+  unlockOnPickup?: string[];
+  unlockOnCampProject?: string[];
   id: string;
   name: string;
   stationId: string;

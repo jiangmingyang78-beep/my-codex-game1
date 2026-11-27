@@ -1,0 +1,33 @@
+{
+  "clock": {
+    "firstDayBonus": 0.14,
+    "nightGrowthPerDay": 0.032,
+    "maxWinterShift": 0.33,
+    "duskShare": 0.18,
+    "minDaylightShare": 0.22,
+    "coldGrowthPerDay": 0.065,
+    "maxWinterCold": 0.65,
+    "exposedNightHunger": 0.055
+  },
+  "raid": {
+    "firstDay": 2,
+    "intervalDays": 3,
+    "jitterDays": 1,
+    "arrivalFractions": [0, 0.5],
+    "warningMinSec": 30,
+    "warningMaxSec": 45,
+    "nearSec": 16,
+    "urgentSec": 6,
+    "toastMs": 3800,
+    "budgetPerDay": 0.48,
+    "budgetPerTier": 0.3,
+    "maxBudget": 12,
+    "retrySec": 2,
+    "spawnAttempts": 150,
+    "heroAggroTiles": 8,
+    "siegeRangeTiles": 2,
+    "siegeFuelPerSec": 2,
+    "ashBase": 1,
+    "ashPerEnemy": 0.6
+  }
+}

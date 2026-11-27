@@ -4,6 +4,9 @@
   "type": "object",
   "additionalProperties": false,
   "properties": {
+    "brightCost": {"type":"number","minimum":0},
+    "fireCost": {"type":"number","minimum":0},
+    "hearingTiles": {"type":"number","minimum":0},
     "dayDurationMultiplier": {
       "type": "number",
       "exclusiveMinimum": 0,

@@ -12,6 +12,7 @@ import regions from "@/data/regions.json";
 import survivalCampProjects from "@/data/survivalCampProjects.json";
 import survivalCatalog from "@/data/survivalCatalog.json";
 import survivalRecipes from "@/data/survivalRecipes.json";
+import survivalRhythm from "@/data/survivalRhythm.json";
 import weather from "@/data/weather.json";
 import type { EnemyDef, GameData, HeroDef, ItemDef } from "./dataTypes";
 import { validateGameData } from "./dataValidator";
@@ -31,6 +32,7 @@ export const dataFiles = {
   survivalCampProjects,
   survivalCatalog,
   survivalRecipes,
+  survivalRhythm,
   weather,
 };
 export function buildGameData(): GameData {

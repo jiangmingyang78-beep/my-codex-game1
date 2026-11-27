@@ -1,4 +1,7 @@
+import { discoverRecipes, readRecipeIds } from "@/systems/recipeBook";
+import { deserializeWeather } from "@/systems/survival/weatherSystem";
 import { blockedAt, regionIdAt } from "@/systems/world/collision";
+import { ElementGrid } from "@/systems/world/elementGrid";
 import { dayAt, phaseAt } from "./clock";
 import {
   RUN_SCHEMA_VERSION,
@@ -72,6 +75,12 @@ export function sanitizeRunState(raw: unknown, sys: Systems): RunState {
     );
   else Reflect.deleteProperty(inventory, "ember_seal");
   const state: RunState = {
+    elements: ElementGrid.restore(
+      r.elements instanceof ElementGrid ? r.elements.toJSON() : r.elements,
+      sys.data.tileSize,
+      Number(r.seed),
+    ),
+    weather: deserializeWeather(r.weather, Number(r.seed)),
     schemaVersion: RUN_SCHEMA_VERSION,
     runId: str(r.runId, "run_id"),
     seed: int(r.seed, "seed", 0, 4294967295),
@@ -85,6 +94,8 @@ export function sanitizeRunState(raw: unknown, sys: Systems): RunState {
       : balance.starting.regionId,
     heroId,
     hero,
+    unlockedRecipeIds: readRecipeIds(r.unlockedRecipeIds, sys),
+    unreadRecipeIds: readRecipeIds(r.unreadRecipeIds, sys),
     inventory,
     campLevel,
     seals,
@@ -101,5 +112,12 @@ export function sanitizeRunState(raw: unknown, sys: Systems): RunState {
     hero.y = sys.world.heroStart.y;
   }
   state.regionId = regionIdAt(sys.world, hero.x, hero.y) ?? state.regionId;
+  if (r.unlockedRecipeIds === undefined) {
+    for (const recipe of sys.data.recipeList) {
+      if (recipe.output.type === "item" && inventory[recipe.output.id] > 0)
+        state.unlockedRecipeIds.add(recipe.id);
+    }
+  }
+  discoverRecipes(state, sys);
   return state;
 }

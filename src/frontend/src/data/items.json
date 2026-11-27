@@ -79,7 +79,7 @@
           "reapply": "refresh_duration"
         }
       ],
-      "description": "恢复 24 点饱食，90 秒内使夜间火光消耗减半，可与铁罩提灯乘算。"
+      "description": "回 24 饱食，90 秒内夜耗减半，可叠提灯。"
     },
     {
       "id": "bandage",
@@ -106,7 +106,7 @@
         { "trigger": "owned", "type": "set_combat_stat", "stat": "attackDamage", "value": 2 },
         { "trigger": "owned", "type": "set_combat_stat", "stat": "attackRangeTiles", "value": 1.75 }
       ],
-      "description": "持有后自动生效，攻击伤害提高到 2，攻击距离提高到 1.75 格。"
+      "description": "持有生效，伤害升至 2，攻击距离 1.75 格。"
     },
     {
       "id": "relay_kit",
@@ -122,7 +122,7 @@
           "consumeCount": 1
         }
       ],
-      "description": "在废磨坊或冰峡的未点亮火站使用，永久提供半径 5 格的火圈。"
+      "description": "点燃废磨坊或冰峡未亮火站，常驻 5 格火圈。"
     },
     {
       "id": "ember_seal",
@@ -130,7 +130,7 @@
       "type": "quest",
       "maxStack": 3,
       "effects": [{ "trigger": "owned", "type": "quest_requirement", "targetId": "final_beacon", "requiredCount": 2 }],
-      "description": "废磨坊督工与霜渊守炬者各守一枚炉印。持这两枚炉印可点燃东端烽台。"
+      "description": "督工与守炬者各持一枚，集齐两枚可燃东端烽台。"
     },
     {
       "id": "beacon_heart",
@@ -232,11 +232,11 @@
       "type": "consumable",
       "maxStack": 5,
       "effects": [{ "trigger": "use", "type": "restore_stat", "stat": "light", "amount": 45 }],
-      "description": "裹满松脂的耐烧火把，大幅补充光明并驱退寒意。"
+      "description": "大幅补充光明。在营地外使用，可点燃面前一格，火会沿干燥植被蔓延。"
     },
     {
       "id": "fur_cloak",
-      "name": "兽皮防寒披风",
+      "name": "兽皮披风",
       "type": "equipment",
       "maxStack": 1,
       "effects": [
@@ -281,7 +281,7 @@
         { "trigger": "owned", "type": "add_owned_stat", "stat": "maxHp", "value": 2 },
         { "trigger": "owned", "type": "add_owned_stat", "stat": "damageReduction", "value": 1 }
       ],
-      "description": "持有后生命上限 +2，来自敌人的攻击伤害减少 1 点（最低承受 1 点）。"
+      "description": "持有后生命上限 +2，受击减伤 1（最低 1 点）。"
     },
     {
       "id": "iron_boots",
@@ -304,7 +304,7 @@
         { "trigger": "owned", "type": "add_owned_stat", "stat": "immunityBonusSec", "value": 0.25 },
         { "trigger": "owned", "type": "add_owned_stat", "stat": "coldResist", "value": 0.15 }
       ],
-      "description": "持有后生命上限 +2、受击无敌延长 0.25 秒、抗寒 +15%。"
+      "description": "生命上限 +2、无敌 +0.25 秒、抗寒 +15%。"
     },
     { "id": "pine_cone", "name": "霜松球果", "type": "material", "maxStack": 30, "effects": [], "description": "种下可长成霜松。" },
     { "id": "birch_sapling", "name": "灰桦树苗", "type": "material", "maxStack": 30, "effects": [], "description": "种下可长成灰桦。" },
@@ -328,7 +328,7 @@
       "type": "material",
       "maxStack": 15,
       "effects": [],
-      "description": "生存中用于推进一个阶段，并在 240 秒内加快生长、抵御暴雪。"
+      "description": "推进一阶生长，并在 240 秒内催熟抗暴雪。"
     }
   ]
 }

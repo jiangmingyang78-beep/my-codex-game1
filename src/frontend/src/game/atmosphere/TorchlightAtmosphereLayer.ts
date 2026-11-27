@@ -3,7 +3,7 @@ import { particleBudget } from "@/core/vfxBridge";
 import { forEachFireSource } from "@/systems/campCircle";
 import { syncRunLight } from "@/systems/world/runLight";
 import Phaser from "phaser";
-import { drawSpawnDebug } from "../dev/spawnDebug";
+import { drawSpawnDebug, spawnDebug } from "../dev/spawnDebug";
 import { RENDER_DEPTH } from "../renderDepth";
 import { darknessAt } from "../world/darkness";
 import { ATMOSPHERE_PRESETS, type FlamePalette } from "./atmospherePresets";
@@ -33,6 +33,15 @@ export class TorchlightAtmosphereLayer {
   private readonly embers: ReturnType<typeof createEmber>[];
   private readonly sources: { x: number; y: number; radius: number }[] = [];
   private palette = { ...ATMOSPHERE_PRESETS.flamePalette };
+  private haloX = Number.NaN;
+  private haloY = Number.NaN;
+  private haloWidth = 0;
+  private haloHeight = 0;
+  private haloRevision = -1;
+  private haloColor = -1;
+  private wasDebug = false;
+  private edgeWidth = 0;
+  private edgeHeight = 0;
   private runId: string | null = null;
   private sourceCount = 0;
   private emberSource = 0;
@@ -83,6 +92,7 @@ export class TorchlightAtmosphereLayer {
     const smoothing = 1 - Math.exp(-8 * dt);
     if (this.runId !== state.runId) {
       this.runId = state.runId;
+      this.haloRevision = -1;
       this.edgeAlpha = 0;
       this.emberSource = 0;
       this.emberCredit = 1;
@@ -94,23 +104,50 @@ export class TorchlightAtmosphereLayer {
     this.edgeAlpha += (cold * vignette.maxAlpha - this.edgeAlpha) * smoothing;
     this.edge.setVisible(this.edgeAlpha > 0.001).setAlpha(this.edgeAlpha);
 
-    this.halo.clear();
+    const pulse = this.reducedMotion ? 1 : 0.96 + 0.04 * Math.sin(timeSec * 7);
     this.halo.setAlpha(
-      0.2 +
-        0.8 *
-          clamp01(darknessAt(state.elapsedSec, sys.data.balance.clock) / 0.8),
+      pulse *
+        (0.2 +
+          0.8 *
+            clamp01(
+              darknessAt(state.elapsedSec, sys.data.balance.clock) / 0.8,
+            )),
     );
     this.sourceCount = 0;
     forEachFireSource(state, sys, this.recordFire);
     const grid = syncRunLight(state, sys);
-    const pulse = this.reducedMotion ? 1 : 0.96 + 0.04 * Math.sin(timeSec * 7);
-    grid.forEachLitTile(this.camera.worldView, (x, y, level) => {
-      if (level <= 2) return;
-      this.halo
-        .fillStyle(this.palette.ember, pulse * (0.035 + (0.12 * level) / 15))
-        .fillRect(x, y, grid.tileSize, grid.tileSize);
-    });
-    if (import.meta.env.DEV) drawSpawnDebug(state, sys, grid, this.halo);
+    const view = this.camera.worldView;
+    const tile = grid.tileSize;
+    const x = Math.floor(view.x / tile) * tile;
+    const y = Math.floor(view.y / tile) * tile;
+    const width = Math.ceil(view.width / tile) * tile + tile;
+    const height = Math.ceil(view.height / tile) * tile + tile;
+    if (
+      x !== this.haloX ||
+      y !== this.haloY ||
+      width !== this.haloWidth ||
+      height !== this.haloHeight ||
+      this.haloRevision !== grid.revision ||
+      this.haloColor !== this.palette.ember ||
+      spawnDebug.enabled ||
+      this.wasDebug
+    ) {
+      this.haloX = x;
+      this.haloY = y;
+      this.haloWidth = width;
+      this.haloHeight = height;
+      this.haloRevision = grid.revision;
+      this.haloColor = this.palette.ember;
+      this.wasDebug = spawnDebug.enabled;
+      this.halo.clear();
+      grid.forEachLitTile({ x, y, width, height }, (x, y, level) => {
+        if (level <= 2) return;
+        this.halo
+          .fillStyle(this.palette.ember, 0.035 + (0.12 * level) / 15)
+          .fillRect(x, y, grid.tileSize, grid.tileSize);
+      });
+      if (import.meta.env.DEV) drawSpawnDebug(state, sys, grid, this.halo);
+    }
 
     const normalBudget = Math.min(
       EMBER_CAPACITY,
@@ -192,13 +229,15 @@ export class TorchlightAtmosphereLayer {
     const width = Math.ceil(camera.width / camera.zoomX);
     const height = Math.ceil(camera.height / camera.zoomY);
     camera.getWorldPoint(camera.x, camera.y, this.viewOrigin);
-    this.edge
-      .clear()
-      .setPosition(
-        this.viewOrigin.x - camera.scrollX,
-        this.viewOrigin.y - camera.scrollY,
-      );
+    this.edge.setPosition(
+      this.viewOrigin.x - camera.scrollX,
+      this.viewOrigin.y - camera.scrollY,
+    );
 
+    if (width === this.edgeWidth && height === this.edgeHeight) return;
+    this.edgeWidth = width;
+    this.edgeHeight = height;
+    this.edge.clear();
     const band = Math.max(1, Math.floor(Math.min(width, height) / 28));
     for (let i = 0; i < 5; i++) {
       const inset = i * band;

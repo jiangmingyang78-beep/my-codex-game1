@@ -150,7 +150,9 @@ describe("地图控制台运行时规则", () => {
         x: enemy.x + distance * tileSize,
         y: enemy.y,
       });
-      updateEnemies(state, sys, 0.01, []);
+      // Isolate radius overrides from the mill wall between the fixture actors.
+      const world={...sys.world,tiles:new Uint8Array(sys.world.tiles.length)};
+      updateEnemies(state, {...sys,world}, 0.01, []);
       assert.equal(enemy.phase, expected);
     },
   );

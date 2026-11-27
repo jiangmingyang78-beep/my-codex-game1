@@ -1,15 +1,17 @@
 import type { AttackMove, EnemyDef } from "@/core/dataTypes";
 import { EVT, makeEvent } from "@/core/events";
 import type { EnemyState, GameEvent, RunState, Systems } from "@/core/types";
-import { HERO_RADIUS } from "../movement";
-import { rules } from "../runtimeRules";
-import { damageHero } from "../survival";
+import type { Projectile } from "@/core/types";
+import type { Point } from "@/entities/enemySeeds";
+import { chillSpeed } from "../buffs";
+import { chaseDisplacement } from "../movement";
+import { HERO_RADIUS } from "./combatMath";
+import { PLAYER, actor } from "./ecology";
+import { projectilePool } from "./projectilePool";
+
 import { type MoveOut, moveWithCollision, solidAt } from "../world/collision";
 import { ENEMY_RADIUS, inCone } from "./combatMath";
 import { attackSeeds } from "./enemySeeds";
-
-const AGGRO_TILES = 8;
-const LEASH_TILES = 16;
 
 const CONTACT_PX = ENEMY_RADIUS + HERO_RADIUS + 3;
 const scratch: MoveOut = { x: 0, y: 0 };
@@ -41,8 +43,8 @@ function step(
     state.changesByObjectId,
     e.x,
     e.y,
-    dx,
-    dy,
+    dx * chillSpeed(e, state.elapsedSec),
+    dy * chillSpeed(e, state.elapsedSec),
     ENEMY_RADIUS,
     scratch,
   );
@@ -52,12 +54,12 @@ function step(
 
 function startWindup(
   e: EnemyState,
-  state: RunState,
+  target: Point,
   move: AttackMove,
   events: GameEvent[],
 ): void {
-  const dx = state.hero.x - e.x;
-  const dy = state.hero.y - e.y;
+  const dx = target.x - e.x;
+  const dy = target.y - e.y;
   const len = Math.hypot(dx, dy) || 1;
   e.dirX = dx / len; // direction is locked here so a sidestep during the telegraph dodges it
   e.dirY = dy / len;
@@ -84,35 +86,17 @@ function launchProjectile(
   if (state.projectiles.length >= sys.data.balance.limits.activeProjectiles)
     return;
   const speed = move.projectileSpeedPxPerSec ?? 100;
-  state.projectiles.push({
-    id: `proj_${state.idCounter++}`,
-    x: e.x,
-    y: e.y,
-    vx: e.dirX * speed,
-    vy: e.dirY * speed,
-    lifeSec: move.projectileLifetimeSec ?? 2,
-    damage: def.attackDamage,
-  });
-}
-
-function strikeHero(
-  e: EnemyState,
-  def: EnemyDef,
-  move: AttackMove,
-  state: RunState,
-  sys: Systems,
-  events: GameEvent[],
-): void {
-  if (
-    damageHero(state, sys, def.attackDamage, events, def.id, {
-      x: e.x,
-      y: e.y,
-    }) &&
-    move.lightDamage
-  ) {
-    state.hero.light = Math.max(0, state.hero.light - move.lightDamage);
-  }
-  e.hitDone = true;
+  const shot = projectilePool.acquire();
+  shot.id = `proj_${state.idCounter++}`;
+  shot.x = e.x;
+  shot.y = e.y;
+  shot.vx = e.dirX * speed;
+  shot.vy = e.dirY * speed;
+  shot.lifeSec = move.projectileLifetimeSec ?? 2;
+  shot.targetId = e.targetId;
+  shot.sourceId = e.id;
+  shot.damage = def.attackDamage;
+  state.projectiles.push(shot);
 }
 
 function updateAttack(
@@ -122,11 +106,11 @@ function updateAttack(
   sec: number,
   state: RunState,
   sys: Systems,
-  events: GameEvent[],
+  hero: Point,
+  hit: (damage: number) => boolean,
 ): void {
   const tile = sys.data.tileSize;
-  const { hero } = state;
-  if (e.phaseSec <= 0 && !e.hitDone && move.type === "sweep") {
+  if (e.phaseSec <= sec && !e.hitDone && move.type === "sweep") {
     if (
       inCone(
         e.x,
@@ -140,7 +124,8 @@ function updateAttack(
         HERO_RADIUS,
       )
     ) {
-      strikeHero(e, def, move, state, sys, events);
+      if (hit(def.attackDamage) && hero === state.hero && move.lightDamage)
+        state.hero.light = Math.max(0, state.hero.light - move.lightDamage);
     }
     e.hitDone = true;
   }
@@ -149,7 +134,11 @@ function updateAttack(
     tileSize: tile,
     contactRadiusPx: CONTACT_PX,
     moveBy: (dx, dy) => step(e, sys, state, dx, dy),
-    strikeHero: () => strikeHero(e, def, move, state, sys, events),
+    strikeHero: () => {
+      if (hit(def.attackDamage) && hero === state.hero && move.lightDamage)
+        state.hero.light = Math.max(0, state.hero.light - move.lightDamage);
+      e.hitDone = true;
+    },
   });
 }
 
@@ -160,33 +149,27 @@ export function updateLegacyEnemy(
   state: RunState,
   sys: Systems,
   events: GameEvent[],
+  hero: Point,
+  hit: (damage: number) => boolean,
 ): void {
   const tile = sys.data.tileSize;
-  const { hero } = state;
   const dist = Math.hypot(hero.x - e.x, hero.y - e.y);
   const move = currentMove(def, e);
   e.cooldownSec = Math.max(0, e.cooldownSec - sec);
-  const aware = state.regionId === sys.world.spawns.get(e.spawnId)?.regionId;
   switch (e.phase) {
-    case "idle":
-      if (aware && dist <= (rules.perception?.aggroTiles ?? AGGRO_TILES) * tile)
-        e.phase = "chase";
-      return;
     case "chase": {
-      if (
-        e.nightRound === null &&
-        (!aware || dist > (rules.perception?.leashTiles ?? LEASH_TILES) * tile)
-      ) {
-        e.phase = "idle";
-        return;
-      }
       if (e.cooldownSec <= 0 && dist <= move.triggerRangeTiles * tile) {
-        startWindup(e, state, move, events);
+        startWindup(e, hero, move, events);
         return;
       }
       if (dist > CONTACT_PX) {
         const v = (def.moveSpeedPxPerSec * sec) / dist;
-        step(e, sys, state, (hero.x - e.x) * v, (hero.y - e.y) * v);
+        const dx = (hero.x - e.x) * v;
+        const dy = (hero.y - e.y) * v;
+        if (hero === state.hero) {
+          const path = chaseDisplacement(state, sys, e, dx, dy);
+          step(e, sys, state, path.x, path.y);
+        } else step(e, sys, state, dx, dy);
       }
       return;
     }
@@ -202,7 +185,7 @@ export function updateLegacyEnemy(
         launchProjectile(e, def, move, state, sys);
       return;
     case "attack":
-      updateAttack(e, def, move, sec, state, sys, events);
+      updateAttack(e, def, move, sec, state, sys, hero, hit);
       e.phaseSec -= sec;
       if (e.phaseSec <= 0) {
         e.phase = "recovery";
@@ -223,7 +206,7 @@ export function updateProjectiles(
   state: RunState,
   sys: Systems,
   sec: number,
-  events: GameEvent[],
+  strike: (p: Projectile, target: Point) => void,
 ): void {
   const tile = sys.data.tileSize;
   const list = state.projectiles;
@@ -238,14 +221,16 @@ export function updateProjectiles(
       Math.floor(p.x / tile),
       Math.floor(p.y / tile),
     );
+    const target = actor(state, p.targetId ?? PLAYER);
     const hit =
       !wall &&
-      Math.hypot(state.hero.x - p.x, state.hero.y - p.y) <= HERO_RADIUS + 3;
-    if (hit)
-      damageHero(state, sys, p.damage, events, "projectile", {
-        x: p.x - p.vx,
-        y: p.y - p.vy,
-      });
-    if (hit || wall || p.lifeSec <= 0) list.splice(i, 1);
+      target &&
+      Math.hypot(target.x - p.x, target.y - p.y) <= HERO_RADIUS + 3;
+    if (hit) strike(p, target);
+    if (hit || wall || p.lifeSec <= 0) {
+      const last = list.pop()!;
+      if (last !== p) list[i] = last;
+      projectilePool.release(p);
+    }
   }
 }

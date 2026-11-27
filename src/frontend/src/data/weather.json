@@ -4,8 +4,12 @@
   "weathers": [
     {
       "id": "clear",
+      "fireDecay": 1,
+      "spreadMult": 1,
+      "snowfall": 0,
       "name": "晴冷微风",
       "minDay": 1,
+      "winterShift": 0,
       "durationSec": [90, 150],
       "lightRadiusMult": 1,
       "fireDrainMult": 1,
@@ -30,8 +34,12 @@
     },
     {
       "id": "light_snow",
+      "fireDecay": 1.4,
+      "spreadMult": 0.65,
+      "snowfall": 0.04,
       "name": "细雪飘落",
       "minDay": 1,
+      "winterShift": 0.035,
       "durationSec": [80, 140],
       "lightRadiusMult": 0.96,
       "fireDrainMult": 1.1,
@@ -56,8 +64,12 @@
     },
     {
       "id": "blizzard",
+      "fireDecay": 5,
+      "spreadMult": 0.04,
+      "snowfall": 0.15,
       "name": "白渊暴雪",
       "minDay": 2,
+      "winterShift": 0.13,
       "durationSec": [60, 105],
       "lightRadiusMult": 0.78,
       "fireDrainMult": 1.45,
@@ -82,8 +94,12 @@
     },
     {
       "id": "freezing_fog",
+      "fireDecay": 1.2,
+      "spreadMult": 0.7,
+      "snowfall": 0,
       "name": "黑雾沉降",
       "minDay": 2,
+      "winterShift": 0.08,
       "durationSec": [70, 115],
       "lightRadiusMult": 0.72,
       "fireDrainMult": 1.25,
@@ -108,8 +124,12 @@
     },
     {
       "id": "ember_rain",
+      "fireDecay": 3,
+      "spreadMult": 0.12,
+      "snowfall": 0,
       "name": "灰雪微雨",
       "minDay": 1,
+      "winterShift": 0.02,
       "durationSec": [65, 110],
       "lightRadiusMult": 0.9,
       "fireDrainMult": 1.2,
@@ -129,7 +149,36 @@
         "light_snow": 3,
         "blizzard": 1,
         "freezing_fog": 3,
-        "ember_rain": 1
+        "ember_rain": 1,
+        "heavy_rain": 2
+      }
+    },
+    {
+      "id": "heavy_rain",
+      "fireDecay": 6,
+      "spreadMult": 0,
+      "snowfall": 0,
+      "name": "冻原骤雨",
+      "minDay": 2,
+      "winterShift": 0.02,
+      "durationSec": [35, 65],
+      "lightRadiusMult": 0.66,
+      "fireDrainMult": 1.2,
+      "moveSpeedMult": 0.97,
+      "plantGrowthMult": 1.75,
+      "spawnRateMult": 0.9,
+      "autoWater": true,
+      "particleKind": "rain",
+      "particleCount": 115,
+      "windX": -32,
+      "fallSpeed": 210,
+      "fogAlpha": 0.12,
+      "tintColor": [162, 128, 173],
+      "tintAlpha": 0.12,
+      "transitions": {
+        "clear": 4,
+        "ember_rain": 4,
+        "light_snow": 1
       }
     }
   ]

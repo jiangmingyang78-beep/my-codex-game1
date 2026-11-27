@@ -61,7 +61,15 @@ export class SnowFootprintLayer {
     const dashing = isHeroDashActive(state);
     if (dashing || this.wasDashing) {
       this.stride = 0;
-    } else {
+    } else if (
+      !(
+        state.elements.size &&
+        (state.elements.at(
+          Math.floor(hero.x / world.tileSize),
+          Math.floor(hero.y / world.tileSize),
+        )?.meltedSnow ?? 0) > 0.8
+      )
+    ) {
       this.trackMovement(hero.x, hero.y, world);
     }
     this.wasDashing = dashing;

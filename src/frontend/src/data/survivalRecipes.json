@@ -1,4 +1,16 @@
 {
+  "charBlock": {
+    "cost": { "wood": 2 },
+    "project": "kiln",
+    "camp": true,
+    "count": 1
+  },
+  "driedHerb": {
+    "cost": { "herb": 2 },
+    "project": "dryingRack",
+    "camp": true,
+    "count": 1
+  },
   "bread": {
     "cost": {
       "wheat": 2

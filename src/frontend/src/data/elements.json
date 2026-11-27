@@ -1,0 +1,12 @@
+{
+  "stepSec": 0.25,
+  "maxActiveFireTiles": 64,
+  "maxSpreadSteps": 4,
+  "maxChangedTiles": 2048,
+  "burnSec": 4,
+  "emberSec": 8,
+  "frostSec": 5,
+  "spreadChance": 0.28,
+  "lightRadiusTiles": 1.8,
+  "campCoreTiles": 3
+}

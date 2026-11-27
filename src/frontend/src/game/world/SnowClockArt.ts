@@ -1,5 +1,5 @@
 import type { BalanceData } from "@/core";
-import { TILE, type World } from "@/systems";
+import { TILE, type World } from "@/systems/world/worldTypes";
 import { registerCanvasTexture } from "@/vfx/proceduralTextures";
 import type Phaser from "phaser";
 import { RENDER_DEPTH } from "../renderDepth";
@@ -19,6 +19,43 @@ const TRAIL_SHOULDER = rgb(WINTER_TRAIL_PALETTE.shoulder);
 const TRAIL_BASE = rgb(WINTER_TRAIL_PALETTE.base);
 const DUSK_TAIL_SEC = DUSK_SEC * 0.6;
 const fade = (value: number): number => Math.min(1, Math.max(0, value));
+
+/** Survival HUD dial. All angles come from the same daily boundaries as simulation. */
+export function drawWinterDial(
+  canvas: HTMLCanvasElement,
+  clock: { cycle: number; duskStart: number; nightStart: number },
+  time: number,
+) {
+  const g = canvas.getContext("2d");
+  if (!g) return;
+  const r = canvas.width / 2;
+  const angle = (sec: number) =>
+    (sec / clock.cycle) * Math.PI * 2 - Math.PI / 2;
+  g.clearRect(0, 0, canvas.width, canvas.height);
+  let start = 0;
+  for (const [end, color] of [
+    [clock.duskStart, "#e5cc89"],
+    [clock.nightStart, "#cc8475"],
+    [clock.cycle, "#62729b"],
+  ] as const) {
+    g.beginPath();
+    g.moveTo(r, r);
+    g.arc(r, r, r - 1, angle(start), angle(end));
+    g.closePath();
+    g.fillStyle = color;
+    g.fill();
+    start = end;
+  }
+  g.beginPath();
+  g.moveTo(r, r);
+  g.lineTo(
+    r + (r - 2) * Math.cos(angle(time)),
+    r + (r - 2) * Math.sin(angle(time)),
+  );
+  g.strokeStyle = "#171b26";
+  g.lineWidth = 2;
+  g.stroke();
+}
 
 interface Patch {
   left: number;

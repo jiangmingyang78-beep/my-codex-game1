@@ -1,6 +1,7 @@
 import type { RunState, Systems } from "@/core";
 import { TILE, type World } from "@/systems";
 import { ETERNAL_TEXTURE_KEY } from "@/systems/eternal/eternalWorld";
+import { appearanceRevision } from "@/systems/world/worldTypes";
 import type Phaser from "phaser";
 import { RENDER_DEPTH, entityDepthAt } from "../renderDepth";
 import {
@@ -36,6 +37,8 @@ function snowPineFormAt(world: World, tx: number, ty: number): SnowPineForm {
 
 /** Static world art (baked ground, trees, doors) plus the state-driven nodes, barrels and gates. */
 export class WorldView {
+  private lastState?: RunState;
+  private lastRevision = -1;
   private readonly nodes = new Map<string, Phaser.GameObjects.Image>();
   private readonly barrels = new Map<string, Phaser.GameObjects.Image>();
   private readonly doors = new Map<string, Phaser.GameObjects.Image[]>();
@@ -147,8 +150,12 @@ export class WorldView {
     }
   }
 
-  /** Hides gathered nodes, detonated barrels and opened gates; cheap enough to run every frame. */
+  /** Hides gathered nodes, detonated barrels and opened gates; after the simulation reports a visibility change. */
   sync(state: RunState): void {
+    const revision = appearanceRevision(state);
+    if (state === this.lastState && revision === this.lastRevision) return;
+    this.lastState = state;
+    this.lastRevision = revision;
     for (const [id, image] of this.nodes)
       image.setVisible(!state.changesByObjectId[id]?.gathered);
     for (const [id, image] of this.barrels)

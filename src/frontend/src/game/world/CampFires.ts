@@ -3,6 +3,32 @@ import { campRadiusPx, fixtureRadius } from "@/systems/campCircle";
 import type { createEffects } from "@/vfx/particles";
 import { RENDER_DEPTH } from "../renderDepth";
 
+import { hearth } from "@/systems/survival/campProjects";
+
+export function survivalFireNodes(
+  center: { x: number; y: number },
+  tile: number,
+  lit: boolean,
+  sheltered: boolean,
+  beacon: boolean,
+) {
+  if (!lit) return [];
+  const sources = [
+    {
+      ...center,
+      radius:
+        hearth.baseRadiusPx * (sheltered ? hearth.shelteredRadiusMult : 1),
+    },
+  ];
+  if (beacon)
+    sources.push({
+      x: center.x + hearth.beaconOffsetTiles[0] * tile,
+      y: center.y + hearth.beaconOffsetTiles[1] * tile,
+      radius: hearth.beaconRadiusTiles * tile,
+    });
+  return sources;
+}
+
 export type Effects = ReturnType<typeof createEffects>;
 type FireHandle = ReturnType<Effects["addCampfire"]>;
 

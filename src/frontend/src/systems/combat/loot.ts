@@ -2,8 +2,10 @@ import type { DropDef } from "@/core/dataTypes";
 import { EVT, makeEvent } from "@/core/events";
 import { rollRun } from "@/core/rng";
 import type { EnemyState, GameEvent, RunState, Systems } from "@/core/types";
+import { discoverRecipes } from "@/systems/recipeBook";
 import { addItem, canAdd } from "../inventory";
 import { countBeaconSeals } from "../world/beacon";
+import { enemyPool } from "./spawnPopulation";
 
 const PICKUP_RADIUS_PX = 20;
 
@@ -111,6 +113,7 @@ export function defeatEnemy(
     );
     if (region) checkEncounter(state, sys, region.id, enemy.x, enemy.y, events);
   }
+  enemyPool.release(enemy);
 }
 
 /**
@@ -142,6 +145,7 @@ export function collectGroundLoot(
       continue;
     }
     addItem(sys.data, state.inventory, loot.itemId, loot.count);
+    discoverRecipes(state, sys, events);
     delete state.groundLoot[id];
     events.push(
       makeEvent(EVT.itemPicked, loot.x, loot.y, {

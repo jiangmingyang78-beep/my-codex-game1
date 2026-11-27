@@ -88,3 +88,24 @@ export function regionIdAt(world: World, x: number, y: number): string | null {
   }
   return null;
 }
+
+export function opaqueAt(
+  world: World,
+  changes: Record<string, ObjectChange>,
+  x: number,
+  y: number,
+) {
+  if (x < 0 || y < 0 || x >= world.widthTiles || y >= world.heightTiles)
+    return true;
+  const i = y * world.widthTiles + x;
+  const t = world.tiles[i];
+  return (
+    t === TILE.wall ||
+    (t === TILE.door && !changes[world.gateTiles.get(i) ?? ""]?.opened)
+  );
+}
+const revisions = new WeakMap<object, number>();
+export const obstacleRevision = (state: object) => revisions.get(state) ?? 0;
+export function obstaclesChanged(state: object) {
+  revisions.set(state, obstacleRevision(state) + 1);
+}

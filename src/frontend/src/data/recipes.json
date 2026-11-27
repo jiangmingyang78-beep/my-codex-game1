@@ -2,6 +2,7 @@
   "recipes": [
     {
       "id": "smelt_iron",
+      "unlockOnPickup": ["ore"],
       "name": "熔炼铁锭",
       "stationId": "main_campfire",
       "minCampLevel": 2,
@@ -17,6 +18,7 @@
     },
     {
       "id": "cook_ration",
+      "starterUnlocked": true,
       "name": "烤制莓饼",
       "stationId": "main_campfire",
       "minCampLevel": 1,
@@ -32,6 +34,7 @@
     },
     {
       "id": "cook_stew",
+      "unlockOnPickup": ["frostcap"],
       "name": "烹煮霜菇暖汤",
       "stationId": "main_campfire",
       "minCampLevel": 2,
@@ -48,6 +51,7 @@
     },
     {
       "id": "make_bandage",
+      "starterUnlocked": true,
       "name": "制作绷带",
       "stationId": "main_campfire",
       "minCampLevel": 1,
@@ -62,6 +66,7 @@
     },
     {
       "id": "make_lantern",
+      "unlockOnPickup": ["ingot"],
       "name": "制作铁罩提灯",
       "stationId": "main_campfire",
       "minCampLevel": 2,
@@ -81,6 +86,7 @@
     },
     {
       "id": "make_spear",
+      "unlockOnPickup": ["ingot"],
       "name": "制作铁矛",
       "stationId": "main_campfire",
       "minCampLevel": 2,
@@ -99,6 +105,7 @@
     },
     {
       "id": "make_relay",
+      "unlockOnCampProject": ["raise_camp_2"],
       "name": "制作接力火盆",
       "stationId": "main_campfire",
       "minCampLevel": 2,
@@ -118,6 +125,7 @@
     },
     {
       "id": "raise_camp_2",
+      "starterUnlocked": true,
       "name": "升级二级营火",
       "stationId": "main_campfire",
       "minCampLevel": 1,
@@ -135,6 +143,7 @@
     },
     {
       "id": "raise_camp_3",
+      "unlockOnCampProject": ["raise_camp_2"],
       "name": "升级三级营火",
       "stationId": "main_campfire",
       "minCampLevel": 2,
@@ -153,6 +162,7 @@
     },
     {
       "id": "cook_roast_meat",
+      "unlockOnPickup": ["raw_meat"],
       "name": "炭烤兽肉",
       "stationId": "main_campfire",
       "minCampLevel": 1,
@@ -168,6 +178,7 @@
     },
     {
       "id": "craft_herb_salve",
+      "unlockOnPickup": ["herb"],
       "name": "雪草药膏",
       "stationId": "main_campfire",
       "minCampLevel": 1,
@@ -183,6 +194,7 @@
     },
     {
       "id": "craft_resin_torch",
+      "unlockOnPickup": ["resin"],
       "name": "松脂火把",
       "stationId": "main_campfire",
       "minCampLevel": 1,
@@ -198,6 +210,7 @@
     },
     {
       "id": "craft_fur_cloak",
+      "unlockOnPickup": ["pelt"],
       "name": "兽皮防寒披风",
       "stationId": "main_campfire",
       "minCampLevel": 2,
@@ -216,6 +229,7 @@
     },
     {
       "id": "craft_iron_blade",
+      "unlockOnPickup": ["iron_scrap"],
       "name": "淬炭短刃",
       "stationId": "main_campfire",
       "minCampLevel": 2,
@@ -235,6 +249,8 @@
     },
     {
       "id": "craft_ember_lantern",
+      "unlockOnCampProject": ["old_mill_relay"],
+      "unlockOnPickup": ["iron_scrap"],
       "name": "余烬提灯",
       "stationId": "main_campfire",
       "minCampLevel": 3,
@@ -254,6 +270,7 @@
     },
     {
       "id": "craft_ash_compost",
+      "unlockOnPickup": ["charcoal"],
       "name": "调制灰烬堆肥",
       "stationId": "main_campfire",
       "minCampLevel": 1,
@@ -262,6 +279,7 @@
     },
     {
       "id": "craft_ember_mulch",
+      "unlockOnPickup": ["ash_compost"],
       "name": "炼制余烬暖肥",
       "stationId": "main_campfire",
       "minCampLevel": 2,
@@ -270,6 +288,7 @@
     },
     {
       "id": "craft_berry_cutting",
+      "unlockOnPickup": ["berry"],
       "name": "雪莓分株育苗",
       "stationId": "main_campfire",
       "minCampLevel": 1,
@@ -278,6 +297,7 @@
     },
     {
       "id": "smelt_scrap",
+      "unlockOnPickup": ["iron_scrap"],
       "name": "重熔废铁片",
       "stationId": "main_campfire",
       "minCampLevel": 2,
@@ -286,6 +306,7 @@
     },
     {
       "id": "craft_iron_buckler",
+      "unlockOnPickup": ["ingot"],
       "name": "锻造锻铁圆盾",
       "stationId": "main_campfire",
       "minCampLevel": 2,
@@ -295,6 +316,7 @@
     },
     {
       "id": "craft_iron_armor",
+      "unlockOnPickup": ["ingot"],
       "name": "锻造锻铁胸甲",
       "stationId": "main_campfire",
       "minCampLevel": 2,
@@ -304,6 +326,7 @@
     },
     {
       "id": "craft_iron_boots",
+      "unlockOnPickup": ["ingot"],
       "name": "锻造踏铁雪靴",
       "stationId": "main_campfire",
       "minCampLevel": 2,
@@ -313,6 +336,7 @@
     },
     {
       "id": "craft_iron_helm",
+      "unlockOnPickup": ["ingot"],
       "name": "锻造锻铁重盔",
       "stationId": "main_campfire",
       "minCampLevel": 3,

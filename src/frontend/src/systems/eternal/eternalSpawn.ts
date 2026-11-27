@@ -1,7 +1,7 @@
 import { EVT, makeEvent } from "@/core/events";
 import { rollRun } from "@/core/rng";
 import type { EnemyState, GameEvent, RunState, Systems } from "@/core/types";
-import { enemyPool, spawnPoint } from "../combat/spawnPopulation";
+import { acquireEnemy, spawnPoint } from "../combat/spawnPopulation";
 import { ETERNAL, type EternalRunRuntime } from "./eternalTypes";
 
 interface PoolEntry {
@@ -40,7 +40,7 @@ export function eternalHpMultiplier(combatSec: number): number {
 
 /** Scaled maximum HP of an eternal enemy, or undefined for ordinary enemies. */
 export function eternalEnemyMaxHp(enemy: EnemyState): number | undefined {
-  return scaledMaxHp.get(enemy);
+  return enemy.spawnId === "eternal" ? scaledMaxHp.get(enemy) : undefined;
 }
 
 export function eternalEnemyCount(state: RunState): number {
@@ -72,25 +72,18 @@ function spawnEnemy(
   const scaled = isBoss
     ? def.maxHp
     : Math.ceil(def.maxHp * eternalHpMultiplier(combatSec));
-  const enemy = enemyPool.acquire({
-    boss: isBoss,
+  const enemy = acquireEnemy(
     id,
     enemyId,
-    spawnId: "eternal",
-    homeX: point.x,
-    homeY: point.y,
-    x: point.x,
-    y: point.y,
-    hp: scaled,
-    phase: "chase",
-    phaseSec: 0,
-    cooldownSec: 0.6,
-    dirX: 0,
-    dirY: 1,
-    moveIndex: 0,
-    hitDone: false,
-    nightRound: 1,
-  });
+    "eternal",
+    point.x,
+    point.y,
+    scaled,
+    1,
+  );
+  enemy.boss = isBoss;
+  enemy.phase = "chase";
+  enemy.cooldownSec = 0.6;
   scaledMaxHp.delete(enemy);
   state.enemiesById[id] = enemy;
   if (scaled !== def.maxHp) scaledMaxHp.set(enemy, scaled);
@@ -125,7 +118,8 @@ export function spawnEternalWave(
   const wanted = 1 + Math.floor(rollRun(state) * 3);
   const minutes = rt.combatElapsedSec / 60;
   for (let n = 0; n < wanted; n++) {
-    if (eternalEnemyCount(state) >= ETERNAL.enemyCap) return;
+    if (eternalEnemyCount(state) >= sys.data.balance.limits.activeEnemies)
+      return;
     const affordable = pool.filter((e) => e.cost <= rt.credits);
     if (affordable.length === 0) return;
     const pick = pickWeighted(state, affordable, minutes);

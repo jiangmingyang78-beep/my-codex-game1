@@ -58,7 +58,13 @@ export interface DropDef {
   oncePerRun?: boolean;
 }
 
+export type Faction = "shadow" | "beast" | "construct" | "neutral";
 export interface EnemyDef {
+  elementResistance?: import("../systems/buffs").ElementResistance;
+  faction?: Faction;
+  activeWindow?: "any" | "day" | "night";
+  fearLightThreshold?: number;
+  territoryRadius?: number;
   specialKey?: string;
   scope?: "shared" | "adventure_only";
   id: string;

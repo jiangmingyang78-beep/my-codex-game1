@@ -36,7 +36,7 @@ interface HitContext<T> {
   emitEvent: Emit;
   onEnemyKilled(enemy: T): void;
 }
-interface SeedContext<T extends SeedActor = SeedActor> {
+export interface SeedContext<T extends SeedActor = SeedActor> {
   config: EnemyDef;
   distance: number;
   tileSize: number;

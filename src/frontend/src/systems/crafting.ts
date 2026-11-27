@@ -1,6 +1,7 @@
 import { EVT, makeEvent } from "@/core/events";
 import { reasonMessage } from "@/core/messages";
 import type { ActionResult, GameEvent, RunState, Systems } from "@/core/types";
+import { discoverRecipes } from "@/systems/recipeBook";
 import { addItem, countOf, freeSpace, removeItems } from "./inventory";
 import { heroMaxHp } from "./itemEffects";
 
@@ -71,6 +72,8 @@ export function craft(
   const { data, world } = sys;
   const recipe = data.recipes.get(recipeId);
   if (!recipe) return refuse(state, recipeId, "unknown_recipe");
+  if (!state.unlockedRecipeIds.has(recipeId))
+    return refuse(state, recipeId, "recipe_locked");
   const reach = data.balance.hero.interactRangeTiles * data.tileSize * 2;
   if (
     Math.hypot(
@@ -146,5 +149,6 @@ export function craft(
   events.push(
     makeEvent(EVT.craftDone, hero.x, hero.y, { recipeId, output: out }),
   );
+  discoverRecipes(state, sys, events);
   return { ok: true, events };
 }
