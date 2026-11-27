@@ -1,6 +1,7 @@
 /** Shared depth bands for Phaser world views and screen-space overlays. */
 export const RENDER_DEPTH = {
   ground: -1,
+  snowAccents: -0.75,
   footprints: -0.5,
   legacyTelegraph: 0,
   telegraph: 5,

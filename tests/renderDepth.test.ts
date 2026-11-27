@@ -11,6 +11,7 @@ const d = RENDER_DEPTH;
 it("地面、实体、战斗、环境与 HUD 的渲染区间依次递增", () => {
   const levels = [
     d.ground,
+    d.snowAccents,
     d.footprints,
     d.legacyTelegraph,
     d.telegraph,

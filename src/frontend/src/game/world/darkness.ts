@@ -1,7 +1,7 @@
 import type { BalanceData } from "@/core";
 
-const DUSK_SEC = 60;
-const DAWN_SEC = 30;
+export const DUSK_SEC = 60;
+export const DAWN_SEC = 30;
 const DUSK_PEAK = 0.5;
 const NIGHT_PEAK = 0.8;
 const DAWN_FLOOR = 0.1;

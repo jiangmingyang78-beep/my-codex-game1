@@ -42,12 +42,13 @@ const ICE_PALETTE = {
   shoulder: "#759ab2",
   detail: "#7095af",
 };
-const TRAIL_PALETTE = {
+export const WINTER_TRAIL_PALETTE = {
   base: "#b7a8a4",
   rim: "#b1bdcb",
   shoulder: "#9894a1",
   detail: "#a1999a",
 };
+export const WINTER_SNOW_HIGHLIGHTS = { drift: "#8ba0b9", glint: "#91a4bc" };
 /** Edge dither sides: 0 top, 1 right, 2 bottom, 3 left. */
 const NEIGHBOURS: readonly (readonly [number, number, number])[] = [
   [0, -1, 0],
@@ -122,14 +123,14 @@ function makeSnowfield(): HTMLCanvasElement {
       if (drift < 0.28) g.fillStyle = "#7084a1";
       else if (drift < 0.4) g.fillStyle = "#798eaa";
       else if (drift < 0.6) g.fillStyle = "#8297b2";
-      else g.fillStyle = "#8ba0b9";
+      else g.fillStyle = WINTER_SNOW_HIGHLIGHTS.drift;
       g.fillRect(x, y, 1, 1);
     }
   }
   for (let i = 0; i < 190; i++) {
     const x = Math.floor(tileHash(i, 4, 41) * span);
     const y = Math.floor(tileHash(i, 5, 9) * span);
-    g.fillStyle = i % 4 ? "#91a4bc" : "#748aa6";
+    g.fillStyle = i % 4 ? WINTER_SNOW_HIGHLIGHTS.glint : "#748aa6";
     g.fillRect(x, y, 2 + (i % 4), 1);
     if (i % 5 === 0) g.fillRect(x + 3, y - 1, 2, 1);
   }
@@ -157,7 +158,7 @@ function drawWinterGround(
   }
   const ice = tile === TILE.ice;
   if (!ice && tile !== TILE.path) return false;
-  const palette = ice ? ICE_PALETTE : TRAIL_PALETTE;
+  const palette = ice ? ICE_PALETTE : WINTER_TRAIL_PALETTE;
   g.fillStyle = palette.base;
   g.fillRect(x, y, size, size);
   const joins = (dx: number, dy: number): boolean => {

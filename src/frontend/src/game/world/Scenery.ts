@@ -12,6 +12,7 @@ import { RENDER_DEPTH } from "../renderDepth";
 import type { TextureGenerator } from "../textures/registerTextures";
 import { CampFires, type Effects } from "./CampFires";
 import { NightOverlay } from "./NightOverlay";
+import { SnowClockArt } from "./SnowClockArt";
 import { WorldView } from "./WorldView";
 
 /** vfx biome index for snow: drives the falling-flake ambience. -1 means no ambience. */
@@ -29,6 +30,7 @@ export class Scenery {
   readonly overlay: NightOverlay;
   private readonly view: WorldView;
   private readonly fires: CampFires;
+  private readonly snowClock: SnowClockArt | null;
   private darkness = 0;
 
   constructor(
@@ -36,6 +38,7 @@ export class Scenery {
     sys: Systems,
     gen: TextureGenerator,
     state: RunState,
+    showSnowClock = false,
   ) {
     const { world, data } = sys;
     const reduced = prefersReducedMotion();
@@ -67,12 +70,16 @@ export class Scenery {
       gen.halo("#ffffff"),
       (visit) => this.fx.forEachCampLight(visit),
     );
+    this.snowClock = showSnowClock
+      ? new SnowClockArt(scene, world, data.balance.clock)
+      : null;
   }
 
   update(state: RunState, sec: number, darkness: number): void {
     this.darkness = darkness;
     this.overlay.darkness = darkness;
     this.view.sync(state);
+    this.snowClock?.sync(state.elapsedSec);
     this.fires.sync(state);
     this.fx.update(sec);
   }
@@ -86,6 +93,7 @@ export class Scenery {
   }
 
   destroy(): void {
+    this.snowClock?.destroy();
     this.overlay.destroy();
     this.fx.destroy();
   }

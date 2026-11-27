@@ -100,7 +100,13 @@ export class GameScene extends Phaser.Scene {
     const gen = this.registry.get(
       REGISTRY.textureGenerator,
     ) as TextureGenerator;
-    this.scenery = new Scenery(this, this.session.sys, gen, state);
+    this.scenery = new Scenery(
+      this,
+      this.session.sys,
+      gen,
+      state,
+      !this.session.eternal,
+    );
     this.entities = new EntityViews(this, this.session.sys, gen, state.heroId);
     this.inputBuffer.clear();
     this.pendingFlashHero = false;
