@@ -142,7 +142,7 @@ export function Hud() {
           variant="ghost"
           aria-label={muted ? "取消静音" : "静音"}
           onClick={toggleMuted}
-          className="p-2"
+          className="p-2 [@media(pointer:coarse)]:min-h-11"
         >
           {muted ? <VolumeX size={16} /> : <Volume2 size={16} />}
         </PixelButton>
@@ -150,7 +150,7 @@ export function Hud() {
           variant="ghost"
           aria-label="暂停"
           onClick={() => commands.pause()}
-          className="p-2"
+          className="p-2 [@media(pointer:coarse)]:min-h-11"
         >
           <Pause size={16} />
         </PixelButton>

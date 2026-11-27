@@ -1,34 +1,35 @@
-# 双工具交接 · 永恒自然首领与 WebGL 触屏复验
+# 双工具交接 · 触屏布局与永恒长局复验
 
 ## 1. 工具与改动文件
 
 Codex。⚠ 表示至少 240 行。
 
-- `src/frontend/src/game/feedback/CombatFeelController.ts`（419 ⚠）离屏首领箭头接近时沿对应屏幕边缘寻找可用位置，中心至少相距 20px。
-- `src/frontend/src/game/feedback/TelegraphLayer.ts`（303 ⚠）提交预警在普通预警之后绘制，重叠处白色边线可读。
-- `docs/HANDOFF.md`（34）记录本轮实测和后续范围。
+- `game/createGame.ts`（88）观察画布宿主尺寸，同步 Phaser Scale Manager。退出时断开观察器。
+- `game/ui/Hud.tsx`（170）粗指针的暂停、静音热区增至 44px 高。
+- `game/ui/PauseMenu.tsx`（65）限制暂停面板最大高度，面板内可滚动。
+- `game/ui/ToastManager.ts`（318 ⚠）、`game/ui/toastBridge.ts`（111）、`game/feedback/CombatFeelController.ts`（423 ⚠）提供并消费 1:1 Toast 实际矩形，供离屏箭头避让。
+- `docs/HANDOFF.md`（35）记录本轮复验。源码路径以 `src/frontend/src/` 为起点。
 
 ## 2. 已验证项
 
-- Chrome SwiftShader WebGL、320×640、DPR 1、触屏模拟。五个快捷位换两排，双行 16px Toast 距栏顶 20px。触点消耗烤莓饼，数量从 2 减到 1。
-- 实时战斗中通过空格测试挥砍，抓到红色前摇、提交白边、受击与攻击飘字。重叠的红色预警下方仍可见，提交白边完整位于上层。
-- 永恒实时时钟未加速。开发无敌保护角色，旧磨坊督工在 2:00 自然刷出，霜渊守炬者在 4:00 自然刷出。第一只首领入镜箭头消失，键盘移动使它离屏后箭头恢复。
-- 两只自然首领共存后，将它们摆到同一侧的同一离屏方向复现重叠。修复前两箭头叠成一个，修复后 PNG 像素验证为两个独立箭头。
-- `pnpm typecheck`、`pnpm fix`、`pnpm build` 通过，`npm test` 70 项通过。Vite 5184 已关闭。
-- `tmp-visual-audit/webgl-before/` 与 `webgl-after/` 保存本轮截图，原 WebGL 与 Canvas 对比图均保留。
+- Chrome SwiftShader WebGL 触屏模拟完成 320×640 → 568×320 → 320×640。画布随视口重排，快捷栏两排 → 一排 → 两排，竖屏双行 Toast 安全间距 20px。
+- 检查五个快捷栏按钮和两个 HUD 按钮角落的命中区域。点击距边 3px 的模拟触点可静音和暂停，继续按钮可恢复游戏。横屏暂停面板完整留在视口内。
+- 永恒时钟未加速。第 2、4、6、8 分钟各自然刷出一只首领，8:02 确认四只共存，第三波为烽台守卫。
+- 四首领同向离屏分别测试竖屏右侧、竖屏上侧及横屏下侧。截图像素均识别出四枚独立箭头，横屏 Toast 可见时仍能辨认。
+- `pnpm typecheck`、`pnpm fix`、`pnpm build` 与 `npm test`（70 项）通过。Vite 5184 已关闭。
+- 复验图保存在 `tmp-visual-audit/endurance-before/`、`endurance-after/` 和 `endurance-natural/`，之前的 39 张截图均保留。
 
 ## 3. 未验证与已知风险
 
-- 触屏实测覆盖菜单和快捷栏，移动、挥砍仍通过键盘触发。覆盖 Chrome 触屏模拟，实体移动设备待测。
-- 同方向多首领用自然刷出的两只首领摆位复现。三只以上首领拥挤、第三波以及长局性能待测。
+- Windows 报告 0 个触点，且未发现可控制的实体触屏设备。本轮触点证据来自浏览器模拟。
+- 使用开发无敌保护角色以便等待首领。自然刷出后在浏览器中统一摆位测试同向箭头。未测长局通关及实体设备帧率。
 
 ## 4. 锁定接口与约束
 
-- 保持既有 `RENDER_DEPTH`、Toast 独立场景与 `data-hud-*` 锚点、VFX 公开接口及存档结构。
-- 箭头保持实际首领方位和固定屏幕像素尺寸。重叠时仅移动箭头绘制位置。
-- 提交白边沿用现有 100ms 时间窗。绘制顺序在同一地面预警层内调整。
+- `getToastBounds(): DOMRect[]` 返回当前 Toast 场景中的屏幕坐标，供 Boss 箭头避让。Toast 独立场景保持 1:1。
+- 保持既有 `RENDER_DEPTH`、VFX 公开接口、战斗数值与存档结构。画布尺寸以宿主元素为准。
 
 ## 5. 下一棒任务
 
-1. 在实体触屏浏览器复测 HUD 点击区及窄屏重排。
-2. 测试三个以上首领同向离屏和更长时间的永恒战斗。
+1. 连接实体触屏设备，复测方向切换、HUD 角落点按和短屏暂停菜单滚动。
+2. 在低性能设备复测长局渲染帧率及更拥挤场景中的箭头可读性。

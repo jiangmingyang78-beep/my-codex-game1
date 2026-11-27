@@ -65,6 +65,26 @@ export class ToastManager {
     });
   }
 
+  /** Bounds of the toast boxes in the unscaled screen overlay. */
+  getVisibleBounds(): DOMRect[] {
+    const boxes: DOMRect[] = [];
+    for (const channel of CHANNELS) {
+      for (const item of this.channels[channel]) {
+        const container = item.container;
+        if (!container || container.alpha <= 0.1) continue;
+        boxes.push(
+          new DOMRect(
+            channel === "feedback" ? container.x - item.width / 2 : container.x,
+            container.y - item.height / 2,
+            item.width,
+            item.height,
+          ),
+        );
+      }
+    }
+    return boxes;
+  }
+
   /** 动态更新锚点（如装备环栏增减或视口尺寸变化时避开 HUD）。 */
   setAnchors(x: number, y: number, feedbackOffsetY?: number): void {
     const nextX = Math.round(x);

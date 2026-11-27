@@ -51,6 +51,10 @@ export function hasToastManager(): boolean {
   return activeManager !== null;
 }
 
+export function getToastBounds(): DOMRect[] {
+  return activeManager?.getVisibleBounds() ?? [];
+}
+
 function dispatch(fn: QueuedCall): void {
   if (activeManager && activeTextures) {
     fn(activeManager, activeTextures);

@@ -11,14 +11,14 @@ export function PauseMenu() {
     <div className="pointer-events-auto absolute inset-0 flex items-center justify-center bg-night/60 p-3">
       <section
         aria-label="暂停菜单"
-        className="pixel-panel flex w-full max-w-xs flex-col gap-3 p-5"
+        className="pixel-panel max-h-full w-full max-w-xs space-y-3 overflow-y-auto p-5"
       >
         <h2 className="font-pixel text-center text-xl font-bold text-ember-glow">
           已暂停
         </h2>
         <PixelButton
           onClick={() => commands.resume()}
-          className="flex items-center justify-center gap-2 py-3"
+          className="flex w-full items-center justify-center gap-2 py-3"
         >
           <Play size={16} /> 继续
         </PixelButton>
@@ -26,7 +26,7 @@ export function PauseMenu() {
           <PixelButton
             variant="ghost"
             onClick={() => commands.save()}
-            className="flex items-center justify-center gap-2 py-2.5"
+            className="flex w-full items-center justify-center gap-2 py-2.5"
           >
             <Save size={16} /> 保存进度
           </PixelButton>
@@ -34,7 +34,7 @@ export function PauseMenu() {
         <PixelButton
           variant="ghost"
           onClick={toggleMuted}
-          className="flex items-center justify-center gap-2 py-2.5"
+          className="flex w-full items-center justify-center gap-2 py-2.5"
         >
           {muted ? <VolumeX size={16} /> : <Volume2 size={16} />}{" "}
           {muted ? "声音：关" : "声音：开"}
@@ -42,12 +42,13 @@ export function PauseMenu() {
         <PixelButton
           variant="ghost"
           onClick={() => commands.toTitle()}
-          className="flex items-center justify-center gap-2 py-2.5"
+          className="flex w-full items-center justify-center gap-2 py-2.5"
         >
           <House size={16} /> 返回标题
         </PixelButton>
         <PixelButton
           variant="ghost"
+          className="w-full"
           onClick={() => {
             if (eternal || commands.save())
               window.location.assign("./survival.html");

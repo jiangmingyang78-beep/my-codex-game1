@@ -7,6 +7,7 @@ import { nearestInteractable } from "@/systems/world/interact";
 import type { ObjectKind } from "@/systems/world/worldTypes";
 import Phaser from "phaser";
 import { RENDER_DEPTH } from "../renderDepth";
+import { getToastBounds } from "../ui/toastBridge";
 import { COMBAT_FEEL_PRESETS, type ShakeSpec } from "./combatFeelPresets";
 
 export type FloatingKind = "normal" | "crit" | "heal" | "heroHurt" | "block";
@@ -310,12 +311,15 @@ export class CombatFeelController {
         const s = Math.min(sx, sy);
         let screenX = centerX + dx * s;
         let screenY = centerY + dy * s;
-        hudRects ??= Array.from(
-          document.querySelectorAll(
-            "[data-hud-top-left], [data-hud-clock], [data-hud-actions], [data-hud-hotbar]",
+        hudRects ??= [
+          ...Array.from(
+            document.querySelectorAll(
+              "[data-hud-top-left], [data-hud-clock], [data-hud-actions], [data-hud-hotbar]",
+            ),
+            (node) => node.getBoundingClientRect(),
           ),
-          (node) => node.getBoundingClientRect(),
-        );
+          ...getToastBounds(),
+        ];
         for (const box of hudRects) {
           if (
             screenX < box.left - margin ||

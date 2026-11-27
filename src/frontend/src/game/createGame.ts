@@ -61,11 +61,25 @@ export function createGame(parent: HTMLElement): () => void {
   refreshTitleInfo();
   let game: Phaser.Game | null = null;
   let disposed = false;
+  const resize = new ResizeObserver(() => {
+    if (!game?.isRunning) return;
+    const { clientWidth: width, clientHeight: height } = parent;
+    if (
+      width > 0 &&
+      height > 0 &&
+      (width !== game.scale.width || height !== game.scale.height)
+    ) {
+      game.scale.setParentSize(width, height);
+    }
+  });
   void preloadPixelFont().then(() => {
-    if (!disposed) game = launchSafely(parent);
+    if (disposed) return;
+    game = launchSafely(parent);
+    if (game) resize.observe(parent);
   });
   return () => {
     disposed = true;
+    resize.disconnect();
     unbindAudio();
     game?.destroy(true);
     discardPendingRun();
