@@ -1,35 +1,32 @@
-# 双工具交接 · 光影与 HUD 实机验收
+# 双工具交接 · Canvas 窄屏与连续战斗复验
 
 ## 1. 工具与改动文件
 
-Codex。下列源码路径以 `src/frontend/` 为起点。⚠ 表示至少 240 行。
+Codex。⚠ 表示至少 240 行。
 
-- 夜幕与暖光 · `src/game/atmosphere/TorchlightAtmosphereLayer.ts`（387 ⚠）、`src/game/atmosphere/atmospherePresets.ts`（46）、`src/game/atmosphere/pixelLightMask.ts`（26，新增）、`src/game/world/NightOverlay.ts`（113）、`src/game/world/Scenery.ts`（97）、`src/game/ui/GameUi.tsx`（42）。
-- 战斗预警 · `src/game/feedback/TelegraphLayer.ts`（282 ⚠）、`src/game/feedback/combatFeelPresets.ts`（116）。
-- Toast 与状态栏 · `src/game/scenes/ToastScene.ts`（103）、`src/game/ui/pixelFont.ts`（35）、`src/game/ui/toastTheme.ts`（256 ⚠）、`src/game/ui/toastMotion.ts`（218）、`src/game/ui/Hud.tsx`（156）、`src/game/ui/QuickSlots.tsx`（62）。
-- 其他界面 · `src/game/ui/CraftPanel.tsx`（134）、`src/game/ui/EquipmentRingRail.tsx`（161）、`src/game/ui/EternalPrepPanel.tsx`（190）、`src/game/ui/HeroPortrait.tsx`（40）、`src/game/ui/SeasonsDiorama.tsx`（143）、`src/game/ui/TitleScreen.tsx`（236）、`src/index.css`（264 ⚠）、`tailwind.config.js`（140）。
-- 仓库交接 · `docs/HANDOFF.md`（35）。
+- `src/frontend/src/game/ui/Hud.tsx`（170）收紧窄屏状态行留白，为条形仪表让出空间。永恒计时按完整字段换行，添加时钟和操作区布局锚点。
+- `src/frontend/src/game/feedback/CombatFeelController.ts`（390 ⚠）将 Boss 箭头按 1:1 屏幕像素绘制，避开 HUD，给箭头加 2px 深色边。120ms 内的相邻飘字分行。
+- `docs/HANDOFF.md`（32）记录本轮实测。
 
 ## 2. 已验证项
 
-- `pnpm typecheck`、`pnpm fix`、`pnpm build`、`npm run build` 通过。`npm test` 70 项通过。构建提示 Browserslist 数据已有 8 个月。
-- 本地 Chrome 使用 SwiftShader WebGL，视口 1280×720，DPR 1。冒险营火边缘复拍确认暗处仍有雪纹、火光呈暖色阶梯，拾取流距状态区 16px。
-- 营火交互图中，四角高亮和双行 16px PixelZH 提示完整显示。Toast 底边距快捷栏顶边 20px。
-- 永恒亮雪及暗夜复验均能区分红色前摇与白色提交帧，挥砍、角色和顶部 HUD 无互相遮挡。暗夜拾取流距状态区 16px。
-- 六张图保留在本机 `tmp-visual-audit/before/` 和 `tmp-visual-audit/after/`。两处 Vite 服务已关闭，临时脚本与基线副本已清理。
+- Chrome 禁用 WebGL 后确认 Phaser 使用 Canvas，DPR 1。320×640 永恒模式下，白天与深夜截图显示雪纹和暖色阶梯光。五个快捷位换成两排，16px 中文 Toast 完整折两行，底边距快捷栏 20px。
+- 1280×720 连续战斗用开发工具布置雪貂，随后让敌人正常行动，按空格挥砍。逐帧捕捉红色前摇、提交白闪、玩家受击和攻击飘字。同一挥砍的两个 1 可逐个读出。
+- 离屏 Boss 箭头出现在右上操作区下方。用开发布置将 Boss 放进视野后，确认箭头消失。
+- `pnpm typecheck`、`pnpm fix`、`pnpm build` 通过。 `npm test` 70 项通过。Vite 5184 已关闭。
+- 新图保存在 `tmp-visual-audit/canvas-before/` 和 `tmp-visual-audit/canvas-after/`。旧六张 WebGL 对比图保留在 `before/` 和 `after/`。
 
 ## 3. 未验证与已知风险
 
-- 战斗复拍用开发命令布置敌人并固定取样帧。仍待通过连续自然战斗复核提交窗口、伤害飘字和 Boss 指示器。
-- 本轮实机覆盖桌面 WebGL。Canvas 回退、窄屏快捷栏换行和长时间动态光晕仍待复验。
+- 本轮聚焦 Chrome Canvas、320×640 HUD 与 1280×720 战斗。Boss 由开发入口放置，未等待自然首领波。其他浏览器与长时间战斗未覆盖。
 
 ## 4. 锁定接口与约束
 
-- `makePixelHole(): HTMLCanvasElement` 提供 48×48 四档挖孔纹理。夜幕最近邻采样，峰值透明度 0.72。主场景使用 `NightOverlay`，切勿同时启用 `TorchlightAtmosphereLayer` 的选用夜幕。
-- `data-hud-top-left` 与 `data-hud-hotbar` 是 Toast 的布局锚点。Toast 在独立 1:1 场景绘制，文字 16px，盒子按 4px 网格对齐。
-- 使用既有 `RENDER_DEPTH` 次序。地表与脚印 → 地面提示 → 实体 → 挥砍 → 光影 → HUD。VFX 公共接口、战斗规则和存档结构沿用现有契约。
+- Toast 继续读 `data-hud-top-left`、`data-hud-hotbar`。Boss 指示器同时用 `data-hud-clock`、`data-hud-actions` 避让顶部 HUD。
+- Boss 箭头采用既有 `RENDER_DEPTH.bossPointer`，固定屏幕像素尺寸。场景维持独立 Toast 层与单一 `NightOverlay`。
+- 保持 VFX 公开接口、战斗数值与存档结构。
 
 ## 5. 下一棒任务
 
-1. 用 Canvas 和窄屏复测昼夜光照、双行 Toast 与快捷栏换行。
-2. 用连续战斗复测提交白闪、伤害飘字和 Boss 指示器。
+1. 在自然首领波里复测箭头随视野进出，以及多个首领同时离屏的表现。
+2. 交叉验证 WebGL 与触屏浏览器的窄屏布局和连续战斗。

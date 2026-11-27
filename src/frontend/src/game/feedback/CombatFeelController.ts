@@ -225,10 +225,21 @@ export class CombatFeelController {
     slot.text
       .setText(text)
       .setColor(spec.color)
-      .setPosition(slot.x, slot.y)
       .setAlpha(1)
       .setVisible(true)
       .setActive(true);
+    // Place simultaneous nearby hits on separate lines so their digits do not merge.
+    for (const other of this.pool) {
+      if (other === slot || !other.busy || other.ageMs > 120) continue;
+      const spacing = (slot.text.width + other.text.width) / 2 + 4;
+      if (
+        Math.abs(slot.x - other.x) < spacing &&
+        Math.abs(slot.y - other.text.y) < slot.text.height + 4
+      ) {
+        slot.y = Math.floor(other.text.y) - other.text.height - 4;
+      }
+    }
+    slot.text.setPosition(slot.x, slot.y);
     slot.text.texture?.setFilter(Phaser.Textures.FilterMode.NEAREST);
   }
 
@@ -274,8 +285,11 @@ export class CombatFeelController {
       const view = cam.worldView;
       const z = Math.max(1e-4, cam.zoom);
       const margin = qol.bossPointerMarginPx;
-      const hw = Math.max(8, (cam.width / 2 - margin) / z);
-      const hh = Math.max(8, (cam.height / 2 - margin) / z);
+      const centerX = cam.width / 2;
+      const centerY = cam.height / 2;
+      // A zero scroll factor still inherits camera zoom. Draw around the zoom origin at 1:1.
+      this.pointerG.setPosition(centerX, centerY).setScale(1 / z);
+      let hudRects: DOMRect[] | undefined;
 
       for (const enemy of Object.values(state.enemiesById)) {
         if (enemy.hp <= 0) continue;
@@ -287,25 +301,47 @@ export class CombatFeelController {
         const dy = enemy.y - view.centerY;
         if (Math.hypot(dx, dy) < 1e-4) continue;
 
+        const horizontalRoom = Math.max(0, centerX - margin);
+        const verticalRoom = Math.max(0, centerY - margin);
         const s = Math.min(
-          hw / Math.max(Math.abs(dx), 1e-6),
-          hh / Math.max(Math.abs(dy), 1e-6),
+          horizontalRoom / Math.max(Math.abs(dx), 1e-6),
+          dy === 0 ? Number.POSITIVE_INFINITY : verticalRoom / Math.abs(dy),
         );
-        const px = cam.width / 2 + dx * s * z;
-        const py = cam.height / 2 + dy * s * z;
+        const px = dx * s;
+        const screenX = centerX + px;
+        let screenY = centerY + dy * s;
+        hudRects ??= Array.from(
+          document.querySelectorAll(
+            "[data-hud-top-left], [data-hud-clock], [data-hud-actions], [data-hud-hotbar]",
+          ),
+          (node) => node.getBoundingClientRect(),
+        );
+        for (const box of hudRects) {
+          if (
+            screenX < box.left - margin ||
+            screenX > box.right + margin ||
+            screenY < box.top - margin ||
+            screenY > box.bottom + margin
+          )
+            continue;
+          screenY = box.top >= centerY ? box.top - margin : box.bottom + margin;
+        }
+        const py = screenY - centerY;
         const { x: ux, y: uy } = safeUnit(dx, dy);
         const nx = -uy;
         const ny = ux;
 
-        this.pointerG.fillStyle(qol.bossPointerColor, 1);
-        this.pointerG.fillTriangle(
-          Math.round(px + ux * 8),
-          Math.round(py + uy * 8),
-          Math.round(px - ux * 6 + nx * 6),
-          Math.round(py - uy * 6 + ny * 6),
-          Math.round(px - ux * 6 - nx * 6),
-          Math.round(py - uy * 6 - ny * 6),
-        );
+        const ax = Math.round(px + ux * 8);
+        const ay = Math.round(py + uy * 8);
+        const bx = Math.round(px - ux * 6 + nx * 6);
+        const by = Math.round(py - uy * 6 + ny * 6);
+        const cx = Math.round(px - ux * 6 - nx * 6);
+        const cy = Math.round(py - uy * 6 - ny * 6);
+        this.pointerG
+          .lineStyle(2, 0x48172a)
+          .fillStyle(qol.bossPointerColor, 1)
+          .fillTriangle(ax, ay, bx, by, cx, cy)
+          .strokeTriangle(ax, ay, bx, by, cx, cy);
       }
     }
   }

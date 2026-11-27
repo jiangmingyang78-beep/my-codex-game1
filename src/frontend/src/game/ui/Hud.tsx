@@ -28,14 +28,14 @@ interface BarProps {
 function StatBar({ icon, label, value, max, tone }: BarProps) {
   const pct = Math.max(0, Math.min(100, (value / max) * 100));
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-1 sm:gap-2">
       <span className="w-4 shrink-0 text-foreground" aria-hidden="true">
         {icon}
       </span>
       <div className={`pixel-bar ${tone} min-w-0 flex-1`} aria-hidden="true">
         <span style={{ width: `${pct}%` }} />
       </div>
-      <span className="pixel-hud-text w-[3.75rem] shrink-0 text-right text-xs tabular-nums text-pixel-shadow">
+      <span className="pixel-hud-text w-12 shrink-0 whitespace-nowrap text-right text-xs tabular-nums text-pixel-shadow sm:w-[3.75rem]">
         {label} {Math.ceil(value)}
       </span>
     </div>
@@ -100,20 +100,31 @@ export function Hud() {
       </div>
 
       <div
+        data-hud-clock
         className={`pixel-panel absolute right-2 top-14 flex max-w-[calc(58vw_-_1.5rem)] items-center gap-2 px-2 py-2 md:left-1/2 md:right-auto md:top-3 md:max-w-none md:-translate-x-1/2 md:justify-center md:gap-3 md:px-3 ${hud.eternal ? "md:w-80" : "md:w-52"}`}
       >
         {hud.eternal ? (
-          <InfinityIcon size={18} className="text-accent" />
+          <InfinityIcon
+            size={18}
+            className="hidden shrink-0 text-accent md:block"
+          />
         ) : night ? (
           <Moon size={18} className="text-accent" />
         ) : (
           <Sun size={18} className="text-warning" />
         )}
         <div className="leading-tight">
-          <p className="font-pixel text-sm text-pixel-shadow">
-            {hud.eternal
-              ? hud.eternal.clockText
-              : `${hud.dayLabel} · ${hud.clock}`}
+          <p className="font-pixel flex flex-wrap gap-x-2 text-xs leading-4 text-pixel-shadow md:gap-x-0 md:text-sm">
+            {(hud.eternal?.clockText ?? `${hud.dayLabel} · ${hud.clock}`)
+              .split(" · ")
+              .map((part, index) => (
+                <span key={part} className="inline-block whitespace-nowrap">
+                  {index > 0 && (
+                    <span className="hidden md:inline">{" · "}</span>
+                  )}
+                  {part}
+                </span>
+              ))}
           </p>
           <p className="text-xs text-muted-foreground">
             {hud.eternal
@@ -123,7 +134,10 @@ export function Hud() {
         </div>
       </div>
 
-      <div className="absolute right-2 top-2 flex gap-2 sm:right-3 sm:top-3">
+      <div
+        data-hud-actions
+        className="absolute right-2 top-2 flex gap-2 sm:right-3 sm:top-3"
+      >
         <PixelButton
           variant="ghost"
           aria-label={muted ? "取消静音" : "静音"}
