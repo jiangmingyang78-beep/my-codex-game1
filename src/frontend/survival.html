@@ -160,7 +160,7 @@ button:active{transform:translateY(1px)}
 .item-icon{filter:drop-shadow(0 1px 0 #0009)}
 .resource-grid .stock-item,.pickup-bar li{box-shadow:inset 0 1px 0 #ffffff0a}
 button,kbd,.tech-node,.quick-slot,.quickbar .build-controls{border-radius:0}
-#encounterToast{position:fixed;top:16%;left:50%;transform:translateX(-50%);z-index:5;padding:.45em 1em;background:#1c202b;color:#ffe5a6;border:1px solid #ad936e;pointer-events:none}
+#encounterToast{position:absolute;top:56px;left:50%;transform:translateX(-50%);z-index:1;width:max-content;max-width:calc(100% - 24px);padding:.45em 1em;background:#1c202b;color:#ffe5a6;border:1px solid #ad936e;text-align:center;pointer-events:none}
 </style>
 </head>
 <body>
@@ -179,6 +179,7 @@ button,kbd,.tech-node,.quick-slot,.quickbar .build-controls{border-radius:0}
 <div id="buildControls" class="build-controls" hidden><select id="blueprint" aria-label="手持材料的建造配方" hidden tabindex="-1"></select><div class="bp-menu"><button type="button" id="blueprintBtn" class="bp-btn" aria-haspopup="listbox" aria-expanded="false" aria-label="手持材料的建造配方" tabindex="-1"></button><ul id="blueprintList" class="bp-list" role="listbox" hidden></ul></div><small id="buildCost"></small></div>
 </div>
 <div id="pickupBar" class="pickup-bar" hidden><span>已拾取</span><ul id="pickupList" aria-label="最近拾取的物品" aria-live="polite"></ul></div>
+<div id="encounterToast" aria-hidden="true" hidden></div>
 <div id="overlay" class="overlay" hidden><div class="card"><small id="eyebrow">EMBERWOOD</small><h2 id="overlayTitle">余烬林</h2><p id="overlayText">在林中经营你的营地。</p><div class="card-buttons"><button id="primary">冒险模式</button><button id="survivalStart" class="secondary">继续当前生存</button></div></div></div></div>
 <div class="keys"><span><kbd>WASD</kbd><kbd>↑↓←→</kbd> 移动</span><span><kbd>Space</kbd> 攻击 · 长按左键连击</span><span><kbd>E</kbd> 互动</span><span><kbd>Esc</kbd> 暂停</span></div>
 <p id="survivalKeys" hidden><kbd>1–8</kbd> 切换快捷栏 · 左键短按互动，长按采集或拆除 · 右键放置或使用，手持建材可长按连放 · <kbd>I</kbd> 背包 · <kbd>F</kbd> 进食 · <kbd>T</kbd> 科技树 · 种苗和肥料右键使用，<kbd>Shift + E</kbd> 铲除植被</p><div class="touch"><div class="dpad" aria-label="方向键"><button data-key="arrowup" aria-label="上">↑</button><button data-key="arrowleft" aria-label="左">←</button><button data-key="arrowdown" aria-label="下">↓</button><button data-key="arrowright" aria-label="右">→</button></div><div class="actions"><button data-key=" ">攻击</button><button data-key="e">互动</button></div></div>
@@ -255,7 +256,6 @@ button,kbd,.tech-node,.quick-slot,.quickbar .build-controls{border-radius:0}
 </details>
 <div id="techTree" class="tech-tree"></div>
 </dialog>
-<div id="encounterToast" role="status" hidden></div>
 <dialog id="worldDialog" aria-labelledby="worldTitle">
 <div class="gear-heading"><h2 id="worldTitle">生存世界</h2><button id="closeWorld" type="button" autofocus>返回游戏</button></div>
 <label for="savedWorlds">已有世界</label>
