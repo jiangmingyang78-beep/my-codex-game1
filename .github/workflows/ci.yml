@@ -12,7 +12,8 @@ permissions:
 jobs:
   health:
     name: 静态检查、回归与生产冒烟
-    runs-on: ubuntu-latest
+    # Playwright 1.58.2 的 Chromium 系统依赖支持 Ubuntu 24.04。
+    runs-on: ubuntu-24.04
     timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
