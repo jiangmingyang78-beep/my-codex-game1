@@ -1,32 +1,34 @@
-# 双工具交接 · Canvas 窄屏与连续战斗复验
+# 双工具交接 · 永恒自然首领与 WebGL 触屏复验
 
 ## 1. 工具与改动文件
 
 Codex。⚠ 表示至少 240 行。
 
-- `src/frontend/src/game/ui/Hud.tsx`（170）收紧窄屏状态行留白，为条形仪表让出空间。永恒计时按完整字段换行，添加时钟和操作区布局锚点。
-- `src/frontend/src/game/feedback/CombatFeelController.ts`（390 ⚠）将 Boss 箭头按 1:1 屏幕像素绘制，避开 HUD，给箭头加 2px 深色边。120ms 内的相邻飘字分行。
-- `docs/HANDOFF.md`（32）记录本轮实测。
+- `src/frontend/src/game/feedback/CombatFeelController.ts`（419 ⚠）离屏首领箭头接近时沿对应屏幕边缘寻找可用位置，中心至少相距 20px。
+- `src/frontend/src/game/feedback/TelegraphLayer.ts`（303 ⚠）提交预警在普通预警之后绘制，重叠处白色边线可读。
+- `docs/HANDOFF.md`（34）记录本轮实测和后续范围。
 
 ## 2. 已验证项
 
-- Chrome 禁用 WebGL 后确认 Phaser 使用 Canvas，DPR 1。320×640 永恒模式下，白天与深夜截图显示雪纹和暖色阶梯光。五个快捷位换成两排，16px 中文 Toast 完整折两行，底边距快捷栏 20px。
-- 1280×720 连续战斗用开发工具布置雪貂，随后让敌人正常行动，按空格挥砍。逐帧捕捉红色前摇、提交白闪、玩家受击和攻击飘字。同一挥砍的两个 1 可逐个读出。
-- 离屏 Boss 箭头出现在右上操作区下方。用开发布置将 Boss 放进视野后，确认箭头消失。
-- `pnpm typecheck`、`pnpm fix`、`pnpm build` 通过。 `npm test` 70 项通过。Vite 5184 已关闭。
-- 新图保存在 `tmp-visual-audit/canvas-before/` 和 `tmp-visual-audit/canvas-after/`。旧六张 WebGL 对比图保留在 `before/` 和 `after/`。
+- Chrome SwiftShader WebGL、320×640、DPR 1、触屏模拟。五个快捷位换两排，双行 16px Toast 距栏顶 20px。触点消耗烤莓饼，数量从 2 减到 1。
+- 实时战斗中通过空格测试挥砍，抓到红色前摇、提交白边、受击与攻击飘字。重叠的红色预警下方仍可见，提交白边完整位于上层。
+- 永恒实时时钟未加速。开发无敌保护角色，旧磨坊督工在 2:00 自然刷出，霜渊守炬者在 4:00 自然刷出。第一只首领入镜箭头消失，键盘移动使它离屏后箭头恢复。
+- 两只自然首领共存后，将它们摆到同一侧的同一离屏方向复现重叠。修复前两箭头叠成一个，修复后 PNG 像素验证为两个独立箭头。
+- `pnpm typecheck`、`pnpm fix`、`pnpm build` 通过，`npm test` 70 项通过。Vite 5184 已关闭。
+- `tmp-visual-audit/webgl-before/` 与 `webgl-after/` 保存本轮截图，原 WebGL 与 Canvas 对比图均保留。
 
 ## 3. 未验证与已知风险
 
-- 本轮聚焦 Chrome Canvas、320×640 HUD 与 1280×720 战斗。Boss 由开发入口放置，未等待自然首领波。其他浏览器与长时间战斗未覆盖。
+- 触屏实测覆盖菜单和快捷栏，移动、挥砍仍通过键盘触发。覆盖 Chrome 触屏模拟，实体移动设备待测。
+- 同方向多首领用自然刷出的两只首领摆位复现。三只以上首领拥挤、第三波以及长局性能待测。
 
 ## 4. 锁定接口与约束
 
-- Toast 继续读 `data-hud-top-left`、`data-hud-hotbar`。Boss 指示器同时用 `data-hud-clock`、`data-hud-actions` 避让顶部 HUD。
-- Boss 箭头采用既有 `RENDER_DEPTH.bossPointer`，固定屏幕像素尺寸。场景维持独立 Toast 层与单一 `NightOverlay`。
-- 保持 VFX 公开接口、战斗数值与存档结构。
+- 保持既有 `RENDER_DEPTH`、Toast 独立场景与 `data-hud-*` 锚点、VFX 公开接口及存档结构。
+- 箭头保持实际首领方位和固定屏幕像素尺寸。重叠时仅移动箭头绘制位置。
+- 提交白边沿用现有 100ms 时间窗。绘制顺序在同一地面预警层内调整。
 
 ## 5. 下一棒任务
 
-1. 在自然首领波里复测箭头随视野进出，以及多个首领同时离屏的表现。
-2. 交叉验证 WebGL 与触屏浏览器的窄屏布局和连续战斗。
+1. 在实体触屏浏览器复测 HUD 点击区及窄屏重排。
+2. 测试三个以上首领同向离屏和更长时间的永恒战斗。

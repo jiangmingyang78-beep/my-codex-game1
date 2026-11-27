@@ -290,6 +290,7 @@ export class CombatFeelController {
       // A zero scroll factor still inherits camera zoom. Draw around the zoom origin at 1:1.
       this.pointerG.setPosition(centerX, centerY).setScale(1 / z);
       let hudRects: DOMRect[] | undefined;
+      const placed: { x: number; y: number }[] = [];
 
       for (const enemy of Object.values(state.enemiesById)) {
         if (enemy.hp <= 0) continue;
@@ -303,12 +304,11 @@ export class CombatFeelController {
 
         const horizontalRoom = Math.max(0, centerX - margin);
         const verticalRoom = Math.max(0, centerY - margin);
-        const s = Math.min(
-          horizontalRoom / Math.max(Math.abs(dx), 1e-6),
-          dy === 0 ? Number.POSITIVE_INFINITY : verticalRoom / Math.abs(dy),
-        );
-        const px = dx * s;
-        const screenX = centerX + px;
+        const sx = horizontalRoom / Math.max(Math.abs(dx), 1e-6);
+        const sy =
+          dy === 0 ? Number.POSITIVE_INFINITY : verticalRoom / Math.abs(dy);
+        const s = Math.min(sx, sy);
+        let screenX = centerX + dx * s;
         let screenY = centerY + dy * s;
         hudRects ??= Array.from(
           document.querySelectorAll(
@@ -326,6 +326,35 @@ export class CombatFeelController {
             continue;
           screenY = box.top >= centerY ? box.top - margin : box.bottom + margin;
         }
+        // Slide crowded markers along their edge without changing their bearing.
+        const step = 20;
+        const alongY = sx <= sy;
+        const edgeLength = alongY ? cam.height : cam.width;
+        for (let offset = 0; offset <= edgeLength; offset += step) {
+          const shift = offset % (step * 2) ? (offset + step) / 2 : -offset / 2;
+          const x = screenX + (alongY ? 0 : shift);
+          const y = screenY + (alongY ? shift : 0);
+          if (
+            x < margin ||
+            x > cam.width - margin ||
+            y < margin ||
+            y > cam.height - margin ||
+            hudRects.some(
+              (box) =>
+                x > box.left - margin &&
+                x < box.right + margin &&
+                y > box.top - margin &&
+                y < box.bottom + margin,
+            ) ||
+            placed.some((point) => Math.hypot(point.x - x, point.y - y) < step)
+          )
+            continue;
+          screenX = x;
+          screenY = y;
+          break;
+        }
+        placed.push({ x: screenX, y: screenY });
+        const px = screenX - centerX;
         const py = screenY - centerY;
         const { x: ux, y: uy } = safeUnit(dx, dy);
         const nx = -uy;

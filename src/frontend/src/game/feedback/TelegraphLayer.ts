@@ -98,6 +98,11 @@ export class TelegraphLayer {
 
     g.clear();
     const tileSize = sys.data.tileSize;
+    const commits: {
+      enemy: EnemyState;
+      move: SeedAttackView;
+      progress: number;
+    }[] = [];
 
     for (const enemy of Object.values(state.enemiesById)) {
       if (enemy.phase !== "windup" || enemy.hp <= 0) continue;
@@ -114,12 +119,28 @@ export class TelegraphLayer {
           : Phaser.Math.Clamp(windup - enemy.phaseSec, 0, windup);
       const progress = 1 - ratio01(remaining, windup);
 
-      const border =
-        remaining <= this.opts.commitWindowSec
-          ? this.opts.commitFlashColor
-          : this.opts.borderColor;
-
-      this.drawMoveTelegraph(g, enemy, move, tileSize, progress, border);
+      if (remaining <= this.opts.commitWindowSec) {
+        commits.push({ enemy, move, progress });
+      } else {
+        this.drawMoveTelegraph(
+          g,
+          enemy,
+          move,
+          tileSize,
+          progress,
+          this.opts.borderColor,
+        );
+      }
+    }
+    for (const { enemy, move, progress } of commits) {
+      this.drawMoveTelegraph(
+        g,
+        enemy,
+        move,
+        tileSize,
+        progress,
+        this.opts.commitFlashColor,
+      );
     }
   }
 
