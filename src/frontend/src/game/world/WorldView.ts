@@ -1,5 +1,5 @@
 import type { RunState, Systems } from "@/core";
-import { TILE } from "@/systems";
+import { TILE, type World } from "@/systems";
 import { ETERNAL_TEXTURE_KEY } from "@/systems/eternal/eternalWorld";
 import type Phaser from "phaser";
 import { RENDER_DEPTH, entityDepthAt } from "../renderDepth";
@@ -8,11 +8,31 @@ import {
   TREE_VARIANTS,
   registerWorldTexture,
 } from "../textures/registerTextures";
+import type { SnowPineForm } from "../textures/snowPine";
 import {
   type TileArt,
   bakeWorldCanvas,
   tileHash,
 } from "../textures/worldTexture";
+
+function snowPineFormAt(world: World, tx: number, ty: number): SnowPineForm {
+  const { campfire, tileSize, tiles, widthTiles, heightTiles } = world;
+  const campX = Math.floor(campfire.x / tileSize);
+  const campY = Math.floor(campfire.y / tileSize);
+  if ((tx - campX) ** 2 + (ty - campY) ** 2 <= 49) return "camp";
+  let trees = 0;
+  for (let dy = -2; dy <= 2; dy++) {
+    for (let dx = -2; dx <= 2; dx++) {
+      const x = tx + dx;
+      const y = ty + dy;
+      if (x < 0 || x >= widthTiles || y < 0 || y >= heightTiles) continue;
+      const tile = tiles[y * widthTiles + x];
+      if (tile === TILE.ice) return "shore";
+      if (tile === TILE.tree) trees++;
+    }
+  }
+  return trees >= 6 ? "deep" : "woodland";
+}
 
 /** Static world art (baked ground, trees, doors) plus the state-driven nodes, barrels and gates. */
 export class WorldView {
@@ -38,15 +58,16 @@ export class WorldView {
   }
 
   private addTrees(): void {
-    const { tiles, widthTiles, heightTiles, tileSize, textureKey } =
-      this.sys.world;
-    const treeTexture =
-      textureKey === ETERNAL_TEXTURE_KEY ? TEX.tree : TEX.snowPine;
+    const { world } = this.sys;
+    const { tiles, widthTiles, heightTiles, tileSize, textureKey } = world;
     for (let ty = 0; ty < heightTiles; ty++) {
       for (let tx = 0; tx < widthTiles; tx++) {
         if (tiles[ty * widthTiles + tx] !== TILE.tree) continue;
         const variant = Math.floor(tileHash(tx, ty, 3) * TREE_VARIANTS);
-        const key = treeTexture(variant);
+        const key =
+          textureKey === ETERNAL_TEXTURE_KEY
+            ? TEX.tree(variant)
+            : TEX.snowPine(snowPineFormAt(world, tx, ty), variant);
         const y = (ty + 1) * tileSize - 1;
         this.scene.add
           .image(tx * tileSize + tileSize / 2, y, key)

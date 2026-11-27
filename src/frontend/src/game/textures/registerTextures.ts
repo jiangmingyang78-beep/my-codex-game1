@@ -5,7 +5,7 @@ import {
   registerCanvasTexture,
 } from "@/vfx/proceduralTextures";
 import type Phaser from "phaser";
-import { paintSnowPine } from "./snowPine";
+import { SNOW_PINE_FORMS, type SnowPineForm, paintSnowPine } from "./snowPine";
 import { SPECIAL_ENEMY_TEXTURE_DEFS } from "./specialEnemyTextures";
 import { PIXEL_SPRITES } from "./spriteArt";
 
@@ -31,7 +31,8 @@ export const TEX = {
   campBase: "campfire_base",
   enemyFallback: "enemy_generic",
   tree: (variant: number) => `tree_${variant}`,
-  snowPine: (variant: number) => `snow_pine_${variant}`,
+  snowPine: (form: SnowPineForm, variant: number) =>
+    `snow_pine_${form}_${variant}`,
   node: (itemId: string) => `node_${itemId}`,
   enemy: (enemyId: string) => {
     const key = `enemy:${enemyId}`;
@@ -175,9 +176,17 @@ export function registerGameTextures(
       TREE_SIZE.baseX,
       TREE_SIZE.baseY,
     );
-    const { canvas, g } = makeCanvas(TREE_SIZE.w, TREE_SIZE.h);
-    paintSnowPine(g, TREE_SIZE.baseX, v);
-    register(scene, TEX.snowPine(v), canvas, TREE_SIZE.baseX, TREE_SIZE.baseY);
+    for (const form of SNOW_PINE_FORMS) {
+      const { canvas, g } = makeCanvas(TREE_SIZE.w, TREE_SIZE.h);
+      paintSnowPine(g, TREE_SIZE.baseX, form, v);
+      register(
+        scene,
+        TEX.snowPine(form, v),
+        canvas,
+        TREE_SIZE.baseX,
+        TREE_SIZE.baseY,
+      );
+    }
   }
   register(scene, TEX.door, drawDoor(), 8, 8);
   register(scene, TEX.slash, drawSlash(), 4, 12);

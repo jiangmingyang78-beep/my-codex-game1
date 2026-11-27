@@ -36,8 +36,18 @@ const BOG = { land: "#3a4f46", detail: "#253630", floor: 2 };
 const EDGE_COLOR = "#8497b2";
 const WINTER_EDGE_COLOR = "#576b8c";
 const TUFT_COLOR = "#7d98a4";
-const ICE_PALETTE = { base: "#476484", edge: "#a7c5d8", detail: "#7095af" };
-const TRAIL_PALETTE = { base: "#b7a8a4", edge: "#8d8999", detail: "#a1999a" };
+const ICE_PALETTE = {
+  base: "#476484",
+  rim: "#bed7e2",
+  shoulder: "#759ab2",
+  detail: "#7095af",
+};
+const TRAIL_PALETTE = {
+  base: "#b7a8a4",
+  rim: "#b1bdcb",
+  shoulder: "#9894a1",
+  detail: "#a1999a",
+};
 /** Edge dither sides: 0 top, 1 right, 2 bottom, 3 left. */
 const NEIGHBOURS: readonly (readonly [number, number, number])[] = [
   [0, -1, 0],
@@ -150,20 +160,52 @@ function drawWinterGround(
   const palette = ice ? ICE_PALETTE : TRAIL_PALETTE;
   g.fillStyle = palette.base;
   g.fillRect(x, y, size, size);
-  g.fillStyle = palette.edge;
-  for (const [dx, dy, side] of NEIGHBOURS) {
+  const joins = (dx: number, dy: number): boolean => {
     const nx = tx + dx;
     const ny = ty + dy;
-    if (nx < 0 || ny < 0 || nx >= widthTiles || ny >= heightTiles) continue;
+    if (nx < 0 || ny < 0 || nx >= widthTiles || ny >= heightTiles) return false;
     const next = tiles[ny * widthTiles + nx];
-    if (next === tile || (!ice && next === TILE.door)) continue;
+    return next === tile || (!ice && next === TILE.door);
+  };
+  const sides = NEIGHBOURS.map(([dx, dy]) => joins(dx, dy));
+  for (const [dx, dy, side] of NEIGHBOURS) {
+    if (sides[side]) continue;
     const vertical = dx !== 0;
-    for (let offset = 0; offset < size; offset += 4) {
-      const depth = tileHash(tx, ty, offset + side) > 0.55 ? 2 : 1;
-      const along = Math.min(4, size - offset);
+    for (let offset = 0; offset < size; offset += 2) {
+      const run = Math.floor(offset / 4);
+      const depth =
+        1 + Math.floor(tileHash(tx + dx, ty + dy, run + side * 5) * 3);
+      const along = Math.min(2, size - offset);
       const sx = x + (vertical ? (dx > 0 ? size - depth : 0) : offset);
       const sy = y + (vertical ? offset : dy > 0 ? size - depth : 0);
+      g.fillStyle = palette.shoulder;
       g.fillRect(sx, sy, vertical ? depth : along, vertical ? along : depth);
+      g.fillStyle = palette.rim;
+      g.fillRect(
+        dx > 0 ? x + size - 1 : sx,
+        dy > 0 ? y + size - 1 : sy,
+        vertical ? 1 : along,
+        vertical ? along : 1,
+      );
+    }
+  }
+  for (const dx of [-1, 1]) {
+    for (const dy of [-1, 1]) {
+      const joinsHorizontal = sides[dx < 0 ? 3 : 1];
+      const joinsVertical = sides[dy < 0 ? 0 : 2];
+      const outer = !joinsHorizontal && !joinsVertical;
+      const inner = joinsHorizontal && joinsVertical && !joins(dx, dy);
+      if (!outer && !inner) continue;
+      const radius = Math.min(outer ? 5 : 3, size);
+      for (let row = 0; row < radius; row++) {
+        const width = radius - row;
+        const sx = dx < 0 ? x : x + size - width;
+        const sy = dy < 0 ? y + row : y + size - 1 - row;
+        g.fillStyle = outer ? palette.rim : palette.shoulder;
+        g.fillRect(sx, sy, width, 1);
+        g.fillStyle = outer ? palette.shoulder : palette.rim;
+        g.fillRect(dx < 0 ? sx + width - 1 : sx, sy, 1, 1);
+      }
     }
   }
   if (variant === 1 || variant === 3) {
