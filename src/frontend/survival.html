@@ -272,6 +272,7 @@ import {
 } from "./src/systems/survival/plantSystem.js";
 import {createWeatherRenderer} from "./src/systems/survival/weatherRenderer.js";
 import {PLANT_TEXTURE_DEFS} from "./src/vfx/plantTextures.js";
+import {createSurvivalRockArt} from "./src/game/textures/survivalRockArt.ts";
 
 let crossModeUnlocks=readCrossModeUnlocks();
 let weatherState=createWeatherState(),weatherMods=getWeatherModifiers(weatherState);
@@ -2393,13 +2394,10 @@ function tiles(){
       if(type===5){
         continue;
       }else if(type===6||type===COAL_VEIN){
-        rect("#302c32",x+1,y+9,14,6);rect("#6b5143",x+2,y+4,12,7);
-        rect("#88704f",x+5,y+2,8,3);rect("#4d3a36",x+9,y+9,5,4);
-        rect("#a58a62",x+5,y+3,5,1);rect("#755f50",x+10,y+6,4,2);
-        rect("#4d3a36",x+7,y+5,1,3);rect("#4d3a36",x+5,y+8,2,1);
-        rect("#bfa57a",x+6,y+2,3,1);rect("#241f27",x+2,y+13,12,1);
-        const mineral=type===COAL_VEIN?"coal":veinAt(tx,ty,type,biome);
-        if(mineral)sprite(oreMarkArt[mineral],x+3,y+2);
+        const material=rockMaterial(tx,ty,type,biome);
+        const variant=seededValue(survival?.seed??0,tx,ty,104);
+        const hits=naturalHits.get(cellKey(tx,ty))??0;
+        ctx.drawImage(rockArt.frame(material,variant,hits),x,y);
       }else if(!biome&&(type===3||type===7)){
         rect(type===3?"#4d4b45":"#5d505e",x+1,y+1,14,1);
         rect("#2a2b34",x,y+15,16,1);rect("#282936",x+(ty%2?4:12),y+2,1,9);
@@ -2894,24 +2892,7 @@ const oreTypes={
   frostOre:defineContent("vein","frostOre",{color:"#8ce0f1"}),
   salt:defineContent("vein","salt",{color:"#f0c5ab"})
 };
-// Keep every mineral identifiable by silhouette at the native tile resolution.
-const oreMarkPatterns={
-  quartz:  "...h...... ..hbs..h.. .hbbbs.bs. ..bbs.hbbs ...s...ss.",
-  copper:  ".....h..h. ....hb.hb. ...hb.hb.. ..hb.hb... .hb.hb.... .s..s.....",
-  clay:    ".......... .hhbb..... .bbbss.hh. ....hhbbs. ..bbbbss..",
-  iron:    "...hhh.... ..hbbbs... .hbbbbss.. ..sss..hb. .....hbbs.",
-  frostOre:"..h....h.. .hb...hb.. .bh..hb... ..bbhb.... ...bs..... ...s......",
-  salt:    ".hhb...... .hbbs..hh. .ssss..hbs .....hhbs. .....hbbs.",
-  coal:    "..hss..... .hbbbs.hs. .bbbbs.bbs ..sss.bbss ......ss.."
-};
-const oreMarkArt=Object.fromEntries(Object.entries(oreMarkPatterns).map(([id,pattern])=>{
-  const coal=id==="coal";
-  return [id,pixelArt(pattern,{
-    b:coal?"#242638":oreTypes[id].color,
-    h:coal?"#757886":"#f6e9ce",
-    s:coal?"#171b28":"#4a3e4a"
-  },0,0,0,false)];
-}));
+const rockArt=createSurvivalRockArt(oreTypes,pixelArt,makeCanvas);
 const plantArt=Object.fromEntries(Object.entries(wildPlants).map(([key,plant])=>[
   key,pixelArt(plant.art,{b:"#604b40",c:"#5a8953",l:plant.color},4,5,0,"pad")
 ]));
@@ -3409,6 +3390,9 @@ function veinAt(x,y,tile=terrainTile(x,y),biome){
   if(roll>=.72)return null;
   const {veins}=ecologyBiome(x,y,biome);
   return veins[Math.floor(roll/.72*veins.length)];
+}
+function rockMaterial(x,y,tile,biome){
+  return tile===COAL_VEIN?"coal":veinAt(x,y,tile,biome)??"stone";
 }
 function wildlifeGround(x,y){
   if(inOriginalMap(x,y))return survivalBaseTerrain[y][x];
@@ -3934,20 +3918,23 @@ function actSurvival(cell=interactCell(),tool=heldTool()){
     case "axe": {
       const resource=harvestResource(type);
       if(!resource){say("这里没有可采集的树木、岩石或矿脉。","denied");return;}
-      const ore=veinAt(x,y,type),upgraded=resource.tool==="pick"&&s.copperPick>0,need=resource.hits;
+      const material=resource.tool==="pick"?rockMaterial(x,y,type):null;
+      const ore=material&&oreTypes[material];
+      const upgraded=resource.tool==="pick"&&s.copperPick>0,need=resource.hits;
       const hits=Math.min(need,(naturalHits.get(id)||0)+(upgraded?2:1));
       nextWork=tick+HARVEST_INTERVAL;
       actionAt("chop",at,upgraded?"copperPick":resource.tool);
-      sparks(at.x,at.y-2,type===0?"#d4a776":"#b3bcc0",hits===need?15:8,type===0?"wood":"stone");
+      const chips=material?rockArt.chipColor(hits===need?material:"stone"):"#d4a776";
+      sparks(at.x,at.y-2,chips,hits===need?15:8,material?"stone":"wood");
       sound(type===0?"hit":"stone");impact("strike",at.x,at.y,0,0);
-      if(hits<need){naturalHits.set(id,hits);setMessage((ore?oreTypes[ore].name:resource.action)+" "+hits+" / "+need);break;}
+      if(hits<need){naturalHits.set(id,hits);setMessage((ore?ore.name:resource.action)+" "+hits+" / "+need);break;}
       if(inOriginalMap(x,y))world[y][x]=groundTile(x,y);
       else removedResources.add(String(id));
       miniOrigin=null;edgeCache.delete(foliageKey(x,y));
       survival.removed.push(id);naturalHits.delete(id);
       const loot={[resource.product]:resource.count};
       if(type===0&&hash(x,y,survival.seed??0)>.5)loot.seed=1;
-      if(ore)loot[ore]=1;
+      if(ore)loot[material]=1;
       dropGroundItems(at,loot);setMessage(Object.keys(loot).map(key=>stockLabels[key]).join("、")+"已掉落，靠近拾取。");
       break;
     }

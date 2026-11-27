@@ -1,0 +1,82 @@
+{
+  "quartz": {
+    "rock": "#827887",
+    "shade": "#575568",
+    "dark": "#343443",
+    "light": "#fff2fc",
+    "forms": [
+      "......h........ .....hbb....... .....hbb...h... ..h..hbb..hbb.. .hbb.hbsd.hbbs. .hbbsbbsd.hbbs. ..bbssbsd.bbsd. ..rbssbsdbbsdd. .rrrbsssbbssds. .rssrssrsrsssd. ..dssrrrsssdd.. ...ddddddddd...",
+      ".........h..... ...h....hbb.... ..hbb...hbb.... ..hbbs..hbb..h. ..hbbs..bbs.hbb h..bbss.bbsshbb hb.rbbsrbbssbbs .bbrbssrbssrbss .rrrbssrssrrssd ..rsrrrssssssd. ..ddssrssssdd.. ....ddddddd...."
+    ]
+  },
+  "copper": {
+    "rock": "#99765e",
+    "shade": "#68505a",
+    "dark": "#40333e",
+    "light": "#ffcf88",
+    "forms": [
+      ".........rrrr.. ......rrrhbbss. ....rrrhbbrrss. ..rrrhbbrrrhbsd .rrhbbrrrhbbssd rrbbrssrhbbsssd rbsssrhbbrsssd. .ssshbbrssssd.. ..dddddddddd...",
+      "...rrrr........ ..rrhhbrrrr.... .rrbbrrrhhbrr.. rrbbrrhbbrsrrs. rbbrrbbrrrshbsd rsrrbbrrshbbssd .ssbbsshbbrsssd ..rssbbbrssssd. ...dddddddddd.."
+    ]
+  },
+  "clay": {
+    "rock": "#a06857",
+    "shade": "#844f49",
+    "dark": "#523b45",
+    "light": "#efb28d",
+    "forms": [
+      "......rrrrr.... ....rhbbbbrs... ...rrrssssssd.. ..hbbbbbbrr.... ..rrrsssrrrss.. .rrrhbbbbbbrrs. hbbbbrrrssssssd rrssssrrrbbrrsd .ddddddddddddd.",
+      "...rrrr........ ..rhbbbr..rr... ..rrrsssrhbbr.. .rrhbbbrrssss.. hbbrrrsssrrr... .sssrrhbbbbbrr. .rhbbbrrrsssssd .rrsssssrrrrssd ..dddddddddddd."
+    ]
+  },
+  "iron": {
+    "rock": "#766d70",
+    "shade": "#555465",
+    "dark": "#333646",
+    "light": "#e0e6de",
+    "forms": [
+      ".....hhhhrr.... ....hbbbbrss... ...hbbbbrsssd.. ..rbbbrssrsssd. .rrrssssrhbrsd. .rssdddrhbbrsd. ..ssddrbbbrssd. ...rrhbbrssss.. ...ssrrrsssdd.. ....ddddddd....",
+      "...hhhrr....... ..hbbbrss...... .rbbbrssddhhh.. .rrrsssdrhbbbs. .ssdddrhbbbbrsd ..ddrhbbbbrrssd ...rbbrssrssssd ..rrrsssddsssd. ..sssssddddd... ...dddd........"
+    ]
+  },
+  "frostOre": {
+    "rock": "#607a86",
+    "shade": "#405869",
+    "dark": "#293b50",
+    "light": "#dffff7",
+    "forms": [
+      "...........h... ..........hb... ....h....hbs... ....hb...hbs..h .h..hbs.hbs..hb .hb..bs.hbs.hbs ..hb.bshbs.hbs. ..hbsbbhbsbbs.. ...bbsbbbsbs... ...rbsbssbss... ..rrrssrrrsss.. ...dssrrsssdd.. .....dddddd....",
+      "...h........... ...hb.......... ....hb......h.. .h..hbs....hb.. .hb..hbs..hbs.. ..hb.hbs..hbs.h ..hbs.hbshbs.hb ...hbsbbshbshbs ....bbsbbsbbbs. ...rrsbssbbss.. ..rrrssrsrrsd.. ...dssrsssdd... .....ddddd....."
+    ]
+  },
+  "salt": {
+    "rock": "#a39283",
+    "shade": "#776b71",
+    "dark": "#554d58",
+    "light": "#fff4db",
+    "forms": [
+      ".....hhhh...... .....hbbbs..... .hhh.hbbbs..... .hbbsbbsss.hhh. .hbbssrrr..hbbs ..sssrhhhrrhbbs ..rrrhbbsrrbsss ..rsshbbssrsssd ...dsssssrrssd. ....ddddddddd..",
+      ".........hhh... ....hhh..hbbs.. ....hbbs.hbbs.. ....hbbssbsss.. .hhhhsssrrrsss. .hbbbrrrsshhhs. .hbbbssrrrhbbss ..ssssrrrshbbss ..rssssrssbsssd ...ddddddddddd."
+    ]
+  },
+  "coal": {
+    "rock": "#595b6c",
+    "shade": "#343542",
+    "dark": "#1a1c29",
+    "light": "#828398",
+    "forms": [
+      "....hrr...hr... ...rbbbs.rbbss. ..rbbbbsrbbbbs. .rrbbbbsrbbssd. .bbbsdddsbbss.. rrssdrhrrsssr.. rbbbsrbbsddrbbs .bbsssbbsdsbbbd ..dddddddddddd.",
+      ".......hrr..... ..hr..rbbbs.... .rbbssrbbbss... .bbbssbbbsd.hr. .bssdsbssddrbbs ..ddrhrrssrbbbs .rrrbbbsdsbbbss .bbbsbbssrsssd. ..ddddddddddd.."
+    ]
+  },
+  "stone": {
+    "rock": "#987b58",
+    "shade": "#705743",
+    "dark": "#43383c",
+    "light": "#c3a67c",
+    "forms": [
+      ".....hhrrr..... ...rrbbbrrss... ..rrbbbbrrrss.. .rrbbrrrrrrss.. .rrrssrrrssssd. .rssssrrsssssd. ..rssrsssssdd.. ...ddddddddd...",
+      "......hhrr..... .....rbbbrr.... ...rrbbrrrss... .rrbbrrrsssss.. .rrrsssrrrsssd. .rsssssrrsssssd ..rsssssssssdd. ...dddddddddd.."
+    ]
+  }
+}
