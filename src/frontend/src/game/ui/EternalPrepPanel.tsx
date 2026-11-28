@@ -46,7 +46,7 @@ function OptionCard({
             {option.name}
           </span>
           <span className="block text-xs text-muted-foreground">
-            {option.kind === "weapon" ? "武器" : "防具 / 照明"}
+            {option.kind === "weapon" ? "Weapon" : "Armor / light"}
           </span>
         </span>
       </button>
@@ -56,8 +56,8 @@ function OptionCard({
 
 function ModeSwitch({ eternal }: { eternal: EternalHud }) {
   const modes = [
-    ["standard", "标准配额"],
-    ["free", "自由配装"],
+    ["standard", "Standard allowance"],
+    ["free", "Free selection"],
   ] as const;
   return (
     <div className="grid grid-cols-2 gap-2">
@@ -81,27 +81,27 @@ function QuotaLine({ eternal }: { eternal: EternalHud }) {
   if (!prep)
     return (
       <p className="text-xs text-frost">
-        可补选 {eternal.pendingPicks} 件 · 每撑过 90 秒获得 1 次
+        Sub-election {eternal.pendingPicks} • One out of every 90 seconds
       </p>
     );
   if (eternal.loadoutMode === "free")
     return (
       <div className="flex items-center justify-between gap-2 text-xs text-frost">
-        <span>自由配装：不限数量</span>
+        <span>Free selection: no item limit</span>
         <span className="flex gap-1">
           <PixelButton
             variant="ghost"
             onClick={() => commands.eternal?.selectAllEquipment()}
             className="px-2 py-0.5 text-xs"
           >
-            一键全选
+            Select all
           </PixelButton>
           <PixelButton
             variant="ghost"
             onClick={() => commands.eternal?.clearEquipment()}
             className="px-2 py-0.5 text-xs"
           >
-            清空
+            Clear
           </PixelButton>
         </span>
       </div>
@@ -109,8 +109,8 @@ function QuotaLine({ eternal }: { eternal: EternalHud }) {
   const { weaponQuota: w, gearQuota: g } = eternal;
   return (
     <p className="text-xs text-frost">
-      武器 {w.used}/{w.max} · 防具 / 照明 {g.used}/{g.max} · 开局自带烤莓饼
-      ×2、绷带 ×2、雪草药膏 ×1
+      Weapon {w.used}/{w.max} · Armor / light {g.used}/{g.max} · Start with the
+      berries x 2, bandages x 2, snow herb ointment x 1
     </p>
   );
 }
@@ -125,11 +125,13 @@ function LoadoutPanel({
   const prep = eternal.phase === "prep";
   return (
     <section
-      aria-label="永恒模式配装"
+      aria-label="Eternal Mode loadout"
       className="pixel-panel pointer-events-auto absolute right-2 top-16 flex max-h-[calc(100dvh-11rem)] w-[min(20rem,calc(100vw-1rem))] flex-col gap-2 overflow-y-auto p-3 sm:right-3"
     >
       <h2 className="font-pixel text-sm font-bold text-ember-glow">
-        {prep ? "永恒试炼 · 配装准备" : "补给装备 · 补选"}
+        {prep
+          ? "Eternal Trial · Prepare your loadout"
+          : "Resupply · Choose more gear"}
       </h2>
       {prep && <ModeSwitch eternal={eternal} />}
       <QuotaLine eternal={eternal} />
@@ -145,13 +147,13 @@ function LoadoutPanel({
       {prep ? (
         <div className="flex items-center justify-between gap-2">
           <span className="font-pixel text-xs tabular-nums text-warning">
-            准备时间 {eternal.prepRemainingSec}s
+            Time to prepare {eternal.prepRemainingSec}s
           </span>
           <PixelButton
             onClick={() => commands.eternal?.startCombat()}
             className="px-3 py-1 text-xs"
           >
-            立即开战
+            Start fighting
           </PixelButton>
         </div>
       ) : (
@@ -160,7 +162,7 @@ function LoadoutPanel({
           onClick={onClose}
           className="px-3 py-1 text-xs"
         >
-          收起
+          Close
         </PixelButton>
       )}
     </section>
@@ -184,7 +186,7 @@ export function EternalOverlay() {
       onClick={() => setOpen(true)}
       className="absolute bottom-40 right-3 px-3 py-2 text-xs"
     >
-      领取补给装备 (+{picks})
+      Replenishment equipment (+){picks})
     </PixelButton>
   );
 }

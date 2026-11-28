@@ -1,4 +1,4 @@
-name: 游戏体检
+name: Game Health Check
 
 on:
   push:
@@ -11,8 +11,8 @@ permissions:
 
 jobs:
   health:
-    name: 静态检查、回归与生产冒烟
-    # Playwright 1.58.2 的 Chromium 系统依赖支持 Ubuntu 24.04。
+    name: Static checks, regression tests, and production smoke tests
+    # Ubuntu 24.04 supports the Chromium dependencies for Playwright 1.58.2.
     runs-on: ubuntu-24.04
     timeout-minutes: 25
     steps:
@@ -22,14 +22,14 @@ jobs:
         with:
           node-version: 22
           cache: pnpm
-      - name: 执行全链路体检
+      - name: Run the full health check
         id: health
         run: bash tools/ci-check.sh
-      - name: 汇报运行器准备失败
+      - name: Report runner setup failures
         if: failure() && steps.health.outcome == 'skipped'
         run: |
-          printf '# 游戏体检\n\n- ❌ 运行器准备失败，未执行体检。请展开此作业中失败的准备步骤。\n' >> "$GITHUB_STEP_SUMMARY"
-      - name: 上传浏览器失败现场
+          printf '# Game Health Check\n\n- ❌ Runner setup failed before the health check started. Expand the failed setup step in this job.\n' >> "$GITHUB_STEP_SUMMARY"
+      - name: Upload browser failure artifacts
         if: failure() && steps.health.outputs.browser_failed == 'true'
         uses: actions/upload-artifact@v4
         with:
@@ -39,7 +39,7 @@ jobs:
             .cache/ci-logs/browser*.log
           include-hidden-files: true
           if-no-files-found: error
-      - name: 保存已通过体检的生产构建
+      - name: Save the verified production build
         if: success() && github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
         uses: actions/upload-artifact@v4
         with:

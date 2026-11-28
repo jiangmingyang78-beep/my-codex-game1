@@ -1,6 +1,6 @@
 /**
- * 素蘅（suheng_herb）：身高 18px。
- * 圆润紧凑毛帽 + 苍绿厚绒长袍 + 背后方正竹药篓（顶部 2–3px 亮嫩绿草药）+ 短采药镰。
+ * Su, (suhung_herb): Height 18px.
+ * Round-up caps + green, velvet robes + back-up bamboo platinum (top 2–3px bright green herb) + short picks sickle.
  */
 import { drawLegs } from "../rig.mjs";
 
@@ -20,7 +20,7 @@ export function draw(layer, fx, pose, pal) {
 
   drawLegs(layer, cx, pose, 2, 3);
 
-  // 背后方正棕色竹药篓 + 顶部亮嫩绿草药点
+  // The square is brown bamboo + the top is a bright green herb
   const bx = cx - 8;
   const by = 16 + dy;
   layer.rect(bx, by, 4, 5, pal.basket);
@@ -30,20 +30,20 @@ export function draw(layer, fx, pose, pal) {
   layer.set(bx + 2, by - 1, pal.herb);
   layer.set(bx + 3, by - 2, pal.herb);
 
-  // 苍绿厚绒钟形长袍（随行走下摆轻晃）
+  // A green and thick bell-shaped robe (swipes down and down with the walk))
   const hemW = pose.anim === "walk" && pose.step % 2 === 0 ? 11 : 10;
   const robeBottom = Math.min(24, 24 + dy);
   layer.rect(cx - 4, 16 + dy, 8, Math.max(3, robeBottom - 18 - dy), pal.robe);
   layer.rect(cx - 5, Math.max(18 + dy, robeBottom - 3), hemW, 4, pal.robe);
-  layer.hline(cx - 3, 16 + dy, 6, pal.fur); // 毛领
+  layer.hline(cx - 3, 16 + dy, 6, pal.fur); // The hair collar
 
-  // 圆润紧凑防风毛帽 + 无五官暗脸
+  // The round is tight and the wind-proof fur hat is not dark on five officers
   layer.hline(cx - 2, 11 + dy, 5, pal.fur);
   layer.rect(cx - 3, 12 + dy, 7, 2, pal.fur);
-  layer.rect(cx - 3, 14 + dy, 2, 3, pal.fur); // 侧护耳
+  layer.rect(cx - 3, 14 + dy, 2, 3, pal.fur); // Side-to-Ear
   layer.rect(cx - 1, 13 + dy, 4, 3, pal.O);
 
-  // 采药短镰
+  // Picking a stupor
   if (pose.anim === "attack") {
     if (pose.step === 0) {
       layer.rect(cx - 4, 17 + dy, 2, 3, pal.O);
@@ -70,7 +70,7 @@ export function draw(layer, fx, pose, pal) {
     return;
   }
 
-  // 常态手持短镰
+  // Normal hand-crickets
   layer.vline(cx + 4, 19 + dy, 3, pal.O);
   layer.hline(cx + 4, 19 + dy, 3, pal.fur);
 }

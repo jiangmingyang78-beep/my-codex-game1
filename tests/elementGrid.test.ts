@@ -42,7 +42,7 @@ function climate(id: string) {
 }
 const clear = climate("clear");
 
-it("可燃灌木逐格接火，非可燃植物和对角格不能传火，固定步进与帧率无关", () => {
+it("The burning bush fires by grid, the non-flammable plants and the opposite grids cannot fire and the fixed step progress has nothing to do with frame rates", () => {
   const terrain = {
     ...open,
     flammable: (x: number, y: number) =>
@@ -68,7 +68,7 @@ it("可燃灌木逐格接火，非可燃植物和对角格不能传火，固定�
   assert.deepEqual(simulate(0.03125), simulate(0.25));
 });
 
-it("暴雪加快熄灭并减少点燃概率，骤雨完全抑制蔓延，风雨后火把光圈恢复", () => {
+it("The snowstorms accelerate the elimination and reduce the probability of ignition, the rains completely curb the spread and the fire restores the halo after the rains. —", () => {
   const sys = getTestSystems(),
     state = createTestRun({ hero: { x: 808, y: 408 } });
   const terrain = { ...open, flammable: () => true };
@@ -104,7 +104,7 @@ it("暴雪加快熄灭并减少点燃概率，骤雨完全抑制蔓延，风雨�
   assert.equal(sample(), normal);
 });
 
-it("独立火源共享 64 格硬上限，每条传播链最多四步", () => {
+it("Independent fire source sharing 64 hard ceilings, up to four steps per chain", () => {
   const all = { ...open, snowy: () => false, flammable: () => true };
   const g = new ElementGrid(16, 1),
     events: GameEvent[] = [];
@@ -132,7 +132,7 @@ it("独立火源共享 64 格硬上限，每条传播链最多四步", () => {
   );
 });
 
-it("融雪消除实际移动雪罚并保留泥地阻力，降雪重新积雪", () => {
+it("Snow melting removes the penalty for physical movement and retains the mud resistance and snow re-grows", () => {
   const base = getTestSystems(),
     meta = {
       snowDepth: 1,
@@ -168,7 +168,7 @@ it("融雪消除实际移动雪罚并保留泥地阻力，降雪重新积雪", (
   assert.equal(travel(), snow);
 });
 
-it("营火保护圈和外围关键火站拒绝直接引燃和传播", () => {
+it("Campfire protection rings and key peripheral fire stations refused to ignite and spread directly", () => {
   const sys = getTestSystems(),
     state = createTestRun(),
     terrain = runTerrain(state, sys);
@@ -188,7 +188,7 @@ it("营火保护圈和外围关键火站拒绝直接引燃和传播", () => {
   }
 });
 
-it("角色与敌人踏入灼地会持续受伤，火抗和霜抗分别生效", () => {
+it("The role and the enemy will be continuously injured by the burning, and fire and frost respectively will be in effect", () => {
   const sys = getTestSystems(),
     state = createTestRun({ enemiesById: {}, hero: { x: 808, y: 408 } });
   const wolf = addTestEnemy(state, sys, "ash_wolf");
@@ -210,7 +210,7 @@ it("角色与敌人踏入灼地会持续受伤，火抗和霜抗分别生效", (
   assert.ok(chillSpeed(state.hero, state.elapsedSec) < 1);
 });
 
-it("真存档往返后火场收敛为余烬，清除光源并回放地面表现", () => {
+it("The fire site is re-applied to the ashes, the light is cleared and the ground is returned", () => {
   const sys = getTestSystems(),
     state = createTestRun(),
     store = createMemoryStorage();
@@ -233,7 +233,7 @@ it("真存档往返后火场收敛为余烬，清除光源并回放地面表现"
   assert.equal(restored.elements.size, 0);
 });
 
-it("空网格跳过地形查询和状态遍历", () => {
+it("Space grids skip topographic queries and state-through", () => {
   const grid = new ElementGrid(16);
   const unexpected = () => {
     throw Error("empty grid scanned");

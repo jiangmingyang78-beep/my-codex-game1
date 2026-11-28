@@ -9,7 +9,7 @@ export function loadPixelFont(): Promise<boolean> {
     try {
       const faces = await document.fonts.load(
         `${PIXEL_FONT_SIZE} "PixelZH"`,
-        "余烬林需要二级营火 +123",
+        "The remaining forests need a secondary fire +123",
       );
       await document.fonts.ready;
       return faces.length > 0;

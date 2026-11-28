@@ -144,7 +144,7 @@ export function detonateResinBarrel(
   );
   events.push(
     makeEvent(EVT.notice, barrel.x, barrel.y, {
-      message: "松脂桶轰然爆燃，烈焰席卷四周！",
+      message: "The pine buckets burst and the flames sprung around!",
     }),
   );
   for (const enemy of Object.values(state.enemiesById)) {

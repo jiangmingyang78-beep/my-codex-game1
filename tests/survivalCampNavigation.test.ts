@@ -12,7 +12,7 @@ import {
 import { survivalNightForecast } from "@/systems/survival/nightForecast";
 import { it } from "./fixtures/it";
 
-it("夜袭预警覆盖黄昏、分波夜袭和跳过的夜晚", () => {
+it("Night-time warning covers evenings, night-times and nights that are skipping", () => {
   const forecast = (age: number, frequency: number) =>
     survivalNightForecast(age, 192, 120, frequency);
   assert.deepEqual(forecast(119, 2), { night: false, waves: 2, seconds: 1 });
@@ -25,7 +25,7 @@ it("夜袭预警覆盖黄昏、分波夜袭和跳过的夜晚", () => {
   assert.equal(forecast(192 + 119, 0.5).seconds, 1);
 });
 
-it("营地修缮允许分批捐助，完成后保留背包中的多余材料", () => {
+it("The camp renovation allowed for the donation of excess materials in the backpacks to be retained after completion", () => {
   const progress = normalizeCampProjects(undefined);
   const stock = { wood: 3, stone: 1 };
   assert.equal(donateCampMaterials(progress, "wellhead", stock), true);
@@ -41,17 +41,17 @@ it("营地修缮允许分批捐助，完成后保留背包中的多余材料", (
   assert.deepEqual(normalizeCampProjects({ wellhead: { wood: 999, stone: -1 } }).wellhead, { wood: 6, stone: 0 });
 });
 
-it("世界地标兼容旧档，保留负坐标并覆盖同格标记", () => {
+it("The world landmark is compatible with the old slate, with negative coordinates and a homogeneity mark", () => {
   const latest = { x: -40, y: 9, kind: "crossing" };
   assert.deepEqual(normalizeLandmarks(undefined), []);
   assert.deepEqual(normalizeLandmarks([
     { ...latest, kind: "mine" }, latest, null,
     { ...latest, x: 2048 }, { ...latest, kind: "unknown" },
   ]), [latest]);
-  assert.deepEqual(landmarkBearing({ x: 3, y: 4 }, { x: 0, y: 0 }), { direction: "西北", distance: 5 });
+  assert.deepEqual(landmarkBearing({ x: 3, y: 4 }, { x: 0, y: 0 }), { direction: "Northwest", distance: 5 });
 });
 
-it("小地图边缘箭头沿玩家到目标的方向投影，地图内地标保留原位", () => {
+it("Small map edge arrows project the direction of the player to the target, with the map's landmarks remaining in place._", () => {
   const player = { x: 75, y: 48 };
   assert.equal(landmarkEdge(player, { x: 0, y: 95 }, 150, 96, 7), null);
   assert.deepEqual(landmarkEdge(player, { x: 180, y: 48 }, 150, 96, 7), { x: 143, y: 48, angle: 0 });

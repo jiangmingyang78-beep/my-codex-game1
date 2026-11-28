@@ -1,6 +1,6 @@
 /**
- * 鸦羽（corvus_hunt）：身高 19px，修长尖锐。
- * 贴身墨黑猎装 + 锐利冰蓝滚边 + 锯齿下摆寒鸦羽短氅 + 亮银弧形剥皮弯刃。
+ * Corvus_hunt: Height 19px, sharp fix.
+ * Close-morning black hunting suit + sharp ice-blue edge + short-cut twig-feat, + bright silver arc skinning the blade.
  */
 import { drawLegs } from "../rig.mjs";
 
@@ -20,7 +20,7 @@ export function draw(layer, fx, pose, pal) {
   drawLegs(layer, cx, pose, 2, 4);
 
   if (pose.anim === "dash") {
-    // 急步压低拉成黑鸦掠影
+    // The storm is a black crow
     layer.rect(cx - 6, 17 + dy, 12, 5, pal.suit);
     layer.rect(cx, 14 + dy, 4, 4, pal.O);
     layer.hline(cx - 9, 18 + dy, 14, pal.trim);
@@ -30,37 +30,37 @@ export function draw(layer, fx, pose, pal) {
     return;
   }
 
-  // 贴身墨黑猎装（宽约 7px）与锯齿状羽氅下摆
+  // Close-in-knit black hunting suit (approximately 7px) with serrated feathers, down
   const capeBottom = Math.min(24, 22 + dy);
   layer.rect(cx - 3, 15 + dy, 7, Math.max(4, capeBottom - 15 - dy), pal.suit);
-  // 肩部尖羽刺
+  // The shoulder stump
   layer.hline(cx - 6, 15 + dy, 3, pal.suit);
   layer.set(cx - 5, 14 + dy, pal.suit);
   layer.set(cx - 7, 16 + dy, pal.suit);
-  // 锯齿状下摆（交替 1px 尖齿）
+  // Sawing under the tooth (interruptible 1px sharp teeth))
   const jag = pose.anim === "walk" ? pose.step % 2 : 0;
   layer.set(cx - 4 + jag, capeBottom, pal.suit);
   layer.set(cx - 2, capeBottom + 1, pal.suit);
   layer.set(cx + 1, capeBottom, pal.suit);
   layer.set(cx + 3 - jag, capeBottom + 1, pal.suit);
 
-  // 锐利冰蓝滚边（V 领与前襟）
+  // The sharp ice blue roller (V collar with the ex-flap))
   layer.set(cx - 2, 15 + dy, pal.trim);
   layer.set(cx - 1, 16 + dy, pal.trim);
   layer.vline(cx, 16 + dy, 4, pal.trim);
   layer.set(cx + 2, 15 + dy, pal.trim);
   layer.set(cx + 1, 16 + dy, pal.trim);
 
-  // 修长无五官黑头（y = 10..14）
+  // He's got five officers. 10.14. —)
   layer.rect(cx - 2, 10 + dy, 4, 5, pal.O);
 
-  // 亮银弧形剥皮弯刃
+  // The silver arc is skin-blanked
   if (pose.anim === "attack") {
     if (pose.step === 0) {
       layer.hline(cx - 6, 17 + dy, 3, pal.blade);
       layer.set(cx - 7, 16 + dy, pal.blade);
     } else if (pose.step === 1 || pose.step === 2) {
-      // 反手疾掠，拉长冰白刃弧
+      // Reverse hands are swept away, ice-cold-cuts are pulled
       layer.hline(cx + 3, 18 + dy, 4, pal.O);
       layer.hline(cx + 6, 17 + dy, 4, pal.blade);
       layer.set(cx + 10, 16 + dy, pal.blade);

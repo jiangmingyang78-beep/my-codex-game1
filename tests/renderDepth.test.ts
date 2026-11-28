@@ -8,7 +8,7 @@ import {
 
 const d = RENDER_DEPTH;
 
-it("地面、实体、战斗、环境与 HUD 的渲染区间依次递增", () => {
+it("The ground, entity, combat, environment and Hod are in turn increasing", () => {
   const levels = [
     d.ground,
     d.snowAccents,
@@ -45,19 +45,19 @@ it("地面、实体、战斗、环境与 HUD 的渲染区间依次递增", () =>
 
 it.each([
   {
-    label: "冒险地图",
+    label: "Adventure map",
     height:
       getTestSystems().world.heightTiles * getTestSystems().world.tileSize,
   },
   {
-    label: "永恒地图",
+    label: "Eternal map",
     height:
       getTestEternalSystems().world.heightTiles *
       getTestEternalSystems().world.tileSize,
   },
-  { label: "超高地图", height: 100_000 },
+  { label: "Super high map", height: 100_000 },
 ])(
-  ({ label }) => `${label} · Y 排序与边界`,
+  ({ label }) => `${label}  ·  Y Sort with boundary`,
   ({ height }) => {
     const top = entityDepthAt(0, height);
     const middle = entityDepthAt(height / 2, height);
@@ -70,6 +70,6 @@ it.each([
 );
 
 it.each([0, -1, Number.NaN, Number.POSITIVE_INFINITY])(
-  (height) => `无效地图高度 ${height}`,
+  (height) => `Invalid map height ${height}`,
   (height) => assert.equal(entityDepthAt(10, height), d.entityMin),
 );

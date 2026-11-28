@@ -2,7 +2,7 @@
 
 export const ENEMY_TEXTURE_DEFS = [
   {
-    // 1. 雪鼬：白身、暗灰背影、红点眼
+    // Skunks: White body, dark shadow, red eyes
     key: "enemy:snow_weasel",
     size: 16,
     anchorX: 8,
@@ -19,7 +19,7 @@ export const ENEMY_TEXTURE_DEFS = [
     ].join(" ")
   },
   {
-    // 2. 霜毛雪鼠：圆滚小巧、冰蓝毛、粉鼻
+    // 2. Frozen snow rat: small roller, blue ice, pink nose
     key: "enemy:frost_rat",
     size: 16,
     anchorX: 8,
@@ -35,7 +35,7 @@ export const ENEMY_TEXTURE_DEFS = [
     ].join(" ")
   },
   {
-    // 3. 灰烬恶狼：修长狼形、炭灰毛、橙红凶眼
+    // 3. Ashes: grow wolf, charcoal hair, orange red eyes. —
     key: "enemy:ash_wolf",
     size: 16,
     anchorX: 8,
@@ -53,7 +53,7 @@ export const ENEMY_TEXTURE_DEFS = [
     ].join(" ")
   },
   {
-    // 4. 黑雾山猫：暗紫黑影、幽绿双眼、翘尾
+    // 4. Black mist bot: Dark purple shadow, green eyes, tailings
     key: "enemy:shadow_lynx",
     size: 16,
     anchorX: 8,
@@ -70,7 +70,7 @@ export const ENEMY_TEXTURE_DEFS = [
     ].join(" ")
   },
   {
-    // 5. 迷雾朽木人：枯木人形、青苔肩、暗黄眼
+    // 5. Mist-deaf wood: dead wood man, green shoulder, dark yellow eye
     key: "enemy:rotted_woodcutter",
     size: 16,
     anchorX: 8,
@@ -90,7 +90,7 @@ export const ENEMY_TEXTURE_DEFS = [
     ].join(" ")
   },
   {
-    // 6. 余烬焦尸：焦黑躯干、胸口与眼部透出炽热裂纹
+    // 6. Cascade remains: The burning torso, chest and eye are open with incandescent heated cracks
     key: "enemy:cinder_husk",
     size: 16,
     anchorX: 8,
@@ -110,7 +110,7 @@ export const ENEMY_TEXTURE_DEFS = [
     ].join(" ")
   },
   {
-    // 7. 霜甲卫兵：宽肩厚重铁甲、冰蓝棱边、手持盾/刃轮廓
+    // 7. Armored armor: wide shoulder-dense iron, ice blue edge, hand shield/sword contour
     key: "enemy:frozen_guard",
     size: 16,
     anchorX: 8,
@@ -131,7 +131,7 @@ export const ENEMY_TEXTURE_DEFS = [
     ].join(" ")
   },
   {
-    // 8. 寒鸦投掷者：展翼黑鸦、冰蓝喙爪、白眼
+    // 8. Theards: Blacks with wings, ice-blue claws, white eyes
     key: "enemy:frost_crow",
     size: 16,
     anchorX: 8,
@@ -148,7 +148,7 @@ export const ENEMY_TEXTURE_DEFS = [
     ].join(" ")
   },
   {
-    // 9. 冻沼毒孢怪：蘑菇/囊泡状、暗绿菌盖、荧光毒斑
+    // 9. Frozen marsh thugs: mushrooms/bladium, dark green cover, fluorescent poison spots
     key: "enemy:bog_spitter",
     size: 16,
     anchorX: 8,
@@ -166,7 +166,7 @@ export const ENEMY_TEXTURE_DEFS = [
     ].join(" ")
   },
   {
-    // 10. 游离鬼火灵：悬浮火焰水滴状、青蓝外焰、白热核心
+    // 10. Ghost spirits: the floating flame drops, blue flame, white heat core
     key: "enemy:ember_wisp",
     size: 16,
     anchorX: 8,
@@ -186,7 +186,7 @@ export const ENEMY_TEXTURE_DEFS = [
     ].join(" ")
   },
   {
-    // 11. 旧磨坊督工（炉印守卫）：魁梧铁面、胸嵌炉印红光
+    // 11. Old mill supervisor (trook guard): red light on the iron face and the chest furnace. —
     key: "enemy:mill_overseer",
     size: 16,
     anchorX: 8,
@@ -208,7 +208,7 @@ export const ENEMY_TEXTURE_DEFS = [
     ].join(" ")
   },
   {
-    // 12. 霜渊守炬者（最终守卫）：冠冕角盔、冰霜巨甲、胸口圣火核心
+    // 12. Sundry Bearer (final guard): crowned horn helmet, frosted macaroni, chest fire core. —
     key: "enemy:summit_pyre_warden",
     size: 16,
     anchorX: 8,

@@ -95,7 +95,7 @@ const mockLdtk: LdtkProjectJson = {
             }),
             entity("StoryProp", 2, 5, {
               objectId: "prop_basket",
-              toast: "遗物中的草药气息尚未散去。",
+              toast: "The herb breath of the remains has not yet dissipated.",
               unlockNoteId: "note_suheng_1",
             }),
             entity("ExplosiveBarrel", 7, 5, {
@@ -116,11 +116,11 @@ const mockLdtk: LdtkProjectJson = {
 const world = buildWorldFromLdtk(mockLdtk, data);
 
 it.each(tileCases)(
-  ([code]) => `LDtk IntGrid 映射 ${code}`,
+  ([code]) => `The LTtk IntGadd map ${code}`,
   ([code, tile]) => assert.equal(world.tiles[code], tile),
 );
 
-it("读取地图尺寸、区域、出生点和营火", () => {
+it("Read map sizes, areas, birth point and camp fires", () => {
   assert.equal(world.widthTiles, w);
   assert.equal(world.heightTiles, h);
   assert.equal(world.tileSize, ts);
@@ -143,7 +143,7 @@ it("读取地图尺寸、区域、出生点和营火", () => {
 });
 
 it.each([5, 6])(
-  (x) => `多格门的碰撞映射 x=${x}`,
+  (x) => `Dogman's collision map x =${x}`,
   (x) => {
     assert.equal(world.objects.get("gate_test")?.kind, "gate");
     assert.equal(world.tiles[w + x], TILE.door);
@@ -151,7 +151,7 @@ it.each([5, 6])(
   },
 );
 
-it("读取火盆、资源点和遗物属性", () => {
+it("Read the fire basin, resource points and property properties", () => {
   assert.equal(world.objects.get("relay_test")?.kind, "relay_socket");
   assert.equal(world.tiles[4 * w + 4], TILE.fireBase);
   const node = world.objects.get("node_wood_1");
@@ -164,7 +164,7 @@ it("读取火盆、资源点和遗物属性", () => {
   );
   const prop = world.objects.get("prop_basket");
   assert.equal(prop?.kind, "story_prop");
-  assert.equal(prop?.storyToast, "遗物中的草药气息尚未散去。");
+  assert.equal(prop?.storyToast, "The herb breath of the remains has not yet dissipated.");
   assert.equal(prop?.unlockNoteId, "note_suheng_1");
 });
 
@@ -172,14 +172,14 @@ it.each([
   ["barrel_test_1", "explosive_barrel", "burnt_caravan"],
   ["lamp_test_1", "mirror_lamp", "mirror_hall"],
 ] as const)(
-  ([id]) => `导入带区域的世界对象 ${id}`,
+  ([id]) => `Imports world objects with a range ${id}`,
   ([id, kind, regionId]) => {
     assert.equal(world.objects.get(id)?.kind, kind);
     assert.equal(world.objects.get(id)?.regionId, regionId);
   },
 );
 
-it("稳定排序地图对象，并允许覆盖内置地图", () => {
+it("Sort map objects steadily and allow for the coverage of built-in maps", () => {
   const ids = world.objectList.map((object) => object.id);
   assert.deepEqual(ids, [...ids].sort());
   assert.equal(getWorld(data, mockLdtk).widthTiles, w);
@@ -187,7 +187,7 @@ it("稳定排序地图对象，并允许覆盖内置地图", () => {
   assert.equal(adventureWorld.heightTiles, data.balance.world.heightTiles);
 });
 
-it("拒绝缺少 Terrain 图层的 LDtk 地图", () => {
+it("Deny missing the LDtk map of the lauin layer", () => {
   assert.throws(
     () =>
       buildWorldFromLdtk(

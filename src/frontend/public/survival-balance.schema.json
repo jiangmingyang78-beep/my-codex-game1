@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "生存模式运行时覆写",
+  "title": "Overwrite when running survival mode",
   "type": "object",
   "additionalProperties": false,
   "properties": {
@@ -10,52 +10,52 @@
     "dayDurationMultiplier": {
       "type": "number",
       "exclusiveMinimum": 0,
-      "description": "白天阶段时长倍率"
+      "description": "The daytime period is a long time-over"
     },
     "nightDurationMultiplier": {
       "type": "number",
       "exclusiveMinimum": 0,
-      "description": "夜间阶段时长倍率"
+      "description": "(c) The long-term doubling of the night phase"
     },
     "fuelConsumptionMultiplier": {
       "type": "number",
       "minimum": 0,
-      "description": "营火制作消耗煤炭的倍率，数量向上取整"
+      "description": "The number of coal consumed by the campfire is multiplied and the amount is rounded up"
     },
     "coldHungerPerSecond": {
       "type": "number",
       "minimum": 0,
-      "description": "暴雪中远离热源时每秒额外消耗的饱食点数，0 保留原有饥饿规则"
+      "description": "The number of saturated points consumed per second in snowstorms away from the heat source, 0, retains the previous hunger rule"
     },
     "hungerRateMultiplier": {
       "type": "number",
       "minimum": 0,
-      "description": "持续饥饿流失速率倍率"
+      "description": "The rate of continuing hunger is multiple"
     },
     "spawnDensity": {
       "type": "number",
       "minimum": 0,
-      "description": "夜袭每波敌人数量倍率"
+      "description": "Night strikes are multiples of each wave of enemy"
     },
     "resourceRefreshMultiplier": {
       "type": "number",
       "exclusiveMinimum": 0,
-      "description": "野生资源再生速率倍率"
+      "description": "The rate of regeneration of wildlife resources is multiple"
     },
     "resourceDensity": {
       "type": "number",
       "minimum": 0,
-      "description": "世界初始资源密度倍率"
+      "description": "The initial resource density rate in the world is multiple"
     },
     "spawnFrequency": {
       "type": "number",
       "minimum": 0,
-      "description": "夜袭波次频率倍率"
+      "description": "Night strikes are multiple frequency"
     },
     "startingSupplyMultiplier": {
       "type": "number",
       "minimum": 0,
-      "description": "初始库存数量倍率"
+      "description": "(c) The initial stock quantity multiplier"
     },
     "minSpawnRadius": {
       "type": "number",

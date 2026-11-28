@@ -84,7 +84,7 @@ function rowFor(state: RunState, sys: Systems, recipe: RecipeDef): RecipeRow {
   const description =
     out.type === "item"
       ? (sys.data.items.get(out.id)?.description ?? "")
-      : "扩大营火的火圈，解锁更高等级的配方。";
+      : "Expand the fire ring of the camp fire and unlock the higher-level formula.";
   return {
     id: recipe.id,
     name: recipe.name,
@@ -92,15 +92,15 @@ function rowFor(state: RunState, sys: Systems, recipe: RecipeDef): RecipeRow {
     unread: state.unreadRecipeIds.has(recipe.id),
     hint: [
       ...(recipe.unlockOnPickup ?? []).map(
-        (id) => `获得${itemName(sys.data, id)}`,
+        (id) => `Get in${itemName(sys.data, id)}`,
       ),
       ...(recipe.unlockOnCampProject ?? []).map((id) => {
         const upgrade = sys.data.recipes.get(id);
-        if (upgrade) return `完成「${upgrade.name}」`;
+        if (upgrade) return `Complete ${upgrade.name}`;
         const region = sys.data.regionList.find((r) => r.relaySocketId === id);
-        return `点亮${region?.name ?? ""}接力火盆`;
+        return `Light it up${region?.name ?? ""}Relay Brazier`;
       }),
-    ].join("或"),
+    ].join("Or"),
     description,
     category: categoryFor(sys, recipe),
     materials: Object.entries(recipe.inputs).map(([itemId, need]) => ({
@@ -111,13 +111,13 @@ function rowFor(state: RunState, sys: Systems, recipe: RecipeDef): RecipeRow {
     })),
     levelChange:
       out.type === "camp_level"
-        ? `营火 Lv.${state.campLevel} → Lv.${out.level}`
+        ? `Camp fire lv${state.campLevel} → Lv.${out.level}`
         : null,
     minCampLevel: recipe.minCampLevel,
     blockedReason: blockedReason(state, sys, recipe),
     shortfallText:
       gaps.length > 0
-        ? `还缺 ${gaps.map((g) => `${itemName(sys.data, g.itemId)} ×${g.missing}`).join("、")}`
+        ? `Missing ${gaps.map((g) => `${itemName(sys.data, g.itemId)} ×${g.missing}`).join(", ")}`
         : null,
   };
 }

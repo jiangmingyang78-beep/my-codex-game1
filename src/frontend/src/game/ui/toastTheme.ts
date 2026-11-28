@@ -161,7 +161,7 @@ export function createToastItem(
   };
 }
 
-/** 格式化提示文案：含数量增量时输出如“石料 +4”。 */
+/** Formatting the hint: an output such as " Stone+4 " when containing an incremental quantity. */
 export function formatToastText(
   item: Pick<ToastItem, "label" | "count">,
 ): string {
@@ -172,7 +172,7 @@ export function formatToastText(
   return item.label;
 }
 
-/** 将图标等比缩放进 16×16 槽位，避免非正方形程序化纹理拉伸畸变。 */
+/** Scales the icon equivalent into a 16x16 slot to avoid a non-correctional program that is gravitationally stretching. */
 export function fitToastIcon(
   icon: Phaser.GameObjects.Image,
   slotSize: number,
@@ -198,7 +198,7 @@ export function toastContentWidth(
   );
 }
 
-/** 按内容宽度重绘像素双层描边底框与左侧 4px 状态色条。 */
+/** Retweet the background box for the two layers of pixels by the width of the content and the 4px status bar for the left._. */
 export function redrawToastBox(
   item: ToastItem,
   theme: ToastTheme,
@@ -223,7 +223,7 @@ export function redrawToastBox(
   item.width = grid(width);
   item.height = grid(height);
 
-  // feedback 居中对齐，loot 左对齐，统一以垂直中线为 y=0
+  // / = 0.s.s.s.s.s.s.s.s.s.s.s.s.s.s.s
   const offsetX = item.channel === "feedback" ? -item.width / 2 : 0;
   const offsetY = -item.height / 2;
 
@@ -244,13 +244,13 @@ export function redrawToastBox(
   g.fillStyle(theme.bgColor, theme.bgAlpha);
   g.fillRect(offsetX, offsetY, item.width, item.height);
 
-  // 深蓝灰像素双层描边
+  // Deep blue gray pixels are drawn on the edge of the double layer
   g.lineStyle(2, theme.borderInner, 1);
   g.strokeRect(offsetX + 3, offsetY + 3, item.width - 6, item.height - 6);
   g.lineStyle(2, theme.borderOuter, 1);
   g.strokeRect(offsetX + 1, offsetY + 1, item.width - 2, item.height - 2);
 
-  // 左侧 4px 状态色条
+  // Left 4px status bar
   g.fillStyle(palette.accent, 1);
   g.fillRect(offsetX + 4, offsetY + 4, theme.accentWidth, item.height - 8);
 }

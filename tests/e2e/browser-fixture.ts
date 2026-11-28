@@ -11,7 +11,7 @@ function stackLines(stack?: ConsoleStack): string[] {
   if (!stack) return [];
   return [
     ...stack.callFrames.map((frame) =>
-      "    at " + (frame.functionName || "<匿名>") + " (" + frame.url + ":" +
+      "    at " + (frame.functionName || "\"Nobody's gonna know.\"") + " (" + frame.url + ":" +
       (frame.lineNumber + 1) + ":" + (frame.columnNumber + 1) + ")",
     ),
     ...stackLines(stack.parent),
@@ -59,10 +59,10 @@ export const test = base.extend({
           try {
             const context = Reflect.apply(target, canvas, args);
             if (context) canvas.dataset.testWebgl = "ready";
-            else console.error(new Error("WebGL 上下文创建失败 (" + type + "): " + reason));
+            else console.error(new Error("The context creation failed (.)" + type + "): " + reason));
             return context;
           } catch (error) {
-            console.error(new Error("WebGL 上下文创建失败 (" + type + ")", { cause: error }));
+            console.error(new Error("The context creation failed (.)" + type + ")", { cause: error }));
             throw error;
           } finally {
             canvas.removeEventListener("webglcontextcreationerror", onFailure);
@@ -80,7 +80,7 @@ export const test = base.extend({
       const assertions = testInfo.errors.map((error) => error.stack ?? error.message).filter(Boolean);
       await attachment(testInfo, [browserLog, ...assertions].filter(Boolean).join("\n\n"));
     }
-    if (browserLog) throw new Error("浏览器零报错检查失败\n\n" + browserLog);
+    if (browserLog) throw new Error("The browser zero-stated error check failed\n\n" + browserLog);
   },
 });
 

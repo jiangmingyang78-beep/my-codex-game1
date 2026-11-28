@@ -2,7 +2,7 @@ name: Deploy game to GitHub Pages
 
 on:
   workflow_run:
-    workflows: [游戏体检]
+    workflows: [Game Health Check]
     types: [completed]
     branches: [main]
 
@@ -28,7 +28,7 @@ jobs:
     outputs:
       artifact_name: ${{ steps.target.outputs.artifact_name }}
     steps:
-      - name: 确认已体检提交仍是 main 最新提交
+      - name: Verify the tested commit is still the tip of main
         id: target
         env:
           GH_TOKEN: ${{ github.token }}
@@ -69,7 +69,7 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - name: 等待发布附件可见并核对最新提交
+      - name: Wait for the deployment artifact and verify the latest commit
         id: ready
         env:
           GH_TOKEN: ${{ github.token }}
@@ -85,10 +85,10 @@ jobs:
               fi
               exit 0
             fi
-            echo "等待 Pages 附件可见（$attempt/8）"
+            echo "Waiting for the Pages artifact ($attempt/8)"
             sleep 5
           done
-          echo '::error::Pages 附件在等待期限内未可见。'
+          echo '::error::The Pages artifact did not become available before the timeout.'
           exit 1
       - uses: actions/deploy-pages@v4
         if: steps.ready.outputs.current == 'true'

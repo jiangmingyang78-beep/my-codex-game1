@@ -35,7 +35,7 @@ export function createSurvivalShoreArt(
   ) => HTMLCanvasElement,
   makeCanvas: (width: number, height: number) => HTMLCanvasElement,
 ) {
-  // 岸线图案以北边或东北角为原点，旋转后仍与像素网格对齐。
+  // The clinker pattern is located in the north or north-east corner and is rotated to align with the pixel grid.
   function rotatedStamps(
     pattern: string,
     palette: Record<string, string>,

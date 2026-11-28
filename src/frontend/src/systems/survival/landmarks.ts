@@ -4,17 +4,17 @@ import { seededValue } from "./survivalNoise";
 
 export const landmarkKinds = {
   mine: {
-    name: "矿点",
+    name: "Mine",
     color: "#ffd482",
     pixels: ["..##.", ".####", "##.##", ".###.", "..#.."],
   },
   crossing: {
-    name: "渡口",
+    name: "The ferry",
     color: "#9ee4ff",
     pixels: [".#.#.", "#####", ".#.#.", "#####", ".#.#."],
   },
   shelter: {
-    name: "临时营地",
+    name: "Temporary camp",
     color: "#f9a488",
     pixels: ["..#..", ".###.", ".###.", "##.##", "#####"],
   },
@@ -50,7 +50,16 @@ export function normalizeLandmarks(saved: unknown): Landmark[] {
   return [...landmarks.values()];
 }
 
-const directions = ["东", "东南", "南", "西南", "西", "西北", "北", "东北"];
+const directions = [
+  "East",
+  "Southeast",
+  "South",
+  "Southwest",
+  "West",
+  "Northwest",
+  "North",
+  "Northeast",
+];
 
 export function landmarkBearing(from: Point, to: Point) {
   const dx = to.x - from.x;

@@ -56,18 +56,18 @@ function harvest(state: RunState, node: WorldObject): void {
   recordHarvest(state, node);
 }
 
-describe("地图控制台运行时规则", () => {
+describe("The map controller runs the time rule", () => {
   afterEach(() => setRules(initialRules));
 
   it.each([
-    { label: "默认", config: {}, expected: [1.88, 1.6] },
+    { label: "Default", config: {}, expected: [1.88, 1.6] },
     {
-      label: "覆盖距离与冷却",
+      label: "Cover distance with cooling",
       config: { dash: { distanceTiles: 3, cooldownSec: 2 } },
       expected: [3, 2],
     },
   ])(
-    ({ label }) => `急步 · ${label}`,
+    ({ label }) => `Step fast  ·  ${label}`,
     ({ config, expected }) => {
       const state = startRun(config);
       const x = state.hero.x;
@@ -91,28 +91,28 @@ describe("地图控制台运行时规则", () => {
 
   const perceptionCases = [
     {
-      label: "默认索敌范围外",
+      label: "Defaults outside the enemy range",
       config: {},
       distance: 10,
       phase: "idle",
       expected: "idle",
     },
     {
-      label: "扩大索敌范围",
+      label: "Expanding the range of the enemy",
       config: { perception: { aggroTiles: 11 } },
       distance: 10,
       phase: "idle",
       expected: "chase",
     },
     {
-      label: "默认脱战范围内",
+      label: "Default to be out of combat range",
       config: {},
       distance: 13,
       phase: "chase",
       expected: "chase",
     },
     {
-      label: "缩小脱战范围",
+      label: "To narrow the line",
       config: { perception: { leashTiles: 12 } },
       distance: 13,
       phase: "chase",
@@ -137,14 +137,14 @@ describe("地图控制台运行时规则", () => {
       const resident = Object.values(state.enemiesById).find(
         (enemy) => enemy.enemyId === enemyId,
       );
-      assert.ok(resident, `缺少常驻敌人 ${enemyId}`);
+      assert.ok(resident, `Lack of permanent presence of the enemy ${enemyId}`);
       const enemy = addTestEnemy(state, sys, enemyId, {
         id: resident.id,
         phase,
       });
       state.enemiesById = { [enemy.id]: enemy };
       const point = sys.world.spawns.get(enemy.spawnId);
-      assert.ok(point, `缺少刷怪点 ${enemy.spawnId}`);
+      assert.ok(point, `Missing brush points ${enemy.spawnId}`);
       state.regionId = point.regionId;
       Object.assign(state.hero, {
         x: enemy.x + distance * tileSize,
@@ -158,20 +158,20 @@ describe("地图控制台运行时规则", () => {
   );
 
   it.each([
-    { label: "默认权重", config: {}, expected: 2 },
+    { label: "Default weight", config: {}, expected: 2 },
     {
-      label: "区域半权重",
+      label: "The region has a semi-regional weight",
       config: { weights: { camp_edge: 0.5 } },
       expected: 1,
     },
   ])(
-    ({ label }) => `夜袭人数 · ${label}`,
+    ({ label }) => `Night raids  ·  ${label}`,
     ({ config, expected }) => {
       assert.equal(raids(config).at(-1), expected);
     },
   );
 
-  it("缩短夜袭间隔可提前触发第二波", () => {
+  it("Shortening the interval between night strikes can trigger wave two ahead of time", () => {
     const fast = raids({ waves: { count: 2, intervalSec: 0.1 } });
     const slow = raids({ waves: { count: 2, intervalSec: 0.25 } });
     assert.equal(fast.at(-1), 4);
@@ -181,7 +181,7 @@ describe("地图控制台运行时规则", () => {
   const node = sys.world.objectList.find((object) => object.renewable);
   assert.ok(node);
 
-  it("默认物资可在黎明多次刷新", () => {
+  it("The default material can be re-newed several times at dawn", () => {
     const state = startRun();
     for (let i = 0; i < 2; i++) {
       harvest(state, node);
@@ -189,7 +189,7 @@ describe("地图控制台运行时规则", () => {
     }
   });
 
-  it("单点刷新优先于全局规则并在读档后继续", () => {
+  it("Single point updates take precedence over global rules and continue after reading files", () => {
     const state = startRun({ resources: { renewalLimit: 2, cooldownSec: 10 } });
     const tuned = { ...node, renewalLimit: 1, respawnCooldownSec: 2 };
     const timedSys = { ...sys, world: { ...sys.world, objectList: [tuned] } };
@@ -211,7 +211,7 @@ describe("地图控制台运行时规则", () => {
     assert.ok(snapshot.changesByObjectId[node.id].gathered);
   });
 
-  it("黎明不会跳过全局刷新冷却", () => {
+  it("The dawn does not skip the global cooling", () => {
     const state = startRun({ resources: { renewalLimit: 2, cooldownSec: 10 } });
     harvest(state, node);
     state.elapsedSec = 9;

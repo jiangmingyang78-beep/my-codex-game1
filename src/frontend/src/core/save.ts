@@ -21,7 +21,7 @@ export interface LoadResult {
   status: LoadStatus;
   /** Validated state to continue from; null means start a new game. */
   snapshot: RunState | null;
-  /** Chinese notice for the player when something went wrong; null otherwise. */
+  /** Player notice when something went wrong, or null otherwise. */
   notice: string | null;
 }
 
@@ -89,7 +89,7 @@ export function loadRun(
     return {
       status: "unavailable",
       snapshot: null,
-      notice: "无法访问本地存储，进度不会被保存。",
+      notice: "Local storage is unavailable. Your progress will not be saved.",
     };
   }
   const { run, backup } = keys();
@@ -102,7 +102,7 @@ export function loadRun(
     return {
       status: "unavailable",
       snapshot: null,
-      notice: "无法读取本地存储，进度不会被保存。",
+      notice: "Could not read local storage. Your progress will not be saved.",
     };
   }
   if (rawPrimary === null && rawBackup === null)
@@ -118,14 +118,17 @@ export function loadRun(
       return {
         status: fromBackup ? "recovered_backup" : "ok",
         snapshot,
-        notice: fromBackup ? "存档已损坏，已恢复到上一次成功的备份。" : null,
+        notice: fromBackup
+          ? "The save was damaged. The last working backup was restored."
+          : null,
       };
     } catch (error) {
       if (futureSave(error)) {
         return {
           status: "fallback_new",
           snapshot: null,
-          notice: "此存档来自更新的游戏版本，已保留原档。",
+          notice:
+            "This save is from a newer version of the game. The original save was kept.",
         };
       }
       if (!fromBackup && error instanceof SnapshotError) reason = error.reason;
@@ -133,8 +136,8 @@ export function loadRun(
   }
   const notice =
     reason === "version_mismatch"
-      ? "存档版本不兼容，已为你开始新的一局。"
-      : "存档已损坏，已为你开始新的一局。";
+      ? "The save version is incompatible. A new run has started."
+      : "The save is damaged. A new run has started.";
   return { status: "fallback_new", snapshot: null, notice };
 }
 

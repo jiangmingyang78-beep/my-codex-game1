@@ -55,15 +55,15 @@ Tight 4px-grid HUD (gap-2/3, p-2/3) so the world stays visible; overlays use roo
 
 ## Component Patterns
 
-- Buttons: square corners, `.pixel-btn` ember gradient for primary (制作, 新游戏, 继续), `.pixel-btn-ghost` for secondary; press = 3px drop
+- Buttons: square corners, `.pixel-btn` And I'm not sure if you're gonna be able to do that, remember? `.pixel-btn-ghost` for secondary; press = 3px drop
 - Cards: radius 0, `.pixel-panel` for modals, `.pixel-panel-flat` for HUD; recipe rows `bg-muted` with border, selected = ember border
-- Badges: square, mono numerals, missing materials `text-destructive`, satisfied `text-success`, e.g. 木柴 3/5
+- Badges: square, mono numerals, missing materials `text-destructive`, satisfied `text-success`- Three-five. — —
 
 ## Motion
 
 - Entrance: `animate-step-in` 0.3s stepped, fade+8px rise on overlays
 - Hover: brightness bump / border to ring color, `steps()` timing only
-- Decorative: `animate-flicker` on torch bar/title ember, `animate-pixel-blink` on "按任意键" prompt, `animate-ember-rise` sparks
+- Decorative: `animate-flicker` on torch bar/title ember, `animate-pixel-blink` On "Push Any Key".16, `animate-ember-rise` sparks
 
 ## Constraints
 

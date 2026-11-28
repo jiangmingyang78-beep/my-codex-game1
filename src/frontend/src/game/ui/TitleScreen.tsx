@@ -7,12 +7,12 @@ import { commands } from "./commands";
 import { useUi } from "./store";
 
 const CONTROLS: [string, string][] = [
-  ["WASD / 方向键", "移动"],
-  ["E", "互动 / 采集"],
-  ["空格", "攻击"],
-  ["Shift", "踏雪急步"],
-  ["1–9", "快捷使用"],
-  ["Esc", "暂停"],
+  ["WASD / arrow keys", "Move"],
+  ["E", "Interact / gather"],
+  ["Space", "Attack"],
+  ["Shift", "Snow Dash"],
+  ["1–9", "Use quick slot"],
+  ["Esc", "Pause"],
 ];
 
 function formatBest(sec: number): string {
@@ -34,14 +34,14 @@ export function TitleScreen() {
             {title.worldTagline} · v3.1.0
           </p>
           <h1 className="font-pixel mt-2 text-2xl font-bold text-ember-glow sm:text-3xl">
-            余烬林：最后一炬
+            Emberwood: Last Torch
           </h1>
         </header>
         <div className="pixel-panel pointer-events-auto flex flex-col gap-3 p-3 sm:p-5">
           {adventureOpen ? (
             <>
               <div
-                aria-label="选择英雄"
+                aria-label="Choose a hero"
                 className="grid grid-cols-2 gap-1 min-[400px]:grid-cols-3 sm:grid-cols-5 sm:gap-2"
               >
                 {title.heroes.map(({ definition, unlocked }) => {
@@ -78,7 +78,7 @@ export function TitleScreen() {
                             className="hidden sm:block"
                           />
                         )}
-                        {unlocked ? "已解锁" : "未解锁"}
+                        {unlocked ? "Unlocked" : "Locked"}
                       </span>
                     </button>
                   );
@@ -98,7 +98,7 @@ export function TitleScreen() {
                       {hero.name} · {hero.epithet}
                     </h2>
                     <p>{hero.bio}</p>
-                    <p className="text-muted-foreground">「{hero.quote}」</p>
+                    <p className="text-muted-foreground">“{hero.quote}”</p>
                     <p>
                       <span className="font-bold text-ember">
                         {hero.traitName}
@@ -107,7 +107,7 @@ export function TitleScreen() {
                     </p>
                     {selected && !selected.unlocked && (
                       <p id="hero-unlock-condition" className="text-warning">
-                        解锁条件 · {selected.unlockText}
+                        Unlock requirement · {selected.unlockText}
                       </p>
                     )}
                   </div>
@@ -116,7 +116,7 @@ export function TitleScreen() {
               <div className="flex flex-col gap-2">
                 <div className="flex items-center justify-between">
                   <span className="font-pixel text-sm font-bold text-ember">
-                    冒险模式
+                    Adventure Mode
                   </span>
                   <PixelButton
                     variant="ghost"
@@ -124,7 +124,7 @@ export function TitleScreen() {
                     className="flex items-center gap-1 px-2.5 py-1 text-xs"
                   >
                     <ArrowLeft size={14} aria-hidden="true" />
-                    返回
+                    Back
                   </PixelButton>
                 </div>
                 <PixelButton
@@ -138,7 +138,7 @@ export function TitleScreen() {
                   onClick={() => commands.newGame()}
                   className="w-full py-2.5 text-base disabled:opacity-50"
                 >
-                  新游戏
+                  New Game
                 </PixelButton>
                 <PixelButton
                   variant="ghost"
@@ -147,7 +147,7 @@ export function TitleScreen() {
                   onClick={() => commands.continueGame()}
                   className="w-full py-2.5 text-base"
                 >
-                  继续游戏
+                  Continue Game
                 </PixelButton>
                 <PixelButton
                   data-ocid="title.eternal_button"
@@ -155,14 +155,14 @@ export function TitleScreen() {
                   onClick={() => commands.newEternal()}
                   className="flex flex-col items-center gap-0.5 py-2 text-base disabled:opacity-50"
                 >
-                  <span>永恒模式</span>
+                  <span>Eternal Mode</span>
                   <span className="text-xs font-normal">
-                    自选装备 · 坚守孤火 · 无尽浪潮
+                    Choose your gear · Defend a lone fire · Face endless waves
                   </span>
                   {title.eternalBestSec !== undefined && (
                     <span className="text-xs text-frost">
-                      最佳存活 {formatBest(title.eternalBestSec)} · 最高击杀{" "}
-                      {title.eternalBestKills ?? 0}
+                      Best survival {formatBest(title.eternalBestSec)} · Most
+                      kills {title.eternalBestKills ?? 0}
                     </span>
                   )}
                 </PixelButton>
@@ -177,11 +177,11 @@ export function TitleScreen() {
                   onClick={() => setAdventureOpen(true)}
                   className="flex flex-col items-center justify-center gap-0.5 py-3 text-base"
                 >
-                  <span>冒险模式</span>
+                  <span>Adventure Mode</span>
                   <span className="text-xs font-normal">
                     {title.hasSave
-                      ? "可继续存档 · 探索雪林"
-                      : "探索雪林 · 点燃烽台"}
+                      ? "Continue a saved game · Explore the snowy woods"
+                      : "Explore the snowy woods · Light the beacon"}
                   </span>
                 </PixelButton>
                 <PixelButton
@@ -190,10 +190,10 @@ export function TitleScreen() {
                   onClick={() => window.location.assign("./survival.html")}
                   className="flex flex-col items-center justify-center gap-0.5 py-3 text-base"
                 >
-                  <span>生存模式</span>
+                  <span>Survival Mode</span>
                   <span className="text-xs font-normal text-frost">
-                    沙盒营地 · 联动 {title.crossModeUnlockCount}/
-                    {title.crossModeUnlockTotal}
+                    Sandbox camp · Cross-mode unlocks{" "}
+                    {title.crossModeUnlockCount}/{title.crossModeUnlockTotal}
                   </span>
                 </PixelButton>
               </div>
@@ -206,7 +206,7 @@ export function TitleScreen() {
           )}
           {!title.hasSave && !title.notice && (
             <p className="text-center text-xs text-muted-foreground">
-              暂无存档
+              No saved game
             </p>
           )}
         </div>

@@ -9,22 +9,22 @@ async function startAdventure(page: Page) {
   const start = page.locator(ocid("title.new_game_button"));
   await start.click();
   await expect(start).toBeHidden();
-  await expect(page.getByText(/目标：/).first()).toBeVisible();
+  await expect(page.getByText(/Objective: /).first()).toBeVisible();
   await expect(page.locator("canvas[data-test-webgl=ready]")).toBeVisible();
 }
 
-test("开始冒险新游戏", async ({ page }) => {
+test("Starts a new Adventure game", async ({ page }) => {
   await startAdventure(page);
   await expect(page.locator(ocid("game.error_state"))).toBeHidden();
 });
 
-test("游玩后刷新并返回标题", async ({ page }) => {
+test("Returns to the title screen after reloading", async ({ page }) => {
   await startAdventure(page);
   await page.reload();
-  await expect(page.getByRole("heading", { name: "余烬林：最后一炬" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Emberwood: Last Torch" })).toBeVisible();
 });
 
-test("生存模式能打开和进入指定种子的世界", async ({ page }) => {
+test("Opens Survival and creates a world from a seed", async ({ page }) => {
   await page.goto("/");
   await page.locator(ocid("title.survival_button")).click();
   await expect(page).toHaveURL(/\/survival\.html/);
@@ -35,42 +35,42 @@ test("生存模式能打开和进入指定种子的世界", async ({ page }) => 
   await expect(page.locator("#worldSeed")).toContainText("42");
 });
 
-test("崩溃现场保留快照、最近 25 条记录和完整堆栈", async ({ page, context }) => {
+test("Crash diagnostics keep the snapshot, last 25 breadcrumbs, and full stack", async ({ page, context }) => {
   await context.grantPermissions(["clipboard-read", "clipboard-write"]);
   await startAdventure(page);
   await page.evaluate(() => {
     const button = document.createElement("button");
     document.body.append(button);
     for (let i = 0; i < 30; i++) {
-      button.id = "诊断记录-" + i;
+      button.id = "diagnostic-log-" + i;
       button.click();
     }
     button.remove();
-    const error = new Error("诊断测试");
-    error.stack += "\n    at " + "堆栈🧪".repeat(4000) + "\n堆栈末尾";
-    // 派发事件验证报错 UI，与零报错夹具的失败路径分开。
+    const error = new Error("Diagnostic test");
+    error.stack += "\n    at " + "Stack🧪".repeat(4000) + "\nEnd of stack";
+    // Dispatch an error event to exercise the report UI without failing the browser fixture.
     window.dispatchEvent(new ErrorEvent("error", { error, message: error.message }));
   });
-  const link = page.getByRole("link", { name: "一键提交 GitHub Issue" });
+  const link = page.getByRole("link", { name: "Open a GitHub issue" });
   const url = new URL((await link.getAttribute("href"))!);
   expect(url.href.length).toBeLessThanOrEqual(7500);
   expect(url.searchParams.get("labels")).toBe("bug");
-  expect(url.searchParams.get("body")).toContain("已截断");
+  expect(url.searchParams.get("body")).toContain("Truncated");
 
-  await page.getByRole("button", { name: "复制 AI 诊断包" }).click();
-  await expect(page.getByRole("status")).toHaveText("已复制完整诊断包。");
+  await page.getByRole("button", { name: "Copy AI diagnostics" }).click();
+  await expect(page.getByRole("status")).toHaveText("Full diagnostics copied.");
   const report = await page.evaluate(() => navigator.clipboard.readText());
-  expect(report).toContain('"mode": "冒险"');
+  expect(report).toContain('"mode": "Adventure"');
   expect(report).toContain("UA:");
   if (process.env.VITE_COMMIT_SHA)
     expect(report).toContain("commit: " + process.env.VITE_COMMIT_SHA);
-  expect(report).toContain("堆栈末尾");
-  expect(report.match(/UI 诊断记录-\d+/g)).toEqual(
-    Array.from({ length: 25 }, (_, i) => "UI 诊断记录-" + (i + 5)),
+  expect(report).toContain("End of stack");
+  expect(report.match(/UI diagnostic-log-\d+/g)).toEqual(
+    Array.from({ length: 25 }, (_, i) => "UI diagnostic-log-" + (i + 5)),
   );
 });
 
-test("生存模式的异步异常含当前世界摘要", async ({ page }) => {
+test("Survival async diagnostics include the current world", async ({ page }) => {
   await page.goto("/survival.html");
   await page.locator("#openWorld").click();
   await page.locator("#seedInput").fill("42");
@@ -79,12 +79,12 @@ test("生存模式的异步异常含当前世界摘要", async ({ page }) => {
   await page.evaluate(() => {
     window.dispatchEvent(new PromiseRejectionEvent("unhandledrejection", {
       promise: Promise.resolve(),
-      reason: new Error("生存异步诊断测试"),
+      reason: new Error("Survival async diagnostic test"),
     }));
   });
-  const link = page.getByRole("link", { name: "一键提交 GitHub Issue" });
+  const link = page.getByRole("link", { name: "Open a GitHub issue" });
   const body = new URL((await link.getAttribute("href"))!).searchParams.get("body");
-  expect(body).toContain("生存异步诊断测试");
+  expect(body).toContain("Survival async diagnostic test");
   expect(body).toContain('"seed": 42');
-  expect(body).toContain('"mode": "生存"');
+  expect(body).toContain('"mode": "Survival"');
 });

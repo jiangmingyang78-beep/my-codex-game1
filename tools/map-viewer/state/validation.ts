@@ -19,7 +19,7 @@ export function validateDraft(draft: Draft, baseline: Draft, map: MapSnapshot): 
   for (const file of files) {
     const doc = draft[file];
     if (!isRecord(doc)) {
-      fail(file, [], "文件必须为 JSON 对象");
+      fail(file, [], "The file must be a JSON object");
       continue;
     }
     if (file === "worldOverrides.json") {
@@ -34,18 +34,18 @@ export function validateDraft(draft: Draft, baseline: Draft, map: MapSnapshot): 
         const inventory = key === "startingInventory";
         const optional = file === "survival-balance.json" || file === "encounters.json";
         for (const k of Object.keys(base))
-          if (!Object.hasOwn(v, k) && !inventory && !optional) fail(file, [...path, k], "缺少必需字段");
+          if (!Object.hasOwn(v, k) && !inventory && !optional) fail(file, [...path, k], "Missing required field");
         for (const [k, val] of Object.entries(v)) {
           if (!safeKey(k) || (!Object.hasOwn(base, k) && !inventory)) {
-            fail(file, [...path, k], "未知字段");
+            fail(file, [...path, k], "Unknown field");
             continue;
           }
-          if (inventory && !itemIds.has(k)) fail(file, [...path, k], "物品不存在");
+          if (inventory && !itemIds.has(k)) fail(file, [...path, k], "Unknown item ID");
           walk(val, inventory ? 1 : base[k], [...path, k]);
         }
       } else if (Array.isArray(v) && Array.isArray(base)) {
-        if (!variableList(key) && v.length !== base.length) bad("固定表的长度不可更改");
-        if (key === "renewableItemIds" && new Set(v).size !== v.length) bad("再生物资不可重复");
+        if (!variableList(key) && v.length !== base.length) bad("Fixed-length lists must retain their original length");
+        if (key === "renewableItemIds" && new Set(v).size !== v.length) bad("Renewable item IDs must be unique");
         v.forEach((el, i) =>
           walk(
             el,
@@ -63,35 +63,35 @@ export function validateDraft(draft: Draft, baseline: Draft, map: MapSnapshot): 
           ),
         );
       } else if (typeof v === "number" && typeof base === "number") {
-        if (file === "survival-balance.json" && "exclusiveMinimum" in (tuningSchema.properties[key as keyof typeof tuningSchema.properties] ?? {}) && v <= 0) bad("倍率必须大于零");
-        if(parent==="categoryCap" && !Number.isSafeInteger(v))bad("数量上限须为非负整数");
-        if (!Number.isFinite(v)) bad("必须为有限数值");
+        if (file === "survival-balance.json" && "exclusiveMinimum" in (tuningSchema.properties[key as keyof typeof tuningSchema.properties] ?? {}) && v <= 0) bad("The multiplier must be greater than zero");
+        if(parent==="categoryCap" && !Number.isSafeInteger(v))bad("Population cap must be a nonnegative integer");
+        if (!Number.isFinite(v)) bad("Value must be finite");
         const signed = key.endsWith("Delta") || key === "pushDirX" || key === "pushDirY";
-        if (!signed && v < 0) bad("数值不能为负");
-        if (/cooldownSec|intervalSec|dashDurationSec|travelSec/i.test(key) && v <= 0) bad("间隔必须大于零");
-        if ((key === "maxHp" || (key === "max" && parent === "hp")) && v <= 0) bad("生命上限必须大于零");
+        if (!signed && v < 0) bad("Values cannot be negative");
+        if (/cooldownSec|intervalSec|dashDurationSec|travelSec/i.test(key) && v <= 0) bad("The interval must be greater than zero");
+        if ((key === "maxHp" || (key === "max" && parent === "hp")) && v <= 0) bad("Maximum health must be greater than zero");
         if ((key === "probability" || key === "hpThreshold" || key === "hpRatioAtOrBelow") && (v < 0 || v > 1))
-          bad("须在 0 到 1 之间");
+          bad("Value must be between 0 and 1");
         if (
           (key === "count" || key === "renewalLimit" || parent === "startingInventory") &&
           (!Number.isSafeInteger(v) || v <= 0)
         )
-          bad("数量须为正整数");
+          bad("Quantity must be a positive integer");
         if (
           (key === "activeEnemies" || key === "activeProjectiles" || parent === "radiiTilesByLevel") &&
           !Number.isSafeInteger(v)
         )
-          bad("须为整数");
-        if (["world", "clock", "storage"].includes(String(path[0])) && base !== v) bad("受保护的运行时配置");
+          bad("Value must be an integer");
+        if (["world", "clock", "storage"].includes(String(path[0])) && base !== v) bad("Protected runtime configuration");
         if (file === "regions.json" && ["tileX", "tileY", "act", "minCampLevel"].includes(key) && v !== base)
-          bad("固定布局字段");
+          bad("Fixed layout field");
       } else if (typeof v === "string" && typeof base === "string") {
         if (key === "itemId" || ["renewableItemIds", "quickUseItemIds"].includes(parent)) {
-          if (!itemIds.has(v)) bad("物品 ID 不存在");
+          if (!itemIds.has(v)) bad("Unknown item ID");
         } else if (key === "enemyId") {
-          if (!enemies.has(v)) bad("怪物 ID 不存在");
-        } else if (v !== base) bad("固定标识或文本不可更改");
-      } else if (v !== base) bad("类型或结构无效");
+          if (!enemies.has(v)) bad("Unknown enemy ID");
+        } else if (v !== base) bad("Fixed IDs and text cannot be changed");
+      } else if (v !== base) bad("Type or structure is invalid");
     }
     if (file === "encounters.json") {
       const template = { ...scenarioDefaults, weights: Object.fromEntries([...regions].map((id) => [id, 1])) };
@@ -105,13 +105,13 @@ export function validateDraft(draft: Draft, baseline: Draft, map: MapSnapshot): 
   }
   const ring={...survivalDefaults,...draft["survival-balance.json"]};
   if(!(ring.minSpawnRadius<ring.maxSpawnRadius && ring.maxSpawnRadius<ring.despawnRadius))
-    fail("survival-balance.json",["maxSpawnRadius"],"须满足近环 < 外环 < 回收距离");
+    fail("survival-balance.json",["maxSpawnRadius"],"The close ring < outer ring < recovery distance is to be met");
   const hp = valueAt(draft["balance.json"], ["stats", "hp", "max"]);
   const heroes = valueAt(draft["heroes.json"], ["heroes"]);
   if (typeof hp === "number" && Array.isArray(heroes))
     heroes.forEach((hero, i) => {
       if (hp + Number(hero?.traits?.maxHpDelta ?? 0) <= 0)
-        fail("heroes.json", ["heroes", i, "traits", "maxHpDelta"], "修正后生命须大于零");
+        fail("heroes.json", ["heroes", i, "traits", "maxHpDelta"], "The modified life must be greater than zero");
     });
   return issues;
 }

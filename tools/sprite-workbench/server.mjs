@@ -62,7 +62,7 @@ function openBrowser(url) {
     }
     child.unref();
   } catch (err) {
-    console.warn(`[sprite-workbench] 自动打开浏览器失败，请手动访问 ${url}: ${err.message}`);
+    console.warn(`[sprite-interbénch] Autoopens the browser, please visit manually ${url}: ${err.message}`);
   }
 }
 
@@ -121,18 +121,18 @@ function listenWithFallback(port, maxPort = 4199) {
       listenWithFallback(port + 1, maxPort);
       return;
     }
-    console.error(`[sprite-workbench] 启动失败: ${err.message}`);
+    console.error(`[sprite-empty] Startup failed.____BAR__ ${err.message}`);
     process.exit(1);
   });
 
   server.listen(port, "127.0.0.1", () => {
     const url = `http://127.0.0.1:${port}`;
-    console.log(`[sprite-workbench] 工作台已启动：${url} (按 Ctrl+C 退出)`);
+    console.log(`[sprite-inspect] Workstation is active: ${url} (Cttart+C exits)`);
     if (!NO_OPEN) {
       openBrowser(url);
     }
     const shutdown = () => {
-      console.log("\n[sprite-workbench] 正在退出...");
+      console.log("\n[sprite-empty] Exiting");
       server.close(() => process.exit(0));
       setTimeout(() => process.exit(0), 500).unref();
     };

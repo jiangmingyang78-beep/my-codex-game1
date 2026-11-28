@@ -1,6 +1,6 @@
 import {encounterById} from "@/systems/survival/encounterCatalog";
 /**
- * 生存模式地图适配器（直接复用 @/systems/survival 单一真源，零算法副本）
+ * Survival mode map adapter (directly re-use @/ Ás/survival, a zero-applied copy).--------------------)
  */
 import {
   CHUNK_SIZE,
@@ -29,16 +29,16 @@ import type {
 const WINDOW_PAD = 32;
 
 const SURVIVAL_PALETTE: Record<number, TilePaletteEntry> = {
-  0: { id: 0, key: "tree", name: "树木（阻挡）", color: "#192d27", accent: "#2c5042", solid: true },
-  1: { id: 1, key: "grass", name: "草地", color: "#2f4e3c", accent: "#436b50", solid: false },
-  2: { id: 2, key: "trail", name: "林径", color: "#57624c", accent: "#798669", solid: false },
-  3: { id: 3, key: "rock_floor", name: "岩地", color: "#43464c", accent: "#5e626c", solid: false },
-  4: { id: 4, key: "wetland", name: "湿地/霜地", color: "#2c4c57", accent: "#436e7b", solid: false },
-  5: { id: 5, key: "water", name: "水域（阻挡）", color: "#183e57", accent: "#2b688c", solid: true },
-  6: { id: 6, key: "rock", name: "岩石（阻挡）", color: "#5e4c3a", accent: "#8c745b", solid: true },
-  7: { id: 7, key: "ruin", name: "遗迹地面", color: "#4e4452", accent: "#6d5f73", solid: false },
-  8: { id: 8, key: "coal_vein", name: "煤脉（阻挡）", color: "#22242d", accent: "#ff7a2f", solid: true },
-  9: { id: 9, key: "wall", name: "岩壁（阻挡）", color: "#41444d", accent: "#a1a2a8", solid: true },
+  0: { id: 0, key: "tree", name: "Trees)", color: "#192d27", accent: "#2c5042", solid: true },
+  1: { id: 1, key: "grass", name: "Grassland", color: "#2f4e3c", accent: "#436b50", solid: false },
+  2: { id: 2, key: "trail", name: "Woodland Trail", color: "#57624c", accent: "#798669", solid: false },
+  3: { id: 3, key: "rock_floor", name: "Rocky Ground", color: "#43464c", accent: "#5e626c", solid: false },
+  4: { id: 4, key: "wetland", name: "Wetlands/frozens", color: "#2c4c57", accent: "#436e7b", solid: false },
+  5: { id: 5, key: "water", name: "Water)", color: "#183e57", accent: "#2b688c", solid: true },
+  6: { id: 6, key: "rock", name: "Rock)", color: "#5e4c3a", accent: "#8c745b", solid: true },
+  7: { id: 7, key: "ruin", name: "Ruin Floor", color: "#4e4452", accent: "#6d5f73", solid: false },
+  8: { id: 8, key: "coal_vein", name: "Coal pulse (stop))", color: "#22242d", accent: "#ff7a2f", solid: true },
+  9: { id: 9, key: "wall", name: "Rock wall)", color: "#41444d", accent: "#a1a2a8", solid: true },
 };
 
 function buildClassicSnapshot(): MapSnapshot {
@@ -59,8 +59,8 @@ function buildClassicSnapshot(): MapSnapshot {
 
   return {
     mode: "survival",
-    title: "生存模式 · 旧林地（classic）",
-    subtitle: `${SURVIVAL_WIDTH}×${SURVIVAL_HEIGHT} 格 · 共享 systems/survival/survivalWorldGen.ts`,
+    title: "Survival pattern. Old forest land)",
+    subtitle: `${SURVIVAL_WIDTH}×${SURVIVAL_HEIGHT} • Share /survival/survivallex.ts`,
     width: SURVIVAL_WIDTH,
     height: SURVIVAL_HEIGHT,
     originX: 0,
@@ -69,20 +69,20 @@ function buildClassicSnapshot(): MapSnapshot {
     tiles,
     solidMask,
     palette: SURVIVAL_PALETTE,
-    regions: [{ id: "classic", name: "旧林地核心区 (50×32)", x: 0, y: 0, w: SURVIVAL_WIDTH, h: SURVIVAL_HEIGHT }],
+    regions: [{ id: "classic", name: "Old forest land core (50 x 32)", x: 0, y: 0, w: SURVIVAL_WIDTH, h: SURVIVAL_HEIGHT }],
     objects: [
-      { id: "camp", kind: "campfire", label: "主营地篝火", tx: SURVIVAL_CAMP.x, ty: SURVIVAL_CAMP.y, radiusTiles: 5 },
-      { id: "board", kind: "board", label: "委托告示牌", tx: 5, ty: 15 },
-      { id: "gate", kind: "gate", label: "石林东门", tx: 35, ty: 16 },
-      { id: "core", kind: "core", label: "核心遗物", tx: 45, ty: 16 },
-      { id: "altar_moss", kind: "altar", label: "苔林祭坛", tx: 9, ty: 7 },
-      { id: "altar_stone", kind: "altar", label: "赤石祭坛", tx: 26, ty: 6 },
-      { id: "altar_frost", kind: "altar", label: "寒潭祭坛", tx: 13, ty: 25 },
-      { id: "lm_root", kind: "landmark", label: "地标·古根", tx: 7, ty: 6 },
-      { id: "lm_watch", kind: "landmark", label: "地标·望台", tx: 28, ty: 8 },
-      { id: "lm_mirror", kind: "landmark", label: "地标·冰镜", tx: 12, ty: 24 },
+      { id: "camp", kind: "campfire", label: "The main camp camp was on fire", tx: SURVIVAL_CAMP.x, ty: SURVIVAL_CAMP.y, radiusTiles: 5 },
+      { id: "board", kind: "board", label: "Commission the billboard", tx: 5, ty: 15 },
+      { id: "gate", kind: "gate", label: "Ishibayashi-dong Gate", tx: 35, ty: 16 },
+      { id: "core", kind: "core", label: "Core remains", tx: 45, ty: 16 },
+      { id: "altar_moss", kind: "altar", label: "Mosswood Altar", tx: 9, ty: 7 },
+      { id: "altar_stone", kind: "altar", label: "Redstone Altar", tx: 26, ty: 6 },
+      { id: "altar_frost", kind: "altar", label: "Frost Pool Altar", tx: 13, ty: 25 },
+      { id: "lm_root", kind: "landmark", label: "Landmark Gugen", tx: 7, ty: 6 },
+      { id: "lm_watch", kind: "landmark", label: "The landmark", tx: 28, ty: 8 },
+      { id: "lm_mirror", kind: "landmark", label: "The landmark ice-glass", tx: 12, ty: 24 },
     ],
-    spawns: [{ id: "hero_camp", kind: "hero", label: "玩家出生点", tx: SURVIVAL_CAMP.x, ty: SURVIVAL_CAMP.y }],
+    spawns: [{ id: "hero_camp", kind: "hero", label: "Player birth point", tx: SURVIVAL_CAMP.x, ty: SURVIVAL_CAMP.y }],
     campRadiiByLevel: { 1: 4, 2: 6, 3: 9 },
     seedLabel: "classic",
   };
@@ -120,11 +120,11 @@ export function buildSurvivalSnapshot(seedText: string, resourceDensity = 1): Ma
   }
 
   const regions: MapRegion[] = [
-    { id: "core_basin", name: `初始盆地 (${SURVIVAL_WIDTH}×${SURVIVAL_HEIGHT})`, x: 0, y: 0, w: SURVIVAL_WIDTH, h: SURVIVAL_HEIGHT },
-    { id: "expanded_window", name: `流式外域预览窗口 (${w}×${h})`, x: ox, y: oy, w, h, dashed: true },
+    { id: "core_basin", name: `Initial Basin (${SURVIVAL_WIDTH}×${SURVIVAL_HEIGHT})`, x: 0, y: 0, w: SURVIVAL_WIDTH, h: SURVIVAL_HEIGHT },
+    { id: "expanded_window", name: `Fluid Field Preview Window (${w}×${h})`, x: ox, y: oy, w, h, dashed: true },
   ];
   const spawns: MapSpawn[] = [
-    { id: "hero_camp", kind: "hero", label: "玩家出生点", tx: SURVIVAL_CAMP.x - 1, ty: SURVIVAL_CAMP.y },
+    { id: "hero_camp", kind: "hero", label: "Player birth point", tx: SURVIVAL_CAMP.x - 1, ty: SURVIVAL_CAMP.y },
   ];
   const landmarks: MapObject[] = [];
   const visible = (x: number, y: number) =>
@@ -137,15 +137,15 @@ export function buildSurvivalSnapshot(seedText: string, resourceDensity = 1): Ma
       for (const {kind, x, y} of chunk.landmarks) {
         if (kind === "encounter" && visible(x, y)) {
           const site=world.encounters.find(p=>p.x===x && p.y===y);
-          landmarks.push({ id: site?.id??`encounter_${x}_${y}`, kind: "landmark", label: site?encounterById.get(site.templateId)!.name:"奇遇预留地", tx: x, ty: y });
+          landmarks.push({ id: site?.id??`encounter_${x}_${y}`, kind: "landmark", label: site?encounterById.get(site.templateId)!.name:"Stranger's reserve", tx: x, ty: y });
         }
       }
       for (const {kind, x, y} of chunk.anchors) {
         if (!visible(x, y)) continue;
         if (kind === "nest") {
-          spawns.push({ id: `nest_${x}_${y}`, kind: "resident", label: "生态巢穴", tx: x, ty: y });
+          spawns.push({ id: `nest_${x}_${y}`, kind: "resident", label: "Eco-lurch", tx: x, ty: y });
         } else {
-          landmarks.push({ id: `supply_${x}_${y}`, kind: kind === "coal" ? "ore" : kind, label: "营地初始补给", tx: x, ty: y });
+          landmarks.push({ id: `supply_${x}_${y}`, kind: kind === "coal" ? "ore" : kind, label: "Initial resupply of camps", tx: x, ty: y });
         }
       }
     }
@@ -153,8 +153,8 @@ export function buildSurvivalSnapshot(seedText: string, resourceDensity = 1): Ma
 
   return {
     mode: "survival",
-    title: `生存模式 · 种子 ${label}`,
-    subtitle: `预览窗口 ${w}×${h} 格 · 共享 systems/survival 单一真源`,
+    title: `Survival patterns... seeds ${label}`,
+    subtitle: `Preview window ${w}×${h} • Share _/survival a single true source`,
     width: w,
     height: h,
     originX: ox,
@@ -166,18 +166,18 @@ export function buildSurvivalSnapshot(seedText: string, resourceDensity = 1): Ma
     biomeIds,
     featureIds,
     featureStyles: {
-      [FEATURE.berry]: { name: "浆果灌木", color: "#f39a91" },
-      [FEATURE.flora]: { name: "原生植物生长点", color: "#a8ce92" },
-      [FEATURE.forage]: { name: "可采集野生植物", color: "#e3cd84" },
-      [FEATURE.rubble]: { name: "遗迹碎石", color: "#b5a2a9" },
+      [FEATURE.berry]: { name: "Pulp shrub", color: "#f39a91" },
+      [FEATURE.flora]: { name: "Native plant growth point", color: "#a8ce92" },
+      [FEATURE.forage]: { name: "Wild plants can be collected", color: "#e3cd84" },
+      [FEATURE.rubble]: { name: "The ruins are gravel", color: "#b5a2a9" },
     },
     biomeNames: SURVIVAL_BIOMES.map((b) => b.name),
     biomeColors: SURVIVAL_BIOMES.map((b) => b.land),
     regions,
     objects: [
       ...landmarks,
-      { id: "camp", kind: "campfire", label: "主营地篝火", tx: SURVIVAL_CAMP.x, ty: SURVIVAL_CAMP.y, radiusTiles: 5, detail: "生存模式营地中心 (6, 16)" },
-      { id: "board", kind: "board", label: "委托告示牌", tx: 5, ty: 15, detail: "接取营地委托" },
+      { id: "camp", kind: "campfire", label: "The main camp camp was on fire", tx: SURVIVAL_CAMP.x, ty: SURVIVAL_CAMP.y, radiusTiles: 5, detail: "Survival model camp centre (VI16)" },
+      { id: "board", kind: "board", label: "Commission the billboard", tx: 5, ty: 15, detail: "Take camp commission" },
     ],
     spawns,
     campRadiiByLevel: { 1: 4, 2: 6, 3: 9 },

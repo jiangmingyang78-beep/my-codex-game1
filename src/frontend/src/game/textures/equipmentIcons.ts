@@ -13,7 +13,7 @@ const PALETTE: Readonly<Record<string, string>> = {
   c: "#56c4e8",
 };
 
-// 每个点阵为 12×12，“.”表示透明像素。
+// Each dot array is 12 x 1-alt' for transparent pixels.
 const PATTERNS: Readonly<Record<string, string>> = {
   iron_buckler: `
 ............

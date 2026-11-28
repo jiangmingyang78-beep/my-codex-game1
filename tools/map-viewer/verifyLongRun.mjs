@@ -49,7 +49,7 @@ try {
     { windowsHide: true, timeout: 45000, maxBuffer: 5_000_000 },
   );
   const result = stdout.match(/data-ember-result="([^"]+)"/)?.[1];
-  if (!result) throw Error("浏览器未返回验收结果");
+  if (!result) throw Error("The browser did not return the results");
   const decoded = JSON.parse(decodeURIComponent(result));
   console.log(JSON.stringify(decoded, null, 2));
   if (decoded.failures.length) process.exitCode = 1;

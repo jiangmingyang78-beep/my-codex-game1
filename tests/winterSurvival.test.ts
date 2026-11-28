@@ -34,7 +34,7 @@ import {
   getWeatherModifiers,
 } from "@/systems/survival/weatherSystem";
 
-it("草药架调整为粗纤维后保留旧档的苇茎交付进度", () => {
+it("The herb shelf was adjusted to the crude fibre and the old-tailed delivery schedule was maintained", () => {
   const partial = normalizeCampProjects({ dryingRack: { wood: 4, reed: 1 } });
   assert.deepEqual(partial.dryingRack, { wood: 4, fiber: 1 });
   assert.equal(campProjectComplete(partial, "dryingRack"), false);
@@ -44,7 +44,7 @@ it("草药架调整为粗纤维后保留旧档的苇茎交付进度", () => {
   assert.deepEqual(normalizeCampProjects(completed), completed);
 });
 
-it("跨天与黎明寒潮延长黑夜，三段边界与天数在旧档时轴上连续", () => {
+it("The tide of the sky and the dawn has prolonged the night, with three segments of the border and days running on the old slot", () => {
   const first = winterDay(1, 120, 72, 0),
     late = winterDay(12, 120, 72, 0);
   const snow = createWeatherState();
@@ -68,7 +68,7 @@ it("跨天与黎明寒潮延长黑夜，三段边界与天数在旧档时轴上�
   assert.equal(first.cycle, late.cycle);
 });
 
-it("种子排期可复现，预警在抵达前 30–45 秒开始，重载不重复触发", () => {
+it("The seed schedule can be repeated, with the warning beginning 30 - 45 seconds before arrival and the reloading triggering without repetition. —", () => {
   const gaps = new Set<number>(),
     arrivals = new Set<number>();
   for (let seed = 0; seed < 32; seed++) {
@@ -106,7 +106,7 @@ it("种子排期可复现，预警在抵达前 30–45 秒开始，重载不重�
   assert.equal(scheduleRaid(5, 0, 0).day, 0);
 });
 
-it("袭营预算受天数和营地等级影响，必须击退全波才在黎明结算一次", () => {
+it("The budget for the attack camp was influenced by the number of days and the level of the camp, and the full wave of the attack had to be repelled before the settlement at dawn", () => {
   assert.ok(raidBudget(5, 0, 3, 1) > raidBudget(1, 0, 3, 1));
   assert.ok(raidBudget(5, 3, 3, 1) > raidBudget(5, 0, 3, 1));
   assert.equal(raidBudget(50, 4, 0, 1), 0);
@@ -122,7 +122,7 @@ it("袭营预算受天数和营地等级影响，必须击退全波才在黎明�
   assert.equal(dawnAsh(structuredClone(raid)), 0);
 });
 
-it("哨柱封住点亮的一侧，袭营怪只从可通行且光照允许的外围入场", () => {
+it("The post was sealed on the bright side and the attacker entered only from the outer perimeter, which was accessible and lightly permitted", () => {
   const grid = new LightGrid(16);
   grid.sync(0, []);
   const routes = campApproaches(
@@ -166,7 +166,7 @@ it("哨柱封住点亮的一侧，袭营怪只从可通行且光照允许的外�
   assert.deepEqual(raidSpawnPoints(ctx), []);
 });
 
-it("营地四级设施按前置建造，分批交付能读档，护风炉塘只削减额外风耗", () => {
+it("The fourth-level facility in the camp is built on a forward construction basis, with batches of ready-to-read deliveries, and the wind-boiling ponds are protected only by additional wind consumption", () => {
   const progress = normalizeCampProjects(null),
     stock = { ...campProjects.kiln.cost };
   assert.equal(donateCampMaterials(progress, "kiln", stock), false);

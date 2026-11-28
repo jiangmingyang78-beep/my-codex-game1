@@ -1,124 +1,124 @@
-# 《余烬林：最后一炬》MVP 验收清单
+# Emberwood: Last Torch MVP Verification Checklist
 
-本清单供在其他工具（浏览器自动化或人工）中做后续验证。游戏为纯前端 Phaser 3.90.0，存档在 `localStorage`，规则全部来自 `src/frontend/src/core` 与 `src/systems`，数据以 `src/data/*.json` 为准。
+Use this checklist for browser automation or manual playtesting. The game runs client-side in Phaser 3.90.0 and saves to `localStorage`. Rule systems live in `src/frontend/src/core` and `src/frontend/src/systems`. JSON files under `src/frontend/src/data` are the source of truth.
 
-## 0. 前置
+## 0. Setup
 
-- [ ] 在 `src/frontend` 运行 `pnpm typecheck` 通过、`pnpm fix` 无报错。
-- [ ] 打开页面后控制台无报错（红色 error），核心循环期间也没有。
-- [ ] 标题画面一次点击「新游戏」即可开始。
-- [ ] 窗口 1280×720 及更小（如 1024×600、800×600）时，HUD、快捷栏、面板文字可读，不重叠遮挡。
+- [ ] Run `pnpm typecheck` and `pnpm fix` from `src/frontend`.
+- [ ] Check the developer console for errors at startup and during gameplay.
+- [ ] Click **New Game** once to begin.
+- [ ] At 1280×720, 1024×600, and 800×600, verify that the HUD, quick bar, and panel text stay readable and do not overlap.
 
-## 1. 端到端主线：采集 → 制作 → 夜晚 → 存档 → 重载
+## 1. Main gameplay loop
 
-1. [ ] 新游戏，英雄出现在营火附近，HUD 显示：生命、饱食、火炬三条条形（带数值）、时钟与「第N天」、区域名「炉边雪林」、目标行（含「炉印 0/2」）。
-2. [ ] 走到树木/石头/纤维/浆果节点旁，出现交互提示，按 E（或点提示）采集；出现「获得 …」提示，背包数量增加，节点消失。
-3. [ ] 回营火旁按 E（或点「营火：制作」）打开营火面板：列出 9 个配方；材料不足的按钮置灰并显示「还缺 …」。
-4. [ ] 采齐材料后制作一项（如烤莓饼）：只扣一次材料，面板数量实时更新，出现「制作完成」与「已自动存档」。
-5. [ ] 制作「升级二级营火」：配方卡显示「营火 Lv.1 → Lv.2」，完成后火圈变大，面板显示 Lv.2。
-6. [ ] 关闭面板后时间继续；等待黄昏：屏幕渐暗（暮色到夜色色调），出现「夜幕降临」提示与夜幕音效，营火周围有光圈。
-7. [ ] 夜间离开火圈：火炬值下降；回到火圈：火炬恢复。夜袭敌人出现并攻击。
-8. [ ] 黄昏、天亮、制作后均自动存档；暂停菜单点「保存进度」显示「进度已保存」。
-9. [ ] 刷新页面，标题「继续游戏」可点；继续后位置、生命/饱食/火炬、背包、营火等级、已采节点、已击败敌人、已点亮火盆、时钟、增益全部与存档前一致。
+1. [ ] Start a game near the campfire. Verify the health, fullness, and torch bars and values, the clock and day, Fireside Woods region, and objective with 0/2 Ember Seals.
+2. [ ] Approach wood, stone, fiber, and berry nodes. Press E or click the interaction prompt. Verify the pickup notification, inventory increase, and disappearance of each node.
+3. [ ] Press E at the campfire or click **Campfire: Craft**. In the original MVP, the panel shows nine recipes. Verify missing materials disable crafting and show the shortfall.
+4. [ ] Craft an item such as a Baked Berry Cake. Materials are deducted once, counts update, and crafting and autosave notifications appear.
+5. [ ] Craft the Level 2 campfire upgrade. The recipe card shows the level change, the light radius grows, and the panel shows Level 2.
+6. [ ] Close the panel and wait for dusk. Check the screen tint, nightfall cue, and campfire light.
+7. [ ] Step outside firelight at night to drain torchlight, then return to recharge. Verify night enemies spawn and attack.
+8. [ ] Verify autosaves after dusk, dawn, and crafting. Select **Save progress** from the pause menu and verify its confirmation.
+9. [ ] Reload and select **Continue Game**. Compare position, health, fullness, torchlight, inventory, campfire level, gathered nodes, defeated enemies, lit braziers, clock, and buffs with the saved state.
 
-## 2. 关键交互
+## 2. Key interactions
 
-- [ ] **背包满时拾取**：把某材料堆到上限后再采集/拾取，显示拒绝提示（「背包已满，无法拾取」），节点/掉落物保留，不消耗。
-- [ ] **废磨坊上锁的门**：营火未到二级时对门按 E，显示门的拒绝原因；满足条件后门打开，门贴图消失、可通行。
-- [ ] **满血使用绷带**：生命已满时按 4 或点第四格，显示「生命已满，无需使用」，数量不减少。
-- [ ] **快捷键与点击**：1–4 键与点击/触摸 1–4 格效果一致；数量为 0 时有提示且不报错；暂停、面板打开时不响应。
-- [ ] **暂停**：Esc 或右上角暂停按钮打开暂停菜单（继续、保存进度、声音开关、返回标题）；暂停期间时钟、饥饿、火炬、敌人位置都不推进。
-- [ ] **切标签页/窗口失焦**：切走后自动存档并进入暂停；回来后需点「继续」，期间游戏时间不推进，也没有突然的大跳变。
-- [ ] **受击无敌**：被敌人击中后短暂闪烁（半透明），无敌时间内不再连续掉血；有屏幕轻微震动与受击粒子。
-- [ ] **掉落**：击败敌人后掉落物（光球）出现在原地，走过去拾取；背包满时显示拒绝，不丢失。
-- [ ] **炉印 1/2**：在废磨坊击败守卫后拾取炉印，提示「获得炉印 1/2」，HUD 目标行变为「炉印 1/2」，并触发营地笔记。
-- [ ] **接力火盆**：营火二级后制作「接力火盆」；去废磨坊火盆旁按 E 点燃，出现火焰与光圈，面板显示的空闲火站减少；刷新继续后火盆仍亮。
-- [ ] **死亡/风暴结算**：生命归零显示「火光熄灭」与具体死因；75 游戏分钟未点燃烽台显示「风暴降临」。结算页有摘要、「重新开始」、「返回标题」；死亡后运行存档被清除（标题「继续游戏」置灰），营地笔记仍保留。
+- [ ] **Full inventory.** Fill a material stack and gather again. The game rejects the pickup and keeps the resource node or dropped item.
+- [ ] **Old Mill gate.** Press E before the campfire reaches Level 2 and check the rejection reason. Upgrade the campfire, then verify the gate opens and can be crossed.
+- [ ] **Bandage at full health.** Press 4 or click the fourth slot. The game reports full health and keeps the Bandage.
+- [ ] **Quick slots.** Keys 1–4 and clicking or tapping slots 1–4 behave alike. A stack of zero shows a notice. Quick use is disabled while paused or when a panel is open.
+- [ ] **Pause.** Esc and the pause button open the menu with resume, save, sound, and return-to-title actions. Time, hunger, torchlight, and enemy positions stay fixed while paused.
+- [ ] **Lost focus.** Switching tabs autosaves and pauses. Resume manually and check that no simulation jump occurred.
+- [ ] **Invulnerability after a hit.** Check blinking or translucency, brief damage immunity, screen shake, and hit particles.
+- [ ] **Drops.** Defeating an enemy leaves loot in place. Walk over it to collect it. A full inventory rejects pickup without losing the drop.
+- [ ] **First Ember Seal.** Defeat the Old Mill guardian and collect the seal. Check the 1/2 HUD objective count, pickup notification, and new camp note.
+- [ ] **Relay Brazier.** Craft it after upgrading the campfire to Level 2. Press E at the Old Mill socket. Fire and light appear, the count of available sockets decreases, and it remains lit after loading.
+- [ ] **Death or storm.** At zero health, check The Fire Goes Out and the cause of death. After 75 in-game minutes without lighting the beacon, check The Storm Arrives. The summary offers restart and return to title. Death clears the run save but keeps camp notes.
 
-## 3. 存档与容错
+## 3. Saves and recovery
 
-- [ ] 运行存档与营地笔记分开存储（run 与 meta 两个 key）。
-- [ ] 手动破坏 run 存档的 JSON：标题页「继续游戏」置灰并显示「存档已损坏，已为你开始新的一局。」；有可用备份时显示「存档已损坏，已恢复到上一次成功的备份。」并可继续。
-- [ ] 把存档里的 `schemaVersion` 改成其他值：显示「存档版本不兼容…」，不崩溃。
-- [ ] `localStorage` 不可用（隐私模式或被禁用）：标题提示「无法访问本地存储，进度不会被保存。」，游戏仍可玩，保存按钮提示失败。
-- [ ] 静音开关保存在 `emberwood-torch:muted`，刷新后保持。
+- [ ] Run saves and camp notes use separate run and meta keys.
+- [ ] Corrupt the primary save JSON. With no usable backup, Continue Game is disabled and the title reports that a new run started. With a valid backup, it reports recovery and allows continuing.
+- [ ] Change `schemaVersion`. The game reports the version problem and keeps running.
+- [ ] Disable `localStorage`. The title says progress will not be saved. Gameplay continues, and saving reports failure.
+- [ ] Mute is stored in `emberwood-torch:muted` and survives a reload.
 
-## 4. 性能
+## 4. Performance
 
-- [ ] 粒子数量不超过 `particleBudget` 的结果（`balance.limits.maxParticles`，开启系统「减少动态效果」时为 `reducedMotionMaxParticles`）。
-- [ ] 1280×720 下帧率稳定在 55–60 FPS（夜晚火堆、雪、多个敌人同时存在时也一样）。
-- [ ] 连续运行一整个夜晚以上（可用性能面板记录堆内存）：内存无持续上涨；Phaser 对象数量稳定（敌人、掉落物、弹丸销毁后不残留）。
-- [ ] 返回标题再开始、点「重新开始」多次后，没有重复的监听器或纹理泄漏（控制台无「key already in use」）。
+- [ ] Particle count stays within `particleBudget`: `balance.limits.maxParticles` normally and `reducedMotionMaxParticles` under reduced motion.
+- [ ] At 1280×720, check for 55–60 FPS during nights with fire, snow, and several enemies.
+- [ ] Play for more than one full night and watch heap usage. Destroyed enemies, drops, and projectiles should leave no steady growth in the Phaser object count.
+- [ ] Repeatedly return to title and restart. Check for duplicate listeners, leaked textures, or “key already in use” errors.
 
-## 5. 容易卡住的地方
+## 5. Common failure points
 
-- [ ] **音频解锁**：首次点击/按键前不出声也不报错；首次手势后音效（采集、制作、受击、拾取、夜幕）可以播放；静音时完全无声。
-- [ ] **React StrictMode 双挂载**：开发模式下 Phaser 只留下一个画布，不出现两个游戏叠加；卸载时游戏被销毁。
-- [ ] **localStorage 不可用**：见第 3 节；读写异常被捕获，不影响主循环。
-- [ ] **dt 突变**：标签页从后台恢复或掉帧后，单帧时间被限制（场景最多 0.1 秒，核心再限制到 `maxStepSec`），不会瞬间掉光生命/饥饿。
-- [ ] **按键残留**：点击按钮后焦点被移除，空格/E 不会再触发按钮；暂停期间按下的键不会在恢复时重放。
-- [ ] **窗口缩放**：缩放窗口后相机缩放取整数倍，画面不模糊，镜头仍跟随英雄且不越出地图边界。
+- [ ] **Audio unlock.** No sound or errors before a user gesture. Gathering, crafting, hits, pickups, and nightfall sound after it. Muting silences all cues.
+- [ ] **React StrictMode.** The development build leaves one Phaser canvas after mounting and destroys the game on unmount.
+- [ ] **Storage exceptions.** Read and write failures should leave the main loop usable.
+- [ ] **Large frame delta.** Resuming a background tab or dropping frames caps delta to 0.1 seconds in the scene and `maxStepSec` in the core, preventing sudden loss of health or fullness.
+- [ ] **Stale input.** Clicking buttons removes focus so Space and E cannot retrigger them. Keys pressed while paused do not replay after resuming.
+- [ ] **Resize.** Integer camera scaling keeps pixels sharp. The camera follows the hero and stays within map bounds.
 
-## 6. 已知限制
+## 6. Original MVP limitations
 
-- 所有美术都是运行时生成的占位像素图（英雄、敌人、节点、掉落物、门、火盆、树木、地面），没有正式 Tiled 地图或手绘图集。
-- 所有音效都是 WebAudio 即时合成的占位短音，没有授权音频文件。
-- 「30 秒昼夜加速」开发开关未实现，需要按真实时长等待黄昏与夜晚（日 `daySec`、夜 `nightSec` 见 `balance.json`）。
-- 冰峡、山脊烽台、最终守卫、点燃烽台的胜利结局不在本 MVP 范围内。
-- 营火面板中不做「睡觉」操作，核心也没有睡觉事件；自动存档触发点为黄昏、天亮、区域切换、每次制作、营火升级以及标签页隐藏。
-- 不支持触屏移动与攻击虚拟按键；触摸可点击 HUD 快捷栏、面板按钮、暂停按钮与交互提示。
+- Art used runtime-generated placeholder sprites and terrain. The initial scope excluded a formal Tiled map and hand-drawn atlas.
+- Web Audio synthesized the placeholder sounds without bundled audio files.
+- The original 30-second development shortcut was pending. Day and night lengths use `daySec` and `nightSec` from `balance.json`.
+- The Ice Gorge, Ridge Beacon, final guardian, and beacon victory were outside the initial MVP.
+- The campfire panel had no sleep action. Autosave triggers were dusk, dawn, region changes, crafting, campfire upgrades, and hiding the tab.
+- The initial version supported touch on quick slots and buttons. Touch movement and attack controls were outside that scope.
 
-## 7. v3.2.0 生存模式美术回归
+## 7. v3.2.0 Survival art regression
 
-- [x] Chrome 在种子 2048 的草岸、岩岸和冰岸检测到对应贴图，并观察到水纹位移和冰沿。
-- [x] Chrome 用四种生长进度的存档验证小麦贴图，按 E 收获成熟小麦并看到掉落提示。
-- [x] Chrome 验证围栏直线、拐角、两种栅门朝向，打开东西向栅门后刷新页面保留开门状态。
-- [x] Chrome 验证暂停与恢复、模式菜单、背包、科技树、世界切换和矿脉下拉选择。
-- [ ] 在多个种子中实地巡查岸线转角。拆除邻接围栏后复核接缝，并实玩检查南北向栅门开关时的通行。
+- [x] In Chrome with seed 2048, checked grass, rock, and ice shoreline textures, animated water, and ice edges.
+- [x] Checked four growth states from saves. Harvested mature wheat with E and observed the drop notice.
+- [x] Checked fence lines, corners, and both gate orientations. Opened an east-west gate and verified it remained open after reload.
+- [x] Checked pause, resume, mode menu, inventory, technology tree, world switching, and vein selection.
+- [ ] Walk shoreline corners across several seeds. Inspect seams after removing a neighboring fence, and verify passage through a north-south gate.
 
-## 8. v3.2.0 家畜、矿物图标与树木
+## 8. v3.2.0 Livestock, mineral icons, and trees
 
-- [x] 分别喂母鸡和绵羊。Chrome 验证两种进食姿态、暂停冻结、恢复后继续播放，以及进食动作结束后回到站姿。
-- [x] Chrome 验证煤炭、石英、铜矿石、黏土、铁矿石、霜晶和岩盐各有独立的 12×12 图标，背包和地面绘制一致。
-- [x] Chrome 在种子 2048 中验证湿地、霜原和菌林的独立树木贴图，菌林测试点位于流式地图区域。
-- [ ] 完整走查喂食至产出鸡蛋或羊毛的周期，并在不同风速下检查三种树冠的摆动。
+- [x] Fed a hen and sheep. Verified both feeding poses, freezing on pause, continuing on resume, and returning to idle.
+- [x] Verified distinct 12×12 icons for Coal, Quartz, Copper Ore, Clay, Iron Ore, Frost Crystal, and Rock Salt, consistent in the inventory and on the ground.
+- [x] Verified separate wetland, tundra, and fungal forest tree sprites in seed 2048. The fungal forest test used streamed terrain.
+- [ ] Play through the full feeding-to-egg or wool cycle and inspect canopy sway at different wind speeds.
 
-## 9. 生存模式雨滴触地
+## 9. Survival rain impacts
 
-- [x] Chrome 用种子 2048 的雨天存档在同一视野内检测到水面涟漪、岩岸飞溅、草岸湿土和冰岸亮点。
-- [x] Chrome 验证暂停时落点冻结、恢复后继续出现。减少动态效果时绘制量下降，晴天重载时没有雨滴落点。
-- [ ] 实玩检查沿岸移动和夜间营火附近的触地效果。
+- [x] A rainy seed 2048 save showed water ripples, rock splashes, wet grass, and highlights on ice in the same viewport.
+- [x] Impacts froze on pause and resumed afterward. Reduced motion drew fewer impacts, and a clear-weather reload showed none.
+- [ ] Play along a shoreline and near the campfire at night to check the effects.
 
-## 10. 植物生长轮廓与围栏预览
+## 10. Plant growth and fence previews
 
-- [x] Chrome 用三种阶段的测试存档验证雪莓、冰沼芦苇和微光冻菌的九套轮廓。采摘后显示各自的幼态，存档中的阶段回到 0。
-- [x] Chrome 验证栅门横向和纵向预览不同，占用格显示阻挡预览且建造被拒绝。验证纵向栅门和相连围栏的建成贴图与各自的预览一致。
-- [ ] 实玩检查触屏预览及连续拖放建造，观察自然生长时的阶段切换。
+- [x] Three saved growth stages showed nine distinct silhouettes for Snowberry, Ice Bog Reed, and Frost Fungus. Harvesting restored seedling art and reset growth to 0 in the save.
+- [x] Horizontal and vertical gate previews differed. Occupied tiles showed a blocked preview and refused construction. Vertical gate and connected fence art matched their previews.
+- [ ] Playtest touch previews, drag-to-build, and natural growth transitions.
 
-## 11. 暮色预警、营地修缮与小地图地标
+## 11. Dusk warnings, camp repairs, and landmarks
 
-- [x] Chrome 走查黄昏和两波配置的夜袭时间，验证火苗变暗、首波倒计时、下一波提示和本夜无后续波次。玩家离开 18 格范围后，烽火台保护提示消失。单元测试覆盖单波和跳过的夜晚。
-- [x] Chrome 载入缺少新字段的旧档，验证井台可分批交付，刷新后恢复进度。交付完成后检查三处像素装饰和多余木材留在库存。
-- [x] Chrome 验证未修井台可手动补水，修好后持壶靠近即自动补满。营地床睡醒消耗 6 点饱食，营地鸡一次收取 3 枚蛋。
-- [x] Chrome 验证脚下标记、同格更新、选中目标、范围外箭头、方向与距离、删除后回到篝火营地指引，以及切换世界再返回时标记独立保存。
-- [x] Chrome 的 375 像素触屏模拟验证点按标记和地图控件布局，并复查冒险入口启动。`pnpm typecheck`、`pnpm fix`、`pnpm build` 和 64 项单元测试通过。
-- [ ] 用实际手机从白天采集到整夜防御，观察修缮材料的获取节奏和天黑返营时的指引可读性。
+- [x] Walked through dusk and a two-wave raid in Chrome. Checked dimming, countdown, next-wave notice, and the no-more-waves notice. Leaving the 18-tile range hid beacon protection. Unit tests cover one wave and skipped nights.
+- [x] Loaded a save without the new fields, contributed part of the well materials, and reloaded to verify progress. After completing the repairs, checked three decorations and that excess Wood stayed in inventory.
+- [x] Filled the can manually before repairs and automatically near the restored well. Sleeping in the camp bed consumed 6 fullness. The camp hen yielded 3 eggs.
+- [x] Placed and updated a landmark, selected it, checked direction and distance arrows outside the map range, deleted it to fall back to camp, and verified independent persistence after world switching.
+- [x] Chrome touch emulation at 375 px covered marker placement and map controls, and Adventure started. Type checks, formatting, build, and 64 unit tests passed in that round.
+- [ ] On a real phone, gather during daylight and defend through the night. Check the repair material curve and return-to-camp directions after dark.
 
-## 12. 生存模式跨版本读档、奇遇与天气
+## 12. Survival saves, encounters, and weather
 
-- [x] Chrome 实跑 `origin/v1` 归档写出旧布局存档，并加载缓存中的另一份旧布局存档（种子 1055306422）。两份磁盘格式均为 8。核对角色、库存、建筑、耕地和地面掉落。归档存档的新旧入口对比 50×32 格地形一致。
-- [x] 用种子 23456 生成世界版本 2 的复现档，通过当前正常入口载入，角色位置、库存和 50×32 格地形一致，奇遇列表为空。
-- [ ] 实际玩家世界版本 2 档及存档格式 1、2 的原件仍待取得。
-- [x] 种子 42 的 8 个模板覆盖补给、陷阱、伏击和治疗。触发后刷新可拾取留在地上的奖励，再刷新并重试时库存无新增、陷阱不再扣血、温泉不再回血。伏击怪受伤后刷新保持当前生命，击败后刷新不复生。另验证切换世界返回和天亮时仍保留存活伏击怪。
-- [x] 种子 3 自然转入白渊暴雪、种子 4 转入黑雾沉降，刷新后天气和转场继续。模拟加速用于到达转场前，转场与饱食采样使用浏览器正常帧。单次测试覆盖 `coldHungerPerSecond=1` 时暴雪中热源内外分别消耗 0.30 和 1.30 点/秒，黑雾内外及默认配置暴雪内外均为 0.30 点/秒。
-- [x] 复验截图在 [survival-retest-2026-11-27](../tmp-visual-audit/survival-retest-2026-11-27/) ，含伏击修复前后及 8 个奇遇。此前的 82 张截图均保留。
+- [x] Ran the `origin/v1` archive to create a legacy-layout save and loaded another cached legacy save with seed 1055306422. Both disk saves used format 8. Verified player, inventory, buildings, tilled ground, and dropped loot. The same archive save produced matching 50×32 terrain in both versions.
+- [x] Created a version 2 world fixture with seed 23456. Loaded it through the normal entry point and verified player position, inventory, and 50×32 terrain, with an empty encounter list.
+- [ ] Obtain original player saves for world version 2 and save formats 1 and 2.
+- [x] Seed 42 exercised eight templates covering caches, traps, ambushes, and healing. After a reload, loot could be collected from the ground. Retrying after another reload granted no new items, trap damage, or spring healing. Ambush health persisted on reload, defeated enemies stayed gone, and living ambushers persisted across world switching and dawn.
+- [x] Seed 3 entered White Abyss Blizzard and seed 4 entered Black Fog. Weather transitions survived reload. Time acceleration only approached the transition, while normal browser frames measured the transition and fullness. With `coldHungerPerSecond=1`, blizzard drain was 0.30 inside a heat source and 1.30 outside. Black Fog and the default blizzard both used 0.30 inside and outside.
+- [x] The [November 27 screenshots](../tmp-visual-audit/survival-retest-2026-11-27/) cover eight encounters and the ambush before and after the fix. The earlier 82 screenshots were retained.
 
-## 13. 生存模式三段冬日、袭营与营地设施
+## 13. Winter phases, raids, and camp defenses
 
-- [x] 单测覆盖跨天与寒潮配比、三段边界、种子排期、三级预警、波次预算、哨柱封锁角度、营地设施前置、防风降耗、自动添柴和一次性黎明收益。
-- [x] Chrome 在种子 42 的测试存档中跨入黄昏，时钟切换并出现返营提示。第 2 天的袭营在约 40、16、6 秒出现 HUD 和 Toast，进入长夜后生成 7 名敌人，保存刷新后恢复存活者。
-- [x] 通过营地界面添柴、依次建成六项四级设施，并在背包炼炭、制药、使用草药包。刷新后营地仍为 T4，燃料、产物和抗寒截止时间保留。
-- [x] 将剩余袭营者定位至拒马带并调至清场前的生命值，观察陷阱击退、黎明发放 5 份余烬尘。再次刷新库存仍为结算后的数量。
-- [x] Chrome 加载生产构建，在 390 像素宽视口显示 7 名袭营者和 T4 当前光环，无横向页面溢出。离线音频渲染覆盖黄昏和三级夜袭音效，三次预警的均方根振幅依次上升。
-- [x] 种子 42 从独立新档以正常键鼠输入采集、制作和守营，第 4 天建齐两项 T4 设施。逐夜燃耗和首次预警返营结果已写入平衡报告。
-- [ ] 手机扬声器上的风啸、低吼辨识度仍待实玩。
+- [x] Unit tests cover day rollover, cold fronts, three phases, seeded scheduling, three warnings, wave budgets, watch beacon angles, prerequisites, windbreak fuel savings, auto-feeding hearths, and one-time dawn rewards.
+- [x] A seed 42 save entered dusk in Chrome. The clock changed and the return-to-camp cue appeared. Day 2 warnings appeared around 40, 16, and 6 seconds. Seven enemies spawned after entering the long night, and surviving enemies restored after saving and reloading.
+- [x] Fueled the hearth and completed all six facilities across four tiers. Used the inventory to make charcoal and medicine and consume a Warming Herb Pouch. Tier 4, fuel, products, and cold resistance expiry persisted on reload.
+- [x] Moved remaining raiders onto the Stake Trap strip at just enough health for the finishing hit. Verified the trap repelled them and dawn awarded 5 Ember Dust. A reload kept the settled amount.
+- [x] The production build displayed seven raiders and the T4 aura at 390 px without horizontal page overflow. Offline audio rendering covered dusk and all three raid cues, which increased in RMS amplitude.
+- [x] From a fresh seed 42 save, used ordinary keyboard and mouse play to gather, craft, and defend. Both T4 facilities were complete by day 4. The balance report records overnight fuel use and the first return-to-camp warning.
+- [ ] Check that phone speakers distinguish wind howls and low growls during play.

@@ -30,7 +30,7 @@ export function beginRun(mode: StartMode): void {
   if (pending || uiStore.get().screen !== "title" || uiStore.get().error)
     return;
   try {
-    breadcrumb(`开始局次 ${mode}`);
+    breadcrumb(`Start the game ${mode}`);
     const { title } = uiStore.get();
     const selected = title.heroes.find(
       ({ definition }) => definition.id === title.selectedHeroId,
@@ -39,15 +39,20 @@ export function beginRun(mode: StartMode): void {
     pending = new RunSession(mode, selected?.definition.id);
     uiStore.set({ screen: "playing" });
     attachTimer = setTimeout(() => {
-      reportFailure("游戏画面未能启动，请返回标题后重试。");
+      reportFailure(
+        "The game image is not started. Please return to the title and try again.",
+      );
     }, SCENE_ATTACH_TIMEOUT_MS);
   } catch (error) {
     console.error(error);
-    reportFailure("无法开始游戏，请返回标题后重试。", error);
+    reportFailure(
+      "Can not start game. Please return the title and try again.",
+      error,
+    );
   }
 }
 
-/** Shows the Chinese error screen with a back-to-title button. */
+/** Shows the error screen with a return-to-title button. */
 export function reportFailure(message: string, error?: unknown): void {
   const report = captureDiagnostic(
     message,

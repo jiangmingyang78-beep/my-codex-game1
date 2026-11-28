@@ -59,15 +59,15 @@ export function refreshTitleInfo(): void {
 function unlockDescription(data: GameData, unlock: HeroUnlock): string {
   switch (unlock.type) {
     case "default":
-      return "默认解锁";
+      return "Available by default";
     case "boss_defeated":
-      return `击败${data.enemies.get(unlock.enemyId)?.name ?? unlock.enemyId}`;
+      return `Defeat ${data.enemies.get(unlock.enemyId)?.name ?? unlock.enemyId}`;
     case "consumables_crafted":
-      return `累计制作 ${unlock.count} 次食物、药品或消耗品`;
+      return `Craft food, medicine, or consumables ${unlock.count} times`;
     case "kills":
-      return `累计击败 ${unlock.count} 只怪物`;
+      return `Defeat ${unlock.count} enemies`;
     case "camp_notes":
-      return `收集 ${unlock.count} 条营地笔记`;
+      return `Collect ${unlock.count} camp notes`;
   }
 }
 

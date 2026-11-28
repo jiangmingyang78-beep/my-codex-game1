@@ -10,7 +10,7 @@ export interface HudEquipmentItem {
   id: string;
   name: string;
   description: string;
-  /** null 表示常驻生效，0 表示就绪，正数表示剩余冷却秒数。 */
+  /** / Express permanent entry into force, 0 sign in place, positive sign in remaining cooling seconds. */
   cooldownSec: number | null;
   maxCooldownSec: number | null;
 }
@@ -26,7 +26,7 @@ export interface HudModel {
   phase: "day" | "night";
   day: number;
   clock: string;
-  /** e.g. "第2夜" or "第2天". */
+  /** "Two nights" by "two days" */
   dayLabel: string;
   stormRemainingSec: number;
   campLevel: number;
@@ -85,7 +85,7 @@ export function buildHudModel(state: RunState, sys: Systems): HudModel {
     phase: state.phase,
     day: state.day,
     clock: clockLabel(state.elapsedSec, balance),
-    dayLabel: night ? `第${state.day}夜` : `第${state.day}天`,
+    dayLabel: night ? `No. No${state.day}Night` : `No. No${state.day}days`,
     stormRemainingSec: remainingSec(state.elapsedSec, balance),
     campLevel: state.campLevel,
     sealText: `${countBeaconSeals(state)}/${BEACON_SEAL_IDS.length}`,

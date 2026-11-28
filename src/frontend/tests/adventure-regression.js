@@ -1,4 +1,4 @@
-// 在独立的 Playwright CLI 会话中用 run-code --filename 运行。
+// Runs with a ni-de-de-dename in an independent wright Cli session.
 async (page) => {
   const check = (condition, label) => {
     if (!condition) throw new Error(label);
@@ -6,14 +6,14 @@ async (page) => {
   const key = async (name) => {
     const action = { Space: "attack", e: "interact", Escape: "pause" }[name];
     if (action === "interact") {
-      // 等战斗停顿结束，避免一次性的交互边沿被跳过逻辑步的画面帧消耗。
+      // When the fighting stops, one-time interactive sides are avoided from being consumed by frames that skip logic steps. —.
       const beforeStep = await page.evaluate(() => window.adventureQA.steps);
       await page.waitForFunction((step) => window.adventureQA.steps > step, beforeStep);
     }
     const before = await page.evaluate((action) => window.adventureQA.inputCounts[action], action);
     await page.keyboard.down(name);
     try {
-      // 软件渲染器的单帧可能超过 90 ms，收到游戏输入确认后再松开。
+      // The software reagent may have a single frame exceeding 90 ms, which is unwinded after receiving a game input confirmation.__.
       await page.waitForFunction(
         ({ action, before }) => window.adventureQA.inputCounts[action] > before,
         { action, before },
@@ -86,7 +86,7 @@ async (page) => {
     );
   const toTitle = async () => {
     await key("Escape");
-    await button("返回标题").click();
+    await button("Return to title").click();
     await page.locator('[data-ocid="title.adventure_button"]').click();
     await start().waitFor();
     await resetProbe();
@@ -115,16 +115,16 @@ async (page) => {
     }, target);
   await page.goto("http://127.0.0.1:4179/");
   await page.setViewportSize({ width: 1280, height: 720 });
-  await page.getByRole("heading", { name: "余烬林：最后一炬" }).waitFor({ timeout: 30000 });
+  await page.getByRole("heading", { name: "Emberwood: Last Torch" }).waitFor({ timeout: 30000 });
   await page.locator('[data-ocid="title.adventure_button"]').click();
     await start().waitFor();
-  check(await resume().isDisabled(), "请在新的 Playwright 浏览器会话运行");
+  check(await resume().isDisabled(), "Please run the new wright browser session");
   await installProbe();
-  check((await page.getByRole("button", { name: /已解锁|未解锁/ }).count()) === 5, "five title cards");
-  await page.getByRole("button", { name: /格雷/ }).click();
+  check((await page.getByRole("button", { name: /Unlocked|Locked/ }).count()) === 5, "five title cards");
+  await page.getByRole("button", { name: /Gale/ }).click();
   check(await start().isDisabled(), "locked new game");
-  await page.getByText(/解锁条件.*旧磨坊督工/).waitFor();
-  await page.getByRole("button", { name: /凛/ }).click();
+  await page.getByText(/Unlock requirement.*Old Mill Overseer/).waitFor();
+  await page.getByRole("button", { name: /Lin/ }).click();
   await start().click();
   await start().waitFor({ state: "detached" });
   await waitRun("lin_tinder");
@@ -145,7 +145,7 @@ async (page) => {
     Object.assign(state.hero, { x: x - 15, y, facingX: 1, facingY: 0, attackCooldownSec: 0 });
   });
   await key("Space");
-  await toast("冻木盾格挡");
+  await toast("Frost Shield blocked");
   check(
     await page.evaluate(() => {
       const q = window.adventureQA;
@@ -172,10 +172,10 @@ async (page) => {
     });
   });
   await key("Space");
-  await toast("格雷");
+  await toast("Gale");
   await page.waitForFunction(() => window.adventureQA.session.state.seals.includes("old_mill_ember_seal"));
   await toTitle();
-  await page.getByRole("button", { name: /格雷/ }).click();
+  await page.getByRole("button", { name: /Gale/ }).click();
   check(await start().isEnabled(), "Gale unlocked from normal boss hit");
   await start().click();
   await waitRun("gale_smith");
@@ -211,7 +211,7 @@ async (page) => {
   await page.locator('[data-ocid="title.adventure_button"]').click();
     await start().waitFor();
   await installProbe();
-  await page.getByRole("button", { name: /格雷/ }).click();
+  await page.getByRole("button", { name: /Gale/ }).click();
   await resume().click();
   await waitRun("lin_tinder");
   check(
@@ -227,7 +227,7 @@ async (page) => {
     "continues the v2 hero, pack, seal and gate",
   );
   await key("Escape");
-  await button("保存进度").click();
+  await button("Save progress").click();
   check(
     await page.evaluate(() => {
       const { runKey, runBackupKey } = window.adventureQA.session.sys.data.balance.storage;
@@ -250,10 +250,10 @@ async (page) => {
   await page.keyboard.down("d");
   await page.waitForFunction(()=>window.adventureQA.session.state.regionId==="deep_woods");
   await page.keyboard.up("d");
-  await toast("进入：幽暗冻沼");
+  await toast("Entered: Shadowed Frost Bog");
   await teleport({ node: "herb", region: "deep_woods" });
   await key("e");
-  await toast("雪地草药");
+  await toast("Snow Herb");
   await page.evaluate(() => {
     const { state, sys } = window.adventureQA.session;
     state.elapsedSec = sys.data.balance.clock.daySec - 0.01;
@@ -265,14 +265,14 @@ async (page) => {
   await page.keyboard.down("d");
   await page.waitForFunction(() => window.adventureQA.session.state.regionId === "frost_ridge");
   await page.keyboard.up("d");
-  await toast("进入：霜冻古道");
+  await toast("Entered: Frost Ridge Trail");
   await teleport({ node: "ore", region: "ice_gorge" });
   await key("e");
-  await toast("铁矿");
+  await toast("Iron Ore");
   await teleport({ id: "final_beacon", dx: -16 });
-  await page.getByText("E 点燃山脊烽台（需 2 枚炉印）", { exact: true }).waitFor();
+  await page.getByText("E Light the Ridge Beacon (requires 2 Ember Seals)", { exact: true }).waitFor();
   await key("e");
-  await toast("需要先取得所需的炉印");
+  await toast("Recover the required Ember Seals first");
   await page.evaluate(() => {
     const { state } = window.adventureQA.session;
     const boss = state.enemiesById.ridge_warden;
@@ -295,18 +295,18 @@ async (page) => {
     Object.assign(state.hero, { x: boss.x - 16, y: boss.y, facingX: 1, facingY: 0, attackCooldownSec: 0 });
   });
   await key("Space");
-  await page.getByText(/目标：前往山脊东端，点燃烽台/).waitFor();
-  await toast("艾尔文");
+  await page.getByText(/Objective: Reach the east end of the ridge and light the beacon/).waitFor();
+  await toast("Alvin");
   check(
     await page.evaluate(() => window.adventureQA.session.state.inventory.ember_seal === 3),
     "legacy seal still present",
   );
   await teleport({ id: "final_beacon", dx: -16 });
   await key("e");
-  const won = page.getByRole("heading", { name: "烽火重燃" });
+  const won = page.getByRole("heading", { name: "The Beacon Rekindled" });
   await won.waitFor();
   check(await won.evaluate((el) => el.classList.contains("text-ember")), "warm win heading");
-  await page.getByText(/火光越过霜渊/).waitFor();
+  await page.getByText(/The firelight crossed the Frost Abyss/).waitFor();
   check(
     await page.evaluate(() => {
       const { events, session } = window.adventureQA;
@@ -319,5 +319,5 @@ async (page) => {
     "win settled once and unlocks camp note",
   );
   check(errors.length === 0, "page errors: " + errors.join(", "));
-  return "通过：标题选人、贴图与初始背包、护盾格挡、v2/v4 存档、两区采集与夜袭、双炉印、爆炸特效和胜利页";
+  return "Passed: hero selection, sprites and starting inventory, shield block, v2/v4 saves, gathering and raids in two regions, both Ember Seals, explosion effects, and victory.";
 }

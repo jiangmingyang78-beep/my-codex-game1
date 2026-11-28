@@ -13,23 +13,27 @@ function promptText(
 ): string | null {
   switch (kind) {
     case "campfire":
-      return "E 营火：制作与升级";
+      return "E Campfire: craft and upgrade";
     case "node":
-      return `E 采集${itemName(sys.data, itemId ?? "")}`;
+      return `E Collect${itemName(sys.data, itemId ?? "")}`;
     case "gate":
-      return state.changesByObjectId[id]?.opened ? null : "E 推开大门";
+      return state.changesByObjectId[id]?.opened ? null : "E Open the gate";
     case "beacon":
-      return "E 点燃山脊烽台（需 2 枚炉印）";
+      return "E Light the Ridge Beacon (requires 2 Ember Seals)";
     case "relay_socket":
       return state.changesByObjectId[id]?.lit
         ? null
-        : "E 点燃火站（需要接力火盆）";
+        : "E Light the fire station (requires a Relay Brazier)";
     case "story_prop":
-      return "E 查看遗物";
+      return "E Inspect the relic";
     case "explosive_barrel":
-      return state.changesByObjectId[id]?.opened ? null : "E / 攻击 引爆松脂桶";
+      return state.changesByObjectId[id]?.opened
+        ? null
+        : "E / Attack Detonate the resin barrel";
     case "mirror_lamp":
-      return state.changesByObjectId[id]?.lit ? null : "E 点亮折镜铜灯";
+      return state.changesByObjectId[id]?.lit
+        ? null
+        : "E Light the brass mirror lamp";
     default:
       return null;
   }

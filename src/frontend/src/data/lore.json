@@ -1,43 +1,43 @@
 {
-  "worldTagline": "雪夜生存 · 守住最后的火光",
+  "worldTagline": "Survive the snowy night · Keep the last torch lit",
   "regionToasts": {
-    "camp_edge": "雪压松枝，营火还在身后。",
-    "frozen_brook": "冻溪冰面脆响，岸边浅滩已化作阴冷冻沼。",
-    "burnt_caravan": "焦黑的车辙没入积雪，空气里残着松脂焦味。",
-    "old_mill": "磨轮早已停转，屋里还传来铁器拖地的声音。",
-    "deep_woods": "风进了密林便低下来，枝叶间有脚步声。",
-    "herbalist_hollow": "枯松围拢的药谷雾气低垂，石臼旁仍有余香。",
-    "ice_gorge": "峡风挟着碎冰从脚边擦过。",
-    "blackened_outpost": "被涂黑的哨卡静默无声，暗处微光游移。",
-    "frost_ridge": "树线断在脚下，再往东便是旧烽台。",
-    "beacon": "石台上的积雪，盖住了历代守火人的刻痕。"
+    "camp_edge": "Snow weighs down the pines. The campfire still burns behind you.",
+    "frozen_brook": "Ice cracks along the frozen brook. The shallows have become a cold bog.",
+    "burnt_caravan": "Charred ruts disappear into the snow. Burnt resin still hangs in the air.",
+    "old_mill": "The millwheel has long since stopped, yet iron still scrapes across the floor inside.",
+    "deep_woods": "The wind falls quiet in the deep woods. Footsteps sound between the branches.",
+    "herbalist_hollow": "Low mist gathers beneath the dead pines. The stone mortar still smells of herbs.",
+    "ice_gorge": "The gorge wind skitters shards of ice past your feet.",
+    "blackened_outpost": "The blackened outpost stands silent. A faint light moves in the dark.",
+    "frost_ridge": "The tree line ends at your feet. The old beacon lies farther east.",
+    "beacon": "Snow hides generations of firekeepers' marks on the stone platform."
   },
   "campNotes": {
     "first_ember_seal": {
-      "title": "炉印的余温",
-      "body": "磨坊蛛吐丝前会停下蓄势，横移一步即可躲开。炉印握在手里，仍带着火的温度。"
+      "title": "The Ember Seal's Warmth",
+      "body": "The Mill Spider pauses before firing its silk. One step sideways is enough to dodge it. The Ember Seal still feels warm in my hand."
     },
     "ember_dust_note": {
-      "title": "雪地里的余烬",
-      "body": "余烬尘落在雪上许久也没有变冷。素蘅说，循着它能找到旧巡火道。"
+      "title": "Embers in the Snow",
+      "body": "The Ember Dust stayed warm long after it landed in the snow. Suheng says we can follow it to the old fire patrol route."
     },
     "beacon_restored": {
-      "title": "烽台重燃",
-      "body": "烽台的火光越过雪岭。山脚下，一户接一户亮起了灯。"
+      "title": "The Beacon Relit",
+      "body": "The beacon's light crossed the snowy ridge. At the foot of the mountain, one house after another lit its lamps."
     }
   },
   "endings": {
     "dead": {
-      "title": "火光熄灭",
-      "epilogue": "雪掩去了来路，未寄出的营地笔记仍留在火旁。"
+      "title": "The Fire Goes Out",
+      "epilogue": "Snow covered the path home. The unsent camp notes remained by the fire."
     },
     "storm_lost": {
-      "title": "风暴降临",
-      "epilogue": "风雪盖住了沉默的烽台。山下的人把最后一盏灯留在窗前。"
+      "title": "The Storm Arrives",
+      "epilogue": "The storm buried the silent beacon. The people below left one last lamp in the window."
     },
     "won": {
-      "title": "烽火重燃",
-      "epilogue": "两枚炉印在石台中相合，火光越过霜渊。等候了一夜的人们推开门，看见回家的方向。"
+      "title": "The Beacon Rekindled",
+      "epilogue": "The two Ember Seals joined in the stone platform. The firelight crossed the Frost Abyss. Those who had waited all night opened their doors and saw the way home."
     }
   }
 }

@@ -11,7 +11,7 @@ export async function api(route: string, payload?: unknown) {
       : { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) },
   );
   const data = await r.json();
-  if (!r.ok) throw Error(data.error ?? "服务请求失败");
+  if (!r.ok) throw Error(data.error ?? "Service request failed");
   return data;
 }
 export function actions(s: Session) {
@@ -19,7 +19,7 @@ export function actions(s: Session) {
   const dialog = document.querySelector<HTMLDialogElement>("#review")!,
     content = id("reviewBody"),
     foot = id("reviewFoot");
-  const close = button("关闭", () => dialog.close());
+  const close = button("Close", () => dialog.close());
   let busy = false;
   dialog.oncancel = (e) => {
     if (busy) e.preventDefault();
@@ -43,26 +43,26 @@ export function actions(s: Session) {
     materials: string[];
     summary: string;
   }) {
-    modal("数值体检结果");
-    const warn = result.alerts.filter((a) => /严重|警告/.test(a.sev));
-    content.append(el("h3", "异常告警 · " + warn.length));
+    modal("Balance check results");
+    const warn = result.alerts.filter((a) => /Critical|Warning/.test(a.sev));
+    content.append(el("h3", "Alerts  ·  " + warn.length));
     warn.forEach((a) => content.append(el("p", a.target + " · " + a.detail, "warning")));
-    content.append(el("h3", "徒手 TTK 最长的 5 只怪物"));
-    result.ttkRisks.forEach((e) => content.append(el("p", e.name + " · " + e.seconds.toFixed(2) + " 秒")));
-    content.append(el("h3", "材料供需"));
+    content.append(el("h3", "Five longest unarmed kill times"));
+    result.ttkRisks.forEach((e) => content.append(el("p", e.name + " · " + e.seconds.toFixed(2) + " s")));
+    content.append(el("h3", "Material supply and demand"));
     result.materials.forEach((m) => content.append(el("p", m, m.includes("⚠") ? "warning" : "")));
     const d = el("details");
-    d.append(el("summary", "完整摘要"), el("pre", result.summary));
+    d.append(el("summary", "Full summary"), el("pre", result.summary));
     content.append(d);
   }
   function review(check: boolean) {
-    modal(check ? "保存并运行数值体检" : "查看 Diff 并保存");
+    modal(check ? "Save and check balance" : "Review diff and save");
     const changes = s.store.changes(),
       errors = validate();
     content.append(
       el(
         "p",
-        errors.length ? "发现 " + errors.length + " 项校验错误" : "校验通过 · " + changes.length + " 处改动",
+        errors.length ? "Found " + errors.length + " validation issues" : "Validation passed  ·  " + changes.length + " Changes",
         errors.length ? "danger" : "pass",
       ),
     );
@@ -86,32 +86,32 @@ export function actions(s: Session) {
         content.append(r);
       }
     }
-    const save = button(check ? "确认保存并体检" : "确认保存", async () => {
+    const save = button(check ? "Confirm save and check balance" : "Confirm save", async () => {
       busy = true;
-      modal("正在写入");
-      content.textContent = "正在核对磁盘基准…";
+      modal("Writing");
+      content.textContent = "Checking the files on disk";
       try {
         const pending = new Set(changes.map((d) => d.file));
         while (pending.size) {
           const file = [...pending].find(
             (k) => !validateDraft({ ...s.store.baseline, [k]: s.store.draft[k] }, s.store.baseline, s.base).length,
           );
-          if (!file) throw Error("跨文件引用无法分步写入，请拆分本次修改。");
+          if (!file) throw Error("These cross-file changes cannot be written in a valid order. Split the edit.");
           pending.delete(file);
           const data = s.store.draft[file];
           await api("save", { file, data, baseline: s.store.baseline[file] });
           s.store.accept(file, data);
         }
         if (check) {
-          content.textContent = "正在运行数值体检…";
+          content.textContent = "Checking balance";
           showReport(await api("balance-check", {}));
         } else {
-          modal("保存完成");
-          content.textContent = "所有改动已写入磁盘。";
+          modal("Save complete");
+          content.textContent = "All changes are written to disk.";
         }
       } catch (e) {
-        modal("操作中断");
-        content.append(el("p", String(e), "danger"), el("p", "已写入的文件已更新基准，其余改动仍保留在草稿中。"));
+        modal("Operation aborted");
+        content.append(el("p", String(e), "danger"), el("p", "Saved files now form the baseline. Remaining changes are still in the draft."));
       } finally {
         busy = false;
         close.disabled = false;
@@ -131,7 +131,7 @@ export function actions(s: Session) {
   id("btnPresetOut").onclick = () => {
     const a = el("a");
     a.href = URL.createObjectURL(new Blob([s.store.preset()], { type: "application/json" }));
-    a.download = "余烬林-调参预设.json";
+    a.download = "emberwood-map-preset.json";
     a.click();
     setTimeout(() => URL.revokeObjectURL(a.href), 1000);
   };
@@ -141,7 +141,7 @@ export function actions(s: Session) {
     try {
       const file = picker.files?.[0];
       if (!file) return;
-      if (file.size > 2e6) throw Error("预设过大");
+      if (file.size > 2e6) throw Error("The preset file exceeds 2 MB");
       const raw = JSON.parse(await file.text());
       if (
         raw?.version !== 1 ||
@@ -149,15 +149,15 @@ export function actions(s: Session) {
         Object.keys(raw.files).length !== files.length ||
         !files.every((f) => Object.hasOwn(raw.files, f))
       )
-        throw Error("预设文件表或版本无效");
+        throw Error("Invalid preset file table or version");
       const draft = raw.files as Draft,
         errors = validateDraft(draft, s.store.baseline, s.base);
       if (errors.length) {
-        modal("预设校验失败");
+        modal("Could not import the preset");
         issueList(errors);
       } else s.store.replace(draft);
     } catch (e) {
-      modal("无法导入预设");
+      modal("Could not import the preset");
       content.append(el("p", String(e), "danger"));
     } finally {
       picker.value = "";
@@ -173,7 +173,7 @@ export function actions(s: Session) {
       ["Redo", s.store.history.redoCount],
     ] as const) {
       const b = id("btn" + key) as HTMLButtonElement;
-      b.textContent = (key === "Undo" ? "撤销" : "重做") + " " + count;
+      b.textContent = (key === "Undo" ? "Undo" : "Redo") + " " + count;
       b.disabled = count === 0;
     }
     const area = id("validation");
@@ -185,7 +185,7 @@ export function actions(s: Session) {
         errors.some((i) => JSON.stringify([i.file, ...i.path]) === r.dataset.field),
       );
     });
-    id("diskState").textContent = n ? "草稿 · " + n + " 处改动" : "已与磁盘同步";
+    id("diskState").textContent = n ? "Draft  ·  " + n + " Changes" : "Synced with disk";
   };
   window.addEventListener("beforeunload", (e) => {
     if (s.store.changes().length) {

@@ -11,7 +11,7 @@ let activeManager: ToastManager | null = null;
 let activeTextures: Phaser.Textures.TextureManager | null = null;
 const pending: QueuedCall[] = [];
 
-/** 优先匹配项目现有程序化纹理（采集点纹理 -> 地面掉落物纹理），不存在时返回 null 触发静默回退。 */
+/** Priority matches the existing program-based texture (take point texture - > ground fall texture) which returns when not available to / / / triggers a silent retreat. / / / / ///. */
 export function resolveItemIconKey(
   itemId: string,
   textures: Phaser.Textures.TextureManager | null,
@@ -26,7 +26,7 @@ export function resolveItemIconKey(
   return null;
 }
 
-/** 绑定当前活跃场景的 ToastManager，并冲刷场景启动期间暂存的提示。 */
+/** ToastManager, which binds the current active scene, and swipes the hints that are stored during the start-up of the scene. */
 export function attachToastManager(
   manager: ToastManager,
   textures: Phaser.Textures.TextureManager,
@@ -39,14 +39,14 @@ export function attachToastManager(
   }
 }
 
-/** 场景销毁时解除绑定，防止跨场景引用泄漏。 */
+/** The scene was removed from the chain when it was destroyed to prevent cross-site references. */
 export function detachToastManager(manager: ToastManager): void {
   if (activeManager !== manager) return;
   activeManager = null;
   activeTextures = null;
 }
 
-/** 判断 Phaser 侧 ToastManager 是否已挂载就绪。 */
+/** Determines whether the harr side of ToastManager is mounted. */
 export function hasToastManager(): boolean {
   return activeManager !== null;
 }
@@ -64,7 +64,7 @@ function dispatch(fn: QueuedCall): void {
   if (pending.length > 16) pending.shift();
 }
 
-/** 供场景、会话事件与 React 命令层统一调用的轻提示门面。 */
+/** A light-point door for the same scene, session events and React command level. */
 export const toast = {
   loot(
     itemId: string,
@@ -98,7 +98,7 @@ export const toast = {
       mgr.gain(label, key);
     });
   },
-  /** 兼容旧版通用签名 (text, tone)。 */
+  /** Compatibility with old versions of common signatures (tern, ts). */
   show(label: string, tone: "info" | "good" | "warn" | "error" = "info"): void {
     dispatch((mgr) => {
       mgr.show(label, tone);

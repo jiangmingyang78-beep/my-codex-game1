@@ -32,13 +32,13 @@ export function buildEternalHud(
     bossWave: rt.bossWaveCount,
     loadoutMode: rt.loadoutMode,
     pendingPicks: rt.pendingPicks,
-    clockText: `永恒试炼 · 存活 ${formatClock(rt.combatElapsedSec)} · 击杀 ${rt.kills}`,
+    clockText: `Eternal trial... survival ${formatClock(rt.combatElapsedSec)}  ·  Sniping ${rt.kills}`,
     threatText: prep
-      ? "黑雾正在聚拢"
-      : `威胁 ${tier} 阶 · 怪物血量 ×${hpScale.toFixed(2)}`,
+      ? "The black fog is gathering"
+      : `Threat ${tier} The blood of the monster is ×${hpScale.toFixed(2)}`,
     objective: prep
-      ? `准备阶段：自选装备 ${prepLeft}s`
-      : `坚守余烬 · 首领倒计时 ${formatClock(bossIn)}`,
+      ? `Preparation phase: Self-selected equipment ${prepLeft}s`
+      : `Hold on to the rest of the body... the chief's countdown ${formatClock(bossIn)}`,
     options: loadoutOptions(state, sys),
     weaponQuota: quotas.weapon,
     gearQuota: quotas.gear,

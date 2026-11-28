@@ -151,7 +151,8 @@ export function devSimulateHit(
   if (!applied && isDevGodMode(state)) {
     events.push(
       makeEvent(EVT.notice, state.hero.x, state.hero.y, {
-        message: "无敌模式已开启，已免疫模拟受击",
+        message:
+          "Invincible patterns have been activated and immune simulations have been hit",
       }),
     );
   }

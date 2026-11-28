@@ -1,7 +1,7 @@
 /**
- * 将 assets/portraits-backup/ 下的原始英雄半身像缩至 512×512 Lanczos PNG，
- * 输出至 src/frontend/public/assets/portraits/。
- * 运行方式：node tools/process-hero-portraits.mjs
+ * Resize the original hero portraits in assets/portraits-backup/ to 512×512
+ * Lanczos PNGs in src/frontend/public/assets/portraits/.
+ * Run with node tools/process-hero-portraits.mjs.
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -40,7 +40,7 @@ for (const heroId of HERO_IDS) {
   if (w !== h) {
     const side = Math.min(w, h);
     const left = Math.floor((w - side) / 2);
-    // 非正方形时优先保留头部与上半身（顶部偏上裁剪）
+    // Prefer to the head and upper body (tops are trimmed in the opposite direction) when non-correction is not the norm)
     const top = Math.min(h - side, Math.floor((h - side) * 0.15));
     pipeline = pipeline.extract({ left, top, width: side, height: side });
   }

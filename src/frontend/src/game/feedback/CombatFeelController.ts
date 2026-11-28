@@ -177,7 +177,7 @@ export class CombatFeelController {
         this.triggerHitstop(hitstop.killMs);
       } else if (ev.type === EVT.blocked) {
         if (!hasBucklerRiposte) {
-          this.spawnFloatingNumber(px, py - 12, "格挡", "block");
+          this.spawnFloatingNumber(px, py - 12, "Block", "block");
         }
       } else if (
         ev.type === EVT.campLit &&
@@ -189,14 +189,16 @@ export class CombatFeelController {
         this.heroFlashLeftMs = 110;
         this.heroFlashColor = 0xffd43b;
         const label =
-          ev.payload.trigger === "buckler_block" ? "格挡!" : "闪避!";
+          ev.payload.trigger === "buckler_block"
+            ? "Block"
+            : "Get out of the way";
         this.spawnFloatingNumber(px, py - 14, label, "crit");
       } else if (ev.type === EVT.COMBAT_RIPOSTE_STRIKE) {
         this.triggerHitstop(65, true);
         this.shake(shake.kill);
         const light = Math.round(Number(ev.payload.lightRestored) || 0);
         if (light > 0) {
-          this.spawnFloatingNumber(px, py - 12, `+${light} 火`, "heal");
+          this.spawnFloatingNumber(px, py - 12, `+${light} Fire`, "heal");
         }
       }
     }

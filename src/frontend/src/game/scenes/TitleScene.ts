@@ -26,7 +26,7 @@ export class TitleScene extends Phaser.Scene {
   }
 
   create(): void {
-    breadcrumb(`场景 ${SCENE.title}`);
+    breadcrumb(`Scene ${SCENE.title}`);
     this.starting = false;
     this.rules = getSystems();
     this.run = createRun({ systems: this.rules });
@@ -68,7 +68,10 @@ export class TitleScene extends Phaser.Scene {
         this.scene.start(SCENE.game, { fromTitle: true });
       } catch (error) {
         console.error(error);
-        reportFailure("游戏场景启动失败，请返回标题后重试。", error);
+        reportFailure(
+          "Playground is starting unsuccessfully. Please return the title and try again.",
+          error,
+        );
       }
       return;
     }

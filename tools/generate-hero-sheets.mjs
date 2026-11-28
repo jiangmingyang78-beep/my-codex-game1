@@ -1,6 +1,6 @@
 /**
- * 批量生成 5 位英雄《光明旅者》极简无五官剪影风 128×128（4×4×32）精灵表。
- * 用法：node tools/generate-hero-sheets.mjs [--preview <dir>]
+ * The batch produces five heroes, The Light Travelers, with a very simple five-man clipping of urn urn urn ur and 128 (4 x 4 x 3 x 3) : : : :.
+ * Usage: nodezi/geneate-hero-yeks.mjs. — [--preview <dir>]
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -31,7 +31,7 @@ function parsePreviewDir(argv) {
   return idx >= 0 && argv[idx + 1] ? path.resolve(argv[idx + 1]) : null;
 }
 
-/** 校验单帧脚底基线（y = 27）与水平质心（16 ± 3）。 */
+/** Verify the base of the single frame foot baseline (y = 27) and the horizontal heart (16 ± 3)). */
 function assertFrameMetrics(id, frame, layer) {
   let maxY = -1;
   let sumX = 0;
@@ -46,19 +46,19 @@ function assertFrameMetrics(id, frame, layer) {
       }
     }
   }
-  if (count === 0) throw new Error(`${id} frame ${frame}: 帧内容为空`);
+  if (count === 0) throw new Error(`${id} frame ${frame}: Frame content is empty`);
   if (maxY !== 27) {
-    throw new Error(`${id} frame ${frame}: 最低不透明行是 ${maxY}，预期为 27`);
+    throw new Error(`${id} frame ${frame}: Minimum opaque lines ${maxY}, Expected to be 27`);
   }
   const centroidX = sumX / count;
   if (centroidX < 13 || centroidX > 19) {
     throw new Error(
-      `${id} frame ${frame}: 水平质心 ${centroidX.toFixed(2)} 超出 16±3 范围`,
+      `${id} frame ${frame}: Horizontal heart ${centroidX.toFixed(2)} Beyond 16 3`,
     );
   }
 }
 
-/** 校验第 0 帧身体身高与整表 RGB 色数上限（≤ 5）。 */
+/** Verify the upper limit of the body height and whole table RGB colour number of frame 0 (*5)). */
 function assertSheetMetrics(spec, frame0Body, sheetBuf) {
   let minY = CELL;
   let maxY = -1;
@@ -73,7 +73,7 @@ function assertSheetMetrics(spec, frame0Body, sheetBuf) {
   const bodyHeight = maxY - minY + 1;
   if (Math.abs(bodyHeight - spec.height) > 1) {
     throw new Error(
-      `${spec.id} frame 0: 身高 ${bodyHeight}px 与目标 ${spec.height}±1 不符`,
+      `${spec.id} Height ${bodyHeight}px with target ${spec.height}~1 does not match`,
     );
   }
 
@@ -83,7 +83,7 @@ function assertSheetMetrics(spec, frame0Body, sheetBuf) {
     rgbSet.add(`${sheetBuf[i]},${sheetBuf[i + 1]},${sheetBuf[i + 2]}`);
   }
   if (rgbSet.size > 5) {
-    throw new Error(`${spec.id}: RGB 色数为 ${rgbSet.size}，超过 5 色上限`);
+    throw new Error(`${spec.id}: RGB colour is ${rgbSet.size}, Over 5 colour caps`);
   }
   return { bodyHeight, colors: rgbSet.size };
 }

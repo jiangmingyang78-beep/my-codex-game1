@@ -66,7 +66,7 @@ export class RunSession {
   readonly meta: MetaState;
   /** Eternal Mode is a single-run mode: it never reads or writes the adventure save. */
   readonly eternal: boolean;
-  /** Chinese notice from loading (corrupt save, storage unavailable), shown once in game. */
+  /** One-time player notice for a corrupt save or unavailable storage. */
   readonly startNotice: string | null;
   enemiesDefeated = 0;
   lastCause: string | null = null;

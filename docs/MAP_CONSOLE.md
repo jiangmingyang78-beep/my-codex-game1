@@ -1,77 +1,77 @@
-# 余烬林 · 地图与数值控制台
+# Emberwood Map and Balance Console
 
-在仓库根目录运行 `pnpm map`，打开终端显示的本机地址。地图工具和主游戏各自启动，只有地图工具的 Vite 开发服务提供写回接口。主游戏仍是纯前端，玩家存档继续使用 localStorage。
+From the repository root, run `pnpm map` and open the local address printed in the terminal. The map tool and the game start separately. Only the map tool's Vite development server exposes file writeback. The game remains client-side and stores player saves in `localStorage`.
 
-## 操作
+## Controls
 
-- 冒险地图使用主游戏生成器。按 1 选择、2 放物资、3 放常驻怪物、4 拖动点位、5 删除。滚轮以鼠标为中心缩放，双击居中，中键拖拽或 WASD 平移。阻挡格显示红框。
-- 在点位下拉框选中对象可定位。选中怪物后切换到怪物调优，滑动时即可观察指标和画布，松开滑块记一步。首领可切换预览阶段。英雄调优在出生位置显示攻击扇形及三级营火半径。
-- Ctrl+Z 撤销，Ctrl+Y 或 Ctrl+Shift+Z 重做，历史最多 50 步。预设包含八份配置，导入前检查版本、结构、外键与点位。物品表作为只读字典。
-- 「查看 Diff 并保存」按文件展示路径、基准和草稿，点击 ↺ 可撤回单项。「保存并运行数值体检」经过同样的预览后保存，再展示 TTK 排名、告警与材料供需。
-- 游戏运行状态和旧存档各自保存已采集、已击败等进度。验证改图可刷新主游戏后开新档。
+- Adventure uses the game's map generator. Press 1 to select, 2 to place a resource, 3 to place a resident enemy, 4 to move a point, or 5 to delete. Scroll to zoom at the cursor, double-click to center, and middle-drag or use WASD to pan. Red outlines mark blocked tiles.
+- Select an entry in the point dropdown to locate it. Select an enemy and open Enemy Tuning. Sliders update the metrics and canvas live and record one history entry when released. Bosses have a phase preview. Hero Tuning shows the attack arc and Level 3 campfire radius at the spawn point.
+- Ctrl+Z undoes changes. Ctrl+Y or Ctrl+Shift+Z redoes them. History holds 50 steps. Presets contain eight configuration documents. Import validates the version, structure, references, and map points. The item catalog is read-only.
+- **Review diff and save** shows each path, baseline, and draft by file. Use ↺ to revert one change. **Save and check balance** shows the same review, then presents time-to-kill rankings, alerts, and material supply and demand after saving.
+- Run state and saves retain collection and defeat progress. Reload the game and start a new run to check a map edit from scratch.
 
-## 真实字段映射
+## Field mappings
 
-| 面板或指标 | 文件和字段 | 单位与实际作用 |
+| Panel or metric | File and fields | Units and behavior |
 | --- | --- | --- |
-| 物资点 | worldOverrides.json 的 addedObjects、removedObjectIds、movedObjects、editedObjects | id、tx、ty、itemId、yield、renewable。新增和移动裁剪到地图内，换算为格中心像素，同步 objects 与 objectList |
-| 常驻刷怪 | 同文件的 addedSpawns、removedSpawnIds、movedSpawns、editedSpawns | 点位 id 对应世界 spawnId。enemyId 选择怪物，按新坐标推导 regionId，也可手工指定归属。运行时区域常驻表同步更新 |
-| 数量上限与再生物资 | balance.json 的 limits.activeEnemies、limits.activeProjectiles；regions.json 的 dawnRenewal.renewableItemIds | 同屏个数、黎明可再生的物品 ID |
-| 区域刷怪 | regions.json 的 regions[].residentSpawns[]、nightSpawns[] | spawnId 与 enemyId。地图覆写调整常驻表，规则面板可编辑夜间敌种 |
-| 怪物基础与掉落 | 控制台 enemies.json、legacyEnemies.json（以同一个 enemies.json 落盘）的 enemies[].maxHp、attackDamage、moveSpeedPxPerSec、drops[] | 生命、单击伤害、像素/秒。掉落表使用 itemId、count、probability |
-| 近战与突进 | attack.reachTiles、triggerTiles、distanceTiles、windupSec、cooldownSec、dashDurationSec、recoverSec | 格与秒。突进循环使用前摇、突进时长和恢复，不额外添加近战冷却 |
-| 远程与旧版攻击 | attack.preferredTiles、radiusTiles、projectileSpeedPxPerSec、projectileLifetimeSec、triggerRangeTiles、rangeTiles、arcDegrees、activeSec、travelSec、recoverySec、intervalSec | 施法距离、爆发半径、弹速/寿命、横扫角度或攻击周期，按敌种显示现有字段 |
-| 分阶段和交替攻击 | phases[].hpThreshold、phases[].overrides.attack、attack.moves[]、attack.enrage | 分阶段 DPS 按生命比例加权。交替招式按平均动作时长，狂暴按其生命阈值计入 |
-| 全局英雄数值 | balance.json 的 hero.moveSpeedPxPerSec、attackDamage、attackRangeTiles、attackArcDegrees、attackCooldownSec | 像素/秒、伤害、格、角度、秒 |
-| 生存与营火 | stats.hp.initial/max/damageImmunitySec、stats.hunger.dayDrainPerMinute/nightDrainPerMinute、stats.light.nightDrainPerSec、camp.radiiTilesByLevel | 生命、无敌秒数、饱食/分、火炬/秒、分级半径 |
-| 五位英雄 | heroes.json 的 heroes[].traits 与 startingInventory | 编辑该英雄实际具有的修正。初始背包使用物品 ID 作键、正整数数量作值 |
-| TTK、DPS 和容错 | 上述敌我数值，以及 items.json 的 iron_spear、iron_blade、iron_armor 的 effects | 首击时刻为 0，耗时为（刀数 − 1）× 英雄间隔。容错显示受到几次峰值攻击后仍存活。英雄有效 DPS 计入初始装备 |
-| 独立生成方案 | encounters.json 的 waves.intervalSec/count、resources.renewalLimit/cooldownSec、weights[regionId] | 黄昏为首波，后续按游戏秒计时，仍受同屏上限约束；权重乘以所在区域的夜间刷点数，小数部分按日和波次确定性取整 |
-| 单点刷新方案 | worldOverrides.json 的 renewalLimit、respawnCooldownSec | 物资点单独设定的次数与冷却优先于全局设置。缺省时可再生物资在黎明刷新、次数不限 |
-| 范围参考与急步方案 | encounters.json 的 perception.aggroTiles/leashTiles、dash.distanceTiles/cooldownSec | 蓝灰圈对应常驻怪索敌和脱战距离。夜袭怪沿用追击规则。默认急步随移速变化，显式距离按格数计算，仍经过碰撞检测 |
-| 生存独立覆盖 | public/survival-balance.json 的可选数值（字段表见 README） | 生存页启动时与 balance.json 的 survival 合并。密度影响程序生成的矿木格；频率控制每夜波数；补给倍率只应用于新世界 |
+| Resource points | `worldOverrides.json`: `addedObjects`, `removedObjectIds`, `movedObjects`, `editedObjects` | Uses `id`, `tx`, `ty`, `itemId`, `yield`, and `renewable`. Adding and moving clamp coordinates to the map, convert to tile-center pixels, and update both `objects` and `objectList`. |
+| Resident spawns | `addedSpawns`, `removedSpawnIds`, `movedSpawns`, `editedSpawns` in the same file | The point ID is the world spawn ID. `enemyId` selects the enemy and `regionId` is derived from the new location or set explicitly. The runtime resident roster updates. |
+| Active limits and renewable items | `balance.json`: `limits.activeEnemies`, `limits.activeProjectiles`. `regions.json`: `dawnRenewal.renewableItemIds`. | On-screen caps and IDs of items that can regrow at dawn. |
+| Regional spawns | `regions.json`: `regions[].residentSpawns[]`, `nightSpawns[]` | Uses `spawnId` and `enemyId`. Map overrides update residents, and the rules panel edits night composition. |
+| Enemy stats and loot | Console documents `enemies.json` and `legacyEnemies.json`, saved together in `enemies.json`: `enemies[].maxHp`, `attackDamage`, `moveSpeedPxPerSec`, `drops[]` | Health, damage per hit, pixels per second, and drops with `itemId`, `count`, and `probability`. |
+| Melee and lunges | `attack.reachTiles`, `triggerTiles`, `distanceTiles`, `windupSec`, `cooldownSec`, `dashDurationSec`, `recoverSec` | Tiles and seconds. A lunge cycle consists of wind-up, travel, and recovery without an additional melee cooldown. |
+| Ranged and legacy attacks | `attack.preferredTiles`, `radiusTiles`, `projectileSpeedPxPerSec`, `projectileLifetimeSec`, `triggerRangeTiles`, `rangeTiles`, `arcDegrees`, `activeSec`, `travelSec`, `recoverySec`, `intervalSec` | Cast range, burst radius, projectile speed and lifetime, sweep, and attack timing. Each enemy shows the fields it uses. |
+| Phases and alternating attacks | `phases[].hpThreshold`, `phases[].overrides.attack`, `attack.moves[]`, `attack.enrage` | Phase DPS weights health portions. Alternating moves use average duration. Enrage contributes according to its health threshold. |
+| Global hero stats | `balance.json`: `hero.moveSpeedPxPerSec`, `attackDamage`, `attackRangeTiles`, `attackArcDegrees`, `attackCooldownSec` | Pixels per second, damage, tiles, degrees, and seconds. |
+| Survival and firelight | `stats.hp.initial/max/damageImmunitySec`, `stats.hunger.dayDrainPerMinute/nightDrainPerMinute`, `stats.light.nightDrainPerSec`, `camp.radiiTilesByLevel` | Health, immunity seconds, fullness per minute, torchlight per second, and level-based radii. |
+| Five heroes | `heroes.json`: `heroes[].traits` and `startingInventory` | Edits each hero's actual modifiers. Starting inventory maps item IDs to positive integer counts. |
+| TTK, DPS, and hits survived | Enemy and hero stats above, plus effects for `iron_spear`, `iron_blade`, and `iron_armor` in `items.json` | First hit is at time zero. TTK is (hits − 1) × attack interval. Survivability counts peak attacks the hero can take and remain alive. Hero DPS includes starting equipment. |
+| Independent wave settings | `encounters.json`: `waves.intervalSec/count`, `resources.renewalLimit/cooldownSec`, `weights[regionId]` | First wave at dusk. Later waves use game seconds and respect the on-screen cap. Weight multiplies regional night spawns. Fractions round deterministically by day and wave. |
+| Per-node renewal | `worldOverrides.json`: `renewalLimit`, `respawnCooldownSec` | Per-node limits and cooldowns take precedence. With defaults, renewable resources refresh at dawn without a cap. |
+| Range and dash settings | `encounters.json`: `perception.aggroTiles/leashTiles`, `dash.distanceTiles/cooldownSec` | Blue-gray rings show resident detection and leash range. Raiders use pursuit rules. The default dash scales with movement speed. An explicit distance uses tiles and still checks collision. |
+| Standalone Survival overrides | Optional values in `public/survival-balance.json`. See the README. | The Survival page merges these with `balance.json` at startup. Density changes procedural mineral and wood tiles, frequency changes nightly wave count, and starting supplies apply to new worlds. |
 
-固定点位覆写作用于程序生成的冒险世界。生存新世界和控制台共享 16×16 区块生成器。悬停可读群系与地物，地标图层标出奇遇预留区，出生图层标出生态巢穴。新世界在建档时记录资源密度，同一种子和密度可以重现原始布局。旧存档沿用原有地形算法。
+Fixed point overrides apply to procedural Adventure. New Survival worlds and the console share a 16×16-chunk generator. Hover to inspect the biome and features. The landmark layer shows reserved encounter areas and the spawn layer shows wildlife dens. A new world's resource density saves with the seed, so the same pair reproduces the layout. Older saves retain their terrain algorithm.
 
-## 架构审查
+## Architecture review
 
-- 世界生成与显示分离。冒险适配器使用与游戏相同的 applyWorldOverrides。空覆写直接返回输入对象。独立的 WeakMap 保存区域原始常驻定义，重复生成时仍能找到原布局坐标。
-- ConsoleStore 保存基准和草稿，可逆命令同时覆盖地图与字段编辑。面板提交命令，派生指标为纯函数。地图地形采用缓存画布，编辑点位不重画每个地形格。
-- 服务端从固定文件名表解析目标，拒绝链接、异源请求与未知文件，复用前端的结构、外键与真实阻挡格校验。写入使用同目录临时文件和原子重命名。每个文件独立提交并检查磁盘基准，失败后保留未提交草稿。
-- 体检通过 execFile 运行现有脚本，传入解析后的世界物资和刷点，经济摘要包含手编覆写。默认 summary 模式不写报告。接口接收 `{"full":true}` 时运行完整模式。
+- World generation and rendering are separate. The Adventure adapter shares the game's `applyWorldOverrides`, which returns its input for empty overrides. A separate `WeakMap` retains original resident definitions to keep default coordinates available across regeneration.
+- `ConsoleStore` keeps the baseline and draft. Reversible commands cover both map and field edits. Panels submit commands and metrics are pure functions. Editing a point does not repaint the cached terrain canvas.
+- The server resolves targets from an allowlist and rejects links, cross-origin requests, and unknown files. It reuses structure, reference, and blocked-tile checks. Each file uses a same-directory temporary file and atomic rename, verifies its disk baseline, and keeps any uncommitted draft if writing fails.
+- The balance check invokes the existing script with `execFile` and passes the resolved resources and spawns. The economy summary includes manual overrides. The default summary mode leaves the report file alone. Sending `{"full":true}` runs full mode.
 
-## 30 秒调优验收
+## 30-second tuning check
 
-| 操作 | 本次无头 Edge 实测 |
+| Action | Headless Edge result |
 | --- | --- |
-| 放 1 个铁矿，撤销、重做 | 冒险地图 (18, 26)，ID 唯一，重做恢复同一对象 |
-| 选择迷雾朽木人，拖动攻击间隔 | 0.85 → 1.35 秒，敌方 DPS 0.87 → 0.61，英雄击杀刀数保持 4 |
-| 调近战距离与生命 | 近战 1.2 → 2 格触发画布像素变化。生命 4 → 5，徒手 4 刀 / 1.26 秒 → 5 刀 / 1.68 秒 |
-| 查看 Diff，确认保存并体检 | 两个文件、四处改动。校验通过，固定矿从 16 增至 17，接口返回材料结论与 TTK 排名 |
-| 刷新主游戏，新游戏按 E | 世界对象位于像素 (296, 424)，读取攻击间隔 1.35 秒，屏幕实际显示「获得 铁矿 ×1」 |
+| Place one Iron Ore, undo, and redo | Adventure tile (18, 26), with a unique ID and the same object restored on redo. |
+| Adjust the Rotten Woodcutter's attack interval | 0.85 → 1.35 seconds. Enemy DPS 0.87 → 0.61. Hero still needs four hits. |
+| Adjust melee reach and health | Reach 1.2 → 2 tiles changed canvas pixels. Health 4 → 5 changed unarmed TTK from four hits / 1.26 seconds to five / 1.68 seconds. |
+| Preview diff, save, and check balance | Two files and four edits passed validation. Fixed ore rose from 16 to 17. The API returned material and TTK results. |
+| Reload, start a new game, and press E | The object appeared at pixel (296, 424), the attack interval was 1.35 seconds, and the screen showed one Iron Ore collected. |
 
-自动化从两页就绪到实机采集约 4 秒。测试后按原始字节还原数值和空覆写。验收临时服务与无头浏览器均已退出。
+Automation took about four seconds from both pages being ready to in-game gathering. After testing, the original balance data and empty overrides were restored byte for byte. The temporary server and browser were closed.
 
-## 验证清单
+## Verification checklist
 
-- [x] `pnpm typecheck`、`pnpm fix`、`pnpm build`，以及控制台独立 TypeScript 检查与 Vite 构建。
-- [x] `node tools/map-viewer/verify.mjs` 验证边界裁剪、常驻登记、跨区迁移、保留原布局、外键、阻挡格、命令栈上限和复原。
-- [x] 与改动前 HEAD 生成结果深度相等，覆盖 23,040 个地块、104 个世界对象、38 个刷点，以及区域、门表和出生点。
-- [x] 本地四个接口、八份基准、副本校验、非法结构、非白名单文件、旧基准冲突。实测两文件落盘均为两空格缩进加结尾换行。
-- [x] 三模式切换、四标签、快捷键、滑块实时更新、预设往返、字段复原，以及 1440 × 576 冒险全景 PNG。
-- [ ] 每只怪物的实际命中、追击路径、完整夜袭及长期材料平衡仍待试玩。本次运行时对照见下表。
-- [ ] 主游戏开发服热重载时，无头 Edge 出现过 AudioContext 已关闭的告警。手动刷新后进入新档并采集成功，控制台页面未发现运行时异常。
+- [x] Type checks, Biome, production build, separate console type check, and console Vite build.
+- [x] `node tools/map-viewer/verify.mjs` covers clamping, resident registration, cross-region moves, original layout retention, references, blocked tiles, history limits, and restoration.
+- [x] Generation matched the prior HEAD across 23,040 tiles, 104 world objects, 38 spawns, regions, gates, and player spawn.
+- [x] Checked the four APIs, eight baselines, copy validation, invalid structures, unknown files, and stale-baseline conflicts. Both tested writes used two-space indent and a final newline.
+- [x] Verified three modes, four tabs, shortcuts, live sliders, preset round trips, field resets, and a 1440 × 576 Adventure panorama PNG.
+- [ ] Playtest each enemy's hits, pursuit, complete raids, and long-term material balance.
+- [ ] Headless Edge reported a closed AudioContext after hot reload in the game dev server. A manual reload and new run gathered successfully. The console page showed no runtime errors.
 
-## 运行时对照验收
+## Runtime comparison
 
-运行 `node tools/map-viewer/verifyRuntime.mjs` 可复测冒险逐帧逻辑。对照只修改测试进程内的配置。
+Run `node tools/map-viewer/verifyRuntime.mjs` for frame-by-frame Adventure checks. The comparison changes configuration only inside the test process.
 
-| 项目 | 基准 → 改值后 |
+| Case | Baseline → modified |
 | --- | --- |
-| 凛在平地急步 | 1.88 格 / 1.6 秒 → 3 格 / 2 秒 |
-| 普通与旧版敌人 | 索敌 8 → 11 格，10 格距离由待机变为追击。脱战 16 → 12 格，13 格距离由追击变为待机 |
-| 营地夜袭 | 默认 1 波 2 只；设 2 波共 4 只。第二波间隔从 0.25 秒改为 0.1 秒后提前抵达；区域权重 1 → 0.5 时首波 2 → 1 只 |
-| 再生 | 缺省连续两个黎明都再生。全局冷却 10 秒，第 9 秒仍未刷新；单点设 2 秒、上限 1 次后，读档仍在第 2 秒刷新，第二次采完不再刷新 |
-| 生存旧版生成器，无头 Edge（历史基线） | 同为种子 42，三项倍率 1 → 2。核心地形资源格 285 → 546，开局木材 3 → 6，静止玩家一夜触发 1 → 2 波。观测钩子仅加载在测试浏览器响应中 |
+| Lin dashing on flat ground | 1.88 tiles / 1.6 seconds → 3 tiles / 2 seconds |
+| Current and legacy enemies | Detection 8 → 11 tiles, so an enemy at 10 tiles switched from idle to pursuit. Leash 16 → 12, so an enemy at 13 tiles switched from pursuit to idle. |
+| Camp raid | One wave of two by default. Two waves spawned four. Reducing the second wave interval from 0.25 to 0.1 seconds made it arrive sooner. Weight 1 → 0.5 reduced the first wave from two to one. |
+| Regrowth | Defaults regrew at two consecutive dawns. With a global 10-second cooldown, no refresh at 9 seconds. A node override of 2 seconds and one renewal refreshed at 2 seconds after reload and stopped after the second harvest. |
+| Historical Survival generator, headless Edge | Seed 42 with three multipliers 1 → 2. Resource tiles 285 → 546, starting Wood 3 → 6, and waves while idle 1 → 2. Probes loaded only in browser test responses. |
 
-资源计时采用游戏内经过时间，暂停期间不推进。生存固定道路、营地保底补给格与剧情地形继续优先于资源密度。构建发布后，冒险 JSON 修改需要重新构建；生存公开 JSON 在页面加载时读取。
+Resource timers use elapsed game time and pause with the game. Fixed roads, guaranteed camp supplies, and story terrain take precedence over resource density. Adventure data changes require a new production build. Survival reads its public JSON at page load.

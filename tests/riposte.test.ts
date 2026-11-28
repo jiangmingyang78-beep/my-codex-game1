@@ -50,13 +50,13 @@ function findWallAdjacentSpot(
       }
     }
   }
-  throw new Error("未在世界地图中找到紧邻实心墙的可通行格");
+  throw new Error("No passable cells were found in the world map, adjacent to the solid wall");
 }
 
-test("Ember Riposte · 敌人进入 windup 末段时冲刺脱险触发就绪且攻击冷却立即归零", () => {
+test("Ember Jamee.. the enemy enters the end of RDup and the attack is ready and the cooling is immediately zero", () => {
   const sys = getTestSystems();
 
-  // 非末段（剩余前摇 > telegraphCommitSec）冲刺不触发
+  // The non-last-stage (remaining rock > / OceanicSec) sprint is not triggered
   const earlyState = createTestRun({
     systems: sys,
     hero: { attackCooldownSec: 0.35, hunger: 80 },
@@ -74,7 +74,7 @@ test("Ember Riposte · 敌人进入 windup 末段时冲刺脱险触发就绪且�
   stepCombat(earlyState, sys, makeStepInput(), 0.016, earlyEvents);
   assert.equal(getRiposteState(earlyState).armed, false);
 
-  // 末段（剩余前摇 <= telegraphCommitSec）在危险区内冲刺脱险触发就绪
+  // The last paragraph (remaining rock < / / /Comp) is ready to jump off the risk zone. Comp
   const state = createTestRun({
     systems: sys,
     hero: { attackCooldownSec: 0.35, hunger: 80 },
@@ -101,10 +101,10 @@ test("Ember Riposte · 敌人进入 windup 末段时冲刺脱险触发就绪且�
   assert.equal(armedEv.payload.durationSec, RIPOSTE_CONFIG.windowSec);
 });
 
-test("Ember Riposte · 圆盾格挡与冲刺无敌帧挡下攻击均触发就绪，且 0.9s ICD 内不重复触发", () => {
+test("Ember Jamee. Circle shield to shield and sprint under invincible frames triggers the attack and does not repeat the trigger inside `s ICD '.  s s s s ICD", () => {
   const sys = getTestSystems();
 
-  // 1) 圆盾格挡 + ICD 期内二次拦截
+  // * Double intercept during circle shield + ICD period
   const shieldState = createTestRun({
     systems: sys,
     inventory: { iron_buckler: 1 },
@@ -123,7 +123,7 @@ test("Ember Riposte · 圆盾格挡与冲刺无敌帧挡下攻击均触发就绪
   assert.equal(getRiposteState(shieldState).triggerKind, "buckler_block");
   assert.equal(shieldState.hero.attackCooldownSec, 0);
 
-  // ICD 期内使用冲刺无敌帧再次拦截伤害，不重复触发 COMBAT_RIPOSTE_ARMED
+  // The ICD period uses a hedge frame to intercept the injury again without triggering the COMBAT_RIPOSTE_ARAM. —
   moveHero(shieldState, sys, { moveX: 1, moveY: 0, dashPressed: true }, 0.016);
   damageHero(shieldState, sys, 2, shieldEvents, "ash_wolf", {
     x: shieldState.hero.x + 16,
@@ -134,7 +134,7 @@ test("Ember Riposte · 圆盾格挡与冲刺无敌帧挡下攻击均触发就绪
     1,
   );
 
-  // 2) 冲刺无敌帧独立触发 + 0.9s ICD 过期后可再次触发
+  // * The trigger for the impenetrable frame is triggered by the expiry of + ~s ICD. + s ICD
   const dashState = createTestRun({
     systems: sys,
     hero: { hp: 8, hunger: 80, attackCooldownSec: 0.4 },
@@ -171,7 +171,7 @@ test("Ember Riposte · 圆盾格挡与冲刺无敌帧挡下攻击均触发就绪
   );
 });
 
-test("Ember Riposte · 就绪态攻击前突不穿墙、射程与伤害提升、获短暂无敌帧并回光", () => {
+test("Ember Jaime.. pre-surgent attack without a wall, range and injury up, short invincible frame and light", () => {
   const sys = getTestSystems();
   const state = createTestRun({
     systems: sys,
@@ -180,7 +180,7 @@ test("Ember Riposte · 就绪态攻击前突不穿墙、射程与伤害提升、
   const events: GameEvent[] = [];
   const startX = state.hero.x;
   const weapon = currentWeapon(state, sys);
-  // 放置在普通挥砍打不到、但突进 + 扩展射程可命中的位置
+  // Places where ordinary beams are not available but where stomping + extended range hits
   const enemy = addTestEnemy(state, sys, "ash_wolf", {
     x:
       startX +
@@ -208,7 +208,7 @@ test("Ember Riposte · 就绪态攻击前突不穿墙、射程与伤害提升、
   assert.equal(strikeEv.payload.damage, expectedDamage);
   assert.equal(strikeEv.payload.lightRestored, RIPOSTE_CONFIG.lightOnHit);
 
-  // 贴墙突进防穿墙校验
+  // Wall-in-wall security checks
   const wallSpot = findWallAdjacentSpot(sys, state.changesByObjectId);
   const wallState = createTestRun({
     systems: sys,
@@ -231,7 +231,7 @@ test("Ember Riposte · 就绪态攻击前突不穿墙、射程与伤害提升、
   });
   moveHero(wallState, sys, { moveX: 0, moveY: 0, dashPressed: true }, 0.016);
   stepCombat(wallState, sys, makeStepInput(), 0.016, wallEvents);
-  // 恢复朝向正对墙格，验证突进不会穿入实心墙体
+  // The re-entry towards the face-to-face wall is restored and the penetration is not verified into the solid wall
   wallState.hero.facingX = wallSpot.dirX;
   wallState.hero.facingY = wallSpot.dirY;
   assert.equal(getRiposteState(wallState).armed, true);
@@ -241,7 +241,7 @@ test("Ember Riposte · 就绪态攻击前突不穿墙、射程与伤害提升、
   assert.equal(solidAt(sys.world, wallState.changesByObjectId, tx, ty), false);
 });
 
-test("Ember Riposte · 超过 1.4s 未出手自动过期，下一次攻击恢复普通挥砍", () => {
+test("Ember Jamee.. over....was not automatically expired and the next attack resumed normal swipe", () => {
   const sys = getTestSystems();
   const state = createTestRun({
     systems: sys,
@@ -256,7 +256,7 @@ test("Ember Riposte · 超过 1.4s 未出手自动过期，下一次攻击恢复
   });
   assert.equal(getRiposteState(state).armed, true);
 
-  // 推进超过 windowSec (1.4s)
+  // (c) Pushing beyond the periSec (1.4s)
   tickRiposte(state, RIPOSTE_CONFIG.windowSec + 0.05, sys);
   assert.equal(getRiposteState(state).armed, false);
   assert.equal(getRiposteState(state).triggerKind, null);

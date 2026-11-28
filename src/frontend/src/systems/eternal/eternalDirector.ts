@@ -39,7 +39,7 @@ function suppressQuestDrops(state: RunState, sys: Systems): void {
   }
 }
 
-/** "立即开战": the next step ends the preparation. */
+/** Ends the preparation phase on the next step. */
 export function skipEternalPrep(state: RunState): void {
   const rt = getEternalRuntime(state);
   if (rt?.phase === "prep") rt.prepRemainingSec = 0;
@@ -129,7 +129,11 @@ function beginCombat(
   );
   state.phase = "night";
   rt.prepRemainingSec = 0;
-  notice(events, "黑雾合拢，永恒试炼开始！", "warn");
+  notice(
+    events,
+    "The black fog converges and the eternal test begins!",
+    "warn",
+  );
 }
 
 function stepCombat(
@@ -145,13 +149,13 @@ function stepCombat(
   if (rt.loadoutMode === "standard" && t >= rt.nextSupplySec) {
     rt.nextSupplySec += ETERNAL.supplyIntervalSec;
     rt.pendingPicks++;
-    notice(events, "补给抵达：可补选 1 件装备", "good");
+    notice(events, "Replenishment arrival: 1 by-election equipment", "good");
   }
   if (t >= rt.nextBossSec) {
     const name = spawnEternalBoss(state, sys, rt, events);
     rt.nextBossSec += name ? ETERNAL.bossIntervalSec : 1;
     if (name) rt.bossWaveCount++;
-    if (name) notice(events, `首领降临：${name}`, "warn");
+    if (name) notice(events, `The leader is coming: ${name}`, "warn");
   }
   rt.spawnTimerSec -= dt;
   if (rt.spawnTimerSec > 0) return;

@@ -32,9 +32,9 @@ export type {
 const CHANNELS: readonly ToastChannel[] = ["loot", "feedback"];
 
 /**
- * 双通道像素轻提示管理器（Stacked Toast）：
- * - loot 通道：左上角紧凑堆叠（最多 4 条），同物品原地累加并弹跳。
- * - feedback 通道：底部快捷栏上方居中单条顶替，重复触发只抖动并刷新计时。
+ * Double Channel Pixel Light Tip Manager (Stacked Toost)):
+ * -Hot Channel: Up left corner compact stack (up to 4 bars) added and bounced with the object in its original condition.
+ * -77 Channel: A single line above the bottom shortcut bar is replaced by a single line, and the repeat trigger is only shaking and refreshing.
  */
 export class ToastManager {
   private scene: Phaser.Scene | null;
@@ -85,7 +85,7 @@ export class ToastManager {
     return boxes;
   }
 
-  /** 动态更新锚点（如装备环栏增减或视口尺寸变化时避开 HUD）。 */
+  /** Dynamic update anchor points (e.g., avoids HUD when the equipment rings increase or decrease or when the size of the mouth changes). */
   setAnchors(x: number, y: number, feedbackOffsetY?: number): void {
     const nextX = Math.round(x);
     const nextY = Math.round(y);
@@ -109,7 +109,7 @@ export class ToastManager {
     }
   }
 
-  /** 资源/物品拾取提示（按 pickup:${itemId} 去重并累加数量）。 */
+  /** Resource/object pick-up tips (press Id} to be re-sized and added). */
   loot(
     itemId: string,
     label: string,
@@ -127,7 +127,7 @@ export class ToastManager {
     });
   }
 
-  /** 操作警告提示（底部单条顶替，重复触发抖动并重置计时）。 */
+  /** Operation warning hint (the bottom single bar replacement, repeats triggers shaking and resets the count). */
   warn(label: string, key: string | null = null): ToastItem | null {
     return this.push({
       key: key || `warn:${label}`,
@@ -138,7 +138,7 @@ export class ToastManager {
     });
   }
 
-  /** 错误提示（底部单条顶替，左侧红色状态条）。 */
+  /** Error hint (bottom single bar replacement, left red status bar). */
   error(label: string, key: string | null = null): ToastItem | null {
     return this.push({
       key: key || `error:${label}`,
@@ -149,7 +149,7 @@ export class ToastManager {
     });
   }
 
-  /** 系统提示（底部单条顶替，左侧蓝色状态条）。 */
+  /** System hint (bottom single bar replacement, left blue status bar). */
   info(label: string, key: string | null = null): ToastItem | null {
     return this.push({
       key: key || `sys:${label}`,
@@ -160,7 +160,7 @@ export class ToastManager {
     });
   }
 
-  /** 正向里程碑反馈（制作完成、解锁、营火升级等，底部绿色状态条）。 */
+  /** Feedback is being provided to milestones (production completed, unlocked, camp fire upgraded, etc.) with a green bottom bar). */
   gain(label: string, key: string | null = null): ToastItem | null {
     return this.push({
       key: key || `gain:${label}`,
@@ -171,7 +171,7 @@ export class ToastManager {
     });
   }
 
-  /** 兼容旧版 (text, tone) 通用签名的包装方法。 */
+  /** (iv) A general method of packaging for signatures. */
   show(
     label: string,
     tone: "info" | "good" | "warn" | "error" = "info",
@@ -182,7 +182,7 @@ export class ToastManager {
     return this.info(label);
   }
 
-  /** 核心入队逻辑：去重合并、通道上限淘汰、创建视觉与触发布局。 */
+  /** Core placement logic: to re-consolidate, to phase out the capping of the corridor, to create visual and trigger layouts. */
   push(input: ToastPushInput): ToastItem | null {
     const scene = this.scene;
     if (this.destroyed || !scene?.sys?.isActive()) return null;

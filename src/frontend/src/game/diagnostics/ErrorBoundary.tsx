@@ -9,7 +9,9 @@ export class ErrorBoundary extends Component<
   state: { report: DiagnosticReport | null } = { report: null };
 
   static getDerivedStateFromError(error: unknown) {
-    return { report: captureDiagnostic("游戏界面渲染失败。", error) };
+    return {
+      report: captureDiagnostic("The game interface failed to render.", error),
+    };
   }
 
   componentDidCatch(_error: Error, info: ErrorInfo) {

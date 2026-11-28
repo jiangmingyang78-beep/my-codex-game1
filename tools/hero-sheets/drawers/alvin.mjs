@@ -1,6 +1,6 @@
 /**
- * 艾尔文（alvin_scribe）：身高 18px，偏瘦微倾。
- * 深靛蓝长摆外套 + 背后方书匣 + 胸前暖金镜片点 + 左手前托发光青白余烬瓶。
+ * Alvin_sfaire: Height 18px, thin. —.
+ * Deep-blue coats + box of the back + hot-gold lens points on the chest + white-coloured scab bottles in front of the left hand.
  */
 import { drawLegs } from "../rig.mjs";
 
@@ -21,23 +21,23 @@ export function draw(layer, fx, pose, pal) {
 
   drawLegs(layer, cx, pose, 2, 4);
 
-  // 背后厚重棕色方书匣
+  // The thick brown box behind the back
   layer.rect(cx - 7, 15 + dy, 4, 6, pal.case);
   layer.vline(cx - 4, 15 + dy, 6, pal.O);
 
-  // 深靛蓝长摆外套（宽约 8px，下摆至膝下）
+  // Dark blue coats (approx. 8px, down to knee))
   const coatBottom = Math.min(24, 23 + dy);
   layer.rect(cx - 4, 15 + dy, 8, coatBottom - 15 - dy + 1, pal.coat);
-  layer.rect(cx - 1, 16 + dy, 2, 6, pal.O); // 前襟开叉
+  layer.rect(cx - 1, 16 + dy, 2, 6, pal.O); // The fork is open
 
-  // 胸前 1–2px 暖金镜片点
+  // 1-2px warm gold lens points on the chest
   layer.hline(cx + 1, 16 + dy, 2, pal.gold);
 
-  // 微前倾无五官头部（y = 11..14）
+  // Five officials headlessly (y = 11.14))
   layer.rect(cx - 1, 11 + dy, 4, 4, pal.O);
 
   if (pose.anim === "attack") {
-    // 略后仰吃力平刺铁矛
+    // A little bit of a stun gun
     if (pose.step === 0) {
       layer.hline(cx - 5, 19 + dy, 8, pal.case);
       layer.hline(cx + 3, 19 + dy, 2, pal.gold);
@@ -54,7 +54,7 @@ export function draw(layer, fx, pose, pal) {
     return;
   }
 
-  // 左手前托发光青白余烬瓶 + 呼吸光晕
+  // The left hand is filled with a white and residual bottle + a breath of light and dizziness
   const vx = cx + (pose.anim === "dash" ? 6 : 5);
   const vy = 17 + dy;
   layer.hline(cx + 3, vy + 2, 3, pal.O);

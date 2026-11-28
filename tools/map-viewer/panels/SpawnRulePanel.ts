@@ -2,13 +2,13 @@ import type { Session } from "../state/selection";
 import { button, choice, el, group, itemOptions, numeric } from "../ui/controls";
 import { scenarioDefaults, survivalDefaults } from "../state/ruleConfig";
 export function rulePanel(root: HTMLElement, s: Session) {
-  const limits = group(root, "同屏上限");
-  numeric(limits, s, "balance.json", ["limits", "activeEnemies"], "活跃敌人");
-  numeric(limits, s, "balance.json", ["limits", "activeProjectiles"], "弹幕数量");
+  const limits = group(root, "Same screen ceiling");
+  numeric(limits, s, "balance.json", ["limits", "activeEnemies"], "Active enemy");
+  numeric(limits, s, "balance.json", ["limits", "activeProjectiles"], "Number of screens");
   const regions = s.store.draft["regions.json"];
-  const renew = group(root, "黎明再生物资");
+  const renew = group(root, "Dawn regenerative");
   regions.dawnRenewal.renewableItemIds.forEach((id, i) => {
-    const selected = choice(renew, "再生物资 " + (i + 1), itemOptions, id, (v) =>
+    const selected = choice(renew, "Regeneration " + (i + 1), itemOptions, id, (v) =>
       s.store.field("regions.json", ["dawnRenewal", "renewableItemIds", i], v),
     );
     selected.parentElement?.append(
@@ -20,7 +20,7 @@ export function rulePanel(root: HTMLElement, s: Session) {
     );
   });
   renew.append(
-    button("添加再生物资", () => {
+    button("Adds regenerative materials", () => {
       const next = itemOptions.find(([id]) => !regions.dawnRenewal.renewableItemIds.includes(id));
       if (next)
         s.store.edit("regions.json", (doc) => {
@@ -28,7 +28,7 @@ export function rulePanel(root: HTMLElement, s: Session) {
         });
     }),
   );
-  const night = group(root, "区域夜间刷怪", false);
+  const night = group(root, "Area night brush", false);
   for (const [i, r] of regions.regions.entries()) {
     if (!r.nightSpawns.length) continue;
     const box = group(night, r.name, false);
@@ -42,27 +42,27 @@ export function rulePanel(root: HTMLElement, s: Session) {
       ),
     );
   }
-  const scenario = group(root, "夜袭与再生");
-  scenario.append(el("p", "默认黄昏一波，再生物资黎明刷新、次数不限。填写冷却后按游戏秒数刷新。"));
+  const scenario = group(root, "Night raids with regeneration");
+  scenario.append(el("p", "Defaults to a wave of dusk, with regenerative materials refreshed at dawn and with unlimited frequency. refresh by the number of seconds of the game after filling in the cooling."));
   const labels: Record<string, string> = {
-    intervalSec: "夜袭间隔（秒）",
-    count: "波次数量",
-    renewalLimit: "每点再生次数上限",
-    cooldownSec: "刷新冷却（秒）",
-    aggroTiles: "索敌预览（格）",
-    leashTiles: "脱战预览（格）",
+    intervalSec: "Night raids interval (seconds))",
+    count: "Number of waves",
+    renewalLimit: "Maximum number of rebirths per point",
+    cooldownSec: "Refresh cooling (seconds))",
+    aggroTiles: "Enemy preview (g))",
+    leashTiles: "Ex-war preview (g))",
   };
   for (const key of ["waves", "resources", "perception"] as const)
     for (const [k, v] of Object.entries(scenarioDefaults[key]))
       numeric(scenario, s, "encounters.json", [key, k], labels[k], v);
-  const weights = group(scenario, "区域遭遇权重", false);
+  const weights = group(scenario, "The region is hit by weights", false);
   for (const r of regions.regions) numeric(weights, s, "encounters.json", ["weights", r.id], r.name, 1);
   if (s.mode === "survival") {
-    const survival = group(root, "生存模式 · 独立覆盖配置");
-    survival.append(el("p", "落盘到 public/survival-balance.json，刷新生存页后生效，初始补给仅用于新世界。"));
+    const survival = group(root, "Survival mode. Independent coverage configuration");
+    survival.append(el("p", "The drop is on `supplier'/survival-e.json, which is effective when the life page is updated and the initial supply is used only for the new world."));
     for (const [k, v] of Object.entries(survivalDefaults)) {
       if(typeof v==="object"){
-        for(const [category,cap] of Object.entries(v)) numeric(survival,s,"survival-balance.json",[k,category],({hostile:"普通敌对",elite:"精英",neutral:"中立野兽"} as Record<string,string>)[category]+"数量上限",cap);
+        for(const [category,cap] of Object.entries(v)) numeric(survival,s,"survival-balance.json",[k,category],({hostile:"Regular hostiles",elite:"Elite",neutral:"Neutral wildlife"} as Record<string,string>)[category]+"Population cap",cap);
         continue;
       }
       numeric(
@@ -72,18 +72,18 @@ export function rulePanel(root: HTMLElement, s: Session) {
         [k],
         (
           {
-            brightCost:"强光绕行代价",fireCost:"火焰绕行代价",hearingTiles:"听觉距离（格）",
-            dayDurationMultiplier: "白昼时长倍率",
-            nightDurationMultiplier: "夜晚时长倍率",
-            fuelConsumptionMultiplier: "营火制作燃煤倍率",
-            coldHungerPerSecond: "暴雪受寒饱食消耗（点/秒）",
-            hungerRateMultiplier: "饥饿速率倍率",
-            spawnDensity: "每波敌人密度",
-            resourceRefreshMultiplier: "野生资源再生速率",
-            resourceDensity: "资源密度",
-            minSpawnRadius:"近环（格）", maxSpawnRadius:"外环（格）", despawnRadius:"回收距离（格）",
-            spawnFrequency: "刷怪频率",
-            startingSupplyMultiplier: "初始补给倍率",
+            brightCost:"The cost of a strong light bypass",fireCost:"Fire-circumstance cost",hearingTiles:"Hearing distance (g))",
+            dayDurationMultiplier: "The day is long and the day is long",
+            nightDurationMultiplier: "The night is a long time",
+            fuelConsumptionMultiplier: "The rate of coal combustion from the camp fires",
+            coldHungerPerSecond: "Snowstorms are fed by cold (points/seconds))",
+            hungerRateMultiplier: "Hunger rate multiple",
+            spawnDensity: "The density of each wave of enemy",
+            resourceRefreshMultiplier: "The rate of regeneration of wildlife resources",
+            resourceDensity: "Resource density",
+            minSpawnRadius:"Near ring (g))", maxSpawnRadius:"External rings (g))", despawnRadius:"Recovery distance (g))",
+            spawnFrequency: "-Fresh the frequency",
+            startingSupplyMultiplier: "Initial replenishment multiplier",
           } as Record<string, string>
         )[k],
         v,

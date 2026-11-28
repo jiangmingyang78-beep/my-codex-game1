@@ -62,12 +62,12 @@ export function enemyMetrics(d: Draft, id: string, heroId: string) {
   const hero = d["heroes.json"].heroes.find((h) => h.id === heroId);
   const delta = hero?.traits.attackDamageDelta ?? 0;
   for (const [weapon, damage] of [
-    ["徒手", b.attackDamage],
-    ["铁矛", Math.max(b.attackDamage, Number(effect("iron_spear", "attackDamage")))],
-    ["淬炭短刃", b.attackDamage + Number(effect("iron_blade", "attackDamage"))],
+    ["Free hands", b.attackDamage],
+    ["Iron Spear", Math.max(b.attackDamage, Number(effect("iron_spear", "attackDamage")))],
+    ["Charcoal-Tempered Blade", b.attackDamage + Number(effect("iron_blade", "attackDamage"))],
   ] as const) {
     const hits = Math.ceil(e.maxHp / Math.max(0, damage + delta));
-    rows[weapon + " TTK"] = fmt(hits) + " 刀 · " + fmt((hits - 1) * b.attackCooldownSec) + " 秒";
+    rows[weapon + " TTK"] = fmt(hits) + " hits  ·  " + fmt((hits - 1) * b.attackCooldownSec) + " s";
   }
   const phases = e.phases ?? [{ hpThreshold: 1, overrides: {} }];
   let dps = 0,
@@ -78,11 +78,11 @@ export function enemyMetrics(d: Draft, id: string, heroId: string) {
     const period = cycle(p.overrides.attack ?? e.attack ?? {});
     dps += ((p.hpThreshold - (phases[i + 1]?.hpThreshold ?? 0)) * damage) / period;
   });
-  rows["敌方理论 DPS"] = fmt(dps);
+  rows["Estimated enemy DPS"] = fmt(dps);
   const survive = (hp: number, dr: number) =>
-    fmt(peak === 0 ? Infinity : Math.ceil(hp / Math.max(1, peak - dr)) - 1) + " 下";
-  rows["6 血裸装可存活"] = survive(6, 0);
-  rows["锻铁胸甲可存活"] = survive(
+    fmt(peak === 0 ? Infinity : Math.ceil(hp / Math.max(1, peak - dr)) - 1) + " hits";
+  rows["Hits survived with 6 HP and no armor"] = survive(6, 0);
+  rows["Hits survived with the Wrought-Iron Breastplate"] = survive(
     6 + Number(effect("iron_armor", "maxHp")),
     Number(effect("iron_armor", "damageReduction")),
   );
@@ -122,13 +122,13 @@ export function heroMetrics(d: Draft, id: string) {
     (b.hero.moveSpeedPxPerSec * (t?.moveSpeedMult ?? 1) * (1 + bonus("moveSpeedBonus")) * 2.35 * 0.16) /
       b.world.tileSizePx;
   return {
-    "初始装备 DPS": fmt((baseDamage + bonus("attackDamage") + (t?.attackDamageDelta ?? 0)) / b.hero.attackCooldownSec),
-    移动速度:
+    "Starting loadout DPS": fmt((baseDamage + bonus("attackDamage") + (t?.attackDamageDelta ?? 0)) / b.hero.attackCooldownSec),
+    "Move speed":
       fmt((b.hero.moveSpeedPxPerSec * (1 + bonus("moveSpeedBonus")) * (t?.moveSpeedMult ?? 1)) / b.world.tileSizePx) +
-      " 格/秒",
-    急步覆盖: fmt(dash) + " 格",
-    "满血容错（每击 1 伤）": fmt(Math.ceil(b.stats.hp.max + bonus("maxHp") + (t?.maxHpDelta ?? 0)) - 1) + " 下",
-    夜间满火炬续航:
-      fmt(b.stats.light.max / (b.stats.light.nightDrainPerSec * drain * (t?.lightDrainMult ?? 1))) + " 秒",
+      " tiles/s",
+    "Dash distance": fmt(dash) + " tiles",
+    "Hits survived at full health (1 damage per hit)": fmt(Math.ceil(b.stats.hp.max + bonus("maxHp") + (t?.maxHpDelta ?? 0)) - 1) + " hits",
+    "Full torch duration at night":
+      fmt(b.stats.light.max / (b.stats.light.nightDrainPerSec * drain * (t?.lightDrainMult ?? 1))) + " s",
   };
 }

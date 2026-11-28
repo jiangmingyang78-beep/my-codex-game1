@@ -4,10 +4,10 @@ import type { RunSession } from "./RunSession";
 
 function duration(sec: number): string {
   const total = Math.max(0, Math.floor(sec));
-  return `${Math.floor(total / 60)} 分 ${String(total % 60).padStart(2, "0")} 秒`;
+  return `${Math.floor(total / 60)} m ${String(total % 60).padStart(2, "0")} s`;
 }
 
-/** 永恒试炼 end-of-run summary: survival time, kills and the personal best. */
+/** Summarizes survival time, kills, and records for an Eternal run. */
 export function buildEternalResultView(
   session: RunSession,
   cause: string,
@@ -17,15 +17,19 @@ export function buildEternalResultView(
   return {
     status: "dead",
     mode: "eternal",
-    title: "永恒试炼结束",
+    title: "The Eternal Trial Ends",
     cause,
-    epilogue: "黑雾吞没了最后一簇孤火，但你坚守的每一秒都被雪松记下。",
+    epilogue:
+      "Fog swallowed the last lonely fire. The pines remember every second you held your ground.",
     stats: [
-      { label: "存活时长", value: duration(rt?.combatElapsedSec ?? 0) },
-      { label: "总击杀数", value: `${rt?.kills ?? 0}` },
-      { label: "首领降临", value: `${rt?.bossWaveCount ?? 0} 次` },
-      { label: "最佳存活", value: duration(record?.bestSec ?? 0) },
-      { label: "最高击杀", value: `${record?.bestKills ?? 0}` },
+      { label: "Time survived", value: duration(rt?.combatElapsedSec ?? 0) },
+      { label: "Enemies defeated", value: `${rt?.kills ?? 0}` },
+      {
+        label: "Boss waves",
+        value: `${rt?.bossWaveCount ?? 0} times`,
+      },
+      { label: "Best survival", value: duration(record?.bestSec ?? 0) },
+      { label: "Most kills", value: `${record?.bestKills ?? 0}` },
     ],
     notes: [],
     eternal: { newRecord: record?.newRecord ?? false },

@@ -1,4 +1,4 @@
-/** Shared types and tuning constants of the Eternal Mode (永恒模式). Runtime state lives in memory only. */
+/** and lau Rules of the Eternalland (Eternal Mode) */
 
 export type EternalPhase = "prep" | "combat";
 export type LoadoutMode = "standard" | "free";

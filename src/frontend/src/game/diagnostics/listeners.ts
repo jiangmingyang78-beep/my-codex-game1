@@ -7,10 +7,17 @@ export function installDiagnosticListeners(
     const error =
       event.error ??
       `${event.message}\n${event.filename}:${event.lineno}:${event.colno}`;
-    showError(captureDiagnostic("游戏遇到未处理的错误。", error));
+    showError(
+      captureDiagnostic("An uncaught error occurred in the game.", error),
+    );
   });
   window.addEventListener("unhandledrejection", (event) => {
-    showError(captureDiagnostic("游戏遇到未处理的异步错误。", event.reason));
+    showError(
+      captureDiagnostic(
+        "An unhandled asynchronous error occurred in the game.",
+        event.reason,
+      ),
+    );
   });
   document.addEventListener(
     "click",

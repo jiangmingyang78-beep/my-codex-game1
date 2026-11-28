@@ -216,7 +216,8 @@ function igniteMirrorLamp(state: RunState, o: WorldObject): ActionResult {
       makeEvent(EVT.campLit, o.x, o.y, { objectId: o.id, count: 6 }),
       makeEvent(EVT.notice, o.x, o.y, {
         objectId: o.id,
-        message: "折镜铜灯亮起，暗室里折射出一圈稳定微光。",
+        message:
+          "The origami lights were activated and a circle of stable microlights was refractured in the dark room.",
       }),
     ],
   };

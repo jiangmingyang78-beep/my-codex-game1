@@ -29,12 +29,12 @@
       11
     ],
     "steps": [
-      "Press the 新游戏 button"
+      "I'm sorry, I'm sorry, but I'm sorry, but I'm sorry, I'm sorry"
     ],
     "checks": [
       {
         "afterStep": 0,
-        "expectNoText": "新游戏"
+        "expectNoText": "New Game"
       }
     ]
   }

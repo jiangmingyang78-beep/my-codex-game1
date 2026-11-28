@@ -5,12 +5,12 @@
     "targetMode": "survival",
     "targetType": "plan",
     "targetKey": "emberBrazier",
-    "title": "余烬火坛蓝图",
+    "title": "The blueprint for the flame-thrower",
     "condition": {
       "event": "seal.collected",
       "pickupId": "old_mill_ember_seal"
     },
-    "hint": "在冒险模式取得「旧磨坊炉印」解锁"
+    "hint": "The video is used to show the price of the rice and the price of the rice and the price of the rice"
   },
   {
     "id": "unlock_warden_blade",
@@ -18,12 +18,12 @@
     "targetMode": "survival",
     "targetType": "recipe",
     "targetKey": "emberBlade",
-    "title": "淬烬刃配方",
+    "title": "The saber formula",
     "condition": {
       "event": "enemy.defeated",
       "enemyId": "mill_overseer"
     },
-    "hint": "在冒险模式击败「旧磨坊督工」解锁"
+    "hint": "The old miller was beaten in a risk-taking mode and unlocked"
   },
   {
     "id": "unlock_summit_beacon",
@@ -31,7 +31,7 @@
     "targetMode": "survival",
     "targetType": "plan",
     "targetKey": "miniBeacon",
-    "title": "微型烽火台蓝图",
+    "title": "Mini-fire platform blueprints",
     "condition": {
       "anyOf": [
         {
@@ -44,6 +44,6 @@
         }
       ]
     },
-    "hint": "在冒险模式取得山顶炉印或通关解锁"
+    "hint": "Get a mountain top stamp or switch unlock in the risk mode"
   }
 ]

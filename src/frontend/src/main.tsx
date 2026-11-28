@@ -18,7 +18,7 @@ function showError(report: DiagnosticReport) {
 }
 
 installDiagnosticListeners(showError);
-breadcrumb("入口 冒险与永夜");
+breadcrumb("The entrance to adventure with eternal night");
 try {
   const { default: App } = await import("./App");
   const { loadGameData } = await import("./core/gameData");
@@ -32,5 +32,5 @@ try {
     );
 } catch (error) {
   console.error(error);
-  showError(captureDiagnostic("游戏启动失败。", error));
+  showError(captureDiagnostic("Game start failed.", error));
 }

@@ -12,7 +12,7 @@ export function heroPanel(root: HTMLElement, s: Session) {
     path = ["heroes", i];
   choice(
     root,
-    "当前英雄",
+    "The current hero",
     heroes.map((h) => [h.id, h.name + " · " + h.epithet]),
     h.id,
     (v) => {
@@ -23,28 +23,28 @@ export function heroPanel(root: HTMLElement, s: Session) {
   const mon = el("section", "", "monitor");
   mon.id = "monitor";
   root.append(mon);
-  numbers(group(root, "全局战斗"), s, file, ["hero"]);
+  numbers(group(root, "Global battle"), s, file, ["hero"]);
   for (const [k, title] of [
-    ["hp", "生命与无敌"],
-    ["hunger", "饱食消耗"],
-    ["light", "火炬续航"],
+    ["hp", "Life is invincible"],
+    ["hunger", "Food consumption"],
+    ["light", "The torches are on the line"],
   ])
     numbers(group(root, title, false), s, file, ["stats", k]);
-  const fire = group(root, "营火光圈");
+  const fire = group(root, "Campfire ring");
   for (const level of [1, 2, 3])
-    numeric(fire, s, file, ["camp", "radiiTilesByLevel", level], "Lv." + level + " 半径（格）");
-  const dash = group(root, "急步", false);
-  dash.append(el("p", "默认距离随移速变化；填写距离后按指定格数急步。"));
+    numeric(fire, s, file, ["camp", "radiiTilesByLevel", level], "Lv." + level + " Radius (g))");
+  const dash = group(root, "Step fast", false);
+  dash.append(el("p", "Default distance changes with the speed of the move; you have to hurry with the specified number of cells after filling distance."));
   for (const [k, v] of Object.entries(scenarioDefaults.dash))
-    numeric(dash, s, "encounters.json", ["dash", k], k === "distanceTiles" ? "距离（格）" : "冷却（秒）", v);
+    numeric(dash, s, "encounters.json", ["dash", k], k === "distanceTiles" ? "Distance (g))" : "Cool (seconds))", v);
   numbers(group(root, h.name + " · " + h.traitName), s, "heroes.json", [...path, "traits"]);
-  const bag = group(root, "初始携带物品");
+  const bag = group(root, "Initial carrying of goods");
   for (const [key] of Object.entries(h.startingInventory)) {
     const entry = el("div", "", "bag-entry");
     bag.append(entry);
     choice(
       entry,
-      "携带物品",
+      "Carrying things",
       itemOptions.filter(([id]) => id === key || !(id in h.startingInventory)),
       key,
       (v) => {
@@ -55,11 +55,11 @@ export function heroPanel(root: HTMLElement, s: Session) {
         });
       },
     );
-    numeric(entry, s, "heroes.json", [...path, "startingInventory", key], "数量");
-    entry.append(button("移除", () => s.store.field("heroes.json", [...path, "startingInventory", key], undefined)));
+    numeric(entry, s, "heroes.json", [...path, "startingInventory", key], "Quantity");
+    entry.append(button("Remove", () => s.store.field("heroes.json", [...path, "startingInventory", key], undefined)));
   }
   bag.append(
-    button("添加携带物品", () => {
+    button("Adds the carrying items", () => {
       const opt = itemOptions.find(([id]) => !(id in h.startingInventory));
       if (opt) s.store.field("heroes.json", [...path, "startingInventory", opt[0]], 1);
     }),

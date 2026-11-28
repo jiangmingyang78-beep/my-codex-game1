@@ -20,7 +20,7 @@ function readJson(fileName) {
   const full = path.join(DATA_DIR, fileName);
   if (!fs.existsSync(full)) return null;
   try { return JSON.parse(fs.readFileSync(full, "utf8")); }
-  catch (err) { console.warn(c.yellow(`[warn] 无法解析 ${fileName}: ${err.message}`)); return null; }
+  catch (err) { console.warn(c.yellow(`[warn] Could not parse ${fileName}: ${err.message}`)); return null; }
 }
 
 function extractBalanced(src, startIdx, openCh, closeCh) {
@@ -111,14 +111,14 @@ function calcThreat(e, heroSpeed) {
       wD += (ov.attackDamage ?? e.attackDamage) * w; wS += (ov.moveSpeedPxPerSec ?? e.moveSpeedPxPerSec) * w;
       aps += (1 / cSec) * w; wC += cSec * w;
     }
-    dmg = wD; spd = wS; cyc = `${wC.toFixed(2)} (加权)`;
+    dmg = wD; spd = wS; cyc = `${wC.toFixed(2)} (weighted)`;
   } else {
     const cSec = attackCycle(e.seedType || e.attack?.type, e.attack);
     aps = 1 / cSec; cyc = cSec.toFixed(2);
   }
   const score = e.maxHp * dmg * aps * (0.6 + 0.4 * (spd / heroSpeed));
   const credits = Math.max(10, Math.round((score * 10) / 5) * 5);
-  const tier = score >= 20 ? "T4 首领" : score >= 6.5 ? "T3 精英" : score >= 2.5 ? "T2 中型" : "T1 轻型";
+  const tier = score >= 20 ? "T4 Boss" : score >= 6.5 ? "T3 Elite" : score >= 2.5 ? "T2 Medium" : "T1 Light";
   return { dmg, spd, aps, cyc, score, credits, tier };
 }
 
@@ -162,14 +162,14 @@ function main() {
   const armorHp = effVal(itemsMap.get("iron_armor"), "add_owned_stat", "maxHp") || 2;
   const armorDr = effVal(itemsMap.get("iron_armor"), "add_owned_stat", "damageReduction") || 1;
   const helmHp = effVal(itemsMap.get("iron_helm"), "add_owned_stat", "maxHp") || 2;
-  const profiles = [["徒手", baseDmg], ["铁矛", spearDmg], ["淬炭短刃", baseDmg + bladeBonus], ["格雷·徒手", baseDmg + galeDmg], ["格雷·铁矛", spearDmg + galeDmg], ["格雷·短刃", baseDmg + bladeBonus + galeDmg], ["格雷·双武", spearDmg + bladeBonus + galeDmg]];
-  const combatHeaders = ["怪物", "来源/区域", "HP", "敌伤", ...profiles.map(([n, d]) => `${n}(${d})`), `${baseHp}血裸装`, `+胸甲(${baseHp + armorHp}血/减${armorDr})`, `+重盔(${baseHp + helmHp}血)`, `胸甲+重盔(${baseHp + armorHp + helmHp}血/减${armorDr})`];
+  const profiles = [["Unarmed", baseDmg], ["Iron Spear", spearDmg], ["Charcoal-Tempered Blade", baseDmg + bladeBonus], ["Gale unarmed", baseDmg + galeDmg], ["Gale with spear", spearDmg + galeDmg], ["Gale with blade", baseDmg + bladeBonus + galeDmg], ["Gale with both weapons", spearDmg + bladeBonus + galeDmg]];
+  const combatHeaders = ["Enemy", "Source/region", "HP", "Enemy damage", ...profiles.map(([n, d]) => `${n} (${d})`), `${baseHp} HP, unarmored`, `Breastplate (${baseHp + armorHp} HP, ${armorDr} damage reduction)`, `Heavy helm (${baseHp + helmHp} HP)`, `Breastplate + helm (${baseHp + armorHp + helmHp} HP, ${armorDr} damage reduction)`];
   const combatRows = allEnemies.map((e) => {
     const peak = Math.max(e.attackDamage, ...(e.phases || []).map((p) => p.overrides?.attackDamage ?? 0));
     const dmgTxt = peak === e.attackDamage ? `${e.attackDamage}` : `${e.attackDamage} (P3:${peak})`;
-    const tank = (hp, dr) => { const h1 = Math.ceil(hp / Math.max(1, e.attackDamage - dr)), h2 = Math.ceil(hp / Math.max(1, peak - dr)); return peak === e.attackDamage ? `${h1}下` : `${h1}下 (P3:${h2}下)`; };
-    const ttk = (d) => { const k = Math.ceil(e.maxHp / d); return `${k}击 (${((k - 1) * cd).toFixed(2)}s)`; };
-    return [e.name, `${e._src === "legacy" ? "旧版·" : ""}${e.regionIds.join("/")}`, e.maxHp, dmgTxt, ...profiles.map(([, d]) => ttk(d)), tank(baseHp, 0), tank(baseHp + armorHp, armorDr), tank(baseHp + helmHp, 0), tank(baseHp + armorHp + helmHp, armorDr)];
+    const tank = (hp, dr) => { const h1 = Math.ceil(hp / Math.max(1, e.attackDamage - dr)), h2 = Math.ceil(hp / Math.max(1, peak - dr)); return peak === e.attackDamage ? `${h1} hits` : `${h1} hits (P3: ${h2})`; };
+    const ttk = (d) => { const k = Math.ceil(e.maxHp / d); return `${k} hits (${((k - 1) * cd).toFixed(2)}s)`; };
+    return [e.name, `${e._src === "legacy" ? "Previous version · " : ""}${e.regionIds.join("/")}`, e.maxHp, dmgTxt, ...profiles.map(([, d]) => ttk(d)), tank(baseHp, 0), tank(baseHp + armorHp, armorDr), tank(baseHp + helmHp, 0), tank(baseHp + armorHp + helmHp, armorDr)];
   });
 
   const coreIds = ["ingot", "ore", "iron_scrap", "charcoal", "herb", "fiber"];
@@ -201,17 +201,17 @@ function main() {
     const fixTxt = fix.total > 0 ? `${fix.total} (${[...fix.byReg].map(([k, v]) => `${k}:${v}`).join(", ")})` : "0";
     const dropNotes = allEnemies.flatMap((e) => (e.drops || []).filter((d) => d.itemId === id).map((d) => {
       const sp = spawnCounts.get(e.id) || { res: 0, night: 0 };
-      return sp.res + sp.night > 0 ? `${e.name}[常${sp.res}/夜${sp.night}]均${((d.count ?? 1) * d.probability).toFixed(2)}` : null;
+      return sp.res + sp.night > 0 ? `${e.name} [${sp.res} resident / ${sp.night} night], mean ${((d.count ?? 1) * d.probability).toFixed(2)}` : null;
     })).filter(Boolean);
     const activeExp = allEnemies.reduce((sum, e) => { const sp = spawnCounts.get(e.id); return (!sp || !sp.res) ? sum : sum + (e.drops || []).filter((d) => d.itemId === id).reduce((a, d) => a + (d.count ?? 1) * d.probability * sp.res, 0); }, 0);
     const heroStarts = (heroesData?.heroes || []).filter((h) => h.startingInventory?.[id] > 0).map((h) => `${h.name}×${h.startingInventory[id]}`);
-    const other = [dropNotes.length ? `活跃掉落: ${dropNotes.join("、")}` : "", heroStarts.length ? `初始: ${heroStarts.join("/")}` : ""].filter(Boolean).join("；") || "配方/生存";
-    let diag = "✅ 健康";
-    if (id === "ingot") diag = `⚠️ 紧平衡：固定矿最多熔 ${Math.floor((fixedMap.get("ore")?.total || 0) / 2)} 锭，唯一+进度需 ${uniq} 锭`;
-    else if (id === "ore") diag = `固定矿点合计 ${fix.total} 矿，完整锭需求见上一行`;
-    else if (id === "iron_scrap" || id === "charcoal") diag = `固定产出 ${fix.total}，唯一/进度需 ${uniq}，常驻敌人掉落期望 ${activeExp.toFixed(2)}`;
-    else if (id === "fiber") diag = `✅ 充裕/微溢出：首区 ${fix.total} 且黎明再生，唯一需 ${uniq}`;
-    return [`${itemsMap.get(id)?.name || id} (${id})`, uniq ? `${uniq} (${uParts.join("+")})` : "0", rep ? `${rep} (${rParts.join("+")})` : "0", uniq + rep, fixTxt, renewSet.has(id) ? "是" : "否", other, diag];
+    const other = [dropNotes.length ? `Active drops: ${dropNotes.join(", ")}` : "", heroStarts.length ? `Starting inventory: ${heroStarts.join("/")}` : ""].filter(Boolean).join(" · ") || "Recipes / Survival";
+    let diag = "Balanced";
+    if (id === "ingot") diag = `Tight supply. Fixed ore yields at most ${Math.floor((fixedMap.get("ore")?.total || 0) / 2)} ingots, and unique and progression recipes need ${uniq}.`;
+    else if (id === "ore") diag = `Fixed deposits yield ${fix.total} ore. See the ingot row for total demand.`;
+    else if (id === "iron_scrap" || id === "charcoal") diag = `Fixed yield ${fix.total}, unique and progression demand ${uniq}, expected resident drops ${activeExp.toFixed(2)}.`;
+    else if (id === "fiber") diag = `Ample supply. The starting region yields ${fix.total}, renewed at dawn. Unique demand is ${uniq}.`;
+    return [`${itemsMap.get(id)?.name || id} (${id})`, uniq ? `${uniq} (${uParts.join("+")})` : "0", rep ? `${rep} (${rParts.join("+")})` : "0", uniq + rep, fixTxt, renewSet.has(id) ? "Yes" : "No", other, diag];
   });
 
   const heroSpeed = balance.hero.moveSpeedPxPerSec;
@@ -220,7 +220,7 @@ function main() {
     `${e.name} (${e.id})`, `${e._src === "legacy" ? "legacy" : e.scope} (${e.regionIds.join("/")})`, e.seedType || e.attack?.type || "-",
     e.maxHp, m.dmg.toFixed(2).replace(/\.00$/, ""), m.cyc, m.aps.toFixed(2), `${m.spd.toFixed(0)} (${((m.spd / heroSpeed) * 100).toFixed(0)}%)`,
     m.score.toFixed(2), m.tier, m.credits,
-    [e.scope === "adventure_only" ? "冒险首领" : "", e._src === "legacy" && sp.res + sp.night === 0 ? "未入现行地图" : "", m.spd > heroSpeed ? "移速超英雄" : "", sp.res + sp.night > 0 ? `常驻${sp.res}/夜${sp.night}` : ""].filter(Boolean).join("；") || "-",
+    [e.scope === "adventure_only" ? "Adventure boss" : "", e._src === "legacy" && sp.res + sp.night === 0 ? "Not placed on the current map" : "", m.spd > heroSpeed ? "Faster than the hero" : "", sp.res + sp.night > 0 ? `${sp.res} resident / ${sp.night} night` : ""].filter(Boolean).join(" · ") || "-",
   ]);
 
   const alerts = [];
@@ -234,9 +234,9 @@ function main() {
   const plantDropItems = new Set((plantsData?.plants || []).flatMap((p) => [...(p.drops || []), ...(p.stumpDrops || []), ...(p.digDrops || [])].map((d) => d.itemId)));
   for (const it of itemsData.items) {
     const advOk = nodeItems.has(it.id) || recipeOut.has(it.id) || activeDropItems.has(it.id) || heroItems.has(it.id);
-    if (!advOk && !legacyDropItems.has(it.id) && !plantDropItems.has(it.id)) addAlert("物品无来源", "🚨 严重", `${it.name} (${it.id})`, "全量数据均无获取途径");
-    else if (!advOk && legacyDropItems.has(it.id)) addAlert("物品无来源", "⚠️ 警告", `${it.name} (${it.id})`, "仅存在于非活跃敌人或遭遇奖励中");
-    else if (!advOk && plantDropItems.has(it.id)) addAlert("物品无来源", "ℹ️ 提示", `${it.name} (${it.id})`, "仅生存模式植株掉落/挖掘获得");
+    if (!advOk && !legacyDropItems.has(it.id) && !plantDropItems.has(it.id)) addAlert("Missing item source", "🚨 Critical", `${it.name} (${it.id})`, "No source in the game data");
+    else if (!advOk && legacyDropItems.has(it.id)) addAlert("Missing item source", "⚠️ Warning", `${it.name} (${it.id})`, "Only available from inactive enemies or encounter rewards");
+    else if (!advOk && plantDropItems.has(it.id)) addAlert("Missing item source", "ℹ️ Info", `${it.name} (${it.id})`, "Only available from Survival plants or digging");
   }
   const badRefs = [], dropErrs = []; let dropCount = 0;
   for (const r of recipesData.recipes) {
@@ -245,48 +245,48 @@ function main() {
   }
   for (const e of allEnemies) for (const d of e.drops || []) { dropCount += 1; if (!itemsMap.has(d.itemId) || d.probability < 0 || d.probability > 1 || (d.count != null && d.count <= 0)) dropErrs.push(`${e.id}:${d.itemId}(p=${d.probability})`); }
   for (const p of plantsData?.plants || []) for (const d of [...(p.drops || []), ...(p.stumpDrops || []), ...(p.digDrops || [])]) { dropCount += 1; if (!itemsMap.has(d.itemId) || d.probability <= 0 || d.probability > 1) dropErrs.push(`${p.id}:${d.itemId}(p=${d.probability})`); }
-  addAlert(badRefs.length ? "配方引用异常" : "跨文件 ID 引用", badRefs.length ? "🚨 严重" : "✅ 通过", badRefs.length ? badRefs.join(", ") : `${recipesData.recipes.length} 条配方`, badRefs.length ? "引用了不存在的 itemId" : "所有输入/输出 itemId 均有效");
-  addAlert(dropErrs.length ? "掉落越界" : "掉落概率检查", dropErrs.length ? "🚨 严重" : "✅ 通过", dropErrs.length ? dropErrs.join(", ") : `${dropCount} 条掉落项`, dropErrs.length ? "概率超出允许范围或引用非法" : "概率与数量均合法");
+  addAlert(badRefs.length ? "Invalid recipe references" : "Cross-file IDs", badRefs.length ? "🚨 Critical" : "✅ Pass", badRefs.length ? badRefs.join(", ") : `${recipesData.recipes.length} recipes`, badRefs.length ? "References an unknown itemId" : "All input and output item IDs are valid");
+  addAlert(dropErrs.length ? "Invalid drop values" : "Drop probabilities", dropErrs.length ? "🚨 Critical" : "✅ Pass", dropErrs.length ? dropErrs.join(", ") : `${dropCount} drops`, dropErrs.length ? "Probability is out of range or a reference is invalid" : "Probabilities and quantities are valid");
   const layoutIds = new Set(layout.regions.map((r) => r.id));
   const missingRegs = regionsData.regions.filter((r) => !layoutIds.has(r.id)).map((r) => `${r.name}(${r.id})`);
-  if (missingRegs.length) addAlert("区域未实装", "⚠️ 警告", missingRegs.join("、"), "存在于 regions.json 但未在 worldLayout.ts 实装");
+  if (missingRegs.length) addAlert("Unplaced regions", "⚠️ Warning", missingRegs.join(", "), "Present in regions.json but missing from worldLayout.ts");
   if (catalogData) {
     const missCat = itemsData.items.filter((x) => !catalogData.itemIds.includes(x.id)).map((x) => x.id);
-    if (missCat.length) addAlert("目录未同步", "⚠️ 警告", missCat.join(", "), "未登记在 catalogDefinitions.json");
+    if (missCat.length) addAlert("Catalog out of sync", "⚠️ Warning", missCat.join(", "), "Missing from catalogDefinitions.json");
   }
 
   let tuning = balance.survival;
   try {
     const file = path.join(ROOT, "src/frontend/public/survival-balance.json");
     tuning = resolveSurvivalTuning(tuning, fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, "utf8")) : {});
-    addAlert("生存覆写", "✅ 通过", "survival-balance.json", Object.entries(tuning).map(([k,v]) => k+"="+v).join(", "));
+    addAlert("Survival overrides", "✅ Pass", "survival-balance.json", Object.entries(tuning).map(([k,v]) => k+"="+v).join(", "));
   } catch (error) {
-    addAlert("生存覆写", "🚨 严重", "survival-balance.json", error.message);
+    addAlert("Survival overrides", "🚨 Critical", "survival-balance.json", error.message);
   }
   const effective = survivalRates(tuning);
-  const survivalSummary = `昼夜基础权重 ${effective.daySec} / ${effective.nightSec}（周期 ${effective.daySec+effective.nightSec}s）；静止 / 移动饥饿 ${effective.idleHungerPerSec} / ${effective.movingHungerPerSec} 点/秒；暴雪受寒额外 ${effective.coldHungerPerSec} 点/秒；野生资源刷新 ${effective.wildRegrowthSec}s；晴夜基础波量 ${effective.clearNightWaveSize}，波次倍率 ${tuning.spawnFrequency}；营火制作燃煤倍率 ${tuning.fuelConsumptionMultiplier}。`;
+  const survivalSummary = `Base day / night weights ${effective.daySec} / ${effective.nightSec} (cycle ${effective.daySec+effective.nightSec}s). Idle / moving hunger ${effective.idleHungerPerSec} / ${effective.movingHungerPerSec} points/s. Extra blizzard hunger ${effective.coldHungerPerSec} points/s. Wild resource regrowth ${effective.wildRegrowthSec}s. Clear-night base wave size ${effective.clearNightWaveSize}, wave frequency multiplier ${tuning.spawnFrequency}. Campfire crafting coal multiplier ${tuning.fuelConsumptionMultiplier}.`;
   const blizzard=readJson("weather.json").weathers.find(w=>w.id==="blizzard");
   const pressureRows=[[1,0,0],[5,2,0],[12,4,blizzard.winterShift]].map(([day,tier,shift])=>{
     const clock=winterDay(day,effective.daySec,effective.nightSec,shift);
-    return [day,shift?blizzard.name:"晴冷微风","T"+tier,clock.duskStart.toFixed(1),
+    return [day,shift?blizzard.name:"Cold, Clear Breeze","T"+tier,clock.duskStart.toFixed(1),
       (clock.nightStart-clock.duskStart).toFixed(1),(clock.cycle-clock.nightStart).toFixed(1),
       (clock.cold*(winter.exposedNightHunger+(shift?tuning.coldHungerPerSecond:0))).toFixed(3),
       raidBudget(day,tier,effective.clearNightWaveSize,shift?blizzard.spawnRateMult:1)];
   });
-  const pressure=mdTable(["生存日","黎明天气","营地","白昼秒","黄昏秒","长夜秒","暴露额外饥饿/秒","袭营预算（若触发）"],pressureRows);
-  const interval=tuning.spawnFrequency>0?[ -1,1 ].map(sign=>Math.max(1,Math.round((raidRules.intervalDays+sign*raidRules.jitterDays)/tuning.spawnFrequency))).join("–")+" 天":"已关闭";
-  const raidSummary="袭营间隔 "+interval+"，提前 "+raidRules.warningMinSec+"–"+raidRules.warningMaxSec+" 秒预警。";
-  console.log("生存数值体检", survivalSummary,"\n"+raidSummary+"\n"+pressure);
-  const critN = alerts.filter((a) => a.sev.includes("严重")).length, warnN = alerts.filter((a) => a.sev.includes("警告")).length;
-  console.log(c.b("\n=== 《余烬林：最后一炬》数值平衡与经济体检摘要 ==="));
-  console.log(`统计范围：物品 ${c.cyan(itemsData.items.length)} | 配方 ${c.cyan(recipesData.recipes.length)} | 怪物 ${c.cyan(allEnemies.length)} | 实装区域 ${c.cyan(layout.regions.length)}/${regionsData.regions.length}`);
-  console.log(`健康度告警：${critN ? c.red(`严重 ${critN}`) : c.green("严重 0")} | ${warnN ? c.yellow(`警告 ${warnN}`) : c.green("警告 0")} | 全部检查 ${alerts.length} 项`);
-  for (const a of alerts.filter((x) => x.sev.includes("严重") || x.sev.includes("警告"))) {
-    console.log(`  ${a.sev.includes("严重") ? c.red("•") : c.yellow("•")} [${a.cat}] ${a.target} — ${a.detail}`);
+  const pressure=mdTable(["Survival day","Weather at dawn","Camp tier","Day (s)","Dusk (s)","Long night (s)","Extra exposure hunger/s","Raid budget (if triggered)"],pressureRows);
+  const interval=tuning.spawnFrequency>0?[ -1,1 ].map(sign=>Math.max(1,Math.round((raidRules.intervalDays+sign*raidRules.jitterDays)/tuning.spawnFrequency))).join("–")+" days":"Disabled";
+  const raidSummary=`Camp raids: ${interval} between raids, with ${raidRules.warningMinSec}–${raidRules.warningMaxSec}s of warning.`;
+  console.log("Survival balance", survivalSummary,"\n"+raidSummary+"\n"+pressure);
+  const critN = alerts.filter((a) => a.sev.includes("Critical")).length, warnN = alerts.filter((a) => a.sev.includes("Warning")).length;
+  console.log(c.b("\n=== Emberwood: Last Torch — Balance and Economy Summary ==="));
+  console.log(`Items ${c.cyan(itemsData.items.length)} | Recipes ${c.cyan(recipesData.recipes.length)} | Enemies ${c.cyan(allEnemies.length)} | Implemented regions ${c.cyan(layout.regions.length)}/${regionsData.regions.length}`);
+  console.log(`Configuration checks: ${critN ? c.red(`Critical ${critN}`) : c.green("Critical 0")} | ${warnN ? c.yellow(`Warning ${warnN}`) : c.green("Warning 0")} | ${alerts.length} total`);
+  for (const a of alerts.filter((x) => x.sev.includes("Critical") || x.sev.includes("Warning"))) {
+    console.log(`  ${a.sev.includes("Critical") ? c.red("•") : c.yellow("•")} [${a.cat}] ${a.target} — ${a.detail}`);
   }
-  console.log(c.b("\n前 5 高威胁怪物（永恒模式信用点参考）："));
-  threatList.slice(0, 5).forEach(({ e, m }, idx) => console.log(`  ${idx + 1}. ${c.cyan(e.name)} (${e.id}) | 威胁分 ${c.yellow(m.score.toFixed(2))} [${m.tier}] | 建议 ${c.green(`${m.credits} 点`)}`));
-  console.log(c.b("\n核心经济摘要："));
+  console.log(c.b("\nTop five threats and suggested Eternal Mode credits"));
+  threatList.slice(0, 5).forEach(({ e, m }, idx) => console.log(`  ${idx + 1}. ${c.cyan(e.name)} (${e.id}) | Threat ${c.yellow(m.score.toFixed(2))} [${m.tier}] | ${c.green(`${m.credits} credits`)}`));
+  console.log(c.b("\nCore economic summary: "));
   for (const row of econRows.slice(0, 4)) console.log(`  ${row[0]} · ${row[7]}`);
 
   const emit = () => {
@@ -294,25 +294,25 @@ function main() {
     const ttkRisks = allEnemies.map(e => ({ name: e.name, seconds: (Math.ceil(e.maxHp / baseDmg) - 1) * cd })).sort((a,b) => b.seconds - a.seconds).slice(0,5);
     console.log("\n@@CONSOLE@@" + JSON.stringify({ alerts, ttkRisks, materials: econRows.map(r => r[0] + " · " + r[7]) }));
   };
-  if (SUMMARY_ONLY) { console.log(c.dim("\n[--summary] 仅终端打印，未改写 docs/BALANCE_REPORT.md。\n")); emit(); return; }
+  if (SUMMARY_ONLY) { console.log(c.dim("\n[--summary] Printed to the terminal only. docs/BALANCE_REPORT.md was left intact.\n")); emit(); return; }
   const playtest = fs.existsSync(PLAYTEST_PATH) ? fs.readFileSync(PLAYTEST_PATH, "utf8").trim() : "";
   const md = [
-    "# 数值平衡与经济体检报告（BALANCE_REPORT）", "",
-    "> 由 `pnpm bal`（`tools/balance-report.mjs`）生成。配置指标来自游戏数据，实测记录来自 `docs/BALANCE_PLAYTEST.md`。",
-    `> 统计：物品 \`${itemsData.items.length}\` 项 · 配方 \`${recipesData.recipes.length}\` 条 · 怪物 \`${allEnemies.length}\` 项 · 实装区域 \`${layout.regions.length}\` 个。`, "",
-    "## 1. 战斗 TTK 与容错表", "", mdTable(combatHeaders, combatRows), "",
-    `- TTK 公式：\`(ceil(HP / 伤害) - 1) × ${cd}s\`；非格雷同时持有铁矛+淬炭短刃同为 4 伤，格雷可达 5 伤。`, "",
-    "## 2. 铁矿与核心材料经济表", "",
-    mdTable(["材料", "唯一/进度消耗", "可重复(单次)", "合计", "固定采集产出", "黎明再生", "其他来源", "经济诊断"], econRows), "",
-    "## 3. 怪物威胁度与永恒模式参考表", "",
-    mdTable(["怪物", "来源/区域", "行为", "HP", "有效伤害", "循环(s)", "攻速", "移速", "威胁分", "评级", "建议信用点", "备注"], threatRows), "",
-    "## 生存模式有效配置", "", survivalSummary, "", raidSummary, "", pressure, "",
+    "# Balance and Economy Report", "",
+    "> Generated by `pnpm bal` (`tools/balance-report.mjs`). Configuration metrics come from game data, and playtest notes come from `docs/BALANCE_PLAYTEST.md`.",
+    `> Items \`${itemsData.items.length}\` · Recipes \`${recipesData.recipes.length}\` · Enemies \`${allEnemies.length}\` · Implemented regions \`${layout.regions.length}\`.`, "",
+    "## 1. Combat time to kill and hits to defeat", "", mdTable(combatHeaders, combatRows), "",
+    `- TTK = \`(ceil(HP / damage) - 1) × ${cd}s\`. With both the Iron Spear and Charcoal-Tempered Blade, Gale deals 5 damage and other heroes deal 4.`, "",
+    "## 2. Iron ore and core material economy", "",
+    mdTable(["Material", "Unique and progression cost", "Repeatable cost per craft", "Total", "Fixed yield", "Renews at dawn", "Other sources", "Supply notes"], econRows), "",
+    "## 3. Enemy threat and Eternal Mode reference", "",
+    mdTable(["Enemy", "Source/region", "Behavior", "HP", "Effective damage", "Cycle (s)", "Attack rate", "Move speed", "Threat score", "Tier", "Suggested credits", "Notes"], threatRows), "",
+    "## Effective Survival configuration", "", survivalSummary, "", raidSummary, "", pressure, "",
     ...(playtest ? [playtest, ""] : []),
-    "## 4. 配置健康度告警", "",
-    mdTable(["检查类别", "级别", "涉及对象", "详细说明"], alerts.map((a) => [a.cat, a.sev, a.target, a.detail])), "",
+    "## 4. Configuration checks", "",
+    mdTable(["Check", "Severity", "Target", "Details"], alerts.map((a) => [a.cat, a.sev, a.target, a.detail])), "",
   ].join("\n");
   fs.mkdirSync(path.dirname(REPORT_PATH), { recursive: true });
   fs.writeFileSync(REPORT_PATH, md, "utf8");
-  console.log(c.green(`\n✔ 已写入完整报告：${path.relative(ROOT, REPORT_PATH)}\n`)); emit();
+  console.log(c.green(`\nReport written to ${path.relative(ROOT, REPORT_PATH)}\n`)); emit();
 }
 main();

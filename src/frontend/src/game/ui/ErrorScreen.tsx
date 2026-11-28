@@ -32,11 +32,11 @@ export function ErrorScreen({
       className="pointer-events-auto fixed inset-0 z-[1000] flex items-center justify-center bg-night/85 p-3"
     >
       <section
-        aria-label="游戏出错"
+        aria-label="Game error"
         className="pixel-panel flex max-h-full w-full max-w-md flex-col gap-4 overflow-auto p-6"
       >
         <h2 className="font-pixel text-center text-2xl font-bold text-hp text-pixel-shadow">
-          游戏无法继续
+          The game cannot continue
         </h2>
         <p role="alert" className="text-center text-sm text-foreground">
           {report.message}
@@ -47,15 +47,15 @@ export function ErrorScreen({
           target="_blank"
           rel="noopener noreferrer"
         >
-          一键提交 GitHub Issue
+          Open a GitHub issue
         </a>
         <PixelButton onClick={() => void copyReport()} variant="ghost">
-          复制 AI 诊断包
+          Copy AI diagnostics
         </PixelButton>
-        {copyState === "copied" && <output>已复制完整诊断包。</output>}
+        {copyState === "copied" && <output>Full diagnostics copied.</output>}
         {copyState === "manual" && (
           <textarea
-            aria-label="完整诊断包，可手动复制"
+            aria-label="Full diagnostic report for manual copying"
             className="min-h-28 w-full bg-night p-2 text-sm text-foreground"
             value={markdown}
             readOnly
@@ -67,7 +67,7 @@ export function ErrorScreen({
           onClick={onBack}
           className="py-3"
         >
-          返回标题
+          Return to title
         </PixelButton>
       </section>
     </div>

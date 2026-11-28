@@ -2,71 +2,71 @@
   "items": [
     {
       "id": "wood",
-      "name": "木材",
+      "name": "Wood",
       "type": "material",
       "maxStack": 99,
       "effects": [],
-      "description": "从枯枝拾取，用于营火升级、制作、熔炼和烹饪。"
+      "description": "Gathered from dead branches. Used to upgrade the campfire, craft, smelt, and cook."
     },
     {
       "id": "stone",
-      "name": "石料",
+      "name": "Stone",
       "type": "material",
       "maxStack": 99,
       "effects": [],
-      "description": "从碎石堆拾取，用于营火升级和制作接力火盆。"
+      "description": "Gathered from rubble. Used to upgrade the campfire and make Relay Braziers."
     },
     {
       "id": "fiber",
-      "name": "粗纤维",
+      "name": "Rough Fiber",
       "type": "material",
       "maxStack": 99,
       "effects": [],
-      "description": "从枯草采集，用于制作绷带和铁罩提灯。"
+      "description": "Gathered from dried grass. Used to make Bandages and Iron Lanterns."
     },
     {
       "id": "berry",
-      "name": "红莓",
+      "name": "Red Berries",
       "type": "food",
       "maxStack": 30,
       "effects": [{ "trigger": "use", "type": "restore_stat", "stat": "hunger", "amount": 12 }],
-      "description": "从红莓灌木采集，可直接食用，也可做成烤莓饼或暖汤。"
+      "description": "Picked from red berry bushes. Eat them raw or use them in Baked Berry Cakes and Warm Frostcap Stew."
     },
     {
       "id": "frostcap",
-      "name": "霜菇",
+      "name": "Frostcap",
       "type": "material",
       "maxStack": 30,
       "effects": [],
-      "description": "生长在废磨坊背阴处和冰峡，是霜菇暖汤的材料。"
+      "description": "Grows in the shade of the Old Mill and in the Ice Gorge. Used in Warm Frostcap Stew."
     },
     {
       "id": "ore",
-      "name": "铁矿",
+      "name": "Iron Ore",
       "type": "material",
       "maxStack": 99,
       "effects": [],
-      "description": "从废磨坊和冰峡的矿点采集，每两份可熔炼成一块铁锭。"
+      "description": "Mined at the Old Mill and Ice Gorge. Smelt two ore to make one Iron Ingot."
     },
     {
       "id": "ingot",
-      "name": "铁锭",
+      "name": "Iron Ingot",
       "type": "material",
       "maxStack": 99,
       "effects": [],
-      "description": "由铁矿熔炼而成，用于装备、接力火盆和三级营火。"
+      "description": "Smelted from Iron Ore. Used for equipment, Relay Braziers, and the Level 3 campfire."
     },
     {
       "id": "ration",
-      "name": "烤莓饼",
+      "name": "Baked Berry Cake",
       "type": "food",
       "maxStack": 20,
       "effects": [{ "trigger": "use", "type": "restore_stat", "stat": "hunger", "amount": 36 }],
-      "description": "便于携带的烤制口粮，食用后恢复 36 点饱食。"
+      "description": "A portable baked ration that restores 36 fullness."
     },
     {
       "id": "warm_stew",
-      "name": "霜菇暖汤",
+      "name": "Warm Frostcap Stew",
       "type": "food",
       "maxStack": 10,
       "effects": [
@@ -79,38 +79,38 @@
           "reapply": "refresh_duration"
         }
       ],
-      "description": "回 24 饱食，90 秒内夜耗减半，可叠提灯。"
+      "description": "Restores 24 fullness and halves torch drain at night for 90 seconds. Stacks with lanterns."
     },
     {
       "id": "bandage",
-      "name": "绷带",
+      "name": "Bandage",
       "type": "medicine",
       "maxStack": 10,
       "effects": [{ "trigger": "use", "type": "restore_stat", "stat": "hp", "amount": 2, "requiresBelowMax": true }],
-      "description": "恢复 2 点生命，满生命时无法使用。"
+      "description": "Restores 2 health. Requires missing health."
     },
     {
       "id": "lantern",
-      "name": "铁罩提灯",
+      "name": "Iron Lantern",
       "type": "equipment",
       "maxStack": 1,
       "effects": [{ "trigger": "owned", "type": "night_light_drain_multiplier", "multiplier": 0.75 }],
-      "description": "持有后自动生效，夜间火光消耗降至原来的 75%。"
+      "description": "While carried, reduces night-time torch drain to 75% of normal."
     },
     {
       "id": "iron_spear",
-      "name": "铁矛",
+      "name": "Iron Spear",
       "type": "equipment",
       "maxStack": 1,
       "effects": [
         { "trigger": "owned", "type": "set_combat_stat", "stat": "attackDamage", "value": 2 },
         { "trigger": "owned", "type": "set_combat_stat", "stat": "attackRangeTiles", "value": 1.75 }
       ],
-      "description": "持有生效，伤害升至 2，攻击距离 1.75 格。"
+      "description": "While carried, sets attack damage to 2 and attack range to 1.75 tiles."
     },
     {
       "id": "relay_kit",
-      "name": "接力火盆",
+      "name": "Relay Brazier",
       "type": "camp_kit",
       "maxStack": 2,
       "effects": [
@@ -122,181 +122,181 @@
           "consumeCount": 1
         }
       ],
-      "description": "点燃废磨坊或冰峡未亮火站，常驻 5 格火圈。"
+      "description": "Lights an unused fire station in the Old Mill or Ice Gorge, creating a permanent 5-tile light radius."
     },
     {
       "id": "ember_seal",
-      "name": "炉印",
+      "name": "Ember Seal",
       "type": "quest",
       "maxStack": 3,
       "effects": [{ "trigger": "owned", "type": "quest_requirement", "targetId": "final_beacon", "requiredCount": 2 }],
-      "description": "督工与守炬者各持一枚，集齐两枚可燃东端烽台。"
+      "description": "The Overseer and the Pyre Warden each guard one. Collect both to light the eastern beacon."
     },
     {
       "id": "beacon_heart",
-      "name": "烽芯",
+      "name": "Beacon Core",
       "type": "quest",
       "maxStack": 1,
       "effects": [{ "trigger": "interact", "type": "ignite_beacon", "targetId": "final_beacon", "requiredCount": 1 }],
-      "description": "旧烽台守卫留下的烽芯，是过去巡火人点火时用的火种。"
+      "description": "An ember left by the old Beacon Keeper, used by generations of fire patrols."
     },
     {
       "id": "raw_meat",
-      "name": "生肉",
+      "name": "Raw Meat",
       "type": "material",
       "maxStack": 20,
       "effects": [
         { "trigger": "use", "type": "restore_stat", "stat": "hunger", "amount": 8 },
         { "trigger": "use", "type": "restore_stat", "stat": "hp", "amount": -1 }
       ],
-      "description": "带着霜气的兽肉，生吃容易伤胃，烤熟后极佳。"
+      "description": "Frost-cold game meat. It can upset your stomach when raw, but it is excellent roasted."
     },
     {
       "id": "pelt",
-      "name": "厚实兽皮",
+      "name": "Thick Pelt",
       "type": "material",
       "maxStack": 20,
       "effects": [],
-      "description": "雪林野兽的毛皮，缝制防寒衣物的好材料。"
+      "description": "A snowy woodland pelt suitable for sewing warm clothing."
     },
     {
       "id": "ember_dust",
-      "name": "余烬尘",
+      "name": "Ember Dust",
       "type": "material",
       "maxStack": 50,
       "effects": [],
-      "description": "泛着微热的暗红粉尘，蕴含驱散黑雾的微光。"
+      "description": "Faintly warm, dark-red dust that glows brightly enough to keep black fog away."
     },
     {
       "id": "resin",
-      "name": "松脂",
+      "name": "Pine Resin",
       "type": "material",
       "maxStack": 30,
       "effects": [],
-      "description": "黏稠易燃的树胶，能让火把与营火燃烧更久。"
+      "description": "Sticky, flammable pine sap that keeps torches and campfires burning longer."
     },
     {
       "id": "charcoal",
-      "name": "木炭",
+      "name": "Charcoal",
       "type": "material",
       "maxStack": 50,
       "effects": [],
-      "description": "烧透的黑炭，极佳的燃料与锻造辅料。"
+      "description": "Thoroughly charred wood used as fuel and in forging."
     },
     {
       "id": "iron_scrap",
-      "name": "废铁片",
+      "name": "Iron Scrap",
       "type": "material",
       "maxStack": 30,
       "effects": [],
-      "description": "旧磨坊与霜甲上剥落的铁件，可重铸为利器。"
+      "description": "Iron salvaged from the Old Mill and frost armor. Reforge it into weapons."
     },
     {
       "id": "feather",
-      "name": "寒鸦羽",
+      "name": "Frost Crow Feather",
       "type": "material",
       "maxStack": 30,
       "effects": [],
-      "description": "轻盈耐寒的深色羽毛，可用于制作轻便装备。"
+      "description": "A light, cold-resistant dark feather for crafting light equipment."
     },
     {
       "id": "herb",
-      "name": "雪地草药",
+      "name": "Snow Herb",
       "type": "material",
       "maxStack": 20,
       "effects": [{ "trigger": "use", "type": "restore_stat", "stat": "hp", "amount": 1 }],
-      "description": "在冻土缝隙生长的苦草，捣碎后可止血疗伤。"
+      "description": "A bitter plant that grows in cracks in frozen earth. Crush it to treat wounds."
     },
     {
       "id": "roast_meat",
-      "name": "炭烤兽肉",
+      "name": "Grilled Meat",
       "type": "consumable",
       "maxStack": 10,
       "effects": [
         { "trigger": "use", "type": "restore_stat", "stat": "hunger", "amount": 35 },
         { "trigger": "use", "type": "restore_stat", "stat": "hp", "amount": 2 }
       ],
-      "description": "焦香滚烫的烤肉，能迅速恢复体力与伤势。"
+      "description": "Hot, smoky roasted meat that restores energy and helps heal injuries."
     },
     {
       "id": "herb_salve",
-      "name": "雪草药膏",
+      "name": "Snow Herb Salve",
       "type": "consumable",
       "maxStack": 10,
       "effects": [{ "trigger": "use", "type": "restore_stat", "stat": "hp", "amount": 4 }],
-      "description": "草药与松脂调制的药膏，敷上后伤口迅速止痛。"
+      "description": "An herbal salve made with resin that quickly soothes wounds."
     },
     {
       "id": "resin_torch",
-      "name": "松脂火把",
+      "name": "Resin Torch",
       "type": "consumable",
       "maxStack": 5,
       "effects": [{ "trigger": "use", "type": "restore_stat", "stat": "light", "amount": 45 }],
-      "description": "大幅补充光明。在营地外使用，可点燃面前一格，火会沿干燥植被蔓延。"
+      "description": "Restores a large amount of torchlight. Use it outside camp to ignite the tile ahead. Fire spreads through dry vegetation."
     },
     {
       "id": "fur_cloak",
-      "name": "兽皮披风",
+      "name": "Fur Cloak",
       "type": "equipment",
       "maxStack": 1,
       "effects": [
         { "trigger": "owned", "type": "add_owned_stat", "stat": "maxHp", "value": 3 },
         { "trigger": "owned", "type": "add_owned_stat", "stat": "coldResist", "value": 0.25 }
       ],
-      "description": "缝入寒鸦羽的厚皮披风，抵御深林刺骨寒风。"
+      "description": "A heavy pelt cloak lined with Frost Crow Feathers to block the bitter woodland wind."
     },
     {
       "id": "iron_blade",
-      "name": "淬炭短刃",
+      "name": "Charcoal-Tempered Blade",
       "type": "equipment",
       "maxStack": 1,
       "effects": [{ "trigger": "owned", "type": "add_owned_stat", "stat": "attackDamage", "value": 2 }],
-      "description": "废铁经木炭重锻的短刃，足以劈开霜甲。"
+      "description": "A short blade reforged from scrap with charcoal. It can cut through frost armor."
     },
     {
       "id": "ember_lantern",
-      "name": "余烬提灯",
+      "name": "Ember Lantern",
       "type": "equipment",
       "maxStack": 1,
       "effects": [
         { "trigger": "owned", "type": "light_radius_multiplier", "multiplier": 1.35 },
         { "trigger": "owned", "type": "night_light_drain_multiplier", "multiplier": 0.75 }
       ],
-      "description": "装满余烬尘的铁提灯，在黑雾中维持稳定光圈。"
+      "description": "An iron lantern filled with Ember Dust that keeps a steady ring of light in black fog."
     },
     {
       "id": "iron_buckler",
-      "name": "锻铁圆盾",
+      "name": "Wrought-Iron Buckler",
       "type": "equipment",
       "maxStack": 1,
       "effects": [{ "trigger": "owned", "type": "periodic_block", "cooldownSec": 14 }],
-      "description": "持有后每 14 秒蓄满一次格挡，自动抵消下一次敌方攻击。"
+      "description": "While carried, charges every 14 seconds and automatically blocks the next enemy attack."
     },
     {
       "id": "iron_armor",
-      "name": "锻铁胸甲",
+      "name": "Wrought-Iron Breastplate",
       "type": "equipment",
       "maxStack": 1,
       "effects": [
         { "trigger": "owned", "type": "add_owned_stat", "stat": "maxHp", "value": 2 },
         { "trigger": "owned", "type": "add_owned_stat", "stat": "damageReduction", "value": 1 }
       ],
-      "description": "持有后生命上限 +2，受击减伤 1（最低 1 点）。"
+      "description": "While carried, adds 2 maximum health and reduces incoming damage by 1, to a minimum of 1."
     },
     {
       "id": "iron_boots",
-      "name": "踏铁雪靴",
+      "name": "Iron Snow Boots",
       "type": "equipment",
       "maxStack": 1,
       "effects": [
         { "trigger": "owned", "type": "add_owned_stat", "stat": "moveSpeedBonus", "value": 0.1 },
         { "trigger": "owned", "type": "add_owned_stat", "stat": "dashCooldownReductionSec", "value": 0.35 }
       ],
-      "description": "持有后移动速度 +10%，踏雪急步冷却缩短 0.35 秒。"
+      "description": "While carried, increases movement speed by 10% and reduces Snow Dash cooldown by 0.35 seconds."
     },
     {
       "id": "iron_helm",
-      "name": "锻铁重盔",
+      "name": "Heavy Wrought-Iron Helm",
       "type": "equipment",
       "maxStack": 1,
       "effects": [
@@ -304,31 +304,80 @@
         { "trigger": "owned", "type": "add_owned_stat", "stat": "immunityBonusSec", "value": 0.25 },
         { "trigger": "owned", "type": "add_owned_stat", "stat": "coldResist", "value": 0.15 }
       ],
-      "description": "生命上限 +2、无敌 +0.25 秒、抗寒 +15%。"
+      "description": "Adds 2 maximum health, 0.25 seconds of invulnerability after a hit, and 15% cold resistance."
     },
-    { "id": "pine_cone", "name": "霜松球果", "type": "material", "maxStack": 30, "effects": [], "description": "种下可长成霜松。" },
-    { "id": "birch_sapling", "name": "灰桦树苗", "type": "material", "maxStack": 30, "effects": [], "description": "种下可长成灰桦。" },
-    { "id": "ember_acorn", "name": "余烬松实", "type": "material", "maxStack": 30, "effects": [], "description": "种下可长成焦炭古松。" },
-    { "id": "berry_cutting", "name": "雪莓插条", "type": "material", "maxStack": 30, "effects": [], "description": "种下可长成雪莓灌木。" },
-    { "id": "grass_tuft", "name": "韧草根簇", "type": "material", "maxStack": 30, "effects": [], "description": "种下可长成冻原韧草。" },
-    { "id": "herb_seed", "name": "苦草种子", "type": "material", "maxStack": 30, "effects": [], "description": "种下可长成雪地草药簇。" },
-    { "id": "reed_root", "name": "冰沼苇根", "type": "material", "maxStack": 30, "effects": [], "description": "在近水处种下可长成冰沼芦苇。" },
-    { "id": "spore_cap", "name": "冷光孢子", "type": "material", "maxStack": 30, "effects": [], "description": "种下可长成微光冻菌。" },
+    { "id": "pine_cone", "name": "Frostpine Cone", "type": "material", "maxStack": 30, "effects": [], "description": "Plant to grow a Frostpine." },
+    {
+      "id": "birch_sapling",
+      "name": "Ash Birch Sapling",
+      "type": "material",
+      "maxStack": 30,
+      "effects": [],
+      "description": "Plant to grow an Ash Birch."
+    },
+    {
+      "id": "ember_acorn",
+      "name": "Emberpine Seed",
+      "type": "material",
+      "maxStack": 30,
+      "effects": [],
+      "description": "Plant to grow an ancient Charpine."
+    },
+    {
+      "id": "berry_cutting",
+      "name": "Snowberry Cutting",
+      "type": "material",
+      "maxStack": 30,
+      "effects": [],
+      "description": "Plant to grow a Snowberry bush."
+    },
+    {
+      "id": "grass_tuft",
+      "name": "Toughgrass Tuft",
+      "type": "material",
+      "maxStack": 30,
+      "effects": [],
+      "description": "Plant to grow Tundra Toughgrass."
+    },
+    {
+      "id": "herb_seed",
+      "name": "Bittergrass Seed",
+      "type": "material",
+      "maxStack": 30,
+      "effects": [],
+      "description": "Plant to grow a cluster of Snow Herbs."
+    },
+    {
+      "id": "reed_root",
+      "name": "Ice Bog Reed Root",
+      "type": "material",
+      "maxStack": 30,
+      "effects": [],
+      "description": "Plant near water to grow Ice Bog Reed."
+    },
+    {
+      "id": "spore_cap",
+      "name": "Coldlight Spore",
+      "type": "material",
+      "maxStack": 30,
+      "effects": [],
+      "description": "Plant to grow a glowing Frost Fungus."
+    },
     {
       "id": "ash_compost",
-      "name": "灰烬堆肥",
+      "name": "Ash Compost",
       "type": "material",
       "maxStack": 20,
       "effects": [],
-      "description": "生存中用于立即推进生长，并在 180 秒内加快幼苗生长。"
+      "description": "In Survival, immediately advances growth and speeds seedling growth for 180 seconds."
     },
     {
       "id": "ember_mulch",
-      "name": "余烬暖肥",
+      "name": "Ember Mulch",
       "type": "material",
       "maxStack": 15,
       "effects": [],
-      "description": "推进一阶生长，并在 240 秒内催熟抗暴雪。"
+      "description": "Advances growth by one stage and accelerates ripening and protects against blizzards for 240 seconds."
     }
   ]
 }

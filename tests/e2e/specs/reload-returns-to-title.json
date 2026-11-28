@@ -29,17 +29,17 @@
       8
     ],
     "steps": [
-      "Press the 新游戏 button",
+      "I'm sorry, I'm sorry, but I'm sorry, but I'm sorry, I'm sorry",
       "Reload the page"
     ],
     "checks": [
       {
         "afterStep": 0,
-        "expectNoText": "新游戏"
+        "expectNoText": "New Game"
       },
       {
         "afterStep": 1,
-        "expectText": "余烬林：最后一炬"
+        "expectText": "Emberwood: Last Torch"
       }
     ]
   }

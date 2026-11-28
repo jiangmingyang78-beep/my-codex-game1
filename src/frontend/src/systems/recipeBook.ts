@@ -48,5 +48,5 @@ export function discoverRecipes(
   }
   const batch = notice.payload.recipeNames as string[];
   batch.push(...names);
-  notice.payload.message = `解锁新配方：${batch[0]}${batch.length > 1 ? ` 等 ${batch.length} 项` : ""}`;
+  notice.payload.message = `Unlock the new formula: ${batch[0]}${batch.length > 1 ? ` Wait ${batch.length} Item` : ""}`;
 }

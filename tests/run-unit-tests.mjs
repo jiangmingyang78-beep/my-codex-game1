@@ -16,7 +16,7 @@ export async function runUnitTests(requested = []) {
         .filter((entry) => entry.isFile() && /\.test\.[jt]s$/.test(entry.name))
         .map((entry) => relative(root, resolve(entry.parentPath, entry.name)))
         .sort();
-  if (!files.length) throw new Error("没有找到单元测试");
+  if (!files.length) throw new Error("No unit testing found");
 
   const server = await createServer({
     configFile: false,

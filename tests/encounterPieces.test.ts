@@ -18,7 +18,7 @@ import { stampSetPieceIntoWorld } from "@/systems/world/ldtkAdapter";
 import type { StampGrid } from "@/systems/world/setPieceStamp";
 import { it } from "./fixtures/it";
 
-it("八份奇遇的手写和 LDtk 数据通过注册表校验，错误外键指向具体字段", () => {
+it("Eight odd handwriting and LDtk data are verified by the registration form, and the error extra-key points to the specific field._Friction_Functioned_F", () => {
   assert.doesNotThrow(() => validateGameData(dataFiles));
   assert.equal(encounterById.size, 8);
   for (const mutate of [
@@ -44,7 +44,7 @@ it("八份奇遇的手写和 LDtk 数据通过注册表校验，错误外键指�
   }
 });
 
-it("矩形印章旋转和镜像同步变换地形、实体与触发器，越界不写入", () => {
+it("Rectangular stamp rotations and mirrors synchronized terrain, entity and triggers and cross-border non-writing", () => {
   const grid: StampGrid = {
     width: 6,
     height: 6,
@@ -64,7 +64,7 @@ it("矩形印章旋转和镜像同步变换地形、实体与触发器，越界�
     props: [{ x: 0, y: 0, kind: "sled", interactive: true }],
     entities: [{ x: 2, y: 1, kind: "plant", ref: "mire_reed" }],
     lootTable: [],
-    triggerEvent: { kind: "cache", message: "补给" },
+    triggerEvent: { kind: "cache", message: "Replenishment" },
   };
   const rng = () => 0.26;
   const result = stampSetPieceIntoWorld(grid, piece, 1, 1, rng)!;
@@ -83,7 +83,7 @@ it("矩形印章旋转和镜像同步变换地形、实体与触发器，越界�
   assert.deepEqual(resolveEncounter(sled).props, sled.props);
 });
 
-it("三组种子满足全足迹群系、世界配额、营地距离、跨区块不重叠和同类间距", () => {
+it("Three sets of seeds satisfy the full footprint system, world quotas, camp distance, non-overlapping of blocks and similar spacing. —", () => {
   for (const seed of [0, 42, 2026]) {
     const world = createSurvivalWorld(seed);
     const cells = new Set<string>(),
@@ -118,7 +118,7 @@ it("三组种子满足全足迹群系、世界配额、营地距离、跨区块�
   }
 });
 
-it("从出生格在成品区块上四向 BFS 可以到达每一处交互点", () => {
+it("From birth grids on the finished block, four to BFF can reach each interactive point", () => {
   const world = createSurvivalWorld(42);
   const sites = world.encounters;
   const minX = Math.min(0, ...sites.map((s) => s.left)) - 36,
@@ -157,7 +157,7 @@ it("从出生格在成品区块上四向 BFS 可以到达每一处交互点", ()
     assert.equal(seen[(trigger.y - minY) * width + trigger.x - minX], 2);
 });
 
-it("奇遇仅在靠近后解锁，存档往返保留发现和一次性触发状态", () => {
+it("The surprises are unlocked only after approaching, the archived return to retain the discovery and the one-off trigger state", () => {
   const world = createSurvivalWorld(42),
     site = world.encounters[0];
   const progress = encounterProgressForSave(undefined);
@@ -179,7 +179,7 @@ it("奇遇仅在靠近后解锁，存档往返保留发现和一次性触发状�
   );
 });
 
-it("无合法位置时有限次尝试并报告跳过", () => {
+it("Limited attempts and reports of skipping when no legal position exists", () => {
   const impossible = { ...encounterTemplates[0], allowedBiomes: [] };
   const warnings: unknown[][] = [];
   const previous = console.warn;

@@ -1,61 +1,61 @@
 {
   "projects": {
     "windHearth": {
-      "name": "石砌护风炉塘",
-      "detail": "石壁削弱风雪燃耗，扩大营火光圈。",
+      "name": "Stone Windbreak Hearth",
+      "detail": "Stone walls reduce fuel use in storms and extend the campfire's light radius.",
       "tier": 1,
       "requires": [],
       "cost": { "stone": 6, "wood": 2 }
     },
     "kiln": {
-      "name": "炼炭窑",
-      "detail": "篝火旁打开背包，可把木材炼成耐烧的炭块。",
+      "name": "Charcoal Kiln",
+      "detail": "Open the inventory near the campfire to turn Wood into long-burning Kiln Charcoal.",
       "tier": 2,
       "requires": ["windHearth"],
       "cost": { "stone": 5, "clay": 2 }
     },
     "dryingRack": {
-      "name": "草药烘干架",
-      "detail": "篝火旁打开背包，可烘制回血、抗寒的草药包。",
+      "name": "Herb Drying Rack",
+      "detail": "Open the inventory near the campfire to dry herbs into pouches that heal and resist cold.",
       "tier": 2,
       "requires": ["windHearth"],
       "cost": { "wood": 4, "fiber": 2 },
       "legacyCredit": { "fiber": "reed" }
     },
     "watchPyre": {
-      "name": "哨戒烽火柱",
-      "detail": "营火点燃时，东侧哨柱照亮外围，封住东侧袭营路线。",
+      "name": "Watch Beacon",
+      "detail": "When the campfire is lit, the eastern Watch Beacon lights the perimeter and blocks raids from the east.",
       "tier": 3,
       "requires": ["kiln", "dryingRack"],
       "cost": { "wood": 6, "copper": 2, "ember_dust": 1 }
     },
     "stakes": {
-      "name": "拒马陷阱",
-      "detail": "外围拒马带使敌人减速，尖刺造成伤害。",
+      "name": "Stake Trap",
+      "detail": "Outer stakes slow enemies and spikes deal damage.",
       "tier": 4,
       "requires": ["watchPyre"],
       "cost": { "wood": 8, "iron": 2, "ember_dust": 2 }
     },
     "stoker": {
-      "name": "自动添柴炉心",
-      "detail": "夜间余火不足时消耗库存燃料，优先补入炭块。",
+      "name": "Self-Feeding Hearth",
+      "detail": "When the fire runs low at night, it automatically uses fuel from inventory, starting with Kiln Charcoal.",
       "tier": 4,
       "requires": ["watchPyre"],
       "cost": { "iron": 3, "coal": 3, "ember_dust": 2 }
     },
     "wellhead": {
-      "name": "修缮井台",
-      "detail": "手持水壶靠近营地水井时，自动装满。",
+      "name": "Restore the Well",
+      "detail": "An equipped Watering Can fills automatically near the camp well.",
       "cost": { "wood": 6, "stone": 5 }
     },
     "restCorner": {
-      "name": "布置休息角",
-      "detail": "在营地床上睡觉少消耗 4 点饱食。",
+      "name": "Set Up a Rest Corner",
+      "detail": "Sleeping in the camp bed costs 4 fewer fullness points.",
       "cost": { "wheat": 4, "wool": 2 }
     },
     "feedingTrough": {
-      "name": "添置禽舍料槽",
-      "detail": "营地的鸡每次多产 1 枚蛋。",
+      "name": "Add a Coop Feeder",
+      "detail": "Camp chickens produce one extra egg per cycle.",
       "cost": { "copper": 2, "wood": 3, "egg": 2 }
     }
   },

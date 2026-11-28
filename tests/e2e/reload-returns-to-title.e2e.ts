@@ -64,9 +64,9 @@ test("reload-returns-to-title", async ({ app, agent, screen, browser }) => {
   const flow = flowChecks();
   await app.open("/");
 
-  if (!skippedSteps.includes(0)) await agent.act("Press the 新游戏 button", { maxModelCalls: 20 });
-  await flow.check(0, async () => { await expect(screen.getByText("新游戏", { exact: false, visible: true })).toHaveCount(0); }, async () => (await screen.getByText("新游戏", { exact: false, visible: true }).count()) === 0);
+  if (!skippedSteps.includes(0)) await agent.act("I'm sorry, I'm sorry, but I'm sorry, but I'm sorry, I'm sorry", { maxModelCalls: 20 });
+  await flow.check(0, async () => { await expect(screen.getByText("New Game", { exact: false, visible: true })).toHaveCount(0); }, async () => (await screen.getByText("New Game", { exact: false, visible: true }).count()) === 0);
 
   await browser.reload();
-  await flow.check(1, async () => { await expect(await shownText(screen, "余烬林：最后一炬")).toBeVisible(); }, async () => (await shownText(screen, "余烬林：最后一炬")).isVisible());
+  await flow.check(1, async () => { await expect(await shownText(screen, "Emberwood: Last Torch")).toBeVisible(); }, async () => (await shownText(screen, "Emberwood: Last Torch")).isVisible());
 });

@@ -2,7 +2,7 @@
   "regions": [
     {
       "id": "camp_edge",
-      "name": "炉边雪林",
+      "name": "Fireside Woods",
       "act": 1,
       "kind": "main",
       "entry": {
@@ -24,7 +24,7 @@
           "tileX": 14,
           "tileY": 18,
           "spriteKey": "prop:cellar_door",
-          "toast": "漏风的地窖旧门，门框缝隙里残留着半截烤干的松脂。"
+          "toast": "Wind leaks through the old cellar door. A half-dried lump of pine resin is wedged in the frame."
         }
       ],
       "residentSpawns": [
@@ -54,7 +54,7 @@
     },
     {
       "id": "frozen_brook",
-      "name": "冻溪伐木场",
+      "name": "Frozen Brook Logging Camp",
       "act": 2,
       "kind": "main",
       "environmentRule": {
@@ -78,7 +78,7 @@
           "tileX": 74,
           "tileY": 54,
           "spriteKey": "prop:broken_cart",
-          "toast": "倾倒的运炭车上满是冻硬的抓痕——当年被关在门外的伐木工留下的。"
+          "toast": "Frozen claw marks cover the overturned coal cart. The lumber workers left them when they were locked out."
         }
       ],
       "residentSpawns": [
@@ -104,7 +104,7 @@
     },
     {
       "id": "burnt_caravan",
-      "name": "灰烬商道残骸",
+      "name": "Ashen Trade Route Wreck",
       "act": 2,
       "kind": "side",
       "environmentRule": {
@@ -126,7 +126,7 @@
           "tileX": 22,
           "tileY": 76,
           "spriteKey": "prop:charred_wagon",
-          "toast": "焦黑的兽皮残片与倾覆松脂桶，雪地上拖出一条长长的焦痕。",
+          "toast": "Charred scraps of fur and overturned resin barrels have left a long scorch mark in the snow.",
           "unlockNoteId": "note_three_mile_fire"
         }
       ],
@@ -148,7 +148,7 @@
     },
     {
       "id": "old_mill",
-      "name": "废弃磨坊",
+      "name": "Old Mill",
       "act": 3,
       "kind": "main",
       "entry": {
@@ -169,7 +169,7 @@
           "tileX": 78,
           "tileY": 20,
           "spriteKey": "prop:split_anvil",
-          "toast": "一座从中间硬生生砸裂的生铁砧，边缘还留着陈年炭灰。"
+          "toast": "A cast-iron anvil has been smashed down the middle. Old charcoal ash clings to its edges."
         }
       ],
       "residentSpawns": [
@@ -211,7 +211,7 @@
     },
     {
       "id": "deep_woods",
-      "name": "幽暗冻沼",
+      "name": "Shadowed Frost Bog",
       "act": 4,
       "kind": "main",
       "environmentRule": {
@@ -234,7 +234,7 @@
           "tileX": 118,
           "tileY": 26,
           "spriteKey": "prop:herb_basket",
-          "toast": "半埋在冻雪里的竹编药篓，肩带系着工整的双环草绳结。",
+          "toast": "A woven bamboo herb basket lies half buried in snow. A neat double-loop grass knot holds its shoulder strap.",
           "unlockNoteId": "note_green_spore_diary",
           "rewardItem": {
             "itemId": "herb",
@@ -266,7 +266,7 @@
     },
     {
       "id": "herbalist_hollow",
-      "name": "枯松药谷",
+      "name": "Deadpine Herbalist Hollow",
       "act": 4,
       "kind": "side",
       "environmentRule": {
@@ -289,7 +289,7 @@
           "tileX": 116,
           "tileY": 64,
           "spriteKey": "prop:stone_mortar",
-          "toast": "冻住的石臼里还残留着青绿色的雪草药泥与松脂。"
+          "toast": "Green snow-herb paste and pine resin still cling to the frozen stone mortar."
         }
       ],
       "residentSpawns": [
@@ -310,7 +310,7 @@
     },
     {
       "id": "ice_gorge",
-      "name": "冰峡裂谷",
+      "name": "Ice Gorge",
       "act": 5,
       "kind": "main",
       "environmentRule": {
@@ -340,7 +340,7 @@
           "tileX": 164,
           "tileY": 24,
           "spriteKey": "prop:iron_crate",
-          "toast": "防水铁匣压在石座下，记着通往山脊的每一段风歇间隙。",
+          "toast": "A watertight iron case under the stone base records every lull in the wind on the way to the ridge.",
           "unlockNoteId": "note_gorge_fireline"
         }
       ],
@@ -371,7 +371,7 @@
     },
     {
       "id": "blackened_outpost",
-      "name": "被涂黑的北境哨卡",
+      "name": "Blackened Northern Outpost",
       "act": 5,
       "kind": "side",
       "environmentRule": {
@@ -392,7 +392,7 @@
           "tileX": 166,
           "tileY": 64,
           "spriteKey": "prop:archive_desk",
-          "toast": "《烽台营造录》第十七页手抄本：黑雾吞不掉被余烬尘约束的定态微光。",
+          "toast": "Page 17 of the handwritten Beacon Builder's Record says black fog cannot swallow a steady light bound by Ember Dust.",
           "unlockNoteId": "note_page_seventeen"
         }
       ],
@@ -410,7 +410,7 @@
     },
     {
       "id": "frost_ridge",
-      "name": "霜冻古道",
+      "name": "Frost Ridge Trail",
       "act": 6,
       "kind": "main",
       "environmentRule": {
@@ -444,7 +444,7 @@
     },
     {
       "id": "beacon",
-      "name": "山脊烽台",
+      "name": "Ridge Beacon",
       "act": 6,
       "kind": "main",
       "environmentRule": {

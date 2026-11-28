@@ -7,7 +7,7 @@ it.each([
   { factor: 1, wood: 4 },
   { factor: 2, wood: 8 },
 ])(
-  ({ factor }) => `初始补给倍率 ${factor}`,
+  ({ factor }) => `Initial replenishment multiplier ${factor}`,
   ({ factor, wood }) => {
     assert.deepEqual(scaledStock({ wood: 4 }, factor), { wood });
   },
@@ -18,7 +18,7 @@ it.each([
   { factor: 1, waves: [1, 1] },
   { factor: 2, waves: [2, 2] },
 ])(
-  ({ factor }) => `前两夜波数 · 倍率 ${factor}`,
+  ({ factor }) => `Two nights before the wave... double ${factor}`,
   ({ factor, waves }) => {
     assert.deepEqual(
       [1, 2].map((day) => nightWaves(day, factor)),
@@ -31,13 +31,13 @@ it.each([
   { count: 1, expected: 0 },
   { count: 2, expected: 1 },
 ])(
-  ({ count }) => `夜袭波位 · ${count} 波`,
+  ({ count }) => `Night raid position  ·  ${count} Bo`,
   ({ count, expected }) => {
     assert.equal(waveSlot(150, 120, 48, count), expected);
   },
 );
 
-it("提高资源密度会增加生存模式地图中的资源格", () => {
+it("Increasing resource density increases the resource base in the survival pattern map", () => {
   const counts = [0, 1, 2].map(
     (density) =>
       buildSurvivalSnapshot("42", density).tiles.filter((tile) =>
@@ -49,7 +49,7 @@ it("提高资源密度会增加生存模式地图中的资源格", () => {
 
 import balance from "@/data/balance.json";
 import { loadSurvivalTuning } from "@/systems/survivalTuning";
-it("根路径无缓存热读，每次从默认值合并，零倍率有效", async () => {
+it("Root path has no cacher heat reading, with a zero-fold rate valid at each time you merge from the default", async () => {
   const first = await loadSurvivalTuning(async (url, init) => {
     assert.equal(url, "/survival-balance.json");
     assert.equal(init?.cache, "no-store");
@@ -82,12 +82,12 @@ for (const [label, request] of Object.entries({
   typo: async () => Response.json({ spwanDensity: 3 }),
   null: async () => Response.json(null),
 }))
-  it("配置失败回退完整默认值 · " + label, async () => {
+  it("Cannot initialise Evolution's mail component.CurrentCurrently.Currently  ·  " + label, async () => {
     assert.deepEqual(await loadSurvivalTuning(request), balance.survival);
   });
 
 import { survivalRates } from "@/systems/survivalOverrides";
-it("独立时长、饥饿、寒意、再生与波量使用生效数值", () => {
+it("The effective values for years of independence, hunger, chill, regeneration and wave use", () => {
   assert.deepEqual(
     survivalRates({
       ...balance.survival,

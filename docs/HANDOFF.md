@@ -1,34 +1,36 @@
-# pnpm 安全告警修复交接
+# English Localization Handoff
 
-## 1. 工具与改动文件
+## 1. Tool and changed files
 
-Codex。括号内为当前行数，⚠ 表示至少 240 行。
+Codex translated repository text on local baseline `617de2e` in commit `66ede10`. The published translation applies that work to remote `main` at `3049eca`. The starting inventory found 165 files with Chinese text and three launchers with Chinese names.
 
-- `.github/dependabot.yml`（18，新增）
-- `package.json`（37）和 `src/frontend/package.json`（94）
-- `pnpm-lock.yaml`（5299 ⚠）
-- `docs/AI_HANDOFF.md`（136）和 `docs/HANDOFF.md`（34）
+- `README.md` (84), `AGENTS.md` (41), and the guides and reports under `docs/`.
+- `src/frontend/index.html` (21), `src/frontend/survival.html` (5387, over 240), and text in the Adventure, Eternal, and Survival UI, diagnostics, and data.
+- `.github/workflows/ci.yml` (49) and `.github/workflows/deploy.yml` (97) use the English workflow name `Game Health Check`.
+- `tools/run-health-check.bat` (26), `tools/open-map-viewer.bat` (5), and `tools/open-sprite-workbench.bat` (5), plus tool and test messages.
+- `docs/AI_HANDOFF.md` records scope, reproduction, results, and source excerpts.
 
-## 2. 已验证项
+## 2. Verified items
 
-- `pnpm install` 更新锁文件，冻结复装通过。全量审计 23 → 6，生产审计 14 → 3，两者 Critical/High 均为 0。全量审计仍因低、中危返回 1，生产高危阈值审计返回 0。
-- `pnpm typecheck`、`pnpm check`、`pnpm fix`、`pnpm build` 通过。Biome 未改写源码。
-- 单测 159/159，生产浏览器冒烟 5/5，开发版冒险完整回归 1/1。
-- Windows 加载 Sharp 0.35.5 预编译包，确认 librsvg 2.63.2、libheif 1.23.5。肖像脚本在缓存目录生成 5 张 512×512 PNG。
+- No Han text or Han file names in the 430 current repository text files examined, including the three renamed launchers.
+- Compared 15 translated JSON files with the worktree baseline. Stable keys, numeric values, types, array lengths, and nonlocalized values matched. Survival catalog headings are display labels.
+- The combined worktree previously passed TypeScript, Biome, production game and map console builds, 159 unit tests, 18 LDtk checks, and 11 map console checks.
+- The isolated publication tree on `3049eca` passed TypeScript, Biome, the production game and map console builds, 155 unit tests, 18 LDtk checks, and 11 map console checks. The pending gameplay and performance work includes the other four tests.
+- In the isolated tree, all five Playwright production smoke cases passed. The full Adventure regression covered both save generations, camp and combat interactions, both Ember Seals, and victory.
+- The Windows missing-root fixture printed the English error and returned 1. The CI shell script passed `bash -n`.
 
-## 3. 未验证与已知风险
+## 3. Unverified and known limits
 
-- 本地审计已确认，高危告警在 GitHub 默认分支上的状态待复核。仓库告警 API 返回 401。
-- 剩余 `quill`、`fflate` 和 `postcss-selector-parser` 告警的修复目标与 Dismiss 建议见 `docs/AI_HANDOFF.md`。
-- 84 敌人场景的 GC 峰值与低端 GPU 表现仍待复测。数据见 `docs/SPATIAL_RUNTIME.md`。
+- Local browser regression used Windows Chrome. The renamed GitHub workflow has not run for this worktree change.
+- Binary art, fonts, screenshot archives, and generated exports are outside the text scan. Low-end GPU performance and the 84-enemy GC peak remain open from the earlier performance work.
 
-## 4. 锁定接口与约束
+## 4. Interfaces and constraints
 
-- `pnpm.overrides` 只约束 Recharts 2.x、`react-quill-new` 和 Quill 2.0.3 到 Lodash 4.18.1 或同主版本的更新。父包提高安全下限或移除相关依赖后可清理对应覆写。
-- 仓库体检入口继续从自身位置定位项目根目录，运行 `pnpm check:all` 并传播退出码。上一轮验证过桌面入口和缺少根清单时的错误提示，移动仓库时需更新桌面入口路径。
-- 保留 VFX、渲染深度、存档与 CI 诊断契约。空间运行时交接见提交 `6739014` 中的 `docs/HANDOFF.md`。
+- Keep save keys and version fields, JSON IDs, game balance, event payloads, and public VFX interfaces stable.
+- Pages listens to the test workflow by name. Keep `.github/workflows/ci.yml` and the `workflow_run` filter in `.github/workflows/deploy.yml` synchronized.
+- Use English for repository text and future commit subjects. The existing Git history is the archival record.
 
-## 5. 下一棒任务
+## 5. Next work
 
-1. 修复进入默认分支后，复核 GitHub 告警和首次 Dependabot 分组运行，并跟进剩余中危。
-2. 前后版本交错复测 84 敌人场景的 GC 峰值，同时在低端 GPU 核对精灵批处理、VFX 和纹理上传。
+1. Preserve the English terminology in future UI, content, and test updates.
+2. Recheck GC peak and low-end hardware performance when the spatial runtime work resumes.
