@@ -1,37 +1,34 @@
-# GitHub 游戏体检与报错回溯交接
+# pnpm 安全告警修复交接
 
 ## 1. 工具与改动文件
 
-- Codex。括号内为行数，⚠ 标记至少 240 行的文件。
-- 工作流 · .github/workflows/ci.yml（49）、.github/workflows/deploy.yml（97）
-- 本地入口 · package.json（30）、pnpm-lock.yaml（5270 ⚠）、playwright.config.ts（38）、tools/ci-check.sh（77）、tools/一键体检.bat（25）
-- 浏览器测试 · tests/e2e/browser-fixture.ts（87）、tests/e2e/game.smoke.spec.ts（90）、tests/e2e/adventure-regression.spec.ts（14）、src/frontend/tests/adventure-regression.js（323 ⚠）
-- 游戏入口与快照 · src/frontend/src/main.tsx（36）、src/frontend/survival.html（5370 ⚠）、src/frontend/src/core/snapshot.ts（144）
-- 诊断 · src/frontend/src/game/diagnostics/config.ts（1）、src/frontend/src/game/diagnostics/report.ts（115）、src/frontend/src/game/diagnostics/listeners.ts（25）、src/frontend/src/game/diagnostics/ErrorBoundary.tsx（33）、src/frontend/src/game/diagnostics/survivalEntry.tsx（20）
-- 场景与事件 · src/frontend/src/game/scenes/BootScene.ts（25）、src/frontend/src/game/scenes/GameScene.ts（379 ⚠）、src/frontend/src/game/scenes/TitleScene.ts（81）、src/frontend/src/game/session/activeRun.ts（74）、src/frontend/src/game/session/outputHandler.ts（54）
-- 界面 · src/frontend/src/game/ui/ErrorScreen.tsx（75）、src/frontend/src/game/ui/GameUi.tsx（43）、src/frontend/src/game/ui/store.ts（186）
-- docs/HANDOFF.md（37）
+Codex。括号内为当前行数，⚠ 表示至少 240 行。
+
+- `.github/dependabot.yml`（18，新增）
+- `package.json`（37）和 `src/frontend/package.json`（94）
+- `pnpm-lock.yaml`（5299 ⚠）
+- `docs/AI_HANDOFF.md`（136）和 `docs/HANDOFF.md`（34）
 
 ## 2. 已验证项
 
-- 本机 pnpm check:all、pnpm fix 和冻结锁文件离线安装通过。155 项单测、18 项单独 LDtk 测试及平衡摘要通过。
-- Chrome/SwiftShader 完整冒险回归及 5 项生产冒烟通过，包含 VITE_COMMIT_SHA、快照、25 条面包屑及剪贴板。独立注入 React 渲染错误验证了组件堆栈。
-- 注入实际 pageerror、console.error 与 WebGL 创建失败，确认 Playwright 非零退出并保留截图、trace 和 console-errors.log。
-- actionlint 校验两份工作流。Bash 失败探针验证中文节点、失败摘录和退出码。Windows 批处理验证成功态及暂停。
+- `pnpm install` 更新锁文件，冻结复装通过。全量审计 23 → 6，生产审计 14 → 3，两者 Critical/High 均为 0。全量审计仍因低、中危返回 1，生产高危阈值审计返回 0。
+- `pnpm typecheck`、`pnpm check`、`pnpm fix`、`pnpm build` 通过。Biome 未改写源码。
+- 单测 159/159，生产浏览器冒烟 5/5，开发版冒险完整回归 1/1。
+- Windows 加载 Sharp 0.35.5 预编译包，确认 librsvg 2.63.2、libheif 1.23.5。肖像脚本在缓存目录生成 5 张 512×512 PNG。
 
 ## 3. 未验证与已知风险
 
-- 首次云端体检的 Chromium 安装因 Ubuntu 26.04 与 Playwright 1.58.2 不兼容而失败。安装日志已归档，CI 固定使用 Ubuntu 24.04。
-- 云端 Ubuntu 24.04 已通过完整冒险回归和 5 项生产冒烟。回归探针确认键盘输入被游戏处理，避免软件渲染低帧率漏掉固定时长的按键。Pages 的附件上传与发布拆为两个作业，发布前等待附件可见。
+- 本地审计已确认，高危告警在 GitHub 默认分支上的状态待复核。仓库告警 API 返回 401。
+- 剩余 `quill`、`fflate` 和 `postcss-selector-parser` 告警的修复目标与 Dismiss 建议见 `docs/AI_HANDOFF.md`。
+- 84 敌人场景的 GC 峰值与低端 GPU 表现仍待复测。数据见 `docs/SPATIAL_RUNTIME.md`。
 
 ## 4. 锁定接口与约束
 
-- CI 以短 SHA 注入 VITE_COMMIT_SHA。Pages 只下载对应成功体检的 main 提交与运行尝试编号，发布前确认仍对应 main 最新提交。手动发布通过在 main 运行「游戏体检」触发。
-- 诊断环仅存内存并最多保留 25 条。快照摘要使用白名单字段，现有存档结构与玩法数值保持原状。
-- Issue 仓库在 diagnostics/config.ts 配置。Issue URL 限 7500 字符，剪贴板保留完整 Markdown。
-- Caffeine 生成用例保留在 tests/e2e，Playwright 运行同目录的确定性 spec。失败制品路径为 .cache/ci-playwright。
+- `pnpm.overrides` 只约束 Recharts 2.x、`react-quill-new` 和 Quill 2.0.3 到 Lodash 4.18.1 或同主版本的更新。父包提高安全下限或移除相关依赖后可清理对应覆写。
+- 仓库体检入口继续从自身位置定位项目根目录，运行 `pnpm check:all` 并传播退出码。上一轮验证过桌面入口和缺少根清单时的错误提示，移动仓库时需更新桌面入口路径。
+- 保留 VFX、渲染深度、存档与 CI 诊断契约。空间运行时交接见提交 `6739014` 中的 `docs/HANDOFF.md`。
 
 ## 5. 下一棒任务
 
-1. 推送后检查 Actions 的中文体检看板和 Pages 部署关联。
-2. 此前空间运行时和生存平衡实测见 SPATIAL_RUNTIME.md 与 BALANCE_PLAYTEST.md。
+1. 修复进入默认分支后，复核 GitHub 告警和首次 Dependabot 分组运行，并跟进剩余中危。
+2. 前后版本交错复测 84 敌人场景的 GC 峰值，同时在低端 GPU 核对精灵批处理、VFX 和纹理上传。
