@@ -266,6 +266,7 @@ button,kbd,.tech-node,.quick-slot,.quickbar .build-controls{border-radius:0}
 </dialog>
 <script type="module" src="./src/game/diagnostics/survivalEntry.tsx"></script>
 <script type="module">
+import {version} from "./package.json";
 import {breadcrumb,setSnapshotReader} from "./src/game/diagnostics/report.ts";
 import {encounterById} from "./src/systems/survival/encounterCatalog.ts";
 import {activateEncounter,discoverEncounter} from "./src/systems/survival/landmarks.ts";
@@ -346,8 +347,7 @@ const weatherRenderer=createWeatherRenderer();
 const rainArt=createSurvivalRainArt();
 "use strict";
 const $ = id => document.getElementById(id);
-const GAME_VERSION="1.11.0";
-$("version").textContent="v"+GAME_VERSION;
+$("version").textContent="v"+version;
 
 
 const contentById=new Map(), contentByKey=new Map();

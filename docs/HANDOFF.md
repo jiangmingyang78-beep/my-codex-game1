@@ -1,39 +1,36 @@
-# Defensive Simplification Handoff
+# v4.1.0 Release Handoff
 
-## 1. Tool & Changed Files
+## 1. Tool and changed files
 
-Antigravity synced 13 files from `Emberwood-Last-Torch-run-save-2026-11-28_(1).zip` (on top of Git baseline `66ede10` and existing spatial-runtime worktree edits) and simplified over-defensive control flow across 6 files:
+Codex merged GitHub `main` into the local release history and bumped the version to v4.1.0. The merge retained the locally tested gameplay tree from `0e7f842`.
 
-- `src/frontend/src/core/save.ts` (308 lines ⚠)
-- `src/frontend/src/core/meta.ts` (249 lines ⚠)
-- `src/frontend/src/shared/metaUnlocks.js` (106 lines)
-- `src/frontend/src/game/scenes/GameScene.ts` (393 lines ⚠)
-- `src/frontend/src/game/feedback/TelegraphLayer.ts` (297 lines ⚠)
-- `src/frontend/src/game/atmosphere/CombatMotionVfxLayer.ts` (448 lines ⚠)
-- Synced from archive: `src/frontend/src/game/world/lootTints.ts` (16, new), `TelegraphDrawing.ts`, `EntityViews.ts`, `lightGrid.ts`, `particleCanvas.js`, `particles.js`, `tests/dataValidator.test.ts`, `tests/lightSpawn.test.ts`, `tests/runtimeRules.test.ts`, plus refreshed `docs/HANDOFF.md` and `docs/AI_HANDOFF.md`.
+- `README.md` (88 lines)
+- `package.json` (37 lines)
+- `src/frontend/package.json` (94 lines)
+- `src/frontend/survival.html` (5387 lines ⚠)
+- `docs/AI_HANDOFF.md` (39 lines)
+- `docs/HANDOFF.md` (36 lines)
 
-⚠ marks files at or above 240 lines.
+⚠ marks files with at least 240 lines.
 
-## 2. Verified Items
+## 2. Verified items
 
-- `pnpm typecheck` (`tsc --noEmit`): passed with 0 errors.
-- `pnpm fix` (`biome check --write src`, 281 files): passed.
-- `pnpm test` (`node tests/run-unit-tests.mjs`): 167/167 tests passed across 2 suites (0 failed, 0 skipped), covering save v1–v4 migration, export/import, future-slot protection, stale-tab checks, data validation, and spatial/survival rules.
-- `pnpm build` (`vite build && pnpm copy:env`): production bundle built cleanly.
+- `pnpm typecheck`, `pnpm fix`, and `pnpm build` passed.
+- Unit tests 167/167, LDtk map checks 18/18, and balance report generation passed.
+- Production browser smoke 5/5 and full development Adventure regression 1/1 passed in local Chrome.
+- Production Survival header displays `v4.1.0` from the frontend manifest.
 
-## 3. Unverified & Known Risks
+## 3. Unverified and known risks
 
-- `GameScene` lifecycle (`SceneView` bundling and `CombatMotionVfxLayer` / `TelegraphLayer` runtime rendering) passed compilation and unit tests, but browser E2E (`pnpm test:e2e`) and live playtesting were not re-run in this turn.
-- `save.ts` `parseEnvelope` relies on `readRunVersion` inside a single `try/catch`; `CombatMotionVfxLayer` relies on finite positive `rangePx` from internal data/combat callers (`!(rangePx > 0)` rejects `NaN`, `0`, negatives, though not `Infinity`).
-- Pending UI wiring for portable save import/export (`expectedSavedAt`) and physical-device 84-enemy GC checks remain open from the prior handoff.
+- Portable save import/export UI integration and its use of the observed `savedAt` token are pending.
+- Physical-device profiling with 84 enemies has yet to be repeated.
 
-## 4. Locked Interfaces & Constraints
+## 4. Locked interfaces and constraints
 
-- Preserved all exported signatures and error/status shapes in `core/save.ts`, `core/meta.ts`, `shared/metaUnlocks.js`, `GameScene.ts`, `TelegraphLayer.ts`, and `CombatMotionVfxLayer.ts`.
-- Preserved trust-boundary validation (`snapshot.ts`, `snapshotReaders.ts`, `snapshotFields.ts`, `dataValidator.ts`, `schemaChecks.ts`, `survivalOverrides.js`) and headless browser fallbacks (`createGame.ts`, `sfx.ts`, `BootScene.ts`, `TitleScene.ts`).
-- `parseMetaDocument(raw)` in `shared/metaUnlocks.js` now returns `null` on malformed JSON instead of throwing.
+- Survival displays the frontend manifest version. Keep both package versions aligned when tagging the next release.
+- Game runtime and save interfaces follow the archive-sync handoff in `0e7f842`. Existing VFX APIs and save schema remain as before this release bump.
 
-## 5. Next Turn Tasks
+## 5. Next turn tasks
 
-1. Run `pnpm test:e2e` against the production build to smoke-test `GameScene` `SceneView` lifecycle and teardown in headless Chromium.
-2. Connect the portable save export/import UI and pass the observed `savedAt` token to `saveRun`.
+1. Connect the portable save export/import UI and pass the observed `savedAt` token to `saveRun`.
+2. Repeat 84-enemy profiling on physical devices.

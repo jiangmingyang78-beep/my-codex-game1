@@ -30,6 +30,10 @@ I have a deep love for video games—they have given me the courage to face life
   - Adventure, Survival, and Eternal modes share line-of-sight checks, local pursuit pathfinding, and spawn-point validation.
   - Survival Mode adds camp projects, cold fronts, and raid warnings. See the [spatial runtime report](docs/SPATIAL_RUNTIME.md) and [Survival balance report](docs/BALANCE_REPORT.md).
 
+- **Save handling and runtime updates (v4.1.0)** · [Version tag](https://github.com/jiangmingyang78-beep/my-codex-game1/tree/v4.1.0)
+  - Adds portable run save import and export APIs with protections for newer save formats and concurrent saves from another tab.
+  - Updates lighting and enemy pathfinding, reduces allocations in combat rendering, and adds automated checks for the browser build and Adventure gameplay.
+
 ## Run Locally
 
 Use Node.js 22.12+ or Node.js 24 and the project’s pinned pnpm version, 10.26.1. Run these commands from the repository root.
