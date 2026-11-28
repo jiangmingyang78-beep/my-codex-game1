@@ -11,6 +11,7 @@ export const impactPresets=Object.freeze({
 export function createParticleSimulation({maxParticles=120,random=Math.random,createCanvas=createBrowserCanvas}={}) {
   if(!Number.isInteger(maxParticles)||maxParticles<1)throw new RangeError("maxParticles must be a positive integer.");
   const particles=[],rings=[],particleFree=Array.from({length:maxParticles},()=>({}));
+  const freeRings=Array.from({length:maxParticles},()=>({x:0,y:0,color:"",age:0,power:0}));
   const ramps=new Map(),glowCache=new Map(),softCache=new Map();
   let evictCursor=0,ambientCount=0,ambientAcc=0,tick=0;
   const windAt=(x,y)=>Math.sin(tick*1.1+x*.012+y*.009)*.55+Math.sin(tick*.37+x*.004)*.45;
@@ -108,8 +109,9 @@ export function createParticleSimulation({maxParticles=120,random=Math.random,cr
   function impact(x,y,kind="strike",showRing=true){
     const {power,color}=impactPresets[kind]??impactPresets.strike;
     if(showRing){
-      if(rings.length>=maxParticles)rings.shift();
-      rings.push({x,y:y-6,color,age:0,power});
+      const ring=freeRings.pop() ?? rings.shift();
+      ring.x=x;ring.y=y-6;ring.color=color;ring.age=0;ring.power=power;
+      rings.push(ring);
     }
     pushParticles(x,y-4,power*.85,30+power*34);
     spawn(PT.star,x,y-4,4,0,0,0,.12,"#ffffff",kind==="hurt"?"#ff8581":"#ffe1a3",6+power*5,1,0,0,0,1);
@@ -118,10 +120,13 @@ export function createParticleSimulation({maxParticles=120,random=Math.random,cr
   function update(dt,{view,ambientAt,dark=false,tileSize=16}={}){
     tick+=dt;
     stepParticles(dt,view);
-    for(let i=rings.length-1;i>=0;i--){
-      rings[i].age+=dt;
-      if(rings[i].age>.28)rings.splice(i,1);
+    let live=0;
+    for(const ring of rings){
+      ring.age+=dt;
+      if(ring.age>.28)freeRings.push(ring);
+      else rings[live++]=ring;
     }
+    rings.length=live;
     if(!view||!ambientAt)return;
     ambientAcc+=dt*26;
     const ambientLimit=Math.min(150,Math.floor(maxParticles*.6));
@@ -134,7 +139,8 @@ export function createParticleSimulation({maxParticles=120,random=Math.random,cr
   }
 
   function clear(){
-    particles.length=0;rings.length=0;particleFree.length=0;
+    while(particles.length)particleFree.push(particles.pop());
+    while(rings.length)freeRings.push(rings.pop());
     evictCursor=0;ambientCount=0;ambientAcc=0;tick=0;
     ramps.clear();glowCache.clear();softCache.clear();
   }

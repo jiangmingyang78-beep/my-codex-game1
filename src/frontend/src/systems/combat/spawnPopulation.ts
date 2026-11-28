@@ -4,15 +4,10 @@ import { blockedAt } from "../world/collision";
 import { syncRunLight } from "../world/runLight";
 import { spawnDirector } from "../world/worldContext";
 import { ENEMY_RADIUS } from "./combatMath";
-import {
-  MobPool,
-  categoryOf,
-  hasCapacity,
-  shouldDespawn,
-  spawnRadii,
-} from "./spawnRules";
+import { projectilePool } from "./projectilePool";
+import { MobPool, shouldDespawn, spawnRadii } from "./spawnRules";
 
-export const enemyPool = new MobPool<EnemyState>();
+export const enemyPool = new MobPool<EnemyState>(96, () => ({}) as EnemyState);
 export function spawnPoint(
   state: RunState,
   sys: Systems,
@@ -27,9 +22,7 @@ export function spawnPoint(
       e.nightRound !== null ||
       sys.world.spawns.get(e.spawnId)?.regionId === state.regionId,
   );
-  if (!boss && !hasCapacity(active, categoryOf(id), settings)) return null;
   const grid = syncRunLight(state, sys);
-  const ring = spawnRadii(settings, sys.data.tileSize, sys.spawnView);
   const director = spawnDirector(
     grid,
     state.hero,
@@ -39,7 +32,9 @@ export function spawnPoint(
     (p) =>
       !blockedAt(sys.world, state.changesByObjectId, p.x, p.y, ENEMY_RADIUS),
   );
-  const valid = (p: { x: number; y: number }) => director.accepts(p, id, boss);
+  if (!director.hasRoom(id, boss)) return null;
+  const { ring } = director;
+  const valid = (p: { x: number; y: number }) => director.allowsLocation(p, id);
   if (preferred && valid(preferred)) return preferred;
   for (let i = 0; i < 96; i++) {
     const angle = rollRun(state) * 2 * Math.PI;
@@ -68,6 +63,17 @@ export function recycleDistant(state: RunState, sys: Systems) {
     delete state.enemiesById[mob.id];
     enemyPool.release(mob);
   }
+}
+
+/** Called after the run's last consumer has detached. */
+export function releasePopulation(state: RunState) {
+  for (const id in state.enemiesById) {
+    const enemy = state.enemiesById[id];
+    delete state.enemiesById[id];
+    enemyPool.release(enemy);
+  }
+  while (state.projectiles.length)
+    projectilePool.release(state.projectiles.pop()!);
 }
 
 export function acquireEnemy(

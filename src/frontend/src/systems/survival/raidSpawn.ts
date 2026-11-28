@@ -1,11 +1,4 @@
-import {
-  type Mob,
-  type SpawnSettings,
-  type View,
-  categoryOf,
-  hasCapacity,
-  spawnRadii,
-} from "../combat/spawnRules";
+import type { Mob, SpawnSettings, View } from "../combat/spawnRules";
 import type { LightGrid } from "../world/lightGrid";
 import { spawnDirector } from "../world/worldContext";
 import { beaconGuardsAngle } from "./campProjects";
@@ -30,7 +23,6 @@ interface SpawnContext {
 
 /** Sample only connected, unlit approaches outside the viewport. Unspent budget can be retried. */
 export function raidSpawnPoints(ctx: SpawnContext) {
-  const ring = spawnRadii(ctx.tuning, ctx.tile, ctx.view);
   const pool = ctx.pool.slice();
   const occupied = ctx.enemies.slice();
   const director = spawnDirector(
@@ -44,6 +36,7 @@ export function raidSpawnPoints(ctx: SpawnContext) {
         `${Math.floor(p.x / ctx.tile)},${Math.floor(p.y / ctx.tile)}`,
       ),
   );
+  const { ring } = director;
   const points: { enemyId: string; x: number; y: number }[] = [];
   for (
     let i = 0;
@@ -69,11 +62,11 @@ export function raidSpawnPoints(ctx: SpawnContext) {
       seededValue(ctx.seed, tx, ty, salt + 2) * pool.length,
     );
     const enemyId = pool[index].id;
-    if (!hasCapacity(occupied, categoryOf(enemyId), ctx.tuning)) {
+    if (!director.hasRoom(enemyId)) {
       pool.splice(index, 1);
       continue;
     }
-    if (!director.accepts(at, enemyId)) continue;
+    if (!director.allowsLocation(at, enemyId)) continue;
     if (
       ctx.guarded &&
       beaconGuardsAngle(Math.atan2(at.y - ctx.center.y, at.x - ctx.center.x))

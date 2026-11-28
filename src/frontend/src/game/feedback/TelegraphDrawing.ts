@@ -21,6 +21,12 @@ export class TelegraphDrawing {
   private readonly outlines = new Map<number, Phaser.Textures.CanvasTexture>();
   private readonly strips: LinearView[] = [];
   private readonly paths: Phaser.GameObjects.Graphics[] = [];
+  private readonly quad = [
+    { x: 0, y: 0 },
+    { x: 0, y: 0 },
+    { x: 0, y: 0 },
+    { x: 0, y: 0 },
+  ];
   private stripCount = 0;
   private pathCount = 0;
   private depth = 0;
@@ -140,30 +146,41 @@ export class TelegraphDrawing {
     const hw = this.opts.lineWidthPx / 2;
     const offsetX = -uy * hw;
     const offsetY = ux * hw;
-    const quad = (distance: number) => {
-      const endX = x + ux * distance;
-      const endY = y + uy * distance;
-      return [
-        { x: Math.round(x + offsetX), y: Math.round(y + offsetY) },
-        { x: Math.round(endX + offsetX), y: Math.round(endY + offsetY) },
-        { x: Math.round(endX - offsetX), y: Math.round(endY - offsetY) },
-        { x: Math.round(x - offsetX), y: Math.round(y - offsetY) },
-      ];
-    };
-    const full = quad(length);
+    const quad = this.quad;
+    quad[0].x = Math.round(x + offsetX);
+    quad[0].y = Math.round(y + offsetY);
+    quad[3].x = Math.round(x - offsetX);
+    quad[3].y = Math.round(y - offsetY);
+    const endX = x + ux * length;
+    const endY = y + uy * length;
+    this.setQuadEnd(endX, endY, offsetX, offsetY);
     path
       .fillStyle(this.opts.fillColor, this.opts.fillAlpha)
-      .fillPoints(full, true);
+      .fillPoints(quad, true);
     if (progress > 0) {
+      this.setQuadEnd(
+        x + ux * (length * progress),
+        y + uy * (length * progress),
+        offsetX,
+        offsetY,
+      );
       path
         .fillStyle(this.opts.fillColor, this.opts.progressAlpha)
-        .fillPoints(quad(length * progress), true);
+        .fillPoints(quad, true);
+      this.setQuadEnd(endX, endY, offsetX, offsetY);
     }
     const border = committing
       ? this.opts.commitFlashColor
       : this.opts.borderColor;
-    path.lineStyle(4, this.opts.outlineColor).strokePoints(full, true);
-    path.lineStyle(2, border).strokePoints(full, true);
+    path.lineStyle(4, this.opts.outlineColor).strokePoints(quad, true);
+    path.lineStyle(2, border).strokePoints(quad, true);
+  }
+
+  private setQuadEnd(x: number, y: number, offsetX: number, offsetY: number) {
+    this.quad[1].x = Math.round(x + offsetX);
+    this.quad[1].y = Math.round(y + offsetY);
+    this.quad[2].x = Math.round(x - offsetX);
+    this.quad[2].y = Math.round(y - offsetY);
   }
 
   private order(
@@ -191,7 +208,10 @@ export class TelegraphDrawing {
       width,
       height,
     );
-    if (!texture) throw new Error("Can not create message: %s %s");
+    if (!texture)
+      throw new Error(
+        `Failed to create telegraph texture ${suffix} (${width}×${height})`,
+      );
     return texture;
   }
 

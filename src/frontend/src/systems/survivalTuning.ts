@@ -19,6 +19,43 @@ export function waveSlot(
 ) {
   return Math.floor(((age - dusk) * count) / length);
 }
+/** In development Alt+Shift+R rereads spatial rules from the same JSON override in all modes. */
+export async function loadWorldTuning(onChange?: () => void) {
+  const tuning = await loadSurvivalTuning();
+  if (import.meta.env.DEV) {
+    let generation = 0;
+    const refresh = async (event: KeyboardEvent) => {
+      if (
+        event.repeat ||
+        !event.altKey ||
+        !event.shiftKey ||
+        event.code !== "KeyR"
+      )
+        return;
+      event.preventDefault();
+      const current = ++generation;
+      const next = await loadSurvivalTuning();
+      if (current !== generation) return;
+      for (const key of [
+        "brightCost",
+        "fireCost",
+        "hearingTiles",
+        "minSpawnRadius",
+        "maxSpawnRadius",
+        "despawnRadius",
+      ] as const)
+        tuning[key] = next[key];
+      tuning.categoryCap = next.categoryCap;
+      onChange?.();
+    };
+    window.addEventListener("keydown", refresh);
+    import.meta.hot?.dispose(() =>
+      window.removeEventListener("keydown", refresh),
+    );
+  }
+  return tuning;
+}
+
 export async function loadSurvivalTuning(request?: typeof fetch) {
   try {
     const response = await (request ?? globalThis.fetch)(

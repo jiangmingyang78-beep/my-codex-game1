@@ -5,7 +5,16 @@ export const PT=Object.freeze({chip:0,streak:1,smoke:3,leaf:4,puff:5,ember:6,rip
 // Emberwood's original bursts and biome-specific ambient accents.
 export function createParticlePresets({spawn,random}) {
   const rr=(min,max)=>min+random()*(max-min);
-  function lightOf(color,amt=.45){return toHex(shiftColor(color,amt));}
+  const shades=new Map();
+  function lightOf(color,amt=.45){
+    let tones=shades.get(color);
+    if(!tones){
+      if(shades.size>=256)shades.delete(shades.keys().next().value);
+      tones=new Map();shades.set(color,tones);
+    }
+    if(!tones.has(amt))tones.set(amt,toHex(shiftColor(color,amt)));
+    return tones.get(amt);
+  }
   function leafBurst(x,y,n,palette=["#5f9a58","#8cb561","#3f7a50"]){
     for(let i=0;i<n;i++){
       const a=rr(0,6.283),sp=rr(6,26),c=palette[i%palette.length];

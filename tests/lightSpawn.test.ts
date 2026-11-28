@@ -1,3 +1,4 @@
+import { loadSurvivalTuning } from "@/systems/survivalTuning";
 import assert from "node:assert/strict";
 import { LightGrid } from "@/systems/world/lightGrid";
 import {
@@ -41,6 +42,54 @@ it("Fire sources are stacked, moved and extinguished only to the corresponding t
   grid.sync(15, []);
   assert.equal(spawnLightAllowed(grid, p, "frost_rat"), false);
 });
+
+it("Recycled light cells keep their new coordinates and surviving contributions", () => {
+  const grid = new LightGrid(16);
+  const torch = { id: "torch", x: 8, y: 8, radius: 16 };
+  const ember = { id: "ember", x: 8, y: 8, radius: 16 };
+  const elements = { lightRevision: 0, lights: [ember] };
+  grid.sync(0, [torch]);
+  grid.syncElements(elements);
+
+  torch.x = 168;
+  grid.sync(0, [torch]);
+  assert.equal(grid.blockAt(0, 0), 15);
+  assert.equal(grid.blockAt(10, 0), 15);
+
+  ember.x = -152;
+  elements.lightRevision++;
+  grid.syncElements(elements);
+  assert.equal(grid.blockAt(0, 0), 0);
+  assert.equal(grid.blockAt(-10, 0), 15);
+  grid.invalidate(1);
+  grid.sync(0, [{ ...torch, radius: 0 }]);
+
+  const lit: number[][] = [];
+  grid.forEachLitTile(
+    { x: -400, y: -80, width: 800, height: 160 },
+    (x, y, level) => lit.push([x, y, level]),
+  );
+  assert.ok(lit.some(([x, y, level]) => x === -160 && y === 0 && level === 15));
+  assert.ok(lit.every(([x]) => x < 0));
+});
+
+it("Light sources keep the last positive-radius duplicate and sky-only changes leave stamps intact", () => {
+  const grid = new LightGrid(16);
+  const torch = { id: "torch", x: 8, y: 8, radius: 16 };
+  const moved = { ...torch, x: 168 };
+  grid.sync(0, [torch, moved, { ...torch, radius: 0 }]);
+  assert.equal(grid.blockAt(0, 0), 0);
+  assert.equal(grid.blockAt(10, 0), 15);
+  const revision = grid.revision;
+  grid.sync(7, [moved]);
+  assert.equal(grid.revision, revision);
+  assert.deepEqual(grid.getLightLevel(8, 8), {
+    sky: 7,
+    block: 0,
+    effective: 7,
+  });
+});
+
 it("The actual wave is located in two rings, out of sight, accessible and in line with light", () => {
   const sys = {
     ...getTestEternalSystems(),
@@ -121,7 +170,6 @@ it("The hyper-vision mouth is not generated beyond the external ring of the conf
 });
 
 it("The upper limit of the classification covers independently, the illegal loops retreat and the zero ceiling prohibits actual derision", async () => {
-  const { loadSurvivalTuning } = await import("@/systems/survivalTuning");
   const base = getTestEternalSystems();
   const override = await loadSurvivalTuning(async () =>
     Response.json({ categoryCap: { hostile: 0 } }),

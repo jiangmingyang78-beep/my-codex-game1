@@ -12,26 +12,16 @@ import {
   originOf,
   registerLootTextures,
 } from "../textures/registerTextures";
-import { resolveHeroVisual, syncHeroAnimation } from "./heroAnimations";
+import {
+  type HeroAnimSignals,
+  resolveHeroVisual,
+  syncHeroAnimation,
+} from "./heroAnimations";
+import { LOOT_TINT } from "./lootTints";
 
-const LOOT_TINT: Record<string, number> = {
-  berry: 0xe0485a,
-  ration: 0xe0a05a,
-  warm_stew: 0xe08a4a,
-  bandage: 0xf4f0e8,
-  ember_seal: 0xff7a3a,
-  ingot: 0xaecdf0,
-  raw_meat: 0xc84160,
-  pelt: 0xb88b6a,
-  resin: 0xe5b632,
-  charcoal: 0x717c90,
-  iron_scrap: 0x8eb2c0,
-  feather: 0xb4a0e0,
-  herb: 0x82cb95,
-  ember_dust: 0xff6843,
-};
+const BAR_VIEW_MARGIN = 16;
 
-/** Hero, enemies, ground loot and projectiles, rebuilt from RunState every frame. */
+/** Hero, enemies, ground loot and projectiles synchronized from RunState. */
 export class EntityViews {
   readonly hero: Phaser.GameObjects.Sprite;
   private readonly heroShadow: Phaser.GameObjects.Image;
@@ -43,8 +33,18 @@ export class EntityViews {
   private lastHp = -1;
   private hurtUntilSec = 0;
   private flashUntilSec = 0;
+  private shieldDrawn = false;
+  private readonly heroAnimState: HeroAnimSignals = {
+    dead: false,
+    hurt: false,
+    dashing: false,
+    attacking: false,
+    moving: false,
+    facingX: 0,
+  };
   private readonly enemies = new Map<string, EnemyEntity>();
   private readonly loot = new Map<string, Phaser.GameObjects.Image>();
+  private readonly freeLoot: Phaser.GameObjects.Image[] = [];
   private readonly freeShots: Phaser.GameObjects.Image[] = [];
   private readonly liveShots = new Set<string>();
   private readonly freeEnemies = new Map<string, EnemyEntity[]>();
@@ -79,13 +79,7 @@ export class EntityViews {
   sync(state: RunState, timeSec: number): void {
     this.syncHero(state, timeSec);
     this.syncEnemies(state);
-    this.syncSet(this.loot, state.groundLoot, RENDER_DEPTH.groundLoot, (l) => ({
-      key: Object.hasOwn(LOOT_TINT, l.itemId)
-        ? TEX.lootByItem(l.itemId)
-        : TEX.lootOrb,
-      x: l.x,
-      y: l.y - 2 + Math.sin(timeSec * 4 + l.x) * 1.5,
-    }));
+    this.syncLoot(state, timeSec);
     this.liveShots.clear();
     for (const shot of state.projectiles) {
       this.liveShots.add(shot.id);
@@ -139,8 +133,6 @@ export class EntityViews {
     const dead = state.status === "dead";
     const dashActive = !dead && isHeroDashActive(state);
     const dashInvuln = !dead && isHeroDashInvulnerable(state);
-    const swinging = !dead && hero.attackAnimSec > 0;
-    const hurt = !dead && timeSec < this.hurtUntilSec;
 
     const px = Math.round(hero.x);
     const py = Math.round(hero.y);
@@ -151,14 +143,14 @@ export class EntityViews {
     let bodyY = py;
     if (visual.kind === "sheet") {
       this.hero.setPosition(px, py);
-      syncHeroAnimation(this.hero, state.heroId, {
-        dead,
-        hurt,
-        dashing: dashActive,
-        attacking: swinging,
-        moving,
-        facingX: hero.facingX,
-      });
+      const anim = this.heroAnimState;
+      anim.dead = dead;
+      anim.hurt = !dead && timeSec < this.hurtUntilSec;
+      anim.dashing = dashActive;
+      anim.attacking = !dead && hero.attackAnimSec > 0;
+      anim.moving = moving;
+      anim.facingX = hero.facingX;
+      syncHeroAnimation(this.hero, state.heroId, anim);
     } else {
       bodyY =
         py + (!dead && moving ? Math.round(Math.sin(timeSec * 16) * 0.6) : 0);
@@ -177,9 +169,10 @@ export class EntityViews {
     const shadowDepth = depth + RENDER_DEPTH.entityOffset.shadow;
     if (this.heroShadow.depth !== shadowDepth)
       this.heroShadow.setDepth(shadowDepth);
-    this.heroShield.clear();
+    if (this.shieldDrawn) this.heroShield.clear();
     const bucklerCd = getBucklerCooldownSec(state, this.sys);
-    if (!dead && bucklerCd !== null && bucklerCd <= 0) {
+    this.shieldDrawn = !dead && bucklerCd !== null && bucklerCd <= 0;
+    if (this.shieldDrawn) {
       const faceAngle = Math.atan2(
         hero.facingY,
         hero.facingX || (hero.facingY ? 0 : 1),
@@ -199,6 +192,8 @@ export class EntityViews {
 
   private syncEnemies(state: RunState): void {
     this.bars.clear();
+    const view = this.scene.cameras.main.worldView;
+    const hasView = view.width > 0 && view.height > 0;
     const { despawn } = spawnRadii(
       this.sys.data.balance.survival,
       this.sys.data.tileSize,
@@ -244,6 +239,14 @@ export class EntityViews {
       body.sprite.setAlpha(body.sprite.alpha * alpha);
       body.shadow.setAlpha(alpha);
       body.telegraph.setAlpha(alpha);
+      if (
+        hasView &&
+        (e.x < view.left - BAR_VIEW_MARGIN ||
+          e.x > view.right + BAR_VIEW_MARGIN ||
+          e.y < view.top - BAR_VIEW_MARGIN ||
+          e.y > view.bottom + BAR_VIEW_MARGIN)
+      )
+        continue;
       const max =
         eternalEnemyMaxHp(e) ??
         this.sys.data.enemies.get(e.enemyId)?.maxHp ??
@@ -259,29 +262,31 @@ export class EntityViews {
       .fillRect(x - 6, y + 1, Math.max(0, 12 * ratio), 1);
   }
 
-  private syncSet<T extends { x: number; y: number }>(
-    views: Map<string, Phaser.GameObjects.Image>,
-    items: Record<string, T>,
-    depth: number,
-    look: (item: T) => { key: string; x: number; y: number },
-  ): void {
-    for (const [id, image] of views) {
-      if (items[id]) continue;
-      image.destroy();
-      views.delete(id);
+  private syncLoot(state: RunState, timeSec: number): void {
+    for (const id of this.loot.keys()) {
+      if (Object.hasOwn(state.groundLoot, id)) continue;
+      this.freeLoot.push(this.loot.get(id)!.setVisible(false));
+      this.loot.delete(id);
     }
-    for (const [id, item] of Object.entries(items)) {
-      const l = look(item);
-      let image = views.get(id);
+    for (const id in state.groundLoot) {
+      if (!Object.hasOwn(state.groundLoot, id)) continue;
+      const item = state.groundLoot[id];
+      let image = this.loot.get(id);
       if (!image) {
-        const o = originOf(l.key);
-        image = this.scene.add
-          .image(0, 0, l.key)
-          .setOrigin(o.x, o.y)
-          .setDepth(depth);
-        views.set(id, image);
+        const key = Object.hasOwn(LOOT_TINT, item.itemId)
+          ? TEX.lootByItem(item.itemId)
+          : TEX.lootOrb;
+        const origin = originOf(key);
+        image =
+          this.freeLoot.pop()?.setTexture(key).setVisible(true).setToTop() ??
+          this.scene.add.image(0, 0, key);
+        image.setOrigin(origin.x, origin.y).setDepth(RENDER_DEPTH.groundLoot);
+        this.loot.set(id, image);
       }
-      image.setPosition(l.x, l.y);
+      image.setPosition(
+        item.x,
+        item.y - 2 + Math.sin(timeSec * 4 + item.x) * 1.5,
+      );
     }
   }
 }

@@ -6,6 +6,21 @@ import { darknessAt } from "./darkness";
 import { LightGrid, type LightSource } from "./lightGrid";
 
 import { obstacleRevision, opaqueAt } from "./collision";
+class LightSources {
+  readonly current: LightSource[] = [];
+  private readonly slots: LightSource[] = [];
+  readonly add = (x: number, y: number, radius: number, id: string) => {
+    const i = this.current.length;
+    if (!this.slots[i]) this.slots[i] = { id, x, y, radius };
+    const slot = this.slots[i];
+    slot.id = id;
+    slot.x = x;
+    slot.y = y;
+    slot.radius = radius;
+    this.current.push(slot);
+  };
+}
+const lists = new WeakMap<RunState, LightSources>();
 const grids = new WeakMap<RunState, LightGrid>();
 const burning = new WeakMap<
   RunState,
@@ -25,26 +40,30 @@ export function syncRunLight(state: RunState, sys: Systems) {
     grids.set(state, grid);
   }
   grid.invalidate(obstacleRevision(state));
-  const sources: LightSource[] = [];
-  forEachFireSource(state, sys, (x, y, radius, id) =>
-    sources.push({ id, x, y, radius }),
-  );
+  let list = lists.get(state);
+  if (!list) {
+    list = new LightSources();
+    lists.set(state, list);
+  }
+  const sources = list.current;
+  sources.length = 0;
+  forEachFireSource(state, sys, list.add);
   const fraction = Math.max(
     0,
     state.hero.light / sys.data.balance.stats.light.max,
   );
-  sources.push({
-    id: "held-torch",
-    x: (Math.floor(state.hero.x / sys.data.tileSize) + 0.5) * sys.data.tileSize,
-    y: (Math.floor(state.hero.y / sys.data.tileSize) + 0.5) * sys.data.tileSize,
-    radius: Math.round(
+  list.add(
+    (Math.floor(state.hero.x / sys.data.tileSize) + 0.5) * sys.data.tileSize,
+    (Math.floor(state.hero.y / sys.data.tileSize) + 0.5) * sys.data.tileSize,
+    Math.round(
       fieldTorchRadius(state) *
         sys.data.tileSize *
         2.75 *
         Math.sqrt(fraction) *
         heroLightRadiusMultiplier(sys.data, state.inventory, state.heroId),
     ),
-  });
+    "held-torch",
+  );
   grid.syncElements(state.elements);
   const fires = burning.get(state);
   if (fires)

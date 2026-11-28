@@ -122,12 +122,13 @@ export class TorchlightAtmosphereLayer {
     const y = Math.floor(view.y / tile) * tile;
     const width = Math.ceil(view.width / tile) * tile + tile;
     const height = Math.ceil(view.height / tile) * tile + tile;
+    const revision = grid.viewRevision(x, y, width, height);
     if (
       x !== this.haloX ||
       y !== this.haloY ||
       width !== this.haloWidth ||
       height !== this.haloHeight ||
-      this.haloRevision !== grid.revision ||
+      this.haloRevision !== revision ||
       this.haloColor !== this.palette.ember ||
       spawnDebug.enabled ||
       this.wasDebug
@@ -136,7 +137,7 @@ export class TorchlightAtmosphereLayer {
       this.haloY = y;
       this.haloWidth = width;
       this.haloHeight = height;
-      this.haloRevision = grid.revision;
+      this.haloRevision = revision;
       this.haloColor = this.palette.ember;
       this.wasDebug = spawnDebug.enabled;
       this.halo.clear();

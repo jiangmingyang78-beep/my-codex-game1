@@ -77,10 +77,12 @@ export function createEternalData(base: GameData): GameData {
       starting: { ...balance.starting, campLevel: ETERNAL.campLevel },
       limits: {
         ...balance.limits,
-        activeEnemies: Math.max(
-          ETERNAL.enemyCap,
-          balance.survival.categoryCap.hostile,
-        ),
+        get activeEnemies() {
+          return Math.max(
+            ETERNAL.enemyCap,
+            balance.survival.categoryCap.hostile,
+          );
+        },
       },
     },
   };

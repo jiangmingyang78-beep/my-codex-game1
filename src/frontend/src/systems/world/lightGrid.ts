@@ -1,5 +1,8 @@
 import { VisibilityMask } from "./fovShadowcast";
+
 const tileKey = (x: number, y: number) => y * 0x100000 + x;
+const MAX_FREE_CELLS = 2048;
+
 export interface LightSource {
   id: string;
   x: number;
@@ -12,21 +15,26 @@ export interface LightRule {
   maxBlock: number;
 }
 
+interface TrackedLight extends LightSource {
+  next?: LightSource;
+  stamped: boolean;
+}
+
+interface LightCell {
+  tx: number;
+  ty: number;
+  contributions: Map<string, number>;
+  level: number;
+}
+
 /** Sparse tile grid. Sky is uniform outdoors, so changing weather costs one write. */
 export class LightGrid {
   private sky = 15;
-  private sources = new Map<string, LightSource>();
-  private cells = new Map<
-    number,
-    {
-      tx: number;
-      ty: number;
-      contributions: Map<string, number>;
-      level: number;
-    }
-  >();
+  private readonly sources = new Map<string, TrackedLight>();
+  private readonly cells = new Map<number, LightCell>();
+  private readonly freeCells: LightCell[] = [];
 
-  private elementalSources = new Map<string, LightSource>();
+  private readonly elementalSources = new Map<string, TrackedLight>();
   private elementOwner?: object;
   private elementRevision = -1;
 
@@ -40,18 +48,32 @@ export class LightGrid {
       grid.lightRevision === this.elementRevision
     )
       return;
-    const next = new Map(Array.from(grid.lights, (s) => [s.id, s] as const));
-    for (const [id, old] of this.elementalSources)
-      if (next.get(id) !== old) this.stamp(old, false);
-    for (const [id, s] of next)
-      if (this.elementalSources.get(id) !== s) this.stamp(s, true);
-    for (const id of this.elementalSources.keys())
-      if (!next.has(id)) this.masks.delete(id);
-    this.elementalSources = next;
+    this.syncSources(this.elementalSources, grid.lights);
     this.elementOwner = grid;
     this.elementRevision = grid.lightRevision;
   }
   revision = 0;
+  private readonly chunkVersions = new Map<number, number>();
+  private resetRevision = 0;
+  viewRevision(x: number, y: number, width: number, height: number) {
+    const span = this.tileSize * 16;
+    let revision = this.resetRevision;
+    for (
+      let cy = Math.floor(y / span);
+      cy < Math.ceil((y + height) / span);
+      cy++
+    )
+      for (
+        let cx = Math.floor(x / span);
+        cx < Math.ceil((x + width) / span);
+        cx++
+      )
+        revision = Math.max(
+          revision,
+          this.chunkVersions.get(tileKey(cx, cy)) ?? 0,
+        );
+    return revision;
+  }
   private geometry = -1;
   private masks = new Map<string, VisibilityMask>();
   constructor(
@@ -61,6 +83,9 @@ export class LightGrid {
   invalidate(revision: number) {
     if (revision === this.geometry) return;
     this.geometry = revision;
+    this.chunkVersions.clear();
+    this.resetRevision = ++this.revision;
+    for (const cell of this.cells.values()) this.recycleCell(cell);
     this.cells.clear();
     this.masks.clear();
     for (const source of this.sources.values()) this.stamp(source, true);
@@ -86,24 +111,55 @@ export class LightGrid {
       if (!old || !this.same(old, source)) unchanged = false;
     }
     if (unchanged && count === this.sources.size) return;
-    const next = new Map(
-      sources.filter((s) => s.radius > 0).map((s) => [s.id, { ...s }] as const),
-    );
-    for (const [id, old] of this.sources) {
-      const source = next.get(id);
-      if (!source || !this.same(old, source)) this.stamp(old, false);
+    this.syncSources(this.sources, sources, true);
+  }
+
+  private syncSources(
+    active: Map<string, TrackedLight>,
+    incoming: Iterable<LightSource>,
+    requirePositiveRadius = false,
+  ) {
+    // Stage borrowed inputs so the last eligible occurrence of each ID wins.
+    for (const source of incoming) {
+      if (requirePositiveRadius && !(source.radius > 0)) continue;
+      const slot = active.get(source.id);
+      if (slot) slot.next = source;
+      else
+        active.set(source.id, {
+          id: source.id,
+          x: source.x,
+          y: source.y,
+          radius: source.radius,
+          next: source,
+          stamped: false,
+        });
     }
-    for (const [id, source] of next) {
-      const old = this.sources.get(id);
-      if (!old || !this.same(old, source)) this.stamp(source, true);
+    for (const slot of active.values()) {
+      const next = slot.next;
+      slot.next = undefined;
+      if (!next) {
+        this.stamp(slot, false);
+        this.masks.delete(slot.id);
+        active.delete(slot.id);
+      } else if (!slot.stamped || !this.same(slot, next)) {
+        if (slot.stamped) this.stamp(slot, false);
+        slot.x = next.x;
+        slot.y = next.y;
+        slot.radius = next.radius;
+        this.stamp(slot, true);
+        slot.stamped = true;
+      }
     }
-    for (const id of this.sources.keys())
-      if (!next.has(id)) this.masks.delete(id);
-    this.sources = next;
   }
 
   private same(a: LightSource, b: LightSource) {
     return a.x === b.x && a.y === b.y && a.radius === b.radius;
+  }
+
+  private recycleCell(cell: LightCell) {
+    if (this.freeCells.length >= MAX_FREE_CELLS) return;
+    cell.contributions.clear();
+    this.freeCells.push(cell);
   }
 
   private stamp(s: LightSource, add: boolean) {
@@ -111,6 +167,10 @@ export class LightGrid {
     // Two weak spill levels beyond the visible fire edge still deter shadows.
     const reach = s.radius + size;
     this.revision++;
+    if (this.chunkVersions.size > 4096) {
+      this.chunkVersions.clear();
+      this.resetRevision = this.revision;
+    }
     let mask = this.masks.get(s.id);
     if (add && this.opaque) {
       const radius = Math.ceil(reach / size) + 1;
@@ -134,13 +194,21 @@ export class LightGrid {
         );
         if (distance >= reach || (add && mask && !mask.has(tx, ty))) continue;
         const key = tileKey(tx, ty);
-        if (!add && !this.cells.has(key)) continue;
-        const cell = this.cells.get(key) ?? {
-          tx,
-          ty,
-          contributions: new Map<string, number>(),
-          level: 0,
-        };
+        let cell = this.cells.get(key);
+        if (!cell) {
+          if (!add) continue;
+          cell = this.freeCells.pop() ?? {
+            tx,
+            ty,
+            contributions: new Map(),
+            level: 0,
+          };
+          cell.tx = tx;
+          cell.ty = ty;
+          cell.level = 0;
+          this.cells.set(key, cell);
+        }
+        const previous = cell.level;
         // The last visible tile is safe even for ordinary night enemies (threshold 2).
         if (add)
           cell.contributions.set(
@@ -150,13 +218,18 @@ export class LightGrid {
               : Math.ceil((2 * (reach - distance)) / size),
           );
         else cell.contributions.delete(s.id);
-        if (!cell.contributions.size) this.cells.delete(key);
-        else {
-          cell.level = 0;
-          for (const value of cell.contributions.values())
-            cell.level = Math.max(cell.level, value);
-          this.cells.set(key, cell);
+        cell.level = 0;
+        for (const value of cell.contributions.values())
+          cell.level = Math.max(cell.level, value);
+        if (!cell.contributions.size) {
+          this.cells.delete(key);
+          this.recycleCell(cell);
         }
+        if (previous !== cell.level)
+          this.chunkVersions.set(
+            tileKey(Math.floor(tx / 16), Math.floor(ty / 16)),
+            this.revision,
+          );
       }
     }
   }
@@ -205,7 +278,10 @@ export class LightGrid {
   }
 
   isSafeFromSpawn(x: number, y: number, rule: LightRule) {
-    const light = this.getLightLevel(x, y);
-    return light.sky > rule.maxSky || light.block > rule.maxBlock;
+    const size = this.tileSize;
+    return (
+      this.sky > rule.maxSky ||
+      this.blockAt(Math.floor(x / size), Math.floor(y / size)) > rule.maxBlock
+    );
   }
 }

@@ -46,14 +46,31 @@ export class Scenery {
   ) {
     if (import.meta.env.DEV) {
       let start = 0;
+      const renderer = scene.game.renderer;
+      const pipelines =
+        "pipelines" in renderer ? renderer.pipelines.pipelines.getArray() : [];
+      const countBatch = (pipeline: Phaser.Renderer.WebGL.WebGLPipeline) => {
+        renderMetrics.batches += pipeline.batch.length;
+      };
+      for (const pipeline of pipelines)
+        pipeline.on("pipelinebeforeflush", countBatch);
+      let uploads = renderMetrics.uploads;
+      let masks = renderMetrics.masks;
       const begin = () => {
+        renderMetrics.batches = 0;
         start = performance.now();
       };
       const end = () => {
+        renderMetrics.frameUploads = renderMetrics.uploads - uploads;
+        renderMetrics.frameMasks = renderMetrics.masks - masks;
+        uploads = renderMetrics.uploads;
+        masks = renderMetrics.masks;
         renderMetrics.cpuMs = performance.now() - start;
       };
       scene.game.events.on("prerender", begin).on("postrender", end);
       scene.events.once("shutdown", () => {
+        for (const pipeline of pipelines)
+          pipeline.off("pipelinebeforeflush", countBatch);
         scene.game.events.off("prerender", begin).off("postrender", end);
       });
     }

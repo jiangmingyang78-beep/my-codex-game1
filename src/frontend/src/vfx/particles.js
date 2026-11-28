@@ -1,3 +1,4 @@
+import { renderMetrics } from "../game/dev/renderMetrics";
 import { RENDER_DEPTH } from "../game/renderDepth";
 import { createTextureGenerator, registerCanvasTexture } from "./proceduralTextures.js";
 import { drawImpactRings, drawParticleGlows, drawParticles } from "./particleCanvas.js";
@@ -29,30 +30,72 @@ function createLayer(scene, key, depth, additive) {
   context2d(canvas, { willReadFrequently: true });
   const { texture } = registerCanvasTexture(scene, key, { canvas });
   const image = scene.add.image(0, 0, key).setOrigin(0).setDepth(depth);
+  image.setVisible(false);
   if (additive) image.setBlendMode(ADD_BLEND);
   return { key, texture, image, populated: false };
 }
 
-function paintLayer(layer, view, populated, webgl, paint) {
+function paintLayer(layer, view, populated, webgl, paint, effects, strength = 0) {
   if (!populated && !layer.populated) return;
   const { texture, image } = layer;
-  if (populated) {
-    if (texture.width !== view.width || texture.height !== view.height) {
-      texture.setSize(view.width, view.height);
-      image.setSizeToFrame().setOrigin(0);
-    }
-    image.setPosition(view.x, view.y);
+  image.setVisible(Boolean(populated));
+  layer.populated = Boolean(populated);
+  if (!populated) return;
+  if (texture.width !== view.width || texture.height !== view.height) {
+    texture.setSize(view.width, view.height);
+    image.setSizeToFrame().setOrigin(0);
   }
+  image.setPosition(view.x, view.y);
   const context = texture.getContext();
   context.setTransform(1, 0, 0, 1, 0, 0);
   context.clearRect(0, 0, texture.width, texture.height);
-  if (populated) {
-    context.save();
-    context.translate(-view.x, -view.y);
-    try { paint(context); } finally { context.restore(); }
+  context.save();
+  context.translate(-view.x, -view.y);
+  try { paint(context, effects, strength); } finally { context.restore(); }
+  if (webgl) {
+    texture.refresh();
+    if (import.meta.env.DEV) renderMetrics.uploads++;
   }
-  if (webgl) texture.refresh();
-  layer.populated = populated;
+}
+
+function drawCombat(context, combat) {
+  drawParticles(context, combat.particles);
+  drawImpactRings(context, combat.rings);
+}
+
+// Cull before painting and keep the combat backing texture in stable size buckets.
+function collectVisibleEffects(view, particles, rings, combat, ambient) {
+  combat.particles.length = combat.rings.length = ambient.length = 0;
+  let left = Infinity, top = Infinity, right = -Infinity, bottom = -Infinity;
+  const viewRight = view.x + view.width, viewBottom = view.y + view.height;
+  for (const p of particles) {
+    const y = p.y - p.z;
+    const ground = p.type === PT.debris || p.type === PT.ripple ? Math.abs(p.z) : 0;
+    const tail = .1 * Math.max(Math.abs(p.dx), Math.abs(p.dy - p.dz), Math.abs(p.dz));
+    const margin = Math.max(6, 3 * Math.max(p.s0, p.s1), tail) + ground + 3;
+    if (!visible(view, p.x, y, margin)) continue;
+    if (p.amb || p.type === PT.ember || p.type === PT.smoke) ambient.push(p);
+    else {
+      combat.particles.push(p);
+      left = Math.min(left, p.x - margin); right = Math.max(right, p.x + margin);
+      top = Math.min(top, y - margin); bottom = Math.max(bottom, y + margin);
+    }
+  }
+  for (const ring of rings) {
+    if (!visible(view, ring.x, ring.y, 40)) continue;
+    combat.rings.push(ring);
+    left = Math.min(left, ring.x - 40); right = Math.max(right, ring.x + 40);
+    top = Math.min(top, ring.y - 40); bottom = Math.max(bottom, ring.y + 40);
+  }
+  const x = Math.max(view.x, Math.floor(left)), y = Math.max(view.y, Math.floor(top));
+  const w = Math.min(viewRight, Math.ceil(right)) - x, h = Math.min(viewBottom, Math.ceil(bottom)) - y;
+  if (!(w > 0 && h > 0)) return false;
+  const out = combat.view;
+  out.width = Math.min(view.width, Math.ceil(w / 128) * 128);
+  out.height = Math.min(view.height, Math.ceil(h / 128) * 128);
+  out.x = Math.min(x, viewRight - out.width);
+  out.y = Math.min(y, viewBottom - out.height);
+  return true;
 }
 
 function visible(view, x, y, margin) {
@@ -93,7 +136,8 @@ export function createEffects(scene, {
   const ambienceGlow = createLayer(scene, `${namespace}:ambience-glow`, RENDER_DEPTH.ambientGlow, true);
   const layers = [body, glow, fireLight, ambience, ambienceGlow];
   const layerImages = layers.map(layer => layer.image);
-  const combatParticles = [], ambientParticles = [];
+  const combat = { view: { x: 0, y: 0, width: 1, height: 1 }, particles: [], rings: [] };
+  const ambientParticles = [];
   const webgl = Boolean(scene.sys.game.renderer.gl);
   const camps = new Set(), flameSets = new Map(), flameKeys = [];
   let view = viewBounds(camera), tick = 0, destroyed = false, dirty = true;
@@ -244,13 +288,14 @@ export function createEffects(scene, {
     }
   }
 
-  function drawCampHalo(context, camp, strength) {
-    const r = camp.radius * 0.79 * campPulse(camp);
+  function drawCampHalos(context, camps, strength) {
     context.globalCompositeOperation = "lighter";
     context.imageSmoothingEnabled = true;
     context.globalAlpha = strength * 0.22;
-    context.drawImage(camp.halo, camp.x - r, camp.y - 7 - r, 2 * r, 2 * r);
-    context.globalAlpha = 1;
+    for (const camp of camps) {
+      const r = camp.radius * 0.79 * campPulse(camp);
+      context.drawImage(camp.halo, camp.x - r, camp.y - 7 - r, 2 * r, 2 * r);
+    }
   }
 
   function render() {
@@ -261,28 +306,12 @@ export function createEffects(scene, {
     const { particles, rings } = simulation;
     const strength=clamp(lightStrength(),0,1);
     const litCamps = strength>0 && [...camps].filter(camp => camp.active && visible(view, camp.x, camp.y, camp.radius));
-    combatParticles.length = 0;
-    ambientParticles.length = 0;
-    for (const particle of particles) {
-      const isAmbient = particle.amb || particle.type === PT.ember || particle.type === PT.smoke;
-      (isAmbient ? ambientParticles : combatParticles).push(particle);
-    }
-    paintLayer(body, view, combatParticles.length > 0 || rings.length > 0, webgl, context => {
-      drawParticles(context, combatParticles);
-      drawImpactRings(context, rings);
-    });
-    paintLayer(glow, view, combatParticles.some(particle => particle.glow > 0), webgl, context => {
-      drawParticleGlows(context, combatParticles);
-    });
-    paintLayer(fireLight, view, litCamps && litCamps.length > 0, webgl, context => {
-      for (const camp of litCamps) drawCampHalo(context, camp, strength);
-    });
-    paintLayer(ambience, view, ambientParticles.length > 0, webgl, context => {
-      drawParticles(context, ambientParticles);
-    });
-    paintLayer(ambienceGlow, view, ambientParticles.some(particle => particle.glow > 0), webgl, context => {
-      drawParticleGlows(context, ambientParticles);
-    });
+    const hasCombat = collectVisibleEffects(view, particles, rings, combat, ambientParticles);
+    paintLayer(body, combat.view, hasCombat, webgl, drawCombat, combat);
+    paintLayer(glow, combat.view, hasCombat && combat.particles.some(particle => particle.glow > 0), webgl, drawParticleGlows, combat.particles);
+    paintLayer(fireLight, view, litCamps && litCamps.length > 0, webgl, drawCampHalos, litCamps, strength);
+    paintLayer(ambience, view, ambientParticles.length > 0, webgl, drawParticles, ambientParticles);
+    paintLayer(ambienceGlow, view, ambientParticles.some(particle => particle.glow > 0), webgl, drawParticleGlows, ambientParticles);
   }
 
   function destroy() {
@@ -301,8 +330,7 @@ export function createEffects(scene, {
     flameKeys.length = 0;
     flameSets.clear();
     simulation.clear();
-    combatParticles.length = 0;
-    ambientParticles.length = 0;
+    combat.particles.length = combat.rings.length = ambientParticles.length = 0;
   }
 
   camera.on(CAMERA_PRE_RENDER, render);

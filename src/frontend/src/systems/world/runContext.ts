@@ -2,8 +2,8 @@ import type { RunState, Systems } from "@/core/types";
 import { obstacleRevision, opaqueAt, solidAt } from "./collision";
 import { runTerrain } from "./runElements";
 import { syncRunLight } from "./runLight";
-import { WorldContext } from "./worldContext";
-const cache = new WeakMap<RunState, WorldContext>();
+import { type IWorldContext, WorldContext } from "./worldContext";
+const cache = new WeakMap<RunState, IWorldContext>();
 export function runContext(state: RunState, sys: Systems) {
   let ctx = cache.get(state);
   if (!ctx) {

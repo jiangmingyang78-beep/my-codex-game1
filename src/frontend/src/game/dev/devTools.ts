@@ -2,6 +2,10 @@ import { cycleSec, dayAt, phaseAt } from "@/core/clock";
 import { EVT, makeEvent } from "@/core/events";
 import type { GameEvent, RunState, Systems } from "@/core/types";
 import { ENEMY_RADIUS } from "@/systems/combat/combatMath";
+import {
+  acquireEnemy,
+  releasePopulation,
+} from "@/systems/combat/spawnPopulation";
 import { heroMaxHp } from "@/systems/itemEffects";
 import { resetDashCooldown } from "@/systems/movement";
 import {
@@ -95,33 +99,23 @@ export function devSpawnEnemy(
   if (!def) return false;
   const pos = findSpawnPoint(state, sys);
   const id = `dev_${enemyId}_${state.idCounter++}`;
-  state.enemiesById[id] = {
+  const enemy = acquireEnemy(
     id,
-    enemyId: def.id,
-    spawnId: findLegalSpawnId(sys, def.id),
-    homeX: pos.x,
-    homeY: pos.y,
-    x: pos.x,
-    y: pos.y,
-    hp: def.maxHp,
-    phase: "chase",
-    phaseSec: 0,
-    cooldownSec: 0,
-    dirX: 0,
-    dirY: 1,
-    moveIndex: 0,
-    hitDone: false,
-    nightRound: 1,
-  };
+    def.id,
+    findLegalSpawnId(sys, def.id),
+    pos.x,
+    pos.y,
+    def.maxHp,
+    1,
+  );
+  enemy.phase = "chase";
+  state.enemiesById[id] = enemy;
   return true;
 }
 
 export function devClearEnemies(state: RunState): void {
   if (!import.meta.env.DEV) return;
-  for (const id of Object.keys(state.enemiesById)) {
-    delete state.enemiesById[id];
-  }
-  state.projectiles.length = 0;
+  releasePopulation(state);
 }
 
 export function devRestoreAndReset(state: RunState, sys: Systems): void {

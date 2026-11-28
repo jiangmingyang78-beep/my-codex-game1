@@ -27,8 +27,15 @@ export function matchesCondition(condition, events) {
 
 /** @param {string | null} raw @returns {Record<string, unknown> | null} */
 export function parseMetaDocument(raw) {
-  const meta = raw === null ? null : JSON.parse(raw);
-  return meta && typeof meta === "object" && !Array.isArray(meta) ? meta : null;
+  if (raw === null) return null;
+  try {
+    const meta = JSON.parse(raw);
+    return meta && typeof meta === "object" && !Array.isArray(meta)
+      ? meta
+      : null;
+  } catch {
+    return null;
+  }
 }
 
 export function supportsMetaDocument(meta) {

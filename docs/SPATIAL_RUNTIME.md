@@ -1,7 +1,5 @@
 # Shared Spatial Runtime and Performance Verification
 
-Adventure, Survival, and Eternal share occlusion, local pursuit navigation, and spawn-point validation. All 155 unit tests, the Adventure regression, and the production build passed. In the 84-enemy Eternal stress test, render CPU P95 fell from 2.3 to 1.8 ms and total main-thread GC fell from 67.6 to 34.3 ms. GC pauses were still present.
-
 ## First GC optimization with 84 enemies
 
 The test used Chrome 158 on Windows with SwiftShader WebGL, a 1024×640 viewport, and a Vite development build. Each run of `src/frontend/tests/spatial-stress.js` opened a fresh page, spawned 84 pursuing Frost Rats, and triggered one boss-hit spark per frame. After 40 warm-up frames, it recorded another 140. GC and frame timings come from three runs with allocation sampling disabled. P95 values are the medians of the three runs.
@@ -39,6 +37,61 @@ WebGL charge and lunge telegraphs reuse fill, progress, and outline images in th
 - [x] Checked quick-slot consumption, buckler cooldown and readiness, mute, pause, and resume in the browser.
 - [x] Production E2E 5/5 and full Adventure development regression 1/1.
 - [x] All 159 unit tests and `pnpm typecheck`, `pnpm fix`, `pnpm check`, and `pnpm build`.
+
+## Spatial runtime changes at baseline b687033
+
+| Area | Implementation and constraints |
+| --- | --- |
+| Line of sight and firelight | Player perception and individual lights use eight-octant recursive scanning. Walls are visible and block light behind them. Low shrubs let light through. Neutral creatures can see or hear allies calling for help. `LightGrid` tracks changes in 16×16-tile chunks. The night overlay and fire halos query the versions of chunks within the camera. Survival Canvas reuses world-space clipping paths for each light. |
+| Night overlay and background | `NightOverlay` uses an offscreen canvas with one texel per tile and nearest-neighbor scaling. It redraws when the day-night palette, visible lighting version, dimensions, or camera tile changes. `WorldView` caches baked terrain and appearance revisions. Trees, entities, and doors sort by world Y. |
+| Pathfinding | `FlowField.compute` solves the full four-neighbor 32×32 window in reverse from the player. `update` recomputes when the target enters another tile. On a relevant version change within the same tile, it samples 1,024 costs, marks the changed tiles and dependent paths, and relaxes from unaffected boundaries. If costs match, it stops. Pursuers separate based on neighbor density and try lateral movement near walls. Combat logic handles lunges and knockback. |
+| Object lifecycle | The enemy pool preallocates 96 records and the projectile pool defaults to 64. Survival raids initialize borrowed records directly. Death hooks run before release. Clearing a scene, leaving it, reaching dawn, and ending a projectile's lifetime also return records. Sparks and shock rings use pools within their capacity, and rings retain their draw order. |
+| Phaser rendering | Empty particle layers are hidden. The combat layer sizes its texture in 128-pixel increments based on visible effects. Enemy sprite and shadow depths update only when their values change. `DevToolbar` samples render CPU, pipeline batches, night-overlay redraws, and light-texture refreshes every half second. |
+| Mode contracts | Adventure and Eternal obtain `IWorldContext` from `runContext`. Survival exposes the same queries through a local map adapter. `ISpawnDirector` exposes spawn rings, capacity, tile eligibility, and combined validation. Raids and Eternal draw candidates using those checks. Modes own their objectives, fixed residents, and boss timing. |
+| Reloading balance | In development, Alt+Shift+R reloads `survival-balance.json` and applies hearing distance, fire and bright-tile costs, spawn rings, despawn distance, and category limits to the current run. Saves contain gameplay state. Caches, pools, and flow fields stay in memory. |
+
+## Before-and-after comparison with 84 enemies
+
+The comparison used Chrome on Windows, SwiftShader WebGL, a 1024×640 viewport, and a Vite development build. Both groups used the same workload and WebGL call counter. Each fresh page spawned 84 pursuing Frost Rats and triggered one boss-hit spark per frame. Each run lasted 180 frames, including 40 warm-up frames. All three runs still had 84 enemies at the end. CPU time is the wall-clock interval from Phaser prerender to postrender. Frame intervals include simulation and browser scheduling. GC counts include MinorGC and MajorGC within the same main-thread window.
+
+| Metric | Commit baseline | After this change |
+| --- | ---: | ---: |
+| Render CPU P50 / P95, median of three runs | 1.9 / 2.9 ms | 1.8 / 2.5 ms |
+| Frame interval P50 / P95, median of three runs | 63.5 / 75.7 ms | 56.5 / 64.6 ms |
+| WebGL draw calls per frame, median of three runs | 4.543 | 4.557 |
+| Texture uploads per frame, median of three runs | 4.000 | 4.000 |
+| GC count / total time across 420 frames | 30 / 37.885 ms | 30 / 21.725 ms |
+| Longest GC pause | 9.047 ms | 1.202 ms |
+
+| Run | Render P95 (ms) | Frame interval P95 (ms) | GC count | GC total / longest (ms) |
+| --- | ---: | ---: | ---: | ---: |
+| Baseline 1 | 2.8 | 75.7 | 10 | 12.362 / 4.219 |
+| Baseline 2 | 3.1 | 75.8 | 10 | 9.423 / 1.971 |
+| Baseline 3 | 2.9 | 74.2 | 10 | 16.100 / 9.047 |
+| After 1 | 2.2 | 64.6 | 10 | 6.557 / 0.769 |
+| After 2 | 2.5 | 63.6 | 10 | 6.962 / 0.926 |
+| After 3 | 2.8 | 70.4 | 10 | 8.206 / 1.202 |
+
+Texture counts include both `texImage2D` and `texSubImage2D`. Each upload counts once regardless of size. Timing and the longest pause improved, while draw and upload counts stayed close. Hardware GPU time, uploaded bytes, and low-end device frame rates still need measurement. GC pauses remain. To reproduce, pass a fresh Chromium page and the Vite server URL to the Playwright function in `src/frontend/tests/spatial-stress.js`.
+
+## Correctness and regression checklist
+
+- [x] All 159 unit tests, including `renderDepth`, `runtimeRules`, and `riposte`. Also ran 18 LDtk checks and the balance summary.
+- [x] A pursuer navigated around a U-shaped wall. Sixteen pursuers starting on one tile traversed a one-tile passage. After 75 random cost changes, the incremental field matched full Dijkstra tile by tile.
+- [x] Checked rock walls, multiple lights, opening doors, hearing through walls, and invalidation for distant lights. Browser WebGL and Canvas samples agreed. Alpha was 74 at the light source, 85 at the wall, 184 behind it, and 97 behind it after opening the door.
+- [x] Reused enemies, projectiles, sparks, and shock rings 1,000 times each through production paths. Checked target, speed, health, AI flags, and effect age.
+- [x] Node 22 imported the pure TypeScript modules directly. The full 32×32 recomputation used 100 warm-ups and 256 timings. P50 / P95 / max were 0.054 / 0.082 / 0.138 ms when idle and 0.100 / 0.177 / 0.313 ms during the full suite. A run concurrent with browser tests reached 9.918 ms wall-clock, showing the maximum is sensitive to machine load.
+- [x] Alt+Shift+R changed `brightCost` from 2 to 19 in all three modes in the browser.
+- [x] Full Adventure regression covered legacy and current saves, night raids, region transitions, both Ember Seals, and the victory screen. The first run found that hit stop could consume interaction input early. The rerun passed after correction.
+- [x] `pnpm typecheck`, `pnpm fix`, `pnpm check`, and `pnpm build`. The build showed a Browserslist database notice.
+- [x] All five configured production Playwright tests passed. The first run found that the Survival enemy list was uninitialized when the page first cleared the scene. The full suite passed after correction. The two Caffeine-generated scripts require an external runner. The local suite covers their new-game and reload-to-title flows.
+- The local field is centered on the player. Long detours outside the window and crowded combat on low-end hardware still need playtesting.
+
+## Previous round archive (21ec49e)
+
+The following sections record the previous baseline, implementation, and verification.
+
+Adventure, Survival, and Eternal share occlusion, local pursuit navigation, and spawn-point validation. All 155 unit tests, the Adventure regression, and the production build passed. In the 84-enemy Eternal stress test, render CPU P95 fell from 2.3 to 1.8 ms and total main-thread GC fell from 67.6 to 34.3 ms. GC pauses were still present.
 
 ## Spatial queries and rendering
 

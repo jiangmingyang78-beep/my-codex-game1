@@ -107,6 +107,10 @@ export function despawnAlpha(
 // Clear all AI, hit and optional flags before a recycled instance is published again.
 export class MobPool<T extends object> {
   private free: T[] = [];
+  constructor(prewarm = 0, create?: () => T) {
+    if (create)
+      for (let i = 0; i < Math.min(128, prewarm); i++) this.free.push(create());
+  }
   release(mob: T) {
     if (this.free.length < 128) this.free.push(mob);
   }

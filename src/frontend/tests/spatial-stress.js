@@ -1,5 +1,25 @@
 // Playwright run-code. Use a fresh Chromium page and the Vite development server.
 async (page, origin = "http://127.0.0.1:4179/") => {
+	await page.addInitScript(() => {
+		window.glCounts = { draw: 0, upload: 0 };
+		for (const proto of [
+			WebGLRenderingContext.prototype,
+			WebGL2RenderingContext.prototype,
+		]) {
+			for (const [method, metric] of [
+				["drawArrays", "draw"],
+				["drawElements", "draw"],
+				["texImage2D", "upload"],
+				["texSubImage2D", "upload"],
+			]) {
+				const original = proto[method];
+				proto[method] = function (...args) {
+					window.glCounts[metric]++;
+					return original.apply(this, args);
+				};
+			}
+		}
+	});
 	await page.goto(origin);
 	await page.locator('[data-ocid="title.adventure_button"]').click();
 	await page.evaluate(async () => {
@@ -58,6 +78,7 @@ async (page, origin = "http://127.0.0.1:4179/") => {
 			};
 		}
 		return await new Promise((resolve) => {
+			let first;
 			let n = 0,
 				start = 0,
 				old = 0;
@@ -65,7 +86,10 @@ async (page, origin = "http://127.0.0.1:4179/") => {
 				interval = [];
 			function begin() {
 				start = performance.now();
-				if (n === 40) performance.mark("stress-start");
+				if (n === 40) {
+					first = { ...window.glCounts };
+					performance.mark("stress-start");
+				}
 				if (n >= 40) interval.push(start - old);
 				old = start;
 				state.hero.invulnerableSec = 10;
@@ -85,6 +109,8 @@ async (page, origin = "http://127.0.0.1:4179/") => {
 						];
 					};
 					resolve({
+						drawPerFrame: (window.glCounts.draw - first.draw) / 140,
+						uploadsPerFrame: (window.glCounts.upload - first.upload) / 140,
 						webgl: !!game.renderer.gl,
 						count: Object.keys(state.enemiesById).length,
 						render: stats(render),
@@ -117,4 +143,4 @@ async (page, origin = "http://127.0.0.1:4179/") => {
 		gcMs: gc.reduce((sum, e) => sum + e.dur / 1000, 0),
 		maxGcMs: Math.max(0, ...gc.map((e) => e.dur / 1000)),
 	};
-}
+};

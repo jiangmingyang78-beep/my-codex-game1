@@ -1,7 +1,8 @@
 import assert from "node:assert/strict";
 import { afterEach, describe } from "node:test";
 import { step } from "@/core/run";
-import { loadRun, saveRun } from "@/core/save";
+import { exportRunSave, importRunSave, loadRun, saveRun } from "@/core/save";
+import { RUN_SCHEMA_VERSION } from "@/core/saveMigration";
 import type { EnemyState, RunState } from "@/core/types";
 import { updateEnemies } from "@/systems/EnemyManager";
 import { getDashCooldownState, moveHero } from "@/systems/movement";
@@ -20,6 +21,172 @@ import {
 const sys = getTestSystems();
 const tileSize = sys.data.tileSize;
 const initialRules = structuredClone(rules);
+
+describe("Portable run saves", () => {
+  const { runKey, runBackupKey } = sys.data.balance.storage;
+
+  it("round-trips a validated JSON envelope and backs up the destination", () => {
+    const origin = createMemoryStorage();
+    const run = createTestRun({ systems: sys, elapsedSec: 184 });
+    assert.deepEqual(saveRun(origin, run, sys), { ok: true });
+    const json = exportRunSave(origin, sys);
+    assert.ok(typeof json === "string");
+    const envelope = JSON.parse(json);
+    assert.equal(envelope.schemaVersion, RUN_SCHEMA_VERSION);
+    assert.equal(envelope.savedAt, JSON.parse(origin.getItem(runKey)!).savedAt);
+    assert.equal(envelope.state.elapsedSec, 184);
+
+    const target = createMemoryStorage();
+    assert.deepEqual(saveRun(target, createTestRun({ systems: sys }), sys), {
+      ok: true,
+    });
+    const oldPrimary = target.getItem(runKey);
+    assert.deepEqual(importRunSave(target, json, sys), { ok: true });
+    assert.equal(target.getItem(runBackupKey), oldPrimary);
+    assert.equal(loadRun(target, sys).snapshot?.elapsedSec, 184);
+    assert.ok(
+      JSON.parse(target.getItem(runKey)!).savedAt >
+        JSON.parse(oldPrimary!).savedAt,
+    );
+  });
+
+  it("rejects bad JSON, invalid roots, and future versions before accessing either slot", () => {
+    const storage = createMemoryStorage();
+    const run = createTestRun({ systems: sys });
+    assert.ok(saveRun(storage, run, sys).ok);
+    assert.ok(saveRun(storage, run, sys).ok);
+    const primary = storage.getItem(runKey);
+    const backup = storage.getItem(runBackupKey);
+    const attempts: string[] = [];
+    const observed = {
+      ...storage,
+      getItem(key: string) {
+        attempts.push(key);
+        return storage.getItem(key);
+      },
+      setItem(key: string, value: string) {
+        attempts.push(key);
+        storage.setItem(key, value);
+      },
+    };
+    const cases = [
+      ["{", "corrupt_json"],
+      ["[]", "invalid_root"],
+      ['{"state":null}', "invalid_root"],
+      ['{"state":{}}', "invalid_status"],
+      [
+        JSON.stringify({ schemaVersion: RUN_SCHEMA_VERSION + 1, state: {} }),
+        "future_version",
+      ],
+      [
+        JSON.stringify({
+          schemaVersion: RUN_SCHEMA_VERSION,
+          state: { schemaVersion: 1 },
+        }),
+        "version_mismatch",
+      ],
+      [JSON.stringify("界".repeat(180_000)), "too_large"],
+    ];
+    for (const [json, reason] of cases) {
+      assert.deepEqual(importRunSave(observed, json, sys), {
+        ok: false,
+        reason,
+      });
+    }
+    assert.deepEqual(attempts, []);
+    assert.equal(storage.getItem(runKey), primary);
+    assert.equal(storage.getItem(runBackupKey), backup);
+  });
+
+  it("returns structured export failures and protects newer local slots", () => {
+    assert.deepEqual(exportRunSave(null, sys), {
+      ok: false,
+      reason: "storage_unavailable",
+    });
+    assert.deepEqual(exportRunSave(createMemoryStorage(), sys), {
+      ok: false,
+      reason: "empty",
+    });
+
+    const future = JSON.stringify({
+      schemaVersion: RUN_SCHEMA_VERSION + 1,
+      state: {},
+    });
+    const source = createMemoryStorage();
+    assert.ok(saveRun(source, createTestRun({ systems: sys }), sys).ok);
+    const backup = source.getItem(runKey)!;
+    const target = createMemoryStorage({
+      [runKey]: future,
+      [runBackupKey]: backup,
+    });
+    assert.deepEqual(exportRunSave(target, sys), {
+      ok: false,
+      reason: "future_version",
+    });
+    assert.deepEqual(importRunSave(target, backup, sys), {
+      ok: false,
+      reason: "future_version",
+    });
+    assert.equal(target.getItem(runKey), future);
+    assert.equal(target.getItem(runBackupKey), backup);
+
+    const backedUp = createMemoryStorage({
+      [runKey]: backup,
+      [runBackupKey]: future,
+    });
+    assert.deepEqual(importRunSave(backedUp, backup, sys), { ok: true });
+    assert.equal(backedUp.getItem(runBackupKey), future);
+  });
+
+  it("rejects a stale tab without touching either slot after a same-millisecond save", (t) => {
+    t.mock.method(Date, "now", () => 1_000);
+    const storage = createMemoryStorage();
+    const run = createTestRun({ systems: sys });
+    assert.deepEqual(saveRun(storage, run, sys), { ok: true });
+    const first = storage.getItem(runKey)!;
+    const { savedAt } = JSON.parse(first);
+    assert.equal(savedAt, 1_000);
+
+    run.elapsedSec = 185;
+    assert.deepEqual(saveRun(storage, run, sys, savedAt), { ok: true });
+    const newer = storage.getItem(runKey)!;
+    assert.equal(JSON.parse(newer).savedAt, 1_001);
+    assert.equal(storage.getItem(runBackupKey), first);
+    run.elapsedSec = 100;
+    assert.deepEqual(saveRun(storage, run, sys, savedAt), {
+      ok: false,
+      reason: "stale_tab",
+    });
+    assert.equal(storage.getItem(runKey), newer);
+    assert.equal(storage.getItem(runBackupKey), first);
+
+    assert.deepEqual(saveRun(storage, run, sys), { ok: true });
+    assert.equal(loadRun(storage, sys).snapshot?.elapsedSec, 100);
+  });
+
+  it("keeps valid progress when the new primary write fails", () => {
+    const storage = createMemoryStorage();
+    const state = createTestRun({ systems: sys, elapsedSec: 184 });
+    assert.ok(saveRun(storage, state, sys).ok);
+    const oldPrimary = storage.getItem(runKey)!;
+    const writes: string[] = [];
+    const failing = {
+      ...storage,
+      setItem(key: string, value: string) {
+        writes.push(key);
+        if (key === runKey) throw new Error("quota");
+        storage.setItem(key, value);
+      },
+    };
+    assert.deepEqual(importRunSave(failing, oldPrimary, sys), {
+      ok: false,
+      reason: "storage_error",
+    });
+    assert.deepEqual(writes, [runBackupKey, runKey]);
+    assert.equal(storage.getItem(runKey), oldPrimary);
+    assert.equal(storage.getItem(runBackupKey), oldPrimary);
+  });
+});
 
 function setRules(config: typeof rules): void {
   for (const key of Object.keys(rules) as (keyof typeof rules)[]) {

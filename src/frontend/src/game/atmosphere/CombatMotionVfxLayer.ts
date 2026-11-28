@@ -150,13 +150,7 @@ export class CombatMotionVfxLayer {
     rangePx: number,
     arcDegrees: number,
   ): void {
-    if (
-      this.destroyed ||
-      !(rangePx > 0) ||
-      !(arcDegrees > 0) ||
-      !Number.isFinite(rangePx)
-    )
-      return;
+    if (this.destroyed || !(rangePx > 0) || !(arcDegrees > 0)) return;
     this.slashX = Math.round(x);
     this.slashY = Math.round(y);
     this.facing = Math.atan2(facingY, facingX);
@@ -214,7 +208,7 @@ export class CombatMotionVfxLayer {
     heroSprite?: Phaser.GameObjects.Sprite | Phaser.GameObjects.Image | null,
     origin?: { x: number; y: number },
   ): void {
-    if (this.destroyed || !(rangePx > 0) || !Number.isFinite(rangePx)) return;
+    if (this.destroyed || !(rangePx > 0)) return;
     this.suppressNextSlashSync = true;
     const { x: ux, y: uy } = safeUnit(dirX, dirY);
     this.thrustX = Math.round(x);

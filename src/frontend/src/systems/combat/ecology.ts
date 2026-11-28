@@ -104,8 +104,14 @@ export function provoke(
   const def = sys.data.enemies.get(e.enemyId);
   if (def && factionOf(def) === "neutral") {
     const radius = perception(sys);
+    const context = runContext(state, sys);
     neighborhood(state, sys).visit(e, ["neutral"], radius, (ally) => {
-      if (ally.enemyId === e.enemyId && ally.id !== source) alert(ally);
+      if (
+        ally.enemyId === e.enemyId &&
+        ally.id !== source &&
+        context.senses(ally, e)
+      )
+        alert(ally);
       return radius;
     });
   }

@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { dataFiles, loadGameData } from "@/core/gameData";
 import { validateGameData } from "@/core/dataValidator";
 import { RUN_SCHEMA_VERSION } from "@/core/saveMigration";
-import { loadRun } from "@/core/save";
+import { exportRunSave, importRunSave, loadRun } from "@/core/save";
 import { createMemoryStorage } from "@/core/storage";
 import { createSystems } from "@/core/systems";
 import { createRun } from "@/core/run";
@@ -180,10 +180,8 @@ for (const version of [1, 2, 3, 4])
       seals: ["ice_gorge_ember_seal"],
     };
     if (version < 3) Reflect.deleteProperty(snapshot, "heroId");
-    storage.setItem(
-      sys.data.balance.storage.runKey,
-      JSON.stringify({ schemaVersion: version, state: snapshot }),
-    );
+    const raw = JSON.stringify({ schemaVersion: version, state: snapshot });
+    storage.setItem(sys.data.balance.storage.runKey, raw);
     const result = loadRun(storage, sys);
     assert.equal(result.status, "ok");
     assert.equal(RUN_SCHEMA_VERSION, 4);
@@ -191,7 +189,30 @@ for (const version of [1, 2, 3, 4])
     assert.equal(result.snapshot?.heroId, "lin_tinder");
     assert.equal(result.snapshot?.enemiesById[enemy.id].enemyId, "coal_shade");
     assert.ok(result.snapshot?.seals.includes("ice_gorge_ember_seal"));
+
+    const output = exportRunSave(storage, sys);
+    assert.ok(typeof output === "string");
+    assert.equal(JSON.parse(output).state.schemaVersion, RUN_SCHEMA_VERSION);
+    const imported = createMemoryStorage();
+    assert.deepEqual(importRunSave(imported, raw, sys), { ok: true });
+    assert.deepEqual(loadRun(imported, sys).snapshot, result.snapshot);
   });
+
+it("exports an undated bare legacy save from the backup when the primary is damaged", () => {
+  const sys = createSystems();
+  const { runKey, runBackupKey } = sys.data.balance.storage;
+  const state = createRun({ systems: sys, seed: 42, runId: "backup" });
+  const backup = JSON.stringify({ ...state, schemaVersion: 1 });
+  const storage = createMemoryStorage({ [runKey]: "{", [runBackupKey]: backup });
+  const output = exportRunSave(storage, sys);
+  assert.ok(typeof output === "string");
+  const envelope = JSON.parse(output);
+  assert.equal(envelope.schemaVersion, RUN_SCHEMA_VERSION);
+  assert.equal(envelope.savedAt, 0);
+  assert.equal(envelope.state.runId, "backup");
+  assert.equal(storage.getItem(runKey), "{");
+  assert.equal(storage.getItem(runBackupKey), backup);
+});
 
 it("Each stage of a monster attack and specific conduct can be located in a specific field", () => {
   const f = structuredClone(dataFiles);

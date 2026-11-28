@@ -27,13 +27,11 @@ export class EnemyEntity {
   sync(enemy: EnemyState, tileSize: number, state: RunState, sys: Systems) {
     const { x, y } = enemy;
     const depth = entityDepthAt(y, sys.world.heightTiles * tileSize);
-    this.sprite
-      .setPosition(x, y)
-      .setDepth(depth)
-      .setFlipX(enemy.dirX < 0);
-    this.shadow
-      .setPosition(x, y + 1)
-      .setDepth(depth + RENDER_DEPTH.entityOffset.shadow);
+    this.sprite.setPosition(x, y).setFlipX(enemy.dirX < 0);
+    if (this.sprite.depth !== depth) this.sprite.setDepth(depth);
+    this.shadow.setPosition(x, y + 1);
+    const shadowDepth = depth + RENDER_DEPTH.entityOffset.shadow;
+    if (this.shadow.depth !== shadowDepth) this.shadow.setDepth(shadowDepth);
     this.sprite.clearTint().setAlpha(1);
     if (this.telegraph.visible) this.telegraph.clear();
     if ((enemy.hurtTimer ?? 0) > 0)

@@ -197,8 +197,7 @@ export function hitEnemy(
     emitEvent: (type, x, y, payload) =>
       events.push(makeEvent(type, x, y, payload)),
     onEnemyKilled: (target) => {
-      defeatEnemy(state, sys, target, events);
-      special?.onKilled?.(target, state, sys, events);
+      defeatEnemy(state, sys, target, events, special?.onKilled);
       if (
         config.drops.some(
           ({ pickupId }) => pickupId && state.groundLoot[pickupId],

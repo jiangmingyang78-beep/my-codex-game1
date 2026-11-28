@@ -3,6 +3,7 @@ import { registerCanvasTexture } from "@/vfx/proceduralTextures";
 import type Phaser from "phaser";
 import { ATMOSPHERE_PRESETS } from "../atmosphere/atmospherePresets";
 import { eraseLitPixels } from "../atmosphere/pixelLightMask";
+import { renderMetrics } from "../dev/renderMetrics";
 import { RENDER_DEPTH } from "../renderDepth";
 
 const KEY = "emberwood-night-overlay";
@@ -59,12 +60,14 @@ export class NightOverlay {
     const y = Math.floor(view.y / tile) * tile;
     const w = Math.ceil(view.width) + tile + 1;
     const h = Math.ceil(view.height) + tile + 1;
+    const cols = Math.ceil(w / tile);
+    const rows = Math.ceil(h / tile);
     const tint = Math.round(63 * Math.min(1, this.darkness / 0.8));
     this.image.setVisible(true).setAlpha(Math.min(1, this.darkness / 0.8));
-    const revision = this.grid?.revision ?? 0;
+    const revision = this.grid?.viewRevision(x, y, w, h) ?? 0;
     if (
-      this.texture.width === w &&
-      this.texture.height === h &&
+      this.texture.width === cols &&
+      this.texture.height === rows &&
       x === this.lastX &&
       y === this.lastY &&
       revision === this.lastRevision &&
@@ -77,24 +80,29 @@ export class NightOverlay {
     this.lastRevision = revision;
     this.lastGrid = this.grid;
     this.lastTint = tint;
-    if (this.texture.width !== w || this.texture.height !== h) {
-      this.texture.setSize(w, h);
-      this.image.setSizeToFrame().setOrigin(0);
+    if (this.texture.width !== cols || this.texture.height !== rows) {
+      this.texture.setSize(cols, rows);
+      this.texture.setFilter(1); // Phaser.Textures.FilterMode.NEAREST
+      this.image.setSizeToFrame().setOrigin(0).setScale(tile);
     }
     this.image.setPosition(x, y).setVisible(true);
     const g = this.texture.getContext();
     g.setTransform(1, 0, 0, 1, 0, 0);
-    g.globalCompositeOperation = "source-over";
+    g.globalCompositeOperation = "copy";
     g.globalAlpha = 1;
-    g.clearRect(0, 0, w, h);
+    if (import.meta.env.DEV) renderMetrics.masks++;
     const t = tint / 63;
     const r = mix(duskColor >> 16, nightColor >> 16, t);
     const green = mix((duskColor >> 8) & 255, (nightColor >> 8) & 255, t);
     const b = mix(duskColor & 255, nightColor & 255, t);
     g.fillStyle = `rgba(${r},${green},${b},${maxNightAlpha})`;
-    g.fillRect(0, 0, w, h);
+    g.fillRect(0, 0, cols, rows);
+    g.scale(1 / tile, 1 / tile);
     if (this.grid) eraseLitPixels(g, this.grid, { x, y, width: w, height: h });
-    if (this.webgl) this.texture.refresh();
+    if (this.webgl) {
+      this.texture.refresh();
+      if (import.meta.env.DEV) renderMetrics.uploads++;
+    }
   };
 
   destroy(): void {

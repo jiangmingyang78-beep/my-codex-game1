@@ -22,8 +22,8 @@ breadcrumb("The entrance to adventure with eternal night");
 try {
   const { default: App } = await import("./App");
   const { loadGameData } = await import("./core/gameData");
-  const { loadSurvivalTuning } = await import("./systems/survivalTuning");
-  loadGameData().balance.survival = await loadSurvivalTuning();
+  const { loadWorldTuning } = await import("./systems/survivalTuning");
+  loadGameData().balance.survival = await loadWorldTuning();
   if (!failed)
     root.render(
       <ErrorBoundary>

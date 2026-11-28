@@ -35,6 +35,9 @@ export interface IWorldContext extends WorldAdapter {
   freeze(x: number, y: number, events: GameEvent[]): void;
 }
 export interface ISpawnDirector {
+  readonly ring: ReturnType<typeof spawnRadii>;
+  hasRoom(id: string, boss?: boolean): boolean;
+  allowsLocation(at: Point, id: string): boolean;
   accepts(at: Point, id: string, boss?: boolean): boolean;
 }
 /** Snapshot the shared ring and light rules once per spawn attempt batch. */
@@ -47,12 +50,17 @@ export function spawnDirector(
   clear: (at: Point) => boolean,
 ): ISpawnDirector {
   const ring = spawnRadii(settings, grid.tileSize, view);
+  const hasRoom = (id: string, boss = false) =>
+    boss || hasCapacity(mobs, categoryOf(id), settings);
+  const allowsLocation = (at: Point, id: string) =>
+    inRing(at, center, ring, view) &&
+    clear(at) &&
+    spawnLightAllowed(grid, at, id);
   return {
-    accepts: (at, id, boss = false) =>
-      inRing(at, center, ring, view) &&
-      clear(at) &&
-      spawnLightAllowed(grid, at, id) &&
-      (boss || hasCapacity(mobs, categoryOf(id), settings)),
+    ring,
+    hasRoom,
+    allowsLocation,
+    accepts: (at, id, boss) => hasRoom(id, boss) && allowsLocation(at, id),
   };
 }
 
@@ -122,8 +130,26 @@ export class WorldContext implements IWorldContext {
         }
       }
     const scale = (step * 0.28) / Math.max(1, Math.hypot(sx, sy));
-    out.x += sx * scale;
-    out.y += sy * scale;
+    // Limit lateral drift in single-tile passages before collision sliding.
+    const nx = actor.x + out.x + sx * scale;
+    const ny = actor.y + out.y + sy * scale;
+    const radius = size * 0.375;
+    if (
+      sx &&
+      !this.solid(
+        Math.floor((nx + Math.sign(sx) * radius) / size),
+        Math.floor(actor.y / size),
+      )
+    )
+      out.x += sx * scale;
+    if (
+      sy &&
+      !this.solid(
+        Math.floor(actor.x / size),
+        Math.floor((ny + Math.sign(sy) * radius) / size),
+      )
+    )
+      out.y += sy * scale;
   }
   private next = { x: 0, y: 0 };
   constructor(private readonly map: WorldAdapter) {}
@@ -207,7 +233,7 @@ export class WorldContext implements IWorldContext {
       this.bright !== this.tuning.brightCost ||
       this.fire !== this.tuning.fireCost
     ) {
-      this.flow.compute(this.cx, this.cy, this.cost);
+      this.flow.update(this.cx, this.cy, this.cost);
       this.lightStamp = this.light.revision;
       this.fireStamp = this.elements.lightRevision;
       this.bright = this.tuning.brightCost;

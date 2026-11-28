@@ -30,35 +30,32 @@ export function getSharedSurvivalEnemies(day = 1) {
   return sharedEnemies;
 }
 
-export function createSurvivalSeedEnemy(enemyId, x, y, index) {
+export function createSurvivalSeedEnemy(enemyId, x, y, index, enemy = {}) {
   const def = getEnemyDef(enemyId);
   if (def?.scope !== "shared" || def.seedType === "warden_phase")
     throw new Error(`The survival pattern is not available: ${enemyId}`);
 
-  return {
-    id: `night:${enemyId}:${index}`,
-    enemyId,
-    seedType: def.seedType,
-    _def: def,
-    x,
-    y,
-    index,
-    home: { x, y },
-    hp: def.maxHp,
-    max: def.maxHp,
-    phase: "chase",
-    phaseSec: 0,
-    dirX: 0,
-    dirY: 1,
-    hitDone: false,
-    aimX: undefined,
-    aimY: undefined,
-    stun: 0,
-    hurtTimer: 0,
-    knockbackTimer: 0,
-    knockbackVx: 0,
-    knockbackVy: 0,
-  };
+  enemy.id = `night:${enemyId}:${index}`;
+  enemy.enemyId = enemyId;
+  enemy.seedType = def.seedType;
+  enemy._def = def;
+  enemy.x = x;
+  enemy.y = y;
+  enemy.index = index;
+  enemy.home = { x, y };
+  enemy.hp = enemy.max = def.maxHp;
+  enemy.phase = "chase";
+  enemy.phaseSec = 0;
+  enemy.dirX = 0;
+  enemy.dirY = 1;
+  enemy.hitDone = false;
+  enemy.stun =
+    enemy.hurtTimer =
+    enemy.knockbackTimer =
+    enemy.knockbackVx =
+    enemy.knockbackVy =
+      0;
+  return enemy;
 }
 
 export function tickEnemyImpact(enemy, dt, moveBy) {

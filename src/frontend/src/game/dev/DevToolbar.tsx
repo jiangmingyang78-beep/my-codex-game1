@@ -6,7 +6,7 @@ import { renderMetrics } from "./renderMetrics";
 import { spawnDebug } from "./spawnDebug";
 
 export function DevToolbar() {
-  const [renderMs, setRenderMs] = useState(0);
+  const [metrics, setMetrics] = useState({ ...renderMetrics });
   const [debug, setDebug] = useState(spawnDebug.enabled);
   const [open, setOpen] = useState(false);
   const [godMode, setGodMode] = useState(
@@ -22,7 +22,7 @@ export function DevToolbar() {
 
   useEffect(() => {
     if (!open) return;
-    const id = window.setInterval(() => setRenderMs(renderMetrics.cpuMs), 500);
+    const id = window.setInterval(() => setMetrics({ ...renderMetrics }), 500);
     return () => window.clearInterval(id);
   }, [open]);
   const syncDevList = () => {
@@ -109,7 +109,9 @@ export function DevToolbar() {
     >
       <div className="flex items-center justify-between gap-2">
         <span className="font-pixel font-bold text-ember">
-          DEV · Render CPU {renderMs.toFixed(2)} ms
+          DeV Rendering CPU {metrics.cpuMs.toFixed(2)} - I'm sorry, I'm sorry{" "}
+          {metrics.batches} · Night rewrite {metrics.frameMasks} · Photo-based
+          upload {metrics.frameUploads}
         </span>
         <PixelButton
           variant="ghost"

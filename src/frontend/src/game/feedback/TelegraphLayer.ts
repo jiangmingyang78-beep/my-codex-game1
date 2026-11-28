@@ -1,91 +1,91 @@
-import type { AttackMove, EnemyDef } from "@/core/dataTypes";
+import type { EnemyDef } from "@/core/dataTypes";
 import { getEnemy } from "@/core/gameData";
 import type { EnemyState, RunState, Systems } from "@/core/types";
 import { ratio01, safeUnit } from "@/systems/combat/combatMath";
 import { currentMove } from "@/systems/combat/enemyAi";
+import { categoryOf } from "@/systems/combat/spawnRules";
 import Phaser from "phaser";
 import { TelegraphDrawing } from "./TelegraphDrawing";
 import { COMBAT_FEEL_PRESETS, type TelegraphPreset } from "./combatFeelPresets";
 
-interface SeedAttackView {
-  kind: "sweep" | "lunge" | "charge" | "projectile" | "aoe";
-  windupSec: number;
-  rangeTiles: number;
-  distanceTiles: number;
-  arcDegrees: number;
-  radiusTiles: number;
+const ORDINARY_LIMIT = 12;
+const DEFAULT_DIRECTION = safeUnit(0, 0);
+
+class SeedAttackView {
+  kind: "sweep" | "lunge" | "charge" | "projectile" | "aoe" = "sweep";
+  windupSec = 0;
+  reachTiles = 0;
+  arcDegrees = 100;
 }
 
 function resolveTelegraphMove(
-  def: EnemyDef | undefined,
+  def: EnemyDef,
   enemy: EnemyState,
-): SeedAttackView | null {
-  if (!def) return null;
-
-  if (def.seedType) {
-    const stage = def.phases?.[enemy.wardenPhase ?? 0];
-    const seedType = stage?.seedType ?? def.seedType;
-    const attack = stage?.overrides?.attack
-      ? { ...def.attack, ...stage.overrides.attack }
-      : def.attack;
-    const windupSec = attack.windupSec ?? 0.4;
-
-    if (seedType === "lunge") {
-      return {
-        kind: "lunge",
-        windupSec,
-        rangeTiles: attack.triggerTiles ?? 2,
-        distanceTiles: attack.distanceTiles ?? 2.5,
-        arcDegrees: 100,
-        radiusTiles: 1.2,
-      };
-    }
-    if (seedType === "stalk_melee") {
-      return {
-        kind: "sweep",
-        windupSec,
-        rangeTiles: attack.reachTiles ?? 1.5,
-        distanceTiles: 1.5,
-        arcDegrees: 130,
-        radiusTiles: 1.2,
-      };
-    }
-    if (seedType === "ranged_telegraph") {
-      return {
-        kind: attack.mode === "aoe" ? "aoe" : "projectile",
-        windupSec,
-        rangeTiles: attack.preferredTiles ?? 5,
-        distanceTiles: 5,
-        arcDegrees: 100,
-        radiusTiles: attack.radiusTiles ?? 1.2,
-      };
+  out: SeedAttackView,
+): boolean {
+  const stage = def.seedType ? def.phases?.[enemy.wardenPhase ?? 0] : undefined;
+  const override = stage?.overrides?.attack;
+  const attack = def.attack;
+  out.windupSec = override?.windupSec ?? attack.windupSec ?? 0.4;
+  out.arcDegrees = 100;
+  switch (stage?.seedType ?? def.seedType) {
+    case "lunge":
+      out.kind = "lunge";
+      out.reachTiles = override?.distanceTiles ?? attack.distanceTiles ?? 2.5;
+      break;
+    case "stalk_melee":
+      out.kind = "sweep";
+      out.reachTiles = override?.reachTiles ?? attack.reachTiles ?? 1.5;
+      out.arcDegrees = 130;
+      break;
+    case "ranged_telegraph":
+      out.kind =
+        (override?.mode ?? attack.mode) === "aoe" ? "aoe" : "projectile";
+      out.reachTiles =
+        out.kind === "aoe"
+          ? (override?.radiusTiles ?? attack.radiusTiles ?? 1.2)
+          : (override?.preferredTiles ?? attack.preferredTiles ?? 5);
+      break;
+    default: {
+      const move = currentMove(def, enemy);
+      if (!move) return false;
+      out.kind = move.type;
+      out.windupSec = move.windupSec;
+      const reach =
+        move.type === "lunge" || move.type === "charge"
+          ? move.distanceTiles
+          : move.rangeTiles;
+      out.reachTiles = reach ?? move.triggerRangeTiles;
+      out.arcDegrees = move.arcDegrees ?? 100;
     }
   }
-
-  const move: AttackMove | undefined = currentMove(def, enemy);
-  if (!move) return null;
-  return {
-    kind: move.type,
-    windupSec: move.windupSec,
-    rangeTiles: move.rangeTiles ?? move.triggerRangeTiles,
-    distanceTiles: move.distanceTiles ?? move.triggerRangeTiles,
-    arcDegrees: move.arcDegrees ?? 100,
-    radiusTiles: 1.2,
-  };
+  return true;
 }
 
 export class TelegraphLayer {
-  private readonly scene: Phaser.Scene;
   private readonly opts: TelegraphPreset;
   private drawing: TelegraphDrawing | null;
+  private readonly move = new SeedAttackView();
+  private readonly commits: {
+    id: string;
+    move: SeedAttackView;
+    progress: number;
+  }[] = [];
+  private readonly diamond = [
+    { x: 0, y: 0 },
+    { x: 0, y: 0 },
+    { x: 0, y: 0 },
+    { x: 0, y: 0 },
+  ];
 
-  constructor(scene: Phaser.Scene, options: Partial<TelegraphPreset> = {}) {
-    this.scene = scene;
+  constructor(
+    private readonly scene: Phaser.Scene,
+    options: Partial<TelegraphPreset> = {},
+  ) {
     this.opts = { ...COMBAT_FEEL_PRESETS.telegraph, ...options };
     this.drawing = new TelegraphDrawing(scene, this.opts);
-
-    this.scene.events.once(Phaser.Scenes.Events.SHUTDOWN, this.destroy, this);
-    this.scene.events.once(Phaser.Scenes.Events.DESTROY, this.destroy, this);
+    scene.events.once(Phaser.Scenes.Events.SHUTDOWN, this.destroy, this);
+    scene.events.once(Phaser.Scenes.Events.DESTROY, this.destroy, this);
   }
 
   syncFromState(state: RunState, sys: Systems, _timeSec: number): void {
@@ -93,35 +93,73 @@ export class TelegraphLayer {
     if (!drawing) return;
     drawing.begin();
     const tileSize = sys.data.tileSize;
-    const commits: {
-      enemy: EnemyState;
-      move: SeedAttackView;
-      progress: number;
-    }[] = [];
-
+    const view = this.scene.cameras.main.worldView;
+    const move = this.move;
+    let commitCount = 0;
+    let ordinaryCount = 0;
     for (const id in state.enemiesById) {
       const enemy = state.enemiesById[id];
       if (enemy.phase !== "windup" || enemy.hp <= 0) continue;
-      const move = resolveTelegraphMove(
-        getEnemy(sys.data, enemy.enemyId),
-        enemy,
-      );
-      if (!move) continue;
+      const def = getEnemy(sys.data, enemy.enemyId);
+      if (!resolveTelegraphMove(def, enemy, move)) continue;
+
+      const reach = move.reachTiles * tileSize;
+      const padding = reach + Math.max(8, this.opts.lineWidthPx / 2 + 3);
+      // A ranged enemy outside the camera can still aim into the viewport.
+      const aimed = move.kind === "aoe" || move.kind === "projectile";
+      const tx = (aimed ? enemy.aimX : undefined) ?? enemy.x;
+      const ty = (aimed ? enemy.aimY : undefined) ?? enemy.y;
+      const x = move.kind === "aoe" ? tx : enemy.x;
+      const y = move.kind === "aoe" ? ty : enemy.y;
+      if (
+        view.width > 0 &&
+        view.height > 0 &&
+        !Phaser.Geom.Intersects.RectangleToValues(
+          view,
+          Math.min(x, tx),
+          Math.max(x, tx),
+          Math.min(y, ty),
+          Math.max(y, ty),
+          padding,
+        )
+      )
+        continue;
 
       const windup = Math.max(1e-4, move.windupSec);
-      const remaining =
+      const remaining = Phaser.Math.Clamp(
         this.opts.windupTimerMode === "remaining"
-          ? Phaser.Math.Clamp(enemy.phaseSec, 0, windup)
-          : Phaser.Math.Clamp(windup - enemy.phaseSec, 0, windup);
-      const progress = 1 - ratio01(remaining, windup);
+          ? enemy.phaseSec
+          : windup - enemy.phaseSec,
+        0,
+        windup,
+      );
+      const committing = remaining <= this.opts.commitWindowSec;
+      const nearCommit =
+        committing &&
+        Math.hypot(tx - state.hero.x, ty - state.hero.y) <=
+          reach + 2 * tileSize;
+      if (!enemy.boss && !nearCommit && categoryOf(enemy.enemyId) !== "elite") {
+        if (ordinaryCount >= ORDINARY_LIMIT) continue;
+        ordinaryCount++;
+      }
 
-      if (remaining <= this.opts.commitWindowSec) {
-        commits.push({ enemy, move, progress });
+      const progress = 1 - ratio01(remaining, windup);
+      if (committing) {
+        // Reuse slots up to the high-water mark. The final pass paints commits above other warnings.
+        const slot = this.commits[commitCount];
+        if (slot) {
+          slot.id = id;
+          slot.progress = progress;
+          Object.assign(slot.move, move);
+        } else this.commits.push({ id, move: { ...move }, progress });
+        commitCount++;
       } else {
         this.drawMoveTelegraph(drawing, enemy, move, tileSize, progress, false);
       }
     }
-    for (const { enemy, move, progress } of commits) {
+    for (let i = 0; i < commitCount; i++) {
+      const { id, move, progress } = this.commits[i];
+      const enemy = state.enemiesById[id];
       this.drawMoveTelegraph(drawing, enemy, move, tileSize, progress, true);
     }
     drawing.end();
@@ -135,19 +173,15 @@ export class TelegraphLayer {
     progress: number,
     committing: boolean,
   ): void {
-    const { x: ux, y: uy } = safeUnit(enemy.dirX, enemy.dirY);
+    const reach = move.reachTiles * tileSize;
     const ox = Math.round(enemy.x);
     const oy = Math.round(enemy.y);
+    const magnitude = Math.hypot(enemy.dirX, enemy.dirY);
+    const hasDirection = magnitude > 1e-6 && Number.isFinite(magnitude);
+    const ux = hasDirection ? enemy.dirX / magnitude : DEFAULT_DIRECTION.x;
+    const uy = hasDirection ? enemy.dirY / magnitude : DEFAULT_DIRECTION.y;
     if (move.kind === "charge" || move.kind === "lunge") {
-      drawing.linear(
-        ox,
-        oy,
-        ux,
-        uy,
-        move.distanceTiles * tileSize,
-        progress,
-        committing,
-      );
+      drawing.linear(ox, oy, ux, uy, reach, progress, committing);
       return;
     }
 
@@ -155,109 +189,102 @@ export class TelegraphLayer {
     const border = committing
       ? this.opts.commitFlashColor
       : this.opts.borderColor;
-    // Leave one dark world pixel on each side so even the white commit edge reads on snow.
-    const stroke = (draw: () => void, alpha = 1): void => {
-      g.lineStyle(4, this.opts.outlineColor, alpha);
-      draw();
-      g.lineStyle(2, border, alpha);
-      draw();
-    };
-
     switch (move.kind) {
       case "sweep": {
-        const radius = move.rangeTiles * tileSize;
         const halfArc = Phaser.Math.DegToRad(move.arcDegrees) / 2;
         const angle = Math.atan2(uy, ux);
-        const startA = angle - halfArc;
-        const endA = angle + halfArc;
-
+        const start = angle - halfArc;
+        const end = angle + halfArc;
         g.fillStyle(this.opts.fillColor, this.opts.fillAlpha);
-        g.beginPath();
-        g.slice(ox, oy, radius, startA, endA, false);
-        g.closePath();
-        g.fillPath();
-
+        g.beginPath()
+          .slice(ox, oy, reach, start, end, false)
+          .closePath()
+          .fillPath();
         if (progress > 0) {
           g.fillStyle(this.opts.fillColor, this.opts.progressAlpha);
-          g.beginPath();
-          g.slice(ox, oy, radius * progress, startA, endA, false);
-          g.closePath();
-          g.fillPath();
+          g.beginPath()
+            .slice(ox, oy, reach * progress, start, end, false)
+            .closePath()
+            .fillPath();
         }
-
-        stroke(() => {
-          g.beginPath();
-          g.slice(ox, oy, radius, startA, endA, false);
-          g.closePath();
-          g.strokePath();
-        });
+        g.beginPath().slice(ox, oy, reach, start, end, false).closePath();
+        g.lineStyle(4, this.opts.outlineColor).strokePath();
+        g.lineStyle(2, border).strokePath();
         break;
       }
-
       case "aoe": {
         const tx = Math.round(enemy.aimX ?? ox);
         const ty = Math.round(enemy.aimY ?? oy);
-        const radius = move.radiusTiles * tileSize;
-
         g.fillStyle(this.opts.fillColor, this.opts.fillAlpha);
-        g.fillCircle(tx, ty, radius);
+        g.fillCircle(tx, ty, reach);
         if (progress > 0) {
           g.fillStyle(this.opts.fillColor, this.opts.progressAlpha);
-          g.fillCircle(tx, ty, radius * progress);
+          g.fillCircle(tx, ty, reach * progress);
         }
-        stroke(() => g.strokeCircle(tx, ty, radius));
+        g.lineStyle(4, this.opts.outlineColor).strokeCircle(tx, ty, reach);
+        g.lineStyle(2, border).strokeCircle(tx, ty, reach);
         break;
       }
-
       case "projectile": {
-        const tx = Math.round(
-          enemy.aimX ?? ox + ux * move.rangeTiles * tileSize,
-        );
-        const ty = Math.round(
-          enemy.aimY ?? oy + uy * move.rangeTiles * tileSize,
-        );
-
-        const dx = tx - ox;
-        const dy = ty - oy;
-        const totalDist = Math.hypot(dx, dy);
-        if (totalDist > 1e-4) {
-          const { x: dirX, y: dirY } = safeUnit(dx, dy);
-          stroke(() => {
-            for (let d = 0; d < totalDist; d += 14) {
-              const segEnd = Math.min(d + 8, totalDist);
-              g.lineBetween(
-                Math.round(ox + dirX * d),
-                Math.round(oy + dirY * d),
-                Math.round(ox + dirX * segEnd),
-                Math.round(oy + dirY * segEnd),
-              );
-            }
-          }, this.opts.projectileAimAlpha);
-          if (progress > 0) {
-            stroke(() =>
-              g.lineBetween(
-                ox,
-                oy,
-                Math.round(ox + dx * progress),
-                Math.round(oy + dy * progress),
-              ),
-            );
-          }
-        }
-
-        const r = 6;
-        const diamond = [
-          { x: tx, y: ty - r },
-          { x: tx + r, y: ty },
-          { x: tx, y: ty + r },
-          { x: tx - r, y: ty },
-        ];
-        g.fillStyle(this.opts.fillColor, this.opts.progressAlpha);
-        g.fillPoints(diamond, true);
-        stroke(() => g.strokePoints(diamond, true));
+        const tx = Math.round(enemy.aimX ?? ox + ux * reach);
+        const ty = Math.round(enemy.aimY ?? oy + uy * reach);
+        this.drawProjectile(g, ox, oy, tx, ty, border, progress);
         break;
       }
     }
+  }
+
+  private drawProjectile(
+    g: Phaser.GameObjects.Graphics,
+    ox: number,
+    oy: number,
+    tx: number,
+    ty: number,
+    border: number,
+    progress: number,
+  ): void {
+    const dx = tx - ox;
+    const dy = ty - oy;
+    const distance = Math.hypot(dx, dy);
+    const { outlineColor, projectileAimAlpha, fillColor, progressAlpha } =
+      this.opts;
+    if (distance > 1e-4) {
+      const ux = dx / distance;
+      const uy = dy / distance;
+      for (let width = 4; width >= 2; width -= 2) {
+        g.lineStyle(
+          width,
+          width === 4 ? outlineColor : border,
+          projectileAimAlpha,
+        );
+        for (let d = 0; d < distance; d += 14) {
+          const end = Math.min(d + 8, distance);
+          g.lineBetween(
+            Math.round(ox + ux * d),
+            Math.round(oy + uy * d),
+            Math.round(ox + ux * end),
+            Math.round(oy + uy * end),
+          );
+        }
+      }
+      if (progress > 0) {
+        const px = Math.round(ox + dx * progress);
+        const py = Math.round(oy + dy * progress);
+        g.lineStyle(4, outlineColor).lineBetween(ox, oy, px, py);
+        g.lineStyle(2, border).lineBetween(ox, oy, px, py);
+      }
+    }
+
+    const [top, right, bottom, left] = this.diamond;
+    top.x = bottom.x = tx;
+    right.y = left.y = ty;
+    top.y = ty - 6;
+    right.x = tx + 6;
+    bottom.y = ty + 6;
+    left.x = tx - 6;
+    g.fillStyle(fillColor, progressAlpha).fillPoints(this.diamond, true);
+    g.lineStyle(4, outlineColor).strokePoints(this.diamond, true);
+    g.lineStyle(2, border).strokePoints(this.diamond, true);
   }
 
   destroy(): void {

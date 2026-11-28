@@ -279,7 +279,7 @@ import {ObjectPool} from "./src/systems/combat/projectilePool.ts";
 import {WorldContext} from "./src/systems/world/worldContext.ts";
 import {LightGrid} from "./src/systems/world/lightGrid.ts";
 import {despawnAlpha,inRing,MobPool,shouldDespawn,spawnRadii} from "./src/systems/combat/spawnRules.ts";
-import {loadSurvivalTuning,scaledStock} from "./src/systems/survivalTuning.ts";
+import {loadWorldTuning,scaledStock} from "./src/systems/survivalTuning.ts";
 import {campProjects,campProjectEffects,campProjectComplete,campProjectContribution,donateCampMaterials,normalizeCampProjects,missingCampProjects,campTier,hearth,feedHearth,tickHearth,fireDrainRate} from "./src/systems/survival/campProjects.ts";
 import {CAMP_LANDMARK,landmarkBearing,landmarkId,landmarkKinds,normalizeLandmarks} from "./src/systems/survival/landmarks.ts";
 import {winterDay,winterPhase,winter,raidRules,raidBudget} from "./src/systems/survival/rhythm.js";
@@ -309,7 +309,7 @@ import {supportsSnowFootprint} from "./src/systems/world/worldTypes.ts";
 import {loadDataFiles} from "./src/core/gameData.ts";
 const {survivalCatalog:catalogDefinitions,survivalRecipes,recipes:survivalRecipeData}=loadDataFiles();
 import {survivalRates} from "./src/systems/survivalOverrides.js";
-const tuning=await loadSurvivalTuning();
+const tuning=await loadWorldTuning(()=>{raidPaths=null;});
 const rates=survivalRates(tuning);
 import {
   ENEMY_TEXTURE_DEFS,
@@ -406,7 +406,7 @@ const enemySpecs = [
   ["bat",20,28,2],["keeper",43,16,11]
 ];
 const keys = new Set(), particles = [];
-let player, enemies, drops, lit, phase, clock, elapsed, defeated, flash, tick = 0, last = 0;
+let player, enemies=[], drops, lit, phase, clock, elapsed, defeated, flash, tick = 0, last = 0;
 const enemyProjectiles=[],enemyAoeZones=[];
 let camera = {x:0,y:0}, muted = false, audio;
 const dayStages = [
@@ -573,6 +573,7 @@ function postProcess(){
 const buildLightRadius={torch:44,brazier:77,emberBrazier:105,miniBeacon:140};
 let obstacleVersion=0;
 function opaqueTile(x,y){
+  if(!containsTile(x,y))return true;
   const tile=terrainTile(x,y), id=cellKey(x,y), build=survival?.builds[id];
   return tile===6||tile===9||build==="wall"||build==="coop"||(build==="gate"&&!survival.open[id]);
 }
@@ -635,7 +636,7 @@ function survivalElementStep(dt,freeze=false,sleeping=false){
   presentElements(events);
 }
 const paintElementRect=(color,x,y,w,h)=>rect("#"+color.toString(16).padStart(6,"0"),x,y,w,h);
-const nightMobPool=new MobPool();
+const nightMobPool=new MobPool(32,()=>({}));
 let nightSerial=0;
 let survivalLamps=[];
 const spawnView=()=>({x:camera.x,y:camera.y,width:canvas.width,height:canvas.height});
@@ -653,6 +654,8 @@ function syncSurvivalLight(){
   survivalLamps=sources;
   return survivalGrid;
 }
+const lampClips=new Map();
+let clipRevision=-1;
 function applyLighting(){
   lightCtx.globalCompositeOperation="source-over";
   lightCtx.fillStyle=rgb(lighting.ambient);lightCtx.fillRect(0,0,canvas.width,canvas.height);
@@ -667,14 +670,18 @@ function applyLighting(){
       lightCtx.fillRect(x-camera.x,y-camera.y,SIZE,SIZE);
     });
     lightCtx.restore();
+    if(clipRevision!==grid.revision){lampClips.clear();clipRevision=grid.revision;}
     for(const lamp of survivalLamps){
       const strength=lighting.glow*(.91+.05*Math.sin(tick*8+lamp.x));
-      lightCtx.save();lightCtx.beginPath();
-      const reach=Math.ceil(lamp.radius/SIZE),tx=Math.floor(lamp.x/SIZE),ty=Math.floor(lamp.y/SIZE);
-      for(let y=ty-reach;y<=ty+reach;y++)for(let x=tx-reach;x<=tx+reach;x++){
-        if(grid.sourceVisible(lamp.id,x,y))lightCtx.rect(x*SIZE-camera.x,y*SIZE-camera.y,SIZE,SIZE);
+      let clip=lampClips.get(lamp.id);
+      if(!clip){
+        clip=new Path2D();
+        const reach=Math.ceil(lamp.radius/SIZE),tx=Math.floor(lamp.x/SIZE),ty=Math.floor(lamp.y/SIZE);
+        for(let y=ty-reach;y<=ty+reach;y++)for(let x=tx-reach;x<=tx+reach;x++)
+          if(grid.sourceVisible(lamp.id,x,y))clip.rect(x*SIZE,y*SIZE,SIZE,SIZE);
+        lampClips.set(lamp.id,clip);
       }
-      lightCtx.clip();
+      lightCtx.save();lightCtx.translate(-camera.x,-camera.y);lightCtx.clip(clip);lightCtx.translate(camera.x,camera.y);
       radial(lightCtx,lamp.x-camera.x,lamp.y-camera.y,lamp.radius,lamp.color,strength);
       lightCtx.restore();
     }
@@ -1294,7 +1301,12 @@ function updateEnemyThreats(dt){
   }
 }
 function clearNightThreats(keepEncounters=false){
-  enemies=keepEncounters?enemies.filter(e=>e.encounterEnemyKey&&e.hp>0):[];
+  let kept=0;
+  for(const enemy of enemies){
+    if(keepEncounters&&enemy.encounterEnemyKey&&enemy.hp>0)enemies[kept++]=enemy;
+    else if(enemy._def)nightMobPool.release(enemy);
+  }
+  enemies.length=kept;
   while(enemyProjectiles.length)shotPool.release(enemyProjectiles.pop());enemyAoeZones.length=0;
 }
 function enemyUpdate(e,dt){
@@ -1335,7 +1347,11 @@ function enemyUpdate(e,dt){
   if(e.hp<=0||e.id==="keeper"&&lit.size<3)return;
   if(e.stun>0){e.stun-=dt;return;}
   const x=player.x-e.x,y=player.y-e.y,d=Math.hypot(x,y);
-  const keeper=e.id==="keeper",shield=e.id==="shield",elite=e.max>2,close=d<(keeper?120:elite?91:68);
+  const keeper=e.id==="keeper",shield=e.id==="shield",elite=e.max>2;
+  const nearby=d<(keeper?120:elite?91:68);
+  if(survival && nearby && !e.alerted)e.alerted=navigation.senses(e,player);
+  if(!nearby && !e.wind && !e.charge)e.alerted=false;
+  const close=nearby && (!survival || e.alerted);
   if(shield){
     e.exposed=Math.max(0,(e.exposed??0)-dt);
     if(close&&d>0&&!e.wind&&!e.charge){
@@ -1356,7 +1372,8 @@ function enemyUpdate(e,dt){
       e.wind=.48;e.lastDX=x/d;e.lastDY=y/d;sound("cue",(e.x-player.x)/85);
     }else if(d>2){
       const speed=keeper?42:elite?34:e.id==="bat"?42:30;
-      move(e,x/d*speed*dt,y/d*speed*dt,4);
+      if(survival){navigation.steer(e,x/d*speed*dt,y/d*speed*dt,chaseStep);move(e,chaseStep.x,chaseStep.y,4);}
+      else move(e,x/d*speed*dt,y/d*speed*dt,4);
     }
   }else{
     const angle=elapsed*.78+e.index*1.7;
@@ -4297,7 +4314,7 @@ function spawnRaid(){
     routes:approaches(),grid:syncSurvivalLight(),tuning,enemies,pool:getSharedSurvivalEnemies(day)
   });
   for(const {enemyId,x,y} of points){
-    const mob=nightMobPool.acquire(createSurvivalSeedEnemy(enemyId,x,y,nightSerial++));
+    const mob=createSurvivalSeedEnemy(enemyId,x,y,nightSerial++,nightMobPool.take());
     mob.raid=true;mob.persistent=true;enemies.push(mob);raid.remaining--;
   }
   raid.retryAt=survival.age+raidRules.retrySec;

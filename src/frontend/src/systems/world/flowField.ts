@@ -7,6 +7,9 @@ export class FlowField {
   private readonly next: Int32Array;
   private readonly heap: Int32Array;
   private readonly position: Int32Array;
+  private readonly affected: Int32Array;
+  private readonly marked: Uint8Array;
+  private initialized = false;
   private count = 0;
   private left = 0;
   private top = 0;
@@ -14,6 +17,8 @@ export class FlowField {
   constructor(size = 32) {
     this.size = size;
     const area = size * size;
+    this.affected = new Int32Array(area);
+    this.marked = new Uint8Array(area);
     this.costs = new Float64Array(area);
     this.dist = new Float64Array(area);
     this.next = new Int32Array(area).fill(-1);
@@ -70,6 +75,7 @@ export class FlowField {
   compute(x: number, y: number, cost: TravelCost) {
     const n = this.size;
     const half = n >> 1;
+    this.initialized = true;
     this.left = x - half;
     this.top = y - half;
     this.dist.fill(Number.POSITIVE_INFINITY);
@@ -81,6 +87,70 @@ export class FlowField {
     const goal = half * n + half;
     this.dist[goal] = 0;
     this.push(goal);
+    this.propagate(goal);
+  }
+
+  /** Keep unaffected shortest paths when hazards or walls change in place. */
+  update(x: number, y: number, cost: TravelCost) {
+    const n = this.size;
+    const half = n >> 1;
+    if (!this.initialized || this.left !== x - half || this.top !== y - half) {
+      this.compute(x, y, cost);
+      return;
+    }
+    const goal = half * n + half;
+    let end = 0;
+    for (let i = 0; i < this.costs.length; i++) {
+      const value = cost(this.left + (i % n), this.top + Math.floor(i / n));
+      if (value === this.costs[i]) continue;
+      this.costs[i] = value;
+      this.marked[i] = 1;
+      this.affected[end++] = i;
+    }
+    if (!end) return;
+    // Invalidate dependent successors all the way to the leaves, including islands
+    // cut off by a newly closed gate. Boundary neighbours seed the reverse search.
+    for (let k = 0; k < end; k++) {
+      const i = this.affected[k];
+      this.dist[i] = Number.POSITIVE_INFINITY;
+      this.next[i] = -1;
+      for (let d = 0; d < 4; d++) {
+        const j = this.neighbor(i, d);
+        if (j >= 0 && !this.marked[j] && this.next[j] === i) {
+          this.marked[j] = 1;
+          this.affected[end++] = j;
+        }
+      }
+    }
+    this.dist[goal] = 0;
+    this.push(goal);
+    for (let k = 0; k < end; k++) {
+      const i = this.affected[k];
+      for (let d = 0; d < 4; d++) {
+        const j = this.neighbor(i, d);
+        if (j >= 0 && !this.marked[j] && Number.isFinite(this.dist[j]))
+          this.push(j);
+      }
+    }
+    for (let k = 0; k < end; k++) this.marked[this.affected[k]] = 0;
+    this.propagate(goal);
+  }
+
+  private neighbor(i: number, direction: number) {
+    const n = this.size;
+    switch (direction) {
+      case 0:
+        return i % n > 0 ? i - 1 : -1;
+      case 1:
+        return i % n < n - 1 ? i + 1 : -1;
+      case 2:
+        return i >= n ? i - n : -1;
+      default:
+        return i < this.costs.length - n ? i + n : -1;
+    }
+  }
+  private propagate(goal: number) {
+    const n = this.size;
     while (this.count) {
       const i = this.pop();
       const col = i % n;

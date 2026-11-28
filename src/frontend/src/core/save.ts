@@ -25,73 +25,102 @@ export interface LoadResult {
   notice: string | null;
 }
 
+type StorageFailure = "storage_unavailable" | "storage_error";
+
 export interface SaveResult {
   ok: boolean;
-  reason?:
-    | "storage_unavailable"
-    | "storage_error"
-    | "run_ended"
-    | "future_version";
+  reason?: StorageFailure | "run_ended" | "future_version" | "stale_tab";
 }
 
-interface Envelope {
-  schemaVersion: number;
-  savedAt: number;
-  state: RunState;
-}
+type ReadFailure =
+  | StorageFailure
+  | "empty"
+  | "invalid_save"
+  | "version_mismatch"
+  | "future_version";
+
+export type ExportResult = string | { ok: false; reason: ReadFailure };
+export type ImportResult = SaveResult | { ok: false; reason: string };
+
+const MAX_IMPORT_BYTES = 512 * 1024;
 
 function keys() {
   const { storage } = loadGameData().balance;
   return { run: storage.runKey, backup: storage.runBackupKey };
 }
 
-function unwrap(raw: string): Record<string, unknown> {
+type ParseEnvelope =
+  | { ok: true; state: Record<string, unknown>; savedAt?: number }
+  | { ok: false; reason: string };
+
+function parseEnvelope(raw: string): ParseEnvelope {
   let envelope: unknown;
   try {
     envelope = JSON.parse(raw);
   } catch {
-    throw new SnapshotError("corrupt_json");
+    return { ok: false, reason: "corrupt_json" };
   }
-  if (!isRecord(envelope)) throw new SnapshotError("corrupt_json");
-  const envelopeVersion = readRunVersion(envelope.schemaVersion);
-  if (!Object.hasOwn(envelope, "state")) return envelope;
-  const state = envelope.state;
-  if (!isRecord(state)) throw new SnapshotError("invalid_root");
-  const version = readRunVersion(state.schemaVersion ?? envelope.schemaVersion);
-  if (envelope.schemaVersion !== undefined && envelopeVersion !== version)
-    throw new SnapshotError("version_mismatch");
-  return { ...state, schemaVersion: version };
+  if (!isRecord(envelope)) return { ok: false, reason: "invalid_root" };
+  const savedAt =
+    typeof envelope.savedAt === "number" && Number.isFinite(envelope.savedAt)
+      ? envelope.savedAt
+      : undefined;
+  try {
+    const envelopeVersion = readRunVersion(envelope.schemaVersion);
+    if (!Object.hasOwn(envelope, "state"))
+      return { ok: true, state: envelope, savedAt };
+    if (!isRecord(envelope.state)) return { ok: false, reason: "invalid_root" };
+    const version = readRunVersion(
+      envelope.state.schemaVersion ?? envelope.schemaVersion,
+    );
+    if (envelope.schemaVersion !== undefined && envelopeVersion !== version)
+      return { ok: false, reason: "version_mismatch" };
+    return {
+      ok: true,
+      state: { ...envelope.state, schemaVersion: version },
+      savedAt,
+    };
+  } catch (error) {
+    return {
+      ok: false,
+      reason: error instanceof SnapshotError ? error.reason : "invalid_root",
+    };
+  }
 }
 
-function futureSave(error: unknown): boolean {
-  return error instanceof SnapshotError && error.reason === "future_version";
+function parseSnapshot(
+  state: unknown,
+  systems: Systems,
+): { ok: true; snapshot: RunState } | { ok: false; reason: string } {
+  try {
+    return { ok: true, snapshot: sanitizeRunState(state, systems) };
+  } catch (error) {
+    return {
+      ok: false,
+      reason:
+        error instanceof SnapshotError ? error.reason : "invalid_snapshot",
+    };
+  }
 }
 
 function isFutureSlot(raw: string | null): boolean {
   if (raw === null) return false;
-  try {
-    unwrap(raw);
-    return false;
-  } catch (error) {
-    return futureSave(error);
-  }
+  const parsed = parseEnvelope(raw);
+  return !parsed.ok && parsed.reason === "future_version";
 }
 
-/**
- * Reads the run save. Tries the primary key, then the last-good backup. Corrupt or
- * version-mismatched data (both slots) falls back to a new game with a notice.
- */
-export function loadRun(
+function encodeRun(state: RunState, savedAt: number): string {
+  return JSON.stringify(
+    { schemaVersion: RUN_SCHEMA_VERSION, savedAt, state },
+    (_key, value) => (value instanceof Set ? [...value] : value),
+  );
+}
+
+function readSlots(
   storage: StorageLike | null,
-  systems: Systems = getSystems(),
-): LoadResult {
-  if (!storage) {
-    return {
-      status: "unavailable",
-      snapshot: null,
-      notice: "Local storage is unavailable. Your progress will not be saved.",
-    };
-  }
+  systems: Systems,
+): ReadFailure | { snapshot: RunState; savedAt: number; fromBackup: boolean } {
+  if (!storage) return "storage_unavailable";
   const { run, backup } = keys();
   let rawPrimary: string | null;
   let rawBackup: string | null;
@@ -99,83 +128,140 @@ export function loadRun(
     rawPrimary = storage.getItem(run);
     rawBackup = storage.getItem(backup);
   } catch {
-    return {
-      status: "unavailable",
-      snapshot: null,
-      notice: "Could not read local storage. Your progress will not be saved.",
-    };
+    return "storage_error";
   }
-  if (rawPrimary === null && rawBackup === null)
-    return { status: "empty", snapshot: null, notice: null };
-  let reason = "corrupt_json";
+  if (rawPrimary === null && rawBackup === null) return "empty";
+  let reason = "invalid_save";
   for (const [raw, fromBackup] of [
     [rawPrimary, false],
     [rawBackup, true],
   ] as const) {
     if (raw === null) continue;
-    try {
-      const snapshot = sanitizeRunState(unwrap(raw), systems);
-      return {
-        status: fromBackup ? "recovered_backup" : "ok",
-        snapshot,
-        notice: fromBackup
-          ? "The save was damaged. The last working backup was restored."
-          : null,
-      };
-    } catch (error) {
-      if (futureSave(error)) {
-        return {
-          status: "fallback_new",
-          snapshot: null,
-          notice:
-            "This save is from a newer version of the game. The original save was kept.",
-        };
-      }
-      if (!fromBackup && error instanceof SnapshotError) reason = error.reason;
+    const envelope = parseEnvelope(raw);
+    if (!envelope.ok) {
+      if (envelope.reason === "future_version") return "future_version";
+      if (!fromBackup) reason = envelope.reason;
+      continue;
     }
+    const parsed = parseSnapshot(envelope.state, systems);
+    if (parsed.ok) {
+      return {
+        snapshot: parsed.snapshot,
+        savedAt: envelope.savedAt ?? 0,
+        fromBackup,
+      };
+    }
+    if (parsed.reason === "future_version") return "future_version";
+    if (!fromBackup) reason = parsed.reason;
+  }
+  return reason === "version_mismatch" ? reason : "invalid_save";
+}
+
+/** Reads the run save, falling back to the last working backup. */
+export function loadRun(
+  storage: StorageLike | null,
+  systems: Systems = getSystems(),
+): LoadResult {
+  const result = readSlots(storage, systems);
+  if (typeof result !== "string") {
+    return {
+      status: result.fromBackup ? "recovered_backup" : "ok",
+      snapshot: result.snapshot,
+      notice: result.fromBackup
+        ? "The save was damaged. The last working backup was restored."
+        : null,
+    };
+  }
+  if (result === "empty")
+    return { status: "empty", snapshot: null, notice: null };
+  if (result === "storage_unavailable" || result === "storage_error") {
+    return {
+      status: "unavailable",
+      snapshot: null,
+      notice:
+        result === "storage_unavailable"
+          ? "Local storage is unavailable. Your progress will not be saved."
+          : "Could not read local storage. Your progress will not be saved.",
+    };
   }
   const notice =
-    reason === "version_mismatch"
-      ? "The save version is incompatible. A new run has started."
-      : "The save is damaged. A new run has started.";
+    result === "future_version"
+      ? "This save is from a newer version of the game. The original save was kept."
+      : result === "version_mismatch"
+        ? "The save version is incompatible. A new run has started."
+        : "The save is damaged. A new run has started.";
   return { status: "fallback_new", snapshot: null, notice };
 }
 
+/** Exports the validated slot with its original timestamp, or 0 for an undated save. */
+export function exportRunSave(
+  storage: StorageLike | null,
+  systems: Systems = getSystems(),
+): ExportResult {
+  const result = readSlots(storage, systems);
+  return typeof result === "string"
+    ? { ok: false, reason: result }
+    : encodeRun(result.snapshot, result.savedAt);
+}
+
+/** Validates a portable save before touching storage. */
+export function importRunSave(
+  storage: StorageLike | null,
+  rawJson: string,
+  systems: Systems = getSystems(),
+): ImportResult {
+  if (
+    rawJson.length > MAX_IMPORT_BYTES ||
+    new TextEncoder().encode(rawJson).length > MAX_IMPORT_BYTES
+  )
+    return { ok: false, reason: "too_large" };
+
+  const envelope = parseEnvelope(rawJson);
+  if (!envelope.ok) return envelope;
+  const parsed = parseSnapshot(envelope.state, systems);
+  if (!parsed.ok) return parsed;
+  return saveRun(storage, parsed.snapshot, systems);
+}
+
 /**
- * Writes the run state. The previous valid primary slot is copied to the backup slot first,
- * so a failed or interrupted write never destroys the last good save.
+ * Backs up the last valid primary before replacing it. Pass the last observed
+ * timestamp to reject a newer primary written by another tab.
  */
 export function saveRun(
   storage: StorageLike | null,
   state: RunState,
   systems: Systems = getSystems(),
+  expectedSavedAt?: number,
 ): SaveResult {
   if (!storage) return { ok: false, reason: "storage_unavailable" };
   const { run, backup } = keys();
   try {
     const previous = storage.getItem(run);
-    if (isFutureSlot(previous)) return { ok: false, reason: "future_version" };
-    if (previous !== null && !isFutureSlot(storage.getItem(backup))) {
-      let valid = false;
-      try {
-        sanitizeRunState(unwrap(previous), systems);
-        valid = true;
-      } catch {
-        // Keep the older backup when the current primary is already unreadable.
-      }
-      if (valid) storage.setItem(backup, previous);
-    }
-    const envelope: Envelope = {
-      schemaVersion: RUN_SCHEMA_VERSION,
-      savedAt: Date.now(),
+    const current = previous !== null ? parseEnvelope(previous) : null;
+    if (current && !current.ok && current.reason === "future_version")
+      return { ok: false, reason: "future_version" };
+
+    const lastSavedAt = current?.ok ? current.savedAt : undefined;
+    if (
+      expectedSavedAt !== undefined &&
+      lastSavedAt !== undefined &&
+      lastSavedAt > expectedSavedAt
+    )
+      return { ok: false, reason: "stale_tab" };
+
+    const encoded = encodeRun(
       state,
-    };
-    storage.setItem(
-      run,
-      JSON.stringify(envelope, (_key, value) =>
-        value instanceof Set ? [...value] : value,
-      ),
+      Math.max(Date.now(), (lastSavedAt ?? -1) + 1),
     );
+    if (
+      previous !== null &&
+      current?.ok &&
+      !isFutureSlot(storage.getItem(backup)) &&
+      parseSnapshot(current.state, systems).ok
+    ) {
+      storage.setItem(backup, previous);
+    }
+    storage.setItem(run, encoded);
     return { ok: true };
   } catch {
     return { ok: false, reason: "storage_error" };

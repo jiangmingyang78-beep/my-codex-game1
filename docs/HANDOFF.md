@@ -1,36 +1,39 @@
-# English Localization Handoff
+# Defensive Simplification Handoff
 
-## 1. Tool and changed files
+## 1. Tool & Changed Files
 
-Codex translated current repository text from the local baseline `617de2e`. The starting inventory found 165 files with Chinese text and three launchers with Chinese names.
+Antigravity synced 13 files from `Emberwood-Last-Torch-run-save-2026-11-28_(1).zip` (on top of Git baseline `66ede10` and existing spatial-runtime worktree edits) and simplified over-defensive control flow across 6 files:
 
-- `README.md` (84), `AGENTS.md` (41), and the guides and reports under `docs/`.
-- `src/frontend/index.html` (21), `src/frontend/survival.html` (5387, over 240), and text in the Adventure, Eternal, and Survival UI, diagnostics, and data.
-- `.github/workflows/ci.yml` (49) and `.github/workflows/deploy.yml` (97) use the English workflow name `Game Health Check`.
-- `tools/run-health-check.bat` (26), `tools/open-map-viewer.bat` (5), and `tools/open-sprite-workbench.bat` (5), plus tool and test messages.
-- `docs/AI_HANDOFF.md` records scope, reproduction, results, and source excerpts.
+- `src/frontend/src/core/save.ts` (308 lines ⚠)
+- `src/frontend/src/core/meta.ts` (249 lines ⚠)
+- `src/frontend/src/shared/metaUnlocks.js` (106 lines)
+- `src/frontend/src/game/scenes/GameScene.ts` (393 lines ⚠)
+- `src/frontend/src/game/feedback/TelegraphLayer.ts` (297 lines ⚠)
+- `src/frontend/src/game/atmosphere/CombatMotionVfxLayer.ts` (448 lines ⚠)
+- Synced from archive: `src/frontend/src/game/world/lootTints.ts` (16, new), `TelegraphDrawing.ts`, `EntityViews.ts`, `lightGrid.ts`, `particleCanvas.js`, `particles.js`, `tests/dataValidator.test.ts`, `tests/lightSpawn.test.ts`, `tests/runtimeRules.test.ts`, plus refreshed `docs/HANDOFF.md` and `docs/AI_HANDOFF.md`.
 
-## 2. Verified items
+⚠ marks files at or above 240 lines.
 
-- No Han text or Han file names in the 430 current repository text files examined, including the three renamed launchers.
-- Compared 15 translated JSON files with the worktree baseline. Stable keys, numeric values, types, array lengths, and nonlocalized values matched. Survival catalog headings are display labels.
-- The combined worktree previously passed TypeScript, Biome, production game and map console builds, 159 unit tests, 18 LDtk checks, and 11 map console checks.
-- The isolated localization tree on `617de2e` passed TypeScript, Biome, the production build, 155 unit tests, 18 LDtk checks, and 11 map console checks. The pending gameplay and performance work includes the other four tests.
-- In the isolated tree, all five Playwright production smoke cases passed. The full Adventure regression covered both save generations, camp and combat interactions, both Ember Seals, and victory.
-- The Windows missing-root fixture printed the English error and returned 1. The CI shell script passed `bash -n`.
+## 2. Verified Items
 
-## 3. Unverified and known limits
+- `pnpm typecheck` (`tsc --noEmit`): passed with 0 errors.
+- `pnpm fix` (`biome check --write src`, 281 files): passed.
+- `pnpm test` (`node tests/run-unit-tests.mjs`): 167/167 tests passed across 2 suites (0 failed, 0 skipped), covering save v1–v4 migration, export/import, future-slot protection, stale-tab checks, data validation, and spatial/survival rules.
+- `pnpm build` (`vite build && pnpm copy:env`): production bundle built cleanly.
 
-- Local browser regression used Windows Chrome. The renamed GitHub workflow has not run for this worktree change.
-- Binary art, fonts, screenshot archives, and generated exports are outside the text scan. Low-end GPU performance and the 84-enemy GC peak remain open from the earlier performance work.
+## 3. Unverified & Known Risks
 
-## 4. Interfaces and constraints
+- `GameScene` lifecycle (`SceneView` bundling and `CombatMotionVfxLayer` / `TelegraphLayer` runtime rendering) passed compilation and unit tests, but browser E2E (`pnpm test:e2e`) and live playtesting were not re-run in this turn.
+- `save.ts` `parseEnvelope` relies on `readRunVersion` inside a single `try/catch`; `CombatMotionVfxLayer` relies on finite positive `rangePx` from internal data/combat callers (`!(rangePx > 0)` rejects `NaN`, `0`, negatives, though not `Infinity`).
+- Pending UI wiring for portable save import/export (`expectedSavedAt`) and physical-device 84-enemy GC checks remain open from the prior handoff.
 
-- Keep save keys and version fields, JSON IDs, game balance, event payloads, and public VFX interfaces stable.
-- Pages listens to the test workflow by name. Keep `.github/workflows/ci.yml` and the `workflow_run` filter in `.github/workflows/deploy.yml` synchronized.
-- Use English for repository text and future commit subjects. The existing Git history is the archival record.
+## 4. Locked Interfaces & Constraints
 
-## 5. Next work
+- Preserved all exported signatures and error/status shapes in `core/save.ts`, `core/meta.ts`, `shared/metaUnlocks.js`, `GameScene.ts`, `TelegraphLayer.ts`, and `CombatMotionVfxLayer.ts`.
+- Preserved trust-boundary validation (`snapshot.ts`, `snapshotReaders.ts`, `snapshotFields.ts`, `dataValidator.ts`, `schemaChecks.ts`, `survivalOverrides.js`) and headless browser fallbacks (`createGame.ts`, `sfx.ts`, `BootScene.ts`, `TitleScene.ts`).
+- `parseMetaDocument(raw)` in `shared/metaUnlocks.js` now returns `null` on malformed JSON instead of throwing.
 
-1. Preserve the English terminology in future UI, content, and test updates.
-2. Recheck GC peak and low-end hardware performance when the spatial runtime work resumes.
+## 5. Next Turn Tasks
+
+1. Run `pnpm test:e2e` against the production build to smoke-test `GameScene` `SceneView` lifecycle and teardown in headless Chromium.
+2. Connect the portable save export/import UI and pass the observed `savedAt` token to `saveRun`.

@@ -1,5 +1,6 @@
 import { EVT, type StepInputState } from "@/core";
 import { summarizeRunSnapshot } from "@/core/snapshot";
+import { releasePopulation } from "@/systems/combat/spawnPopulation";
 import { getDashCooldownState } from "@/systems/movement";
 import { nearestInteractable } from "@/systems/world/interact";
 import { TILE } from "@/systems/world/worldTypes";
@@ -37,6 +38,17 @@ import { type PlayScreen, bindSceneCommands } from "./bindSceneCommands";
 
 const SNOW_TILE_IDS: ReadonlySet<number> = new Set([TILE.snow]);
 
+interface SceneView {
+  scenery: Scenery;
+  entities: EntityViews;
+  keys: InputController;
+  telegraphLayer: TelegraphLayer;
+  combatFeel: CombatFeelController;
+  torchlight: TorchlightAtmosphereLayer;
+  combatMotion: CombatMotionVfxLayer;
+  snowFootprints: SnowFootprintLayer;
+}
+
 /**
  * The playable scene. Time only advances through `session.advance`, which is called solely
  * while the screen is "playing"; pause, panels, the result screen and a hidden tab never step.
@@ -46,16 +58,9 @@ export class GameScene extends Phaser.Scene {
   private heroId?: string;
   private fromTitle = false;
   private session!: RunSession;
-  private scenery: Scenery | null = null;
-  private entities!: EntityViews;
-  private keys!: InputController;
+  private view: SceneView | null = null;
+  private wasFrozen = false;
   private inputBuffer = new CombatInputBuffer();
-  private telegraphLayer: TelegraphLayer | null = null;
-  private combatFeel: CombatFeelController | null = null;
-  private torchlight: TorchlightAtmosphereLayer | null = null;
-  private combatMotion: CombatMotionVfxLayer | null = null;
-  private snowFootprints: SnowFootprintLayer | null = null;
-  private ready = false;
   private screen: PlayScreen = "playing";
   private cleanups: (() => void)[] = [];
   private queued = { interact: false, attack: false };
@@ -77,16 +82,14 @@ export class GameScene extends Phaser.Scene {
 
   create(): void {
     breadcrumb(`Scene ${SCENE.game}`);
-    this.ready = false;
-    this.scenery = null;
+    this.view = null;
     this.cleanups = [];
     this.events.once("shutdown", () => this.teardown());
     registerHeroAnimations(this);
     const attached = takePendingRun();
     if (this.fromTitle && !attached) return;
     try {
-      this.build(attached);
-      this.ready = true;
+      this.view = this.build(attached);
     } catch (error) {
       console.error(error);
       reportFailure(
@@ -97,7 +100,7 @@ export class GameScene extends Phaser.Scene {
     }
   }
 
-  private build(attached: RunSession | null): void {
+  private build(attached: RunSession | null): SceneView {
     this.session = attached ?? new RunSession(this.mode, this.heroId);
     const { state } = this.session;
     this.cleanups.push(
@@ -108,37 +111,41 @@ export class GameScene extends Phaser.Scene {
     const gen = this.registry.get(
       REGISTRY.textureGenerator,
     ) as TextureGenerator;
-    this.scenery = new Scenery(
+    const scenery = new Scenery(
       this,
       this.session.sys,
       gen,
       state,
       !this.session.eternal,
     );
-    this.entities = new EntityViews(this, this.session.sys, gen, state.heroId);
+    this.cleanups.push(() => scenery.destroy());
+    const entities = new EntityViews(this, this.session.sys, gen, state.heroId);
     this.inputBuffer.clear();
-    this.telegraphLayer = new TelegraphLayer(this, {
+    const telegraphLayer = new TelegraphLayer(this, {
       windupTimerMode: "remaining",
     });
     const reducedMotion = prefersReducedMotion();
-    this.torchlight = new TorchlightAtmosphereLayer(this, { reducedMotion });
-    this.combatMotion = new CombatMotionVfxLayer(this, { reducedMotion });
-    this.snowFootprints = new SnowFootprintLayer(this, {
+    const torchlight = new TorchlightAtmosphereLayer(this, { reducedMotion });
+    const combatMotion = new CombatMotionVfxLayer(this, { reducedMotion });
+    const snowFootprints = new SnowFootprintLayer(this, {
       reducedMotion,
       snowTileIds: SNOW_TILE_IDS,
     });
-    this.combatFeel = new CombatFeelController(this, { reducedMotion });
-    this.combatFeel.setHeroTarget(this.entities.hero);
-    this.cleanups.push(lockNearestFilter(this));
-    this.keys = new InputController(this);
+    const combatFeel = new CombatFeelController(this, { reducedMotion });
+    combatFeel.setHeroTarget(entities.hero);
+    const keys = new InputController(this);
     this.cleanups.push(
-      configureCamera(this, this.session.sys, this.entities.hero),
-    );
-    this.cameras.main.centerOn(state.hero.x, state.hero.y);
-    this.cleanups.push(
+      () => telegraphLayer.destroy(),
+      () => combatFeel.destroy(),
+      () => torchlight.destroy(),
+      () => combatMotion.destroy(),
+      () => snowFootprints.destroy(),
+      lockNearestFilter(this),
+      configureCamera(this, this.session.sys, entities.hero),
       this.bindUi(),
       watchTab(() => this.away()),
     );
+    this.cameras.main.centerOn(state.hero.x, state.hero.y);
     this.screen = "playing";
     syncMuteState();
     uiStore.set({
@@ -156,16 +163,27 @@ export class GameScene extends Phaser.Scene {
     this.pushHud();
     if (this.session.startNotice)
       toast.warn(this.session.startNotice, "warn:start_notice");
+    return {
+      scenery,
+      entities,
+      keys,
+      telegraphLayer,
+      combatFeel,
+      torchlight,
+      combatMotion,
+      snowFootprints,
+    };
   }
 
   update(time: number, deltaMs: number): void {
-    if (!this.ready) {
+    const view = this.view;
+    if (!view) {
       // Failed to build: once the player leaves the error screen, go back to the title scene.
       if (!uiStore.get().error) this.scene.start(SCENE.title);
       return;
     }
     const sec = Math.min(deltaMs / 1000, 0.1);
-    const input = this.keys.poll();
+    const input = view.keys.poll();
     if (input.pausePressed) this.togglePause();
     if (this.screen === "playing" && this.session.playing) {
       if (input.slot !== null) this.quickUse(input.slot);
@@ -179,7 +197,10 @@ export class GameScene extends Phaser.Scene {
         dashPressed: input.dashPressed,
       };
       this.queued = { interact: false, attack: false };
-      this.inputBuffer.record(rawStep, deltaMs);
+      const stepDtMs = view.combatFeel.consumeStepDt(deltaMs);
+      // Keep a one-frame key edge until simulation resumes after hit stop.
+      this.inputBuffer.record(rawStep, this.wasFrozen ? 0 : stepDtMs);
+      this.wasFrozen = stepDtMs <= 0;
       const { state, sys } = this.session;
       const cam = this.cameras.main;
       sys.spawnView = {
@@ -188,50 +209,50 @@ export class GameScene extends Phaser.Scene {
         width: cam.width / cam.zoom,
         height: cam.height / cam.zoom,
       };
-      const resolved = this.inputBuffer.resolve(rawStep, {
-        canAttack: state.hero.attackCooldownSec <= 0,
-        canDash: getDashCooldownState(state, sys).remainingSec <= 0,
-        canInteract: nearestInteractable(state, sys) !== null,
-      });
-      const stepDtMs = this.combatFeel
-        ? this.combatFeel.consumeStepDt(deltaMs)
-        : deltaMs;
       if (stepDtMs > 0) {
-        this.step(Math.min(stepDtMs / 1000, 0.1), resolved);
+        const resolved = this.inputBuffer.resolve(rawStep, {
+          canAttack: state.hero.attackCooldownSec <= 0,
+          canDash: getDashCooldownState(state, sys).remainingSec <= 0,
+          canInteract: nearestInteractable(state, sys) !== null,
+        });
+        this.step(Math.min(stepDtMs / 1000, 0.1), resolved, view);
       }
     }
-    this.render(time / 1000, sec, deltaMs);
+    this.render(view, time / 1000, sec, deltaMs);
   }
 
-  private step(sec: number, input: StepInputState): void {
+  private step(sec: number, input: StepInputState, view: SceneView): void {
     const preHero = {
       x: this.session.state.hero.x,
       y: this.session.state.hero.y,
     };
     const out = this.session.advance(sec, input, undefined);
-    this.present(out, preHero);
+    this.present(out, preHero, view);
   }
 
-  private render(timeSec: number, sec: number, deltaMs: number): void {
+  private render(
+    view: SceneView,
+    timeSec: number,
+    sec: number,
+    deltaMs: number,
+  ): void {
     const { state, sys } = this.session;
-    const scenery = this.scenery;
-    if (!scenery) return;
     const darkness = darknessAt(state.elapsedSec, sys.data.balance.clock);
-    this.entities.sync(state, timeSec);
-    this.torchlight?.sync(state, sys, sec, timeSec);
-    this.combatMotion?.syncRiposteAura(state, timeSec);
-    this.combatMotion?.syncHeroSlash(state, sys);
-    this.combatMotion?.syncDashAfterimage(
+    view.entities.sync(state, timeSec);
+    view.torchlight.sync(state, sys, sec, timeSec);
+    view.combatMotion.syncRiposteAura(state, timeSec);
+    view.combatMotion.syncHeroSlash(state, sys);
+    view.combatMotion.syncDashAfterimage(
       state,
       this.screen === "playing" && this.session.playing
-        ? this.entities.hero
+        ? view.entities.hero
         : null,
       deltaMs,
     );
-    this.snowFootprints?.sync(state, sys, sec);
-    this.telegraphLayer?.syncFromState(state, sys, timeSec);
-    this.combatFeel?.syncHudOverlays(state, sys, timeSec);
-    scenery.update(state, sec, darkness);
+    view.snowFootprints.sync(state, sys, sec);
+    view.telegraphLayer.syncFromState(state, sys, timeSec);
+    view.combatFeel.syncHudOverlays(state, sys, timeSec);
+    view.scenery.update(state, sec, darkness);
     if (this.screen === "playing")
       publishPrompt(currentPrompt(state, sys, this.cameras.main));
     this.hudClock += sec;
@@ -244,15 +265,15 @@ export class GameScene extends Phaser.Scene {
   private present(
     out: ReturnType<RunSession["advance"]>,
     preHero?: { x: number; y: number },
+    view = this.view,
   ): void {
-    handleOutput(out, this.session, this.scenery as Scenery, {
+    if (!view) return;
+    handleOutput(out, this.session, view.scenery, {
       openCraft: () => this.openCraft(),
       ended: () => this.showResult(),
-      hurt: () => {
-        if (!this.combatFeel) this.cameras.main.shake(110, 0.004);
-      },
+      hurt: () => undefined,
     });
-    this.combatFeel?.processEvents(out.events);
+    view.combatFeel.processEvents(out.events);
     for (const e of out.events) {
       if (e.type !== EVT.COMBAT_RIPOSTE_STRIKE) continue;
       const { dirX, dirY, rangePx } = e.payload;
@@ -261,13 +282,13 @@ export class GameScene extends Phaser.Scene {
         typeof dirY === "number" &&
         typeof rangePx === "number"
       ) {
-        this.combatMotion?.triggerCounterThrust(
+        view.combatMotion.triggerCounterThrust(
           e.x ?? this.session.state.hero.x,
           e.y ?? this.session.state.hero.y,
           dirX,
           dirY,
           rangePx,
-          this.entities.hero,
+          view.entities.hero,
           preHero,
         );
       }
@@ -330,7 +351,7 @@ export class GameScene extends Phaser.Scene {
       },
       present: (out) => this.present(out),
       syncDevVisuals: () => {
-        this.entities.sync(this.session.state, this.time.now / 1000);
+        this.view?.entities.sync(this.session.state, this.time.now / 1000);
         this.pushHud();
       },
       pushHud: () => this.pushHud(),
@@ -364,19 +385,9 @@ export class GameScene extends Phaser.Scene {
     toast.clear();
     if (this.scene.isActive(SCENE.toast)) this.scene.stop(SCENE.toast);
     this.inputBuffer.clear();
-    this.telegraphLayer?.destroy();
-    this.telegraphLayer = null;
-    this.combatFeel?.destroy();
-    this.combatFeel = null;
-    this.torchlight?.destroy();
-    this.torchlight = null;
-    this.combatMotion?.destroy();
-    this.combatMotion = null;
-    this.snowFootprints?.destroy();
-    this.snowFootprints = null;
+    this.view = null;
     for (const cleanup of this.cleanups) cleanup();
     this.cleanups = [];
-    this.scenery?.destroy();
-    this.scenery = null;
+    if (this.session) releasePopulation(this.session.state);
   }
 }

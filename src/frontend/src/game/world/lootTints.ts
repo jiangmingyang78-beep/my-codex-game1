@@ -1,0 +1,16 @@
+export const LOOT_TINT: Record<string, number> = {
+  berry: 0xe0485a,
+  ration: 0xe0a05a,
+  warm_stew: 0xe08a4a,
+  bandage: 0xf4f0e8,
+  ember_seal: 0xff7a3a,
+  ingot: 0xaecdf0,
+  raw_meat: 0xc84160,
+  pelt: 0xb88b6a,
+  resin: 0xe5b632,
+  charcoal: 0x717c90,
+  iron_scrap: 0x8eb2c0,
+  feather: 0xb4a0e0,
+  herb: 0x82cb95,
+  ember_dust: 0xff6843,
+};

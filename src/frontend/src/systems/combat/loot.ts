@@ -94,6 +94,12 @@ export function defeatEnemy(
   sys: Systems,
   enemy: EnemyState,
   events: GameEvent[],
+  onKilled?: (
+    enemy: EnemyState,
+    state: RunState,
+    sys: Systems,
+    events: GameEvent[],
+  ) => void,
 ): void {
   delete state.enemiesById[enemy.id];
   const def = sys.data.enemies.get(enemy.enemyId);
@@ -113,7 +119,11 @@ export function defeatEnemy(
     );
     if (region) checkEncounter(state, sys, region.id, enemy.x, enemy.y, events);
   }
-  enemyPool.release(enemy);
+  try {
+    onKilled?.(enemy, state, sys, events);
+  } finally {
+    enemyPool.release(enemy);
+  }
 }
 
 /**

@@ -108,13 +108,7 @@ export function saveMeta(
 ): boolean {
   if (!storage) return false;
   try {
-    const raw = storage.getItem(META_STORAGE_KEY);
-    let previous: ReturnType<typeof parseMetaDocument> = null;
-    try {
-      previous = parseMetaDocument(raw);
-    } catch {
-      // A valid new snapshot replaces malformed local metadata.
-    }
+    const previous = parseMetaDocument(storage.getItem(META_STORAGE_KEY));
     if (previous && !supportsMetaDocument(previous)) return false;
     const unlocks = readIds([...readIds(previous?.unlocks), ...meta.unlocks]);
     storage.setItem(
