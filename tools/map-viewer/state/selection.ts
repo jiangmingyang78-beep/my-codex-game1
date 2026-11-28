@@ -2,7 +2,7 @@ import type { MapObject, MapSnapshot, MapSpawn, MapMode } from "../types";
 import type { ConsoleStore } from "./consoleStore";
 export type Point = MapObject | MapSpawn;
 export type Tab = "map" | "rules" | "enemy" | "hero";
-export const toolNames = ["浏览选择", "放置物资", "放置刷怪点", "拖拽移动", "橡皮擦"];
+export const toolNames = ["Browse the selection", "Putting the material in place", "Places the brushpoint", "Drag and move", "Rubber"];
 export interface Session {
   store: ConsoleStore;
   base: MapSnapshot;

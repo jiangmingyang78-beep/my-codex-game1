@@ -33,7 +33,7 @@ function describe(e: GameEvent, sys: Systems): Feedback | null {
     case EVT.collected:
     case EVT.itemPicked: {
       const isPickup = e.type === EVT.itemPicked;
-      // 采集已触发 collected，只有地面掉落物才带 pickupId
+      // Collection has been triggered by a lull in Xerox and only ground drops are carried with Id
       if (isPickup && !("pickupId" in p)) return null;
       const itemId = text(p.itemId);
       return {
@@ -66,7 +66,7 @@ function describe(e: GameEvent, sys: Systems): Feedback | null {
       return {
         toast: {
           kind: "info",
-          label: `使用了 ${itemName(sys.data, itemId)}`,
+          label: `Used ${itemName(sys.data, itemId)}`,
           key: `use:${itemId}`,
         },
         sfx: "pickup",
@@ -74,11 +74,11 @@ function describe(e: GameEvent, sys: Systems): Feedback | null {
     }
     case EVT.craftDone: {
       const recipeId = text(p.recipeId);
-      const name = sys.data.recipes.get(recipeId)?.name ?? "物品";
+      const name = sys.data.recipes.get(recipeId)?.name ?? "Item";
       return {
         toast: {
           kind: "gain",
-          label: `制作完成：${name}`,
+          label: `Crafted: ${name}`,
           key: `craft:${recipeId}`,
         },
         sfx: "craft",
@@ -88,7 +88,7 @@ function describe(e: GameEvent, sys: Systems): Feedback | null {
       return {
         toast: {
           kind: "gain",
-          label: `营火升到 ${Number(p.level)} 级，火圈变大了`,
+          label: `Campfire upgraded to Level ${Number(p.level)}. The light reaches farther.`,
           key: "camp:upgrade",
         },
       };
@@ -99,8 +99,8 @@ function describe(e: GameEvent, sys: Systems): Feedback | null {
           kind: "gain",
           label:
             p.objectId === sys.data.worldObjects.finalBeaconId
-              ? "山脊烽台已点燃"
-              : "火光已点亮，火圈永久扩展",
+              ? "The Ridge Beacon is lit"
+              : "Fire station lit. The light radius has permanently expanded.",
           key: "camp:lit",
         },
         sfx: "craft",
@@ -110,7 +110,7 @@ function describe(e: GameEvent, sys: Systems): Feedback | null {
       return {
         toast: {
           kind: "gain",
-          label: `${sys.data.regions.get(regionId)?.name ?? ""}的大门敞开了`,
+          label: `Gate opened: ${sys.data.regions.get(regionId)?.name ?? regionId}`,
           key: `gate:${regionId}`,
         },
       };
@@ -120,7 +120,9 @@ function describe(e: GameEvent, sys: Systems): Feedback | null {
         return {
           toast: {
             kind: "gain",
-            label: text(p.message) || "锻铁圆盾格挡了攻击！",
+            label:
+              text(p.message) ||
+              "Your Wrought-Iron Buckler blocked the attack!",
             key: "block:hero",
           },
           sfx: "block",
@@ -129,7 +131,8 @@ function describe(e: GameEvent, sys: Systems): Feedback | null {
       return {
         toast: {
           kind: "warn",
-          label: text(p.message) || "攻击被护盾挡住，绕到侧面再出手",
+          label:
+            text(p.message) || "The shield blocked your attack. Try the flank.",
           key: "warn:blocked",
         },
         sfx: "block",
@@ -138,7 +141,7 @@ function describe(e: GameEvent, sys: Systems): Feedback | null {
       return {
         toast: {
           kind: "gain",
-          label: "余烬反势！",
+          label: "Ember Riposte ready!",
           key: "riposte:armed",
         },
         sfx: "riposte_arm",
@@ -150,7 +153,7 @@ function describe(e: GameEvent, sys: Systems): Feedback | null {
         ? {
             toast: {
               kind: "gain",
-              label: `反刺命中！火炬 +${light}`,
+              label: `Riposte landed! Torchlight +${light}`,
               key: "riposte:strike",
             },
             sfx: "riposte_strike",
@@ -162,7 +165,7 @@ function describe(e: GameEvent, sys: Systems): Feedback | null {
         ? {
             toast: {
               kind: "warn",
-              label: `${sys.data.enemies.get(text(p.enemyId))?.name ?? "守卫"}进入下一阶段`,
+              label: `${sys.data.enemies.get(text(p.enemyId))?.name ?? "Guardian"} entered a new phase`,
               key: `boss:${text(p.enemyId)}:${Number(p.phaseIndex)}`,
             },
             sfx: "boss_phase",
@@ -172,7 +175,7 @@ function describe(e: GameEvent, sys: Systems): Feedback | null {
       return {
         toast: {
           kind: "gain",
-          label: `获得炉印 ${Number(p.count)}/2`,
+          label: `Ember Seals collected: ${Number(p.count)}/2`,
           key: "quest:seal",
         },
         sfx: "craft",
@@ -183,7 +186,7 @@ function describe(e: GameEvent, sys: Systems): Feedback | null {
       return {
         toast: {
           kind: "info",
-          label: [`进入：${text(p.name)}`, ambience]
+          label: [`Entered: ${text(p.name)}`, ambience]
             .filter(Boolean)
             .join(" · "),
           key: `region:${regionId}`,
@@ -194,7 +197,7 @@ function describe(e: GameEvent, sys: Systems): Feedback | null {
       return {
         toast: {
           kind: "warn",
-          label: "夜幕降临，留在火圈里",
+          label: "Night is falling. Stay near firelight.",
           key: "clock:dusk",
         },
         sfx: "nightfall",
@@ -203,7 +206,7 @@ function describe(e: GameEvent, sys: Systems): Feedback | null {
       return {
         toast: {
           kind: "gain",
-          label: "天亮了，枯枝与浆果重新长出",
+          label: "Dawn. Branches and berries are growing again.",
           key: "clock:dawn",
         },
       };
@@ -241,7 +244,7 @@ function emitToast(t: FeedbackToast): void {
   }
 }
 
-/** 将规则事件分发为双通道轻提示与程序化音效。 */
+/** Distribute rule events as two-channel light hints and program-based sound effects. */
 export function presentEvents(
   events: readonly GameEvent[],
   sys: Systems,

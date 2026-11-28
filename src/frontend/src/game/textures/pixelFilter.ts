@@ -1,6 +1,6 @@
 import Phaser from "phaser";
 
-/** 将现有及后续新增的全部纹理锁定为最近邻采样，返回解除监听的清理函数。 */
+/** Locks all existing and subsequent textures into the nearest neighbour sample, returns the cleanup function that unheard. */
 export function lockNearestFilter(scene: Phaser.Scene): () => void {
   const mgr = scene.textures;
   const apply = (key: string): void => {

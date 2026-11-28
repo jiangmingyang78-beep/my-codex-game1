@@ -39,12 +39,19 @@ export function bindSceneCommands(hooks: SceneCommandHooks): () => void {
     resume: () => hooks.getScreen() === "paused" && hooks.setScreen("playing"),
     save: () => {
       if (session.eternal) {
-        toast.info("永恒模式为单局制，不写入存档", "sys:eternal_nosave");
+        toast.info(
+          "The permanent mode is single-dom, not written in the archive",
+          "sys:eternal_nosave",
+        );
         return false;
       }
       const ok = session.save();
-      if (ok) toast.gain("进度已保存", "sys:save");
-      else toast.error("保存失败：本地存储不可用", "error:save_failed");
+      if (ok) toast.gain("Progress saved", "sys:save");
+      else
+        toast.error(
+          "Save failed: Local storage is not available",
+          "error:save_failed",
+        );
       playSfx("ui");
       return ok;
     },
@@ -78,7 +85,7 @@ export function bindSceneCommands(hooks: SceneCommandHooks): () => void {
     openCraft: () => {
       const near = nearestInteractable(session.state, session.sys);
       if (near?.kind === "campfire") hooks.openCraft();
-      else toast.warn("离营火太远", "warn:too_far_camp");
+      else toast.warn("Far from the camp fire", "warn:too_far_camp");
     },
     closeCraft: () => hooks.closeCraft(),
     ...(import.meta.env.DEV && {

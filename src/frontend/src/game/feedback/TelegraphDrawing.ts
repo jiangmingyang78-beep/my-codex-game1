@@ -191,7 +191,7 @@ export class TelegraphDrawing {
       width,
       height,
     );
-    if (!texture) throw new Error("无法创建攻击预警纹理");
+    if (!texture) throw new Error("Can not create message: %s %s");
     return texture;
   }
 

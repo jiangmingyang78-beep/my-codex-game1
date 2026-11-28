@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>余烬林 · 生存模式</title>
+<title>Emberwood · Survival Mode</title>
 <style>
 :root{color-scheme:dark;--paper:#f4e7cd;--muted:#b4bac3;--edge:#35434d;--panel:#111c26;--gold:#ffcf81;--sea:#8bd9c1}
 *{box-sizing:border-box}
@@ -165,104 +165,104 @@ button,kbd,.tech-node,.quick-slot,.quickbar .build-controls{border-radius:0}
 </head>
 <body>
 <main>
-<header><div class="wordmark"><span class="brand-icon" aria-hidden="true">✦</span><div><h1>余烬林</h1><p class="sub">EMBERWOOD <span id="version" class="release"></span></p></div></div><nav aria-label="游戏设置"><button id="modeMenu">模式</button><button id="autoAttack" aria-label="自动攻击" aria-pressed="true" title="自动攻击射程内最近的怪物">自动开</button><button id="mute" aria-pressed="false">声音开</button><button id="shake" aria-pressed="true">震动开</button><button id="pause" disabled>暂停</button></nav></header>
+<header><div class="wordmark"><span class="brand-icon" aria-hidden="true">✦</span><div><h1>Emberwood</h1><p class="sub">EMBERWOOD <span id="version" class="release"></span></p></div></div><nav aria-label="Game settings"><button id="modeMenu">Mode</button><button id="autoAttack" aria-label="Auto-attack" aria-pressed="true" title="Automatically attack the nearest enemy in range">Auto-attack on</button><button id="mute" aria-pressed="false">Sound on</button><button id="shake" aria-pressed="true">Screen shake on</button><button id="pause" disabled>Pause</button></nav></header>
 <div class="layout">
-<section class="frame" aria-label="游戏画面">
+<section class="frame" aria-label="Game view">
 <div class="statusbar">
-<div class="status-info"><span id="zone" class="zone">篝火营地</span><span class="clock-group"><canvas id="winterDial" width="28" height="28" aria-hidden="true"></canvas><span id="dayClock">黎明 06:00</span><span id="raidForecast" hidden title="袭营预警与营地守备进度"><span id="forecastFlame" class="forecast-flame" aria-hidden="true"></span><span id="forecastText"></span></span></span><span id="gameMode" class="mode-label">生存</span><span id="weatherLabel" class="weather-label" hidden>晴冷微风</span><span id="beaconStatus" hidden title="下一次夜袭生成时会受到压制">处于烽火台保护范围</span></div>
-<p id="message" role="status" aria-label="旅途记事" aria-live="polite">从营地出发。篝火可以恢复生命。</p>
-<div class="vitals"><span>生命</span><span id="hearts" class="hearts"></span></div>
+<div class="status-info"><span id="zone" class="zone">Campfire Camp</span><span class="clock-group"><canvas id="winterDial" width="28" height="28" aria-hidden="true"></canvas><span id="dayClock">Dawn 06:00</span><span id="raidForecast" hidden title="Raid warning and camp defense progress"><span id="forecastFlame" class="forecast-flame" aria-hidden="true"></span><span id="forecastText"></span></span></span><span id="gameMode" class="mode-label">Survival</span><span id="weatherLabel" class="weather-label" hidden>Cold, Clear Breeze</span><span id="beaconStatus" hidden title="The next night raid will be suppressed">Within the watch beacon's protection</span></div>
+<p id="message" role="status" aria-label="Journey log" aria-live="polite">Leave from camp. Rest near the campfire to recover health.</p>
+<div class="vitals"><span>Health</span><span id="hearts" class="hearts"></span></div>
 </div>
-<div class="scene"><canvas id="game" width="384" height="224" aria-label="余烬林游戏地图"></canvas>
+<div class="scene"><canvas id="game" width="384" height="224" aria-label="Emberwood game map"></canvas>
 <div id="quickbar" class="quickbar" hidden>
-<div id="quickSlots" class="quick-slots" role="group" aria-label="生存快捷栏"></div>
-<div id="buildControls" class="build-controls" hidden><select id="blueprint" aria-label="手持材料的建造配方" hidden tabindex="-1"></select><div class="bp-menu"><button type="button" id="blueprintBtn" class="bp-btn" aria-haspopup="listbox" aria-expanded="false" aria-label="手持材料的建造配方" tabindex="-1"></button><ul id="blueprintList" class="bp-list" role="listbox" hidden></ul></div><small id="buildCost"></small></div>
+<div id="quickSlots" class="quick-slots" role="group" aria-label="Survival quick bar"></div>
+<div id="buildControls" class="build-controls" hidden><select id="blueprint" aria-label="Building recipes for the material in hand" hidden tabindex="-1"></select><div class="bp-menu"><button type="button" id="blueprintBtn" class="bp-btn" aria-haspopup="listbox" aria-expanded="false" aria-label="Building recipes for the material in hand" tabindex="-1"></button><ul id="blueprintList" class="bp-list" role="listbox" hidden></ul></div><small id="buildCost"></small></div>
 </div>
-<div id="pickupBar" class="pickup-bar" hidden><span>已拾取</span><ul id="pickupList" aria-label="最近拾取的物品" aria-live="polite"></ul></div>
+<div id="pickupBar" class="pickup-bar" hidden><span>Picked up</span><ul id="pickupList" aria-label="Recently collected items" aria-live="polite"></ul></div>
 <div id="encounterToast" aria-hidden="true" hidden></div>
-<div id="overlay" class="overlay" hidden><div class="card"><small id="eyebrow">EMBERWOOD</small><h2 id="overlayTitle">余烬林</h2><p id="overlayText">在林中经营你的营地。</p><div class="card-buttons"><button id="primary">冒险模式</button><button id="survivalStart" class="secondary">继续当前生存</button></div></div></div></div>
-<div class="keys"><span><kbd>WASD</kbd><kbd>↑↓←→</kbd> 移动</span><span><kbd>Space</kbd> 攻击 · 长按左键连击</span><span><kbd>E</kbd> 互动</span><span><kbd>Esc</kbd> 暂停</span></div>
-<p id="survivalKeys" hidden><kbd>1–8</kbd> 切换快捷栏 · 左键短按互动，长按采集或拆除 · 右键放置或使用，手持建材可长按连放 · <kbd>I</kbd> 背包 · <kbd>F</kbd> 进食 · <kbd>T</kbd> 科技树 · 种苗和肥料右键使用，<kbd>Shift + E</kbd> 铲除植被</p><div class="touch"><div class="dpad" aria-label="方向键"><button data-key="arrowup" aria-label="上">↑</button><button data-key="arrowleft" aria-label="左">←</button><button data-key="arrowdown" aria-label="下">↓</button><button data-key="arrowright" aria-label="右">→</button></div><div class="actions"><button data-key=" ">攻击</button><button data-key="e">互动</button></div></div>
+<div id="overlay" class="overlay" hidden><div class="card"><small id="eyebrow">EMBERWOOD</small><h2 id="overlayTitle">Emberwood</h2><p id="overlayText">Build and manage your camp in the woods.</p><div class="card-buttons"><button id="primary">Adventure Mode</button><button id="survivalStart" class="secondary">Continue Survival</button></div></div></div></div>
+<div class="keys"><span><kbd>WASD</kbd><kbd>↑↓←→</kbd> Move</span><span><kbd>Space</kbd> Attack · Hold left-click to attack repeatedly</span><span><kbd>E</kbd> Interact</span><span><kbd>Esc</kbd> Pause</span></div>
+<p id="survivalKeys" hidden><kbd>1–8</kbd> Select a quick slot · Click to interact · Hold left-click to gather or demolish · Right-click to use or build, and hold to keep building · <kbd>I</kbd> Inventory · <kbd>F</kbd> Eat · <kbd>T</kbd> Technology tree · Right-click to use seedlings and fertilizer, <kbd>Shift + E</kbd> Clear vegetation</p><div class="touch"><div class="dpad" aria-label="Arrow keys"><button data-key="arrowup" aria-label="Up">↑</button><button data-key="arrowleft" aria-label="Left">←</button><button data-key="arrowdown" aria-label="Down">↓</button><button data-key="arrowright" aria-label="Right">→</button></div><div class="actions"><button data-key=" ">Attack</button><button data-key="e">Interact</button></div></div>
 </section>
-<aside aria-label="生存状态">
-<section id="adventurePanel" class="panel" hidden><div class="panel-title"><h2>祭坛印记</h2><b id="count">0 / 3</b></div><ol id="seals"><li style="--seal:#8bdfaa">苔林祭坛</li><li style="--seal:#f7bd80">赤石祭坛</li><li style="--seal:#90cfff">寒潭祭坛</li></ol>
-<div class="adventure-gear"><p><span>祝福</span><strong id="blessingCount">0 / 4</strong></p>
-<p><span>已开宝箱</span><strong id="lootCount">0 / 8</strong></p>
-<p><span>武器</span><b id="activeWeapon">旅人剑</b></p>
-<button id="openGear"><kbd>I</kbd> 装备背包</button></div>
+<aside aria-label="Survival status">
+<section id="adventurePanel" class="panel" hidden><div class="panel-title"><h2>Altar Marks</h2><b id="count">0 / 3</b></div><ol id="seals"><li style="--seal:#8bdfaa">Mosswood Altar</li><li style="--seal:#f7bd80">Redstone Altar</li><li style="--seal:#90cfff">Frost Pool Altar</li></ol>
+<div class="adventure-gear"><p><span>Blessings</span><strong id="blessingCount">0 / 4</strong></p>
+<p><span>Opened chests</span><strong id="lootCount">0 / 8</strong></p>
+<p><span>Weapon</span><b id="activeWeapon">Traveler's Sword</b></p>
+<button id="openGear"><kbd>I</kbd> Equipment and inventory</button></div>
 <div class="quests">
-<h3>取回火种</h3><p id="mainQuest"></p>
-<h3>营地委托</h3><ul id="contracts"></ul>
+<h3>Recover the ember</h3><p id="mainQuest"></p>
+<h3>Camp projects</h3><ul id="contracts"></ul>
 </div></section>
 
 <section id="survivalPanel" class="panel" hidden>
-<div class="panel-title"><h2>生存物资</h2><b id="survivalDay">第 1 天</b></div>
-<p class="world-meta"><span id="worldSeed"></span><button id="openWorld" type="button">世界</button></p>
-<div class="hunger-line"><label for="hunger">饱食</label><progress id="hunger" max="100" value="100"></progress><span id="hungerValue">100%</span></div>
+<div class="panel-title"><h2>Survival supplies</h2><b id="survivalDay">Day 1</b></div>
+<p class="world-meta"><span id="worldSeed"></span><button id="openWorld" type="button">World</button></p>
+<div class="hunger-line"><label for="hunger">Fullness</label><progress id="hunger" max="100" value="100"></progress><span id="hungerValue">100%</span></div>
 <div id="stock" class="resource-grid"></div>
-<div class="farm-actions"><button id="openPack"><kbd>I</kbd> 背包</button><button id="eat">进食</button><button id="saveFarm">保存</button></div>
-<button id="openTech" type="button"><kbd>T</kbd> 科技树</button>
+<div class="farm-actions"><button id="openPack"><kbd>I</kbd> Inventory</button><button id="eat">Eat</button><button id="saveFarm">Save</button></div>
+<button id="openTech" type="button"><kbd>T</kbd> Technology tree</button>
 <p id="localEcology"></p>
-<details id="ecologyGuide" class="farm-guide"><summary>群系图鉴</summary><dl id="ecologyEntries"></dl></details>
-<details class="farm-guide"><summary>生存指南</summary><ul>
-<li>走到掉落物 3 格内会自动拾取。</li>
-<li>左键长按可采植物、收割作物、拾取 5 格内的掉落物或拆除建筑。短按可播种、开门和操作设施。</li>
-<li>手持材料后选择配方，右键放置，长按右键拖过空格可连续放置。触屏点按空格可放置。</li>
-<li>空手右键开垦，触屏空手长按空地开垦。</li>
-<li>手持水壶，按住左键拖过作物可连续浇水。在水井或池边补水，修好的井台还能为靠近的水壶自动补水。</li>
-<li>手持种子，按住右键拖过空耕地可连续播种。</li>
-<li>喂鸡和羊吃小麦，之后可收蛋和剪羊毛。</li>
-<li>靠近篝火可烤面包，天黑后小心夜行怪。</li>
-<li>用手采野生植物，拿当地植物喂野生动物。矿脉可以长按采集。</li>
-<li>用 3 木材和 1 石料建研究台，靠近后按 T 研究科技或捐助营地修缮。</li>
+<details id="ecologyGuide" class="farm-guide"><summary>Biome guide</summary><dl id="ecologyEntries"></dl></details>
+<details class="farm-guide"><summary>Survival guide</summary><ul>
+<li>Dropped items are picked up automatically within 3 tiles.</li>
+<li>Hold left-click to gather plants, harvest crops, pick up items within 5 tiles, or demolish structures. Click to plant seeds, open doors, or use facilities.</li>
+<li>Hold a material, select a recipe, and right-click an empty tile to build. Hold right-click and drag to build repeatedly. On touchscreens, tap an empty tile.</li>
+<li>Right-click an empty tile with empty hands to till it. On touchscreens, press and hold the tile.</li>
+<li>With the watering can equipped, hold left-click and drag over crops to water them. Refill at a well or pond. A restored well automatically refills nearby watering cans.</li>
+<li>Hold seeds, then hold right-click and drag over empty tilled soil to sow continuously.</li>
+<li>Feed wheat to chickens and sheep, then collect eggs and shear wool.</li>
+<li>Bake bread by the campfire and watch for monsters after dark.</li>
+<li>Gather wild plants by hand and feed native plants to wildlife. Hold left-click to mine a vein.</li>
+<li>Build a research table with 3 Wood and 1 Stone, then approach it and press T to research technology or contribute to camp repairs.</li>
 </ul></details>
 </section>
 <section class="panel map-panel">
-  <div class="panel-title"><h2>地图</h2><small id="mapCoordinates" hidden></small></div>
-  <label id="oreFilterLabel" hidden>寻找矿脉 <select id="oreFilter"><option value="">全部矿物</option></select></label>
-  <canvas id="map" width="150" height="96" aria-label="小地图，亮点代表当前位置"></canvas>
+  <div class="panel-title"><h2>Map</h2><small id="mapCoordinates" hidden></small></div>
+  <label id="oreFilterLabel" hidden>Find mineral veins <select id="oreFilter"><option value="">All minerals</option></select></label>
+  <canvas id="map" width="150" height="96" aria-label="Minimap. The bright dot marks your location."></canvas>
   <div id="mapLandmarks" class="map-landmarks" hidden>
     <p id="landmarkBearing"></p>
-    <div class="map-field"><select id="landmarkTarget" aria-label="指引目标" aria-describedby="landmarkBearing"></select><button id="removeLandmark" type="button">删除</button></div>
-    <div class="map-field"><select id="landmarkKind" aria-label="新地标类型"></select><button id="addLandmark" type="button" title="在脚下放置或更新地标">标记脚下</button></div>
+    <div class="map-field"><select id="landmarkTarget" aria-label="Navigation target" aria-describedby="landmarkBearing"></select><button id="removeLandmark" type="button">Delete</button></div>
+    <div class="map-field"><select id="landmarkKind" aria-label="New landmark type"></select><button id="addLandmark" type="button" title="Place or update a landmark at your feet">Mark this spot</button></div>
   </div>
   <div id="biomeLegend" hidden></div>
 </section>
 </aside>
 </div></main>
 <dialog id="equipmentDialog" aria-labelledby="gearTitle">
-<div class="gear-heading"><h2 id="gearTitle">装备背包</h2><button id="closeGear" autofocus>返回冒险</button></div>
+<div class="gear-heading"><h2 id="gearTitle">Equipment and inventory</h2><button id="closeGear" autofocus>Return to Adventure</button></div>
 <p id="equipmentStats"></p><div id="gearSlots" class="gear-slots"></div><p id="blessingSummary"></p>
-<ul id="lootList" aria-label="可装备物品"></ul>
+<ul id="lootList" aria-label="Equippable items"></ul>
 </dialog>
 <dialog id="packDialog" aria-labelledby="packTitle">
-<div class="gear-heading"><h2 id="packTitle">生存背包</h2><button id="closePack" type="button" autofocus>返回游戏</button></div>
-<fieldset class="pack-quickbar"><legend>快捷栏</legend>
-<div id="packQuickSlots" class="quick-slots" role="group" aria-label="编辑快捷栏"></div>
-<div class="pack-slot-control"><label for="packQuickItem" id="packQuickLabel">第 2 格</label><select id="packQuickItem"></select></div>
-<p>选中格子后选择物品。也可从物品列表拖入，或拖动格子换位。</p></fieldset>
+<div class="gear-heading"><h2 id="packTitle">Survival inventory</h2><button id="closePack" type="button" autofocus>Return to game</button></div>
+<fieldset class="pack-quickbar"><legend>Quick bar</legend>
+<div id="packQuickSlots" class="quick-slots" role="group" aria-label="Edit quick bar"></div>
+<div class="pack-slot-control"><label for="packQuickItem" id="packQuickLabel">Slot 2</label><select id="packQuickItem"></select></div>
+<p>Select a slot, then select an item. You can also drag an item into a slot or drag one slot onto another to swap them.</p></fieldset>
 <div class="pack-grid">
-<section aria-labelledby="packStockTitle"><h3 id="packStockTitle">物品</h3><div id="packStock" class="resource-grid"></div></section>
-<section aria-labelledby="recipesTitle"><h3 id="recipesTitle">合成</h3><ul id="recipeList" class="recipe-list"></ul></section>
+<section aria-labelledby="packStockTitle"><h3 id="packStockTitle">Items</h3><div id="packStock" class="resource-grid"></div></section>
+<section aria-labelledby="recipesTitle"><h3 id="recipesTitle">Craft</h3><ul id="recipeList" class="recipe-list"></ul></section>
 </div>
 <div class="craft-preview"><canvas id="craftCanvas" width="48" height="28" aria-hidden="true"></canvas><p id="packStatus" role="status" aria-live="polite"></p></div>
 </dialog>
 <dialog id="techDialog" aria-labelledby="techTitle">
-<div class="gear-heading"><h2 id="techTitle">科技树</h2><button id="closeTech" type="button" autofocus>返回游戏</button></div>
+<div class="gear-heading"><h2 id="techTitle">Technology tree</h2><button id="closeTech" type="button" autofocus>Return to game</button></div>
 <p id="techStatus" role="status" aria-live="polite"></p>
 <details id="campProjectPanel" class="camp-projects" open>
-<summary id="campProjectSummary">营地修缮</summary>
+<summary id="campProjectSummary">Camp repairs</summary>
 <div id="hearthControls"></div>
 <div id="campProjectList" class="camp-project-grid"></div>
 </details>
 <div id="techTree" class="tech-tree"></div>
 </dialog>
 <dialog id="worldDialog" aria-labelledby="worldTitle">
-<div class="gear-heading"><h2 id="worldTitle">生存世界</h2><button id="closeWorld" type="button" autofocus>返回游戏</button></div>
-<label for="savedWorlds">已有世界</label>
-<div class="world-controls"><select id="savedWorlds"></select><button id="loadWorld" type="button">载入</button></div>
-<label for="seedInput">种子，可留空随机生成</label>
-<div class="world-controls"><input id="seedInput" type="text" maxlength="32" autocomplete="off" placeholder="例如 2048"><button id="createWorld" type="button">进入世界</button></div>
+<div class="gear-heading"><h2 id="worldTitle">Survival worlds</h2><button id="closeWorld" type="button" autofocus>Return to game</button></div>
+<label for="savedWorlds">Existing worlds</label>
+<div class="world-controls"><select id="savedWorlds"></select><button id="loadWorld" type="button">Load</button></div>
+<label for="seedInput">Seed (leave blank for a random world)</label>
+<div class="world-controls"><input id="seedInput" type="text" maxlength="32" autocomplete="off" placeholder="Example: 2048"><button id="createWorld" type="button">Enter world</button></div>
 </dialog>
 <script type="module" src="./src/game/diagnostics/survivalEntry.tsx"></script>
 <script type="module">
@@ -360,7 +360,7 @@ for(const rows of Object.values(catalogDefinitions)){
 }
 function contentEntry(group,key){
   const entry=contentByKey.get(group+":"+key);
-  if(!entry)throw new Error("余烬林内容未登记："+group+":"+key);
+  if(!entry)throw new Error("The remains of the forest were not registered: "+group+":"+key);
   return entry;
 }
 const contentId=(group,key)=>contentEntry(group,key).id;
@@ -377,18 +377,18 @@ const WIDTH = 50, HEIGHT = 32, SIZE = 16, MAX_HP = 6;
 const tileColors = ["#213b36","#2b4736","#39483c","#38403e","#23444e","#163b52","#594735","#4b414c"];
 const terrainContent=Array.from({length:COAL_VEIN+1},(_,tile)=>contentEntry("terrain",tile));
 const altars = [
-  defineContent("altar","moss",{x:9,y:7,color:"#8bdfaa",region:"苔林",guard:"moss",sealId:contentId("pickup","sealMoss")}),
-  defineContent("altar","stone",{x:26,y:6,color:"#f7bd80",region:"赤石",guard:"stone",sealId:contentId("pickup","sealStone")}),
-  defineContent("altar","frost",{x:13,y:25,color:"#90cfff",region:"寒潭",guard:"frost",sealId:contentId("pickup","sealFrost")})
+  defineContent("altar","moss",{x:9,y:7,color:"#8bdfaa",region:"Mosswood",guard:"moss",sealId:contentId("pickup","sealMoss")}),
+  defineContent("altar","stone",{x:26,y:6,color:"#f7bd80",region:"Redstone",guard:"stone",sealId:contentId("pickup","sealStone")}),
+  defineContent("altar","frost",{x:13,y:25,color:"#90cfff",region:"Frost Pool",guard:"frost",sealId:contentId("pickup","sealFrost")})
 ];
 const camp=defineContent("site","camp",{x:6,y:16,type:"camp"});
 const gate=defineContent("site","gate",{x:35,y:16,type:"gate"});
 const core=defineContent("pickup","core",{x:45,y:16,type:"core"});
 const commissionBoard=defineContent("site","board",{x:5,y:15,type:"board",color:"#f1c283"});
 const landmarks=[
-  defineContent("landmark","root",{id:"root",x:7,y:6,type:"landmark",color:"#a9d387",notes:"古根旁的足迹绕开了守卫正面。"}),
-  defineContent("landmark","watch",{id:"watch",x:28,y:8,type:"landmark",color:"#f1a87c",notes:"望台下方有一条通往旧林径的路。"}),
-  defineContent("landmark","mirror",{id:"mirror",x:12,y:24,type:"landmark",color:"#a8dbef",notes:"沿冰镜北侧的窄路可到寒潭祭坛。"})
+  defineContent("landmark","root",{id:"root",x:7,y:6,type:"landmark",color:"#a9d387",notes:"The foot of Gugan bypassed the guard's front."}),
+  defineContent("landmark","watch",{id:"watch",x:28,y:8,type:"landmark",color:"#f1a87c",notes:"There is a path to the old forest under the watchtower."}),
+  defineContent("landmark","mirror",{id:"mirror",x:12,y:24,type:"landmark",color:"#a8dbef",notes:"The narrow road along the north side of the ice mirror can reach the altar of the cold."})
 ];
 const point = (x,y) => ({x:x*SIZE+8,y:y*SIZE+8});
 const distance = (a,b) => Math.hypot(a.x-b.x,a.y-b.y);
@@ -410,14 +410,14 @@ let player, enemies, drops, lit, phase, clock, elapsed, defeated, flash, tick = 
 const enemyProjectiles=[],enemyAoeZones=[];
 let camera = {x:0,y:0}, muted = false, audio;
 const dayStages = [
-  {name:"黎明", ambient:[186,161,161], sky:[251,151,117], sx:-16,sy:6, shade:.27,glow:.66},
-  {name:"清晨", ambient:[225,217,170], sky:[255,208,121], sx:-11,sy:8, shade:.25,glow:.42},
-  {name:"正午", ambient:[248,249,220], sky:[255,247,184], sx:2,sy:5, shade:.18,glow:.30},
-  {name:"午后", ambient:[245,219,175], sky:[255,193,102], sx:8,sy:7, shade:.25,glow:.41},
-  {name:"黄昏", ambient:[209,148,143], sky:[255,132,79], sx:18,sy:6, shade:.34,glow:.77},
-  {name:"薄暮", ambient:[143,147,200], sky:[192,132,229], sx:11,sy:6, shade:.26,glow:.91},
-  {name:"深夜", ambient:[102,124,177], sky:[108,171,255], sx:-8,sy:9, shade:.31,glow:1.14},
-  {name:"破晓前", ambient:[124,151,178], sky:[110,211,218], sx:-13,sy:7, shade:.27,glow:.93}
+  {name:"Dawn", ambient:[186,161,161], sky:[251,151,117], sx:-16,sy:6, shade:.27,glow:.66},
+  {name:"Early morning", ambient:[225,217,170], sky:[255,208,121], sx:-11,sy:8, shade:.25,glow:.42},
+  {name:"Noon", ambient:[248,249,220], sky:[255,247,184], sx:2,sy:5, shade:.18,glow:.30},
+  {name:"Afternoon", ambient:[245,219,175], sky:[255,193,102], sx:8,sy:7, shade:.25,glow:.41},
+  {name:"Dusk", ambient:[209,148,143], sky:[255,132,79], sx:18,sy:6, shade:.34,glow:.77},
+  {name:"Pine Twilight", ambient:[143,147,200], sky:[192,132,229], sx:11,sy:6, shade:.26,glow:.91},
+  {name:"Late night", ambient:[102,124,177], sky:[108,171,255], sx:-8,sy:9, shade:.31,glow:1.14},
+  {name:"Before dawn", ambient:[124,151,178], sky:[110,211,218], sx:-13,sy:7, shade:.27,glow:.93}
 ];
 const LEGACY_STAGE_SECONDS=12, STAGE_SECONDS=24, CLOCK_STEP_MINUTES=5;
 const DAY_SECONDS=rates.daySec+rates.nightSec, BEACON_PROTECTION_TILES=18;
@@ -458,13 +458,13 @@ function updateTime(){
   const elapsedMinutes=Math.floor(dayTime/DAY_SECONDS*1440/CLOCK_STEP_MINUTES)*CLOCK_STEP_MINUTES;
   const minutes=(360+elapsedMinutes)%1440;
   drawWinterDial($("winterDial"),dailyClock,dayTime);
-  const label=({day:"白昼",dusk:"黄昏",night:"长夜"})[winterPhase(dailyClock,dayTime)]+" "+String(Math.floor(minutes/60)).padStart(2,"0")+":"+String(minutes%60).padStart(2,"0");
+  const label=({day:"Day",dusk:"Dusk",night:"Long night"})[winterPhase(dailyClock,dayTime)]+" "+String(Math.floor(minutes/60)).padStart(2,"0")+":"+String(minutes%60).padStart(2,"0");
   if($("dayClock").textContent!==label)$("dayClock").textContent=label;
 }
 function paintNightForecast(){
   const raid=survival.raid, forecast=raidForecast(survival.seed,dailyClock,dayTime,raid);
-  const label=raid.stage==="repelled"?"夜袭已击退 · 黎明领取炉灰":raid.stage==="active"?"袭营中 · 余敌 "+(raid.remaining+enemies.filter(e=>e.raid&&e.hp>0).length):
-    forecast.warning?"袭营倒计时 "+Math.ceil(forecast.seconds)+" 秒":"";
+  const label=raid.stage==="repelled"?"Raid repelled · Collect hearth ash at dawn":raid.stage==="active"?"Raid underway · Enemies remaining "+(raid.remaining+enemies.filter(e=>e.raid&&e.hp>0).length):
+    forecast.warning?"Time until raid "+Math.ceil(forecast.seconds)+" s":"";
   $("raidForecast").hidden=!label;
   $("forecastText").textContent=label;
   $("beaconStatus").hidden=!inBeaconProtection();
@@ -735,18 +735,18 @@ function show(eyebrow,title,text,button){
   $("overlayText").textContent=text; $("primary").textContent=button; $("overlay").hidden=false;
 }
 function resumeFromOverlay(){
-  breadcrumb("生存界面 "+phase+" → play");
+  breadcrumb("Survival view "+phase+" → play");
   phase="play"; $("overlay").hidden=true; $("pause").disabled=false;
-  $("pause").textContent="暂停"; keys.clear();
+  $("pause").textContent="Pause"; keys.clear();
 }
 function start(){
   $("survivalStart").hidden=true;newRun();resumeFromOverlay();
 }
 function togglePause(){
   if(phase==="play"){
-    breadcrumb("生存界面 play → paused");
-    phase="paused";clearGameplayInput();$("pause").textContent="继续";
-    show("PAUSE","已暂停","休息一下。你的营地会停在这里。","继续生存");
+    breadcrumb("Survival view: play → paused");
+    phase="paused";clearGameplayInput();$("pause").textContent="Resume";
+    show("PAUSE","Paused","Take a break. Your camp will be here when you return.","Resume Survival");
   }else if(phase==="paused"){
     resumeFromOverlay();
   }
@@ -755,14 +755,14 @@ function finish(won){
   cancelCraft();clearPointer();
   if(mode==="survival"){
     phase="lost";keys.clear();$("pause").disabled=true;
-    show("SURVIVAL","营火将熄","你在林中倒下了。回到营地后，农田和建筑仍会保留。","回到营地");
+    show("SURVIVAL","The Campfire Fades","You fell in the woods. Your crops and buildings will still be there when you return to camp.","Return to camp");
     writeSave();return;
   }
-  phase=won?"win":"lost"; keys.clear(); $("pause").disabled=true; $("pause").textContent="暂停";
+  phase=won?"win":"lost"; keys.clear(); $("pause").disabled=true; $("pause").textContent="Pause";
   if(won){loadout().quests.recovered=true;renderAdventureQuests();}
-  show(won?"DAWN":"FALLEN",won?"火种归来":"余烬熄灭",
-    won?"三座祭坛再次亮起。你击败了 "+defeated+" 名敌人，用时 "+Math.floor(elapsed)+" 秒。":"试着在守卫蓄力时拉开距离，或回营地补满生命。",
-    won?"再玩一次":"重新开始"); sound(won?"win":"hurt");
+  show(won?"DAWN":"FALLEN",won?"The Ember Returns":"The Ember Goes Dark",
+    won?"Three altars are lit again. You're defeated "+defeated+" Name enemy, time "+Math.floor(elapsed)+" s.":"Try to stretch the distance while guarding the strength or return to the camp to fill the living.",
+    won?"Play again":"Start over"); sound(won?"win":"hurt");
 }
 // PCM effects rendered with grumdrig/jsfxr (Unlicense).
 const soundBank={"swing":"gIB/f4CAf39/gIB/f4GAf3+AgIB/f36AgX5+f4B+f4KBf36AgXx+goKBgoKBg4B+f3x+gYKBfXx+gn16f4SCf3+Bf35/g4N+fXp9gX5+hICBfoSFfn+DfXyEf3d+hIWCfHyHf3t7fnh9hIF8f4aAdXV7e4F/e4KAe4CCg4d+i4F4fHx9hod8gH14fX13fX2GgX2MiX+Af3V/gIuHhoiChX57gH55e4+Lg4R+bnl+e4mAhIN6kpWEeHd6hXp8fnZ8gXt4fYaNgnd6hY2AiIGElHt5hY6LfYB/c3KEhYWNhnJpcYd1ZHiMg3Z8iHyHl4ZvbYJ5bHSDe4mGeXCOjHt+k5VxZ3h8gHuIf3eGh3JzeI+EcoGVmYN0gYp7mItlkJF0i42OeXd+fXpoan+Cf4+GaIaFfYWGaoGHeomDend6joeFfYONfGdxb3+NdnB+cXWLmp6JdoKCgoKJj4KMhmh0gHJzcXl7hXtkhXZffHh9hod2bZCOgIGOgYGTeXqTj4J7boeLb3RwYHSNmn17n5h8fH6Hj3+EkIuAcn9/cXiTfHN0jopxfHh6e3d+e26PnoeIgoqTjnteX3d8fYV6hnp6fXV/cGx/goSGe31/eot6h4NhYYiWjod5gniFh5WDi4aNjop/hGuJlIRtdoV0aWt9ZnmSjm10gIB4d4R8dZGNf3R/iY2QiHt+mJZ8ZYeHZmp8gW1wk4KHjX9ucY2Pe314fHp4fIp8aHGReIKOh3Bqb4iajYmJf4aAg29/iISMeXyKeW5+bnJ+g4Z0fY+WhXlmeHt+kotsjqJ/eoqPj312cHmRjIJ4dW9seIeRi3eehXWDgYaBgoycjod3gZORkIWDjIZfb3d8i498d3OAkZF7bXZ7d3KJcIOVkoF9dYGXjneDi2tog4SBgX5mcZJ7dY+NiHB9k392iHKHjWxhanWKjHZaXXd7d22LmXONj3iFool4e3qGgZh/kIiGf3lvgH9tfHt4jI15e355gY1ucYp/hJd5Z4OEf3J2godteI+FaoOKbnt8mYx0hIFfZ4GGmIRwkJSDfWxxaG2NjY6Gg390hYN4bHeDfYSDhZKPnJeJe3B/jHWEjJmVi4F9YWZxe3Bvgol9f4x7en+TfHSSln5re4uXl39yintjhJB9d4WBeneLjYFraHyPd311cYuch4iShWRoi4dye2VfdneNdHR5eoKEcImVd22OioKDYXiekXiElnyBgn2BepCQiXZten9mfo93d3eLj4h1eY56e494dZCUgXBsgY6Qh25+iHeGjXlyY3ONlohnan9/i5SXe4uVeHmHgmZmcX+Ffmh5l5t3b391b5OOjnVtg4d9fWdxgohudXt1fIN+f3mNk3ZkfI+WjZWUjnh9hG5ojYyTg32DiZWEeHZ9jnppgYyNgoaDiHiFj4h4b3OCfXZmbndxjpSFhH19h5J0fZaMg36MkI6TjYt+iIV9fXd6bXRtZXuHj4CEgGd9im53e31tdoV1doeKgoyKh4uPgW6Bgmlodo2EhIV6gH9ygHV9koJ8gm1ohoKEhJJ7d3R4hZZ9doJ9dHB4j315iY+PeWyEdnNzj5OCe3R0fYp3fYB7dXR8j4d3dX14kI99kYaAe2ZyjH54e4F9fYyLi4uFdo2Pj3pufW98g3OGeHh6iYmHboGBbIGVjIJ3bIeUiYOFeo+Dc2hycoyKdn6CeIF7gX94hJiBe26Kh3h9iXtzdHOJgIKNi3t0g4+IhXiAeI+Me4t6gop0eHVtiYxrcoKAgoSBiIuHhn56eouPhXV+fIJ/dYiSg4B3bXeHg4N8cGR6lIh8fnp/eoZ9g4ZyZX6AjJGDgW5phZKBcXKDgXxocI2AiY2LjIKBcoGIiX9+f4N5fJCCcHV2hJV9gpWQeXJ9iXtyd32Lg3t0g39udXx2dHl6dYR3hYZ+fXt4gIODiYeAgoN4e5CJd4OCgn9zh46AfX6Eg3uAfYCBgIeIioWHfYeHfnlxcX6Vhmxue4WLgoKHjYqDg4CQj4F1bWt+gIdzdYaOemh0d39+dHmIcnR0coeCcYF+d4WPi4uNe2qFh4yGhoqDeneDiH1zfoRyfoqMe398cHmAgnR6lIZme5WSd3d7fnh/h3h7end5d3J8c3F8kZSFfo2XiId6g4qCh4OMiYCEiYSHinp8eHSHg3yCfnJ3gX1yeISHhHBsfIeIdGx3g3qChpGPhIB6iJB0d4SMfXuKhYJzcXx4c4GNf3d9iH1uhoh3g4B8hIB5foR8goJ6eo+QdHFzfXd5f3p1gYN/gX95eX19g496d4J2f4GBh4x7fYp9dn18fX6BioiHfomFent7hIB2gn57hYuBgHyFeXl6foiKdICTgX13gIWIeYF8fYKNfHaCdnKCiXxsd4OEf3p9fXZ5gYd9eIGIiIF+eoGJeHd/h4SCi4iIjnZ+enaBiIp/foCJh4N4e4SDeXeDgoFzeX9+goyKhnx7fYeFfISIgHqCgH2DgHZ/d3mFfoSLgHyAfH6KenJ1goN2eIaIhYF8gIeOiXV6e3R+e32KiHiEfXd7i4d2eX+Ig316fYOJjIeJhYN9gHd9dnuChoSFeYuNenuKiYeAcXh+fYl+cn2Bf4KLioZ6f4Z8fnZ8g4R/gn+DgXR7d3+PhnR9gH55iYyBen6BfIGMh3+Be31/goCCeXh/hIWCgH18eYWDgX6DiIJ6f4KFeHR+gICDhHaCh4N1fo6CeoSCfXl/hHt6g3+DiIl+gHl4fn6BiX99eXR3hYiAdHV7iIuJhIN7fIZ+d4R/gnx+gXhygH6Ag317doeJg36Ae3N9gn92gYV1c3p6hIiBgoiCe4SGf4WDeXeCf3N2eXx/goKChXt4fIJ8gIV/e359i4V8d3Z6g4N+hIZ/gn+Cf4KEgXyFiHqCjX5+gH6HiIOHiHt6e3h+gIF9f32DiX2CiXt5gHx5fIOHgH6Ah4t+dn6Bg4KAfHuAgX+FfX6Hgnp/goOAf4F9e4WAeH+Hg4aDfX18enl4fYOBe4KCeX98e3yAfnl8gYCDgH18f3qFgX9/hIOBf4N8dnt9e3x/g3t9eH+KgX+Gg4aGg4WGgH6Cg4GEfXt7e4CCent7f4J4fn+EgX9/hICAhoaEeXmBfHyDgX5+f35+eXZ7enmAg3yAf4F/foOGgn+AfICGfnl8gXx+g4F+gH59g4d/hIaDf3x9e3p8fYOFgn6BgYCEgnl8f4F9hIZ+eoGBfXh6g4WAfYF+fIGChYF+g4eDfX58foF9e35/fX6BgYOBf3+Af4SAeX57fnx+goCAhoSAf39+foSFgXt5fn6Cg4F8gIN/f4KEfH2DhIN/gIOAfYCDg3+CgX97e32Agnx9f4GDgYF+f4F9gH96e35/f36BgIF/f4F+fH9/g4ODfn1+gX18gH5+gIF8fX9/gH+CgX5+f4F+goF9gH+AgYB9f39+f39+f4OAe32DgH6BgX9/fX+Bg4J9f4B/gX59f4GAf4CAg4R9fYF9fX2AgYCCgH6BhIF+f399fICBfX6Af4CAgIGAfn6CgH5+gYOBfoCCgoF/gIJ+fIB/fX9+fYB+gH9+f3+AgICBgIGAgH5/f359fn9+foB/gYKBf3+AgX9+f4B/f3+AgoGAgYCAgICBgIGAgH9/gH5/gIGAgIF/f4CAf35/f39+foB/f4CAgYGAf4GBgIB/f3+AgICBf4B/fn9/f39/f4B/f4CAgIB/f4CAgIB/f39/gH9/gH9/gICAgIB/f39/f3+Af39/f3+Af4B/f39/f4CAgICAgIB/f3+Af4CAgIB/gIB/f3+AgIB/f39/f4CAgIB/gA==","steel":"iZqrusbQ1tnZ1c7EuKmZiHZlVUY6MSonJysyO0hWZneJmqm4xM3T19bTzMO3qJmId2ZXST0zLSoqLTM8SFZldoaXprTAytDU1NHLwreqm4t6altNQTgxLSwvND1IVWNzg5OisLzFzNDRz8rCuKudjn5uX1JGPDUwLzA1PEZSYG9+jZyqtsDIzc/OysO6rqGThHVmWExCOjQyMjY8RE9baXiGlaOvusLIy8zJxLyyppmKfG5gVElAOTY1NjtCS1ZjcX+Nm6izvMPHycjEvrarn5KEdmhbUEc/Ojg4O0BHUVxpdoSSn6q0vMLGxsTAubCmmo2AcmVZT0ZAPDo7PkRMVmJue4iVoay1vMHDw8G8tayhlYl8b2NYT0dBPj0+QkhQWmVxfoqWoau0ur/BwL24samek4d7bmNZUElDQEBBRUtTXGdyfoqWoaqyuLy+vbu2r6adkoZ7b2RaUktGQ0NESE1VXmhzfoqVn6iwtbm7u7izraWckYZ7cGZdVE5JRkVHSk9WXmhyfYiSnKWssra4uLayrKWckoh+c2lgWFFMSUhJTFFXXmdxe4WPmKGorrK1tbSwq6WdlIqBd21kXFZQTUtLTVFXXmZueIKLlJ2kqq+xsrKvq6Welo2EenFpYVpVUU9OT1JXXWRsdH2Hj5ifpaqur6+uq6agmZGIf3ZuZl9aVVJRUVNXXGFpcHmBipKZoKWprK2sqqeinJSNhXx0bGVeWVZTUlNWWV9lbHR8hI2Um6Gmqqysq6iln5mSioJ5cWpjXVlVVFNUV1thZ252foaOlpyipqqrq6qno56XkIiAeHBpYl1ZVlRUVlhdYmhwd3+Hj5adoqapqqqppqKdlo+HgHhwaWNdWVZVVVZZXmNpcHd/h4+WnKGlqKqqqKahnJaPiIB4cWpkXlpXVlZXWl5jaXB3f4aOlZugpKepqailoZyWkIiBeXJrZV9bWFdWV1pdYmhvdn2FjJOZn6OmqKinpaKdl5GKg3t0bWdhXVpYV1haXWFnbXR7goqRl52hpaeop6WinpmTjIV+d3BpZF9bWVhYWVxgZWuWjIJ3bWReWlhaXmVtd4KMlp6jpqaknpeNg3lvZl9aWVpdZGx1gIqUnKKlpqSfmI+Fe3FoYVxZWl1janR+iJKaoKSmpKCakYd9c2pjXVpaXGFpcXuGj5ifo6WkoZuTioB2bWVfW1pcYGdveIKMlZyhpKSinZaNg3pwaGFdW1tfZGx1f4iRmZ+jpKOfmJCHfXRrZF9cW11iaXF6hI2WnKGjo6CblIuCeG9nYV1cXWBmbXZ/iZGZn6Kjop6YkId9dGxlYF1cXmNpcXuEjZWcoKKin5uUi4J5cGliXl1dYWZtdn+IkJidoaKhnZiQiH92bWZhXl1fY2lweYKLk5qeoaGfm5WNhXxza2VgXl5gZWtzfIWNlZufoaCemZKKgnlxaWRgXl9iZ252foePlpyfoKCcl5CIgHdvaGNgX2BjaG93gIiQl5yfoJ+blo+HfnZuaGNgX2FkanF5gYmRl5yfn56alY6GfnVuaGNgYGJla3J6goqRl5yen52ZlI2FfXVuaGNhYGJmbHJ6goqRl5yenpyZk4yFfXVuaGRhYWNmbHN6goqRl5udnpyYk4yFfXVuaWRiYWNnbHJ6gomQlpqdnZyYk42FfnZvaWVjYmNnbHJ5gYiPlZmcnZyYlI2Gf3dwamZjYmNma3F4f4eOlJibnJuZlI+IgHlybGdkY2RmanB2fYWMkpeanJuZlZCKgnt0bmllZGRmaW51e4KJkJWZm5ualpKMhX53cGtnZWRlaG1zeYCHjpOXmpual5ONh4B5c21pZmVlZ2txd36Ei5GVmZqamJSPiYN8dnBrZ2VlZ2pvdHuBiI6Tl5mamJaRjIZ/eXNtaWdmZmltcnh+hYuQlZiZmZeTj4mDfHZwbGhmZmhrb3R6gYeNkpaYmZiVkYyGgHp0b2toZ2dpbXF3fYOJj5OWmJiWk4+KhH54cm5qaGdoa25zeX+Fi5CUlpeXlZKNiIJ8dnFtamhoaWxwdXqAhoyQlJaXlpSRjIeBe3VwbGpoaWptcXZ8goeMkZSWlpWTj4uGgHp1cGxqaWlrbnJ3fIKIjZGUlZaVko+KhX96dXBtamlqbG9zeH2CiI2Qk5WVlJKOioV/enVwbWtqamxvc3h9goiMkJOUlZSRjoqFf3p1cW5ra2ttb3N4fYKHjJCSlJSTkY6JhYB6dnFubGtrbXBzeH2Ch4uPkpOUk5GOioWAe3Zyb21sbG1wc3h8gYaKjpGTk5KRjoqFgXx3c3BubGxtcHN3e4CFiY2QkpOSkY6KhoJ9eHRxb21tbnBydnp/hIiMj5GSkpGOi4eDfnp2cnBubW5vcnV5foKGio6QkZGRj4yIhIB8d3Rxb25ub3F0eHyAhYmMj5CRkI+NioaCfXl2cnBvbm9xc3d6f4OHio2PkJCPjYuHg397eHRycG9vcHJ1eX2BhYiLjo+Qj46MiYWBfnp2c3FwcHBydHd7foKGiYyOj4+OjYqHhIB8eXVzcXBwcXN1eXyAhIeKjI6Pjo2LiYaCf3t4dXNxcXFydHd6fYGEiIqMjo6OjIqIhYF+end1c3JxcnN1eHt+goWIioyNjY2MiYeEgH16d3VzcnJydHZ5fH+ChYiKjI2NjIuJhoOAfXp3dXNycnN1d3l8f4OFiIqMjIyMioiFg4B8end1dHNzdHV3en2Ag4WIiouMjIuKiIWCf316d3V0dHR0dnh6fYCChYeJi4uLiomHhYKAfXp4dnV0dHV2eHp9f4KFh4mKi4uKiYeFgoB9e3h3dXV1dXZ4en1/goSGiImKioqIh4WDgH57eXd2dXV2d3h6fH+Bg4aHiYmKiYiHhYOBfnx6eHd2dnZ3eHp8foCDhYaIiYmJiIeFg4F/fXt5eHd2dnd4enx+gIKEhoeIiIiIh4WEgoB+fHp5eHd3d3h5e31/gYOFhoeIiIeHhoSCgH99e3p4eHd4eHl7fH6AgoOFhoeHh4eGhYOBgH58e3l5eHh4eXp8fX+BgoSFhoaHhoaFhIKBf318e3p5eXl5ent8foCBg4SFhoaGhoWEg4GAfn18e3p5eXl6e3x9f4CBg4SFhYWFhYSDgoGAfn18e3p6enp7e31+f4CCg4SEhYWFhISDgoB/fn18e3t6ent7fH1+f4CBgoOEhISEhIOCgYB/fn18fHt7e3t8fX1+f4CBgoODhISEg4OCgYB/fn19fHx8fHx8fX5/f4CBgoKDg4ODg4KBgYB/fn59fXx8fHx9fX5/f4CBgYKCgoOCgoKBgYB/f359fX19fX19fn5/f4CBgYGCgoKCgoGBgIB/f35+fn19fX5+fn9/f4CAgYGBgYGBgYGBgIB/f39+fn5+fn5+fn9/f4CAgICBgYGBgYCAgICAf39/f39/f39/f39/f4CAgICAgICAgICAgICAf39/f39/f39/f39/f3+AgICAgICAgA==","thud":"gYWIi4qEenRyf5uyvbaOY0pBRUxSVWJ/maaljnJgWmBsdnt6c21pa4etx9KzaSoJBSBAVV1eXFpZWFRQT1Bkf5GZk4J0bGZTPTAsRHKXqa+7xszOzs/Pz7+TalROSURBQFyb0Ozpr2g6KD1tlKmkdD8eEx83SVJRQzUsKkVvj52WcUw3NWOj0eTNhUMeFBkhKCs6WnWDiJKdo6SJVi4bGic2QEM9NC0qKiwuMDE/UF1iZGdqa3CQt9Hax558a2RWRz06PkVLTlFbZ25vXkAqHypfl7nEzNXb3dvTysXDsJR+dXuYtMXHnWAzICxejqqysa2qqZptQiolOllweoWjv8/SvZ2FenVtZmJid5mxvLaTb1pSSDgtJy1OcoiQmaeyt7m8wMLCvLGopJ+Kc2ZhbYKTnKK1ydXYtXNAJyQvPEVISktMTU9YYmlrbG1tbmxiV1FPS0M9Ojk5ODg4RWJ6h4h/dGxpam5xc3R2eHp7e3t7e3uAh4yOi35yamhnZWRjZWx1enyHnrC5tphzW1JSVFVXWGd9jZOQgnNraXaMnaWjjnVmYGl/kpuckYB1cGxkXFdXaoedpqu3w8rNzMvKysOdcldNWHKIlJWFcWNdY3WGj5GPioeGf2ZOQD1IXGtzdn6HjI2Jf3dzcnJ0dHVxZFhSUWOAlqCkr7vCxK57UDo4VnyVoKWxvcPEtZuHfnhmUUM/TXKTpKiimJGOiG9VRkFGUFhcXmZxeHx6cmplZG19iY+Nc1I8MzxceouQh3dqZGZ8l6ivo4JkU09KQz47P09ibXFqW09ISWOHoKqhfVlEPkZWY2pqYllUUVBPTUxOZ46subaeg3Frc4eYoqObjoWBfGlVSERPa4SRk4yAeHV5jqa0ubq7vLy7onteUU5MSUhHUW6IlpmJbFdNUXKbtb+8sqeioJqOhYB/d25oZWuGorS6uLGrqKaTcVhMSklHRkZKXGx2eX2Fi46Pmqm0uLi0sK2sppeKg4OKlJyfoKWqra6gfF1NSmCDnKinl4R5dXJsZmNjco2jrayRa1FHR0xRVFVYX2VoanWGk5mYinluamZcUk1LW3mSn6CSf3FrboagsbevlHxuanmWrbm6rZmLhYWIi42NkZulq6ymlYZ/foqfr7e0k2lNQUVbc4GGgXRpY2FlbHJ0doSZqbGtj2tTSk1canJ0e4mVnJ2dnZ2dm4x6b2pwh52praSQgHd1eX+DhYR3Z1xXXnuYqq+liG5gXWl/kJiYhWtYT1Jsip6ln4RqW1dliae3u7Wro6CgpayytLCWdmJaXGZvdXZ4fYKEhYSDg4KCeWpeWVpxkKWuqo5uW1RYanyGiYFrV0xJVnOKl5iHalRJSmKDm6amnpWPjYp4YVNNVHOTpaunmo+JiIeEgYCAh5KanpyHalZOUm6OoamhhWlaVVtpdn1/hZKdo6ObjYSAf3t2c3FxcXFxcXWJnaquo4RmVlFTV1pbXGNxfYOEjJmkqKeRcVtRU2qHm6OgkH5zb3B1eHt7enVwbWxucnd5endvaGVkYlxYVlZhdYWMjYiAend4h5yqsbCgint0c21lYF1geJittbKij4N/f3x5d3Z2d3d4eHVrYl1bZHmLlZeOfW9pZ2dmZWRkZmhqa2xwd3t9fXx8e3t6c2plYmNqcHV2d32DhoeGgn99fIGQnqWoo5eNh4aKlJygoZ6Xko+Pjo2LioqKi4uLin9qWVFQYHyTnZ+foqSmpp2NgXx7e3p6enqDkJqfoJ+goaGhmo+Hg4OKlZ2hoZSAcWtqaGRhX19peIOIiYuPk5SUjYF4c3NuZmBdXW+Ln6ioknJcU1NbZm5xcnN1d3h3cWpkYmNqdXx/f316eXh4dXFubW97i5aamZGIgoCBjp2nq6qimJGPkJaepKamn5aQjo2IgXt5eoORm5+floqCfn12aWBcW1xbW1tbW1taWltmeomRkpSZnqGioJuYlpaYnKCiop2OgHl3e4iUmpyZjoR+fH2BhomKioqJiYmKjJCSk5KRj46NjIJyZmFhcIaWnZ2SgHJsbHeLmqKjoaCgoKCclZCNjJCXnqGhm42Be3p3bmZhX2BkZ2lpbHmGjpCRlJibnJyZl5WUlZeanJ2clImCf3+EjZKVlYt7bmhnb36LkpOKd2ZdW2N7kJyfmoRsXlpcZ3R8f350aGBcXW6HmaGim4+FgYCAfn18fH6GjZGSkIZ9d3V2e4CDhIR/eHNwcHV9hIeHiIuPkZGNf3JraWx2gIWHh4uQk5WVlZWVlZSHdGZgYGJlZmdnaW1xc3NzdXZ2dnVxbGppbHuKlJeWlJKRkZGMhYB+foCDhYaGiZKZnp+bjYF6d3d0cW5tbnN6f4GAeW5lYWBlbXN3d3h7fn+AfnduaWhpeIuZnp6UhXl0dHd8gIKCg4eMjo+Og3Zua2x3iZWam5B8a2JgZXF8g4SFiY+UlZWMfnNubnF4fYCAg4uTl5mYlZKQj46EdmxoaHKDkJaWjn5xa2lqaWdmZWZoa21ub3qLl5ycm5mYmJiWkIqHhoWCfXp5en6DhoiIiYyOj5CNh4J/f312b2poaXJ+homJg3hwbGtud3+DhIOAfHp5eYCJkJOTkpKSkpKRi4WBgIB/fXx7e3t8fH19e3Ruamlqb3V5e3t3cGtoaGx7iZGUkoZ5cG1tb3BwcXByeH6BgoKEhoiJiYaAe3l5d3NubGtue4qUl5aJeGxnZ29+ipCRjYF0bWtteIeRlZWRjYqIiIiGhIODhImPlJWVj4R7d3Z2dXNycnN6goeJiYeFhIODgXhvamhqdYKKjY2GeW9qam12f4SFhYaHiYmJhXx0b25xeoWLjYyNjo+QkI+Ni4qKioiGhYSEh4yQkpKPgnRraGltcnV3d3mAh4yNjIV8d3R0dXZ2dnZ2eHp7e3t8fn+AgIGGio2OjouIhoWFgnx2dHNzc3Nzc3NycXFxcXJ2eXp7e3x9fX5+e3Vxb29vb29vb29xdHZ3d3l/hYmKiYqMjY6OioN9enp7gYaJioqEe3VycXR8g4eIh4J8eHZ2d3p9fn5+e3h2dXV1dHJycnJzdHV1dXV1dXV1dXV0dHR0eICHi4yLioqKioqIhIB+fn17eHZ1dXZ5e3x8fH6Bg4ODgoGAf39/e3ZycXFycnNzc3R6goeJiYaBfXt6e4CEh4iIhoKAf35/f39/f398eHVzc3Nzc3Nzc3h/hYiJiImJioqKh4J9fHt8fn+AgIB+fHp5eXp8fX9/f39+fn5+f4KGiImJhoJ/fX1+goaJioqHgX17ent9f4GBgX97d3V1dnqAg4WFhYWGhoaGgnt2dHN1e4CEhYWDgX9+fn5/gYKCgoKEhoeHh4WCgH9/f4GCg4SEg4GAgIB/fnx6enp7fX+BgYGChIWGhoWEgoGBgYGCgoKCgoOFhYaGhIB9fHt8e3p6eXl6fYCBgYF/fXx8fH2Ag4WFhYJ+e3l5en2AgoODgX16eHh4e3+Cg4OCf3x6enp8gIOEhISEhISEhIOBgH9/f4CDhIWFhIB8eXh5eXl6enp6fH6AgYGBf359fX19fX5+fn6AgoSEhISCf35+fn6AgYGBgYB9e3p6e32AgoOCgoB/fn5+f4CBgYGBgYGBgYGBgoKDg4OCf318fHx+gIGCgoKCg4ODg4ODgoKCgoKBgYGBgYGBgYGBgYGBgYGBgH59fHx9f4GCg4KCgYB/f39/f39/f3+AgYGBgYF/fn19fX5+fn5+fn5+fn5+fn+AgICAgH9/fn5+fn9/f39/gICBgYGAgH9/f39/f4CAgICAgICAgICAgICAgICAf39/f3+AgICAgIB/f39/f3+AgIA=","heavy":"gYSIi46RlJebnqGkp6qtsLO2uLu+wcPGyMvN0NLU1tnb3d/h4uTm5+nq7O3u8PHy8/P09fb29/f39/j4+Pj39/f29vX19PPy8fDv7u3r6ujn5ePi4N7c2tjW1NLPzcvIxsPBvru5trOxrquopaKfnJmXlJGOi4iFgn58eHZyb21qZ2RhXltYVlNQTUtIRUNAPjw5NzUyMC4sKigmJCMhHx4cGxkYFxYUExISERAPDw4ODQ0NDQwMDA0NDQ0ODg8QEBESExQVFhcYGhsdHiAhIyUmKCosLjAyNDc5Oz5AQkVHSkxPUVRXWVxfYmRnam1vcnV4e32Ag4aJjI+RlJeanZ+ipaeqra+ytLe5vL7Aw8XHycvNz9HT1dbY2tvd3uDh4uTl5ufo6Onq6+vs7O3t7e3t7e3t7e3s7Ozr6urp6Ofm5eTj4uHf3t3b2tjW1dPRz83LycfFw8G/vLq4tbOxrqypp6Shn5yal5SSj4yKh4SCf3x6d3Ryb2xqZ2ViX11aWFVTUU5MSkhFQ0E/PTs5NzUzMTAuLCspKCYlJCMhIB8eHRwcGxoaGRkYGBcXFxcXFxcXFxgYGBkZGhobHB0eHyAhIiMkJScoKistLjAxMzU3OTs9PkBDRUdJS01PUlRWWVtdYGJlZ2lsbnFzdnh7fYCChYiKjY+SlJeZm56go6WnqqyusLK1t7m7vb/Bw8TGyMrLzc7Q0dPU1dbY2drb3N3d3t/g4OHh4uLi4+Pj4+Pj4+Li4uLh4eDf397d3Nzb2tnX1tXU0tHQzs3LysjGxcPBv727ubi2s7Gvraupp6SioJ6bmZeUkpCNi4mGhIJ/fXt4dnRxb21qaGZkYV9dW1lXVFJQTkxLSUdFQ0FAPjw7OTg2NTMyMTAuLSwrKikoKCcmJSUkJCMjIiIiIiIiISIiIiIiIyMjJCQlJSYnKCgpKissLS4wMTIzNTY3OTo8Pj9BQkRGSElLTU9RU1VXWVtdX2FjZWdqbG5wcnR3eXt9f4GEhoiKjI+Rk5WXmZueoKKkpqiqq62vsbO1tri6u72+wMHDxMbHyMnLzM3Oz9DR0dLT1NTV1dbW19fX2NjY2NjY2NjY19fX1tbW1dTU09LS0dDPzs3My8rJyMbFxMLBv768u7m4trSzsa+urKqopqSioJ+dm5mXlZORj42LiYaEgoB+fHp4dnRycG5samhmZGJhX11bWVhWVFJRT01MSklHRkRDQkA/Pj07Ojk4NzY1NTQzMjExMDAvLy4uLS0tLS0sLCwsLS0tLS0uLi4vLzAwMTIyMzQ1NTY3ODk6Oz0+P0BBQ0RFR0hKS01OUFFTVVZYWltdX2BiZGZoaWttb3FzdHZ4enx+gIKDhYeJi42PkZKUlpiam52foaKkpqepqqyur7Cys7W2t7m6u7y9vsDBwsLDxMXGx8fIycnKysvLzMzMzM3Nzc3Nzc3Nzc3MzMzLy8vKysnIyMfGxsXEw8LBwL++vby7urm4trW0srGwrq2rqqinpaSioZ+dnJqYl5WTkpCOjIuJh4aEgoB/fXt5eHZ0c3FvbmxqaWdlZGJhX15cW1lYVlVUUlFQT01MS0pJSEdGRURDQkFAPz8+PT08PDs7Ojo5OTk4ODg4ODg3Nzc4ODg4ODg5OTk6Ojs7PDw9PT4/QEBBQkNERUZHSElKS0xNTk9RUlNVVldZWltdXmBhY2RlZ2lqbG1vcHJzdXd4ent9f4CChIWHiIqMjY+QkpSVl5iam52eoKGjpKWnqKmrrK2usLGys7S1tre4ubq7vLy9vr+/wMDBwsLCw8PExMTExcXFxcXFxcXFxcXFxMTEw8PDwsLBwcC/v769vby7urm5uLe2tbSzsbCvrq2sqqmop6Wko6Ggnp2cmpmXlpSTkZCOjYuKiIeFhIKAf318enl3dnRzcXBubWtqaGdlZGNhYF5dXFtZWFdWVFNSUVBPTk1MS0pJSEdGRkVEQ0NCQkFAQD8/Pz4+Pj09PT08PDw8PDw8PDw9PT09Pj4+Pz8/QEBBQkJDQ0RFRkZHSElKS0xNTU5QUVJTVFVWV1laW1xdX2BhY2RlZ2hqa2xub3Fyc3V2eHl7fH5/gIKDhYaIiYuMjo+RkpOVlpiZmpydnqChoqOlpqeoqaqsra6vsLGysrO0tba3t7i5urq7u7y8vb2+vr+/v7/AwMDAwMDAwMDAwMDAwMC/v7++vr69vby8u7q6ubm4t7a2tbSzsrGwr66urKuqqainpqWkoqGgn56cm5qYl5aUk5KQj46Mi4mIh4WEgoGAfn17enl3dnRzcnBvbmxramhnZmVjYmFgX11cW1pZWFdWVVRTUlFQT05NTUxLSkpJSEhHR0ZFRUVERENDQ0JCQkJBQUFBQUFBQUFBQUJCQkJCQ0NDRERFRUZGR0dISElKSktMTU1OT1BRUlNUVVZXWFlaW1xdXl9gYWNkZWZnaWprbG5vcHJzdHV3eHl7fH1/gIGDhIWHiImLjI2OkJGSlJWWl5mam5ydnqChoqOkpaanqKmqq6ytra6vsLGxsrOztLW1tra3t7i4ubm5urq6u7u7u7u7u7u7u7u7u7u7u7u6urq5ubm4uLe3tra1tbSzs7KxsbCvrq6trKuqqainpqWko6KhoJ+enZybmpiXlpWUk5GQj46Mi4qJh4aFhIKBgH99fHt6eHd2dXRycXBvbmxramloZ2VkY2JhYF9eXVxbWllYV1dWVVRTU1JRUFBPTk5NTUxLS0pKSklJSEhISEdHR0dGRkZGRkZGRkZGRkZHR0dHR0hISElJSkpKS0tMTE1OTk9PUFFRUlNUVFVWV1hZWlpbXF1eX2BhYmNkZWZnaWprbG1ub3Bxc3R1dnd4ent8fX5/gYKDhIWHiImKi4yOj5CRkpOUlZeYmZqbnJ2en6ChoqKjpKWmp6ioqaqrq6ytra6vr7CwsbGysrOztLS0tbW1tba2tra2tra2tra2tra2tra2tbW1tbS0tLOzs7KysbGwsK+vrq2trKurqqmoqKempaSko6KhoJ+enZybmpmYl5aVlJOSkZCPjo2MiomIh4aFhIOCgH9+fXx7enl4dnV0c3JxcG9ubWxramloZ2ZlZGNiYWBgX15dXFtbWllYWFdWVlVUVFNTUlJRUVBQT09OTk5NTU1NTExMTExMS0tLS0tLS0tLTExMTExMTU1NTU5OTk9PUFBQUVFSUlNUVFVVVldXWFlZWltcXF1eX2BgYWJjZGVmZ2hpaWprbG1ub3BxcnN0dXZ3eHl6e3x9f4CBgoOEhYaHiImKi4yNjo+QkZKTlJWWl5iZmpqbnJ2en5+goaKio6Slpaanp6ioqaqqq6usrKytra6urq+vr7CwsLCwsbGxsbGxsbGxsbGxsbGxsLCwsLCvr6+vrq6tra2srKurqqqpqaiop6ampaSko6KioaCfn56dnJubmpmYl5aVlJSTkpGQj46NjIuKiYiHhoWEg4KBgIB/fn18e3p5eHd2dXRzcnFwb25ubWxramloaGdmZWRkY2JhYWBfX15dXVxbW1paWVhYV1dXVlZVVVRUVFNTU1JSUlJSUVFRUVFRUVFRUVFRUVFRUVFRUVFSUlJSU1NTU1RUVFVVVlZWV1dYWFlZWltbXFxdXl5fYGBhYmJjZGVlZmdoaGlqa2xsbW5vcHFycnN0dXZ3eHl5ent8fX5/gIGCg4OEhYaHiImKi4yMjY6PkJGRkpOUlZaWl5iZmZqbm5ydnZ6fn6ChoaKio6OkpKWlpqanp6eoqKmpqamqqqqqq6urq6urq6ysrKysrKysrKyrq6urq6uqqqqqqqmpqaioqKenpqampaWkpKOjoqKhoKCfn56dnZybm5qZmZiXl5aVlJSTkpGQkI+OjYyMi4qJiIeHhoWEg4KCgYB/fn19fHt6eXh4d3Z1dHRzcnFwcG9ubW1sa2pqaWhoZ2ZmZWRkY2NiYWFgYF9fXl5dXVxcXFtbWlpaWVlZWVhYWFhXV1dXV1dWVlZWVlZWVlZWVlZWVlZXV1dXV1dYWFhYWFlZWVpaWltbW1xcXV1eXl9fYGBhYWJiY2NkZGVmZmdoaGlpamtrbG1ubm9wcHFyc3N0dXZ2d3h5eXp7fHx9fn9/gIGCg4OEhYaGh4iJiYqLjIyNjo+PkJGRkpOTlJWVlpeXmJiZmpqbm5ycnZ2enp+fn6CgoaGhoqKio6OjpKSkpKWlpaWlpaampqampqampqampqampqampqalpaWlpaSkpKSko6OjoqKioaGhoKCfn5+enp2dnJybm5qamZiYl5eWlpWUlJOTkpGRkI+Pjo2NjIuLiomJiIeGhoWEhIOCgYGAf39+fXx8e3p6eXh4d3Z2dXR0c3JycXBwb29ubW1sbGtqamlpaGhnZ2ZmZWVkZGRjY2JiYmFhYGBgX19fX15eXl5dXV1dXV1cXFxcXFxcXFxcXFxcXFxcXFxcXFxcXF1dXV1dXl5eXl5fX19gYGBhYWFiYmJjY2RkZGVlZmZnZ2hoaWlqamtrbGxtbW5vb3BwcXFyc3N0dHV2dnd4eHl5ent7fH19fn5/gICBgoKDhISFhoaHh4iJiYqLi4yMjY6Oj4+QkJGRkpKTk5SUlZWWlpeXmJiZmZmampqbm5ucnJydnZ2enp6enp+fn5+foKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCfn5+fn56enp6enZ2dnJycnJubm5qamZmZmJiYl5eWlpWVlJSUk5OSkpGRkJCPjo6NjYyMi4uKiomIiIeHhoaFhISDg4KCgYCAf39+fX18fHt7enl5eHh3d3Z2dXV0dHNycnFxcHBwb29ubm1tbGxsa2tqamppaWhoaGdnZ2ZmZmZlZWVlZGRkZGNjY2NjY2JiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiY2NjY2NjZGRkZGVlZWVmZmZmZ2dnaGhoaWlpampqa2tsbGxtbW5ub29vcHBxcXJyc3N0dHR1dXZ2d3d4eHl5enp7e3x8fX5+f3+AgIGBgoKDg4SEhYWGhoeHiIiJiYqKi4uMjIyNjY6Oj4+PkJCRkZGSkpKTk5SUlJWVlZWWlpaXl5eXmJiYmJiZmZmZmZmampqampqampqampqampubm5qampqampqampqampqamZmZmZmZmJiYmJiXl5eXlpaWlpWVlZSUlJSTk5OSkpKRkZCQkI+Pj46OjY2NjIyLi4qKiomJiIiHh4aGhoWFhISDg4KCgYGBgIB/f35+fX19fHx7e3p6eXl5eHh3d3Z2dnV1dHR0c3NzcnJycXFwcHBvb29vbm5ubW1tbWxsbGxra2trampqamppaWlpaWlpaGhoaGhoaGhoaGhoaGhoaGhoaGhoaGhoaGhoaGhoaGhoaWlpaWlpaWpqampqa2tra2tsbGxsbW1tbW5ubm5vb29wcHBxcXFycnJzc3N0dHR1dXV2dnZ3d3h4eHl5eXp6e3t7fHx8fX1+fn5/f4CAgIGBgoKCg4OEhISFhYWGhoeHh4iIiImJiYqKiouLi4yMjI2NjY2Ojo6Pj4+PkJCQkJCRkZGRkZKSkpKSk5OTk5OTk5OUlJSUlJSUlJSUlJSUlJSUlJSUlJSUlJSUlJSUlJSUlJSTk5OTk5OTk5KSkpKSkpGRkZGRkJCQkJCPj4+Pjo6Ojo2NjY2MjIyLi4uLioqKiYmJiIiIiIeHh4aGhoWFhYSEhIODg4KCgoGBgYCAgH9/f35+fn19fXx8fHt7e3p6enl5eXl4eHh3d3d3dnZ2dnV1dXR0dHR0c3Nzc3JycnJycXFxcXFxcHBwcHBwb29vb29vb29vbm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5vb29vb29vb29wcHBwcHBwcXFxcXFxcnJycnJzc3Nzc3R0dHR0dXV1dXZ2dnZ3d3d3eHh4eHl5eXl6enp6e3t7e3x8fH19fX1+fn5+f39/f4CAgIGBgYGCgoKCg4ODhISEhIWFhYWGhoaGhoeHh4eIiIiIiImJiYmJioqKioqLi4uLi4uLjIyMjIyMjI2NjY2NjY2NjY2Njo6Ojo6Ojo6Ojo6Ojo6Ojo6Ojo6Ojo6Ojo6Ojo6Ojo6OjY2NjY2NjY2NjY2MjIyMjIyMjIyLi4uLi4uKioqKioqKiYmJiYmIiIiIiIiHh4eHh4aGhoaFhYWFhYSEhISEg4ODg4OCgoKCgYGBgYGAgICAf39/f39+fn5+fn19fX19fHx8fHx7e3t7e3p6enp6enl5eXl5eXh4eHh4eHh3d3d3d3d3d3Z2dnZ2dnZ2dnV1dXV1dXV1dXV1dXV1dXR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dXV1dXV1dXV1dXV1dXV1dnZ2dnZ2dnZ2dnZ3d3d3d3d3d3h4eHh4eHh4eXl5eXl5eXp6enp6enp7e3t7e3t8fHx8fHx8fX19fX19fn5+fn5+fn9/f39/f4CAgICAgIGBgYGBgYGCgoKCgoKCg4ODg4ODg4SEhISEhISEhIWFhYWFhYWFhYaGhoaGhoaGhoaGhoaHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4iIiIiIiIiHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHhoaGhoaGhoaGhoaGhoaFhYWFhYWFhYWFhYSEhISEhISEhISDg4ODg4ODg4ODgoKCgoKCgoKCgoGBgYGBgYGBgYCAgICAgICAgIB/f39/f39/f39/fn5+fn5+fn5+fn59fX19fX19fX19fX19fXx8fHx8fHx8fHx8fHx8fHx8fHt7e3t7e3t7e3t7e3t7e3t7e3t7e3t7e3t7e3t7e3t7e3t7e3t7e3t7e3t7e3t7e3t7e3t7e3t7e3t7e3t7e3t7e3x8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fX19fX19fX19fX19fX19fX19fn5+fn5+fn5+fn5+fn5+fn5+fn9/f39/f39/f39/f39/f39/f39/f4CAgICAgICAgICAgICAgICAgICAgICAgICAgIGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYCAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA","hurt":"ZmdoaWprbG1tbm9wcXJzdHV1dnd4eXp7e3x9fn+AgYKCg4SFhoeIiImKi4yNjY6PkJGSk5OUlZaXmJiZmJeWlpWUk5KSkZCPjo2NjIuKiYiIh4aFhISDgoGAgH9+fXx8e3p5eHh3dnV0dHNycXBwb25tbWxramlpaGdmZmdoaWpqa2xtbm9vcHFyc3R0dXZ3eHh5ent8fH1+f4CBgYKDhIWFhoeIiYmKi4yMjY6PkJCRkpOUlJWWl5iYmZiYl5aVlJSTkpGRkI+Ojo2Mi4qKiYiHh4aFhISDgoGBgH9+fn18e3t6eXh4d3Z1dXRzcnJxcG9vbm1sbGtqamloZ2dmZ2doaWpra2xtbm5vcHFycnN0dXV2d3h4eXp7e3x9fn5/gIGBgoOEhYWGh4iIiYqKi4yNjY6PkJCRkpOTlJWWlpeYmZmYl5eWlZWUk5KSkZCPj46NjYyLioqJiIeHhoWFhIOCgoGAgH9+fX18e3t6eXh4d3Z2dXR0c3JxcXBvb25tbWxramppaGhnZmZnaGhpamtrbG1ubm9wcXFyc3N0dXZ2d3h4eXp7e3x9fn5/gICBgoODhIWFhoeIiImKiouMjI2Oj4+QkZGSk5SUlZaWl5iYmZiYl5aWlZSTk5KRkZCPj46NjYyLioqJiIiHhoaFhISDgoGBgH9/fn19fHt7enl5eHd3dnV0dHNycnFwcG9ubm1sbGtqamloaGdmZmdoaGlqamtsbW1ub29wcXFyc3R0dXZ2d3h4eXp6e3x9fX5/f4CBgYKDg4SFhYaHiIiJioqLjIyNjo6PkJCRkpOTlJWVlpeXmJmZmJiXlpWVlJOTkpGRkI+Pjo2NjIuLiomJiIeHhoWFhIODgoGBgH9/fn18fHt6enl4eHd2dnV0dHNycnFwcG9ubm1sbGtqamloaGdmZmdnaGlpamtsbG1ubm9wcHFycnN0dHV2dnd4eHl6ent8fH1+f3+AgYGCg4OEhYWGh4eIiYmKi4uMjY2Oj4+QkZGSk5OUlZWWl5eYmZmYl5eWlZWUk5OSkZGQj4+OjY2Mi4uKiYmIh4eGhYWEg4OCgYGAf39+fXx8e3p6eXh4d3Z2dXR0c3JycXBwb25ubWxsa2pqaWhoZ2ZmZ2doaWpqa2xsbW5ub3BwcXJyc3R0dXZ2d3h4eXp6e3x8fX5+f4CAgYKCg4SEhYaGh4iIiYqKi4yMjY6Oj5CQkZKSk5SUlZaWl5iYmZiXl5aVlJSTkpKRkJCPjo6NjIyLioqJiIiHhoaFhISDgoKBgIB/fn59fXx7e3p5eXh3d3Z1dXRzc3JxcXBvb25tbWxsa2pqaWhoZ2doaWlqa2tsbW1ub29wcXFyc3N0dHV2dnd4eHl6ent8fH1+fn9/gIGBgoODhIWFhoeHiIiJioqLjIyNjo6Pj5CRkZKTk5SUlZaWl5eXlpWVlJOTkpGRkI+Pjo6NjIyLioqJiIiHh4aFhYSDg4KBgYCAf35+fXx8e3t6eXl4d3d2dXV0dHNycnFwcG9vbm1tbGxramppaGlpamtrbGxtbm5vcHBxcXJzc3R1dXZ2d3h4eXl6e3t8fX1+fn+AgIGBgoODhIWFhoaHiIiJiYqLi4yMjY6Oj4+QkZGSkpOUlJWVlpaVlJSTkpKRkZCPj46OjYyMi4qKiYmIh4eGhoWEhIODgoGBgIB/fn59fXx7e3p6eXh4d3d2dXV0dHNzcnFxcHBvbm5tbWxra2pqamtrbGxtbm5vb3BxcXJyc3R0dXV2dnd4eHl5ent7fHx9fn5/f4CAgYKCg4OEhIWGhoeHiIiJioqLi4yMjY6Oj4+QkJGSkpOTlJSVlJOTkpKRkZCPj46OjYyMi4uKiomJiIeHhoaFhYSDg4KCgYGAf39+fn19fHx7enp5eXh4d3d2dnV0dHNzcnJxcXBwb25ubW1sbGtrbGxtbW5vb3BwcXFycnN0dHV1dnZ3d3h4eXp6e3t8fH19fn5/gICBgYKCg4OEhIWFhoaHiIiJiYqKi4uMjI2Njo6Pj5CQkZGSk5OTk5KSkZGQkI+Pjo6NjIyLi4qKiYmIiIeHhoaFhYSEg4OCgoGBgIB/f35+fX18fHt7enp5eXh4d3d2dnV1dHRzc3JycXFwcG9vbm5tbWxtbW5ub29wcHFxcnJzc3R0dXV2dnd3eHh5eXp6e3t8fH19fn5/f4CAgYGCgoODg4SEhYWGhoeHiIiJiYqKi4uMjIyNjY6Oj4+QkJGRkpKSkZGQkI+Pjo6NjYyMjIuLioqJiYiIh4eHhoaFhYSEg4OCgoKBgYCAf39+fn59fXx8e3t7enp5eXh4eHd3dnZ1dXV0dHNzcnJycXFwcHBvb25ubm5vb3BwcXFycnJzc3R0dXV1dnZ3d3h4eXl5enp7e3x8fH19fn5/f3+AgIGBgYKCg4OEhISFhYaGhoeHiIiIiYmKioqLi4yMjI2Njo6Oj4+QkJCQkJCPj46Ojo2NjIyMi4uKioqJiYiIiIeHh4aGhYWFhISDg4OCgoKBgYCAgH9/f35+fn19fHx8e3t7enp6eXl5eHh3d3d2dnZ1dXV0dHRzc3NycnJxcXFwcHBvcHBwcXFxcnJzc3N0dHR1dXZ2dnd3d3h4eXl5enp6e3t7fHx9fX1+fn5/f3+AgICBgYGCgoKDg4OEhISFhYWGhoaHh4eIiIiJiYmKioqLi4uMjIyNjY2Ojo6Pj4+Ojo6NjY2MjIyLi4uKioqKiYmJiIiIh4eHhoaGhYWFhYSEhIODg4KCgoGBgYGAgIB/f39/fn5+fX19fHx8fHt7e3p6enp5eXl5eHh4d3d3d3Z2dnZ1dXV0dHR0c3Nzc3JycnJxcXFycnJyc3NzdHR0dXV1dXZ2dnd3d3h4eHh5eXl6enp6e3t7fHx8fH19fX5+fn5/f3+AgICAgYGBgYKCgoODg4OEhISEhYWFhYaGhoaHh4eIiIiIiYmJiYqKioqLi4uLjIyMjIyNjY2NjIyMjIuLi4uKioqKiYmJiYiIiIiHh4eHhoaGhoWFhYWFhISEhIODg4OCgoKCgYGBgYGAgICAf39/f39+fn5+fX19fXx8fHx8e3t7e3t6enp6eXl5eXl4eHh4eHd3d3d3dnZ2dnZ1dXV1dXR0dHR0c3Nzc3N0dHR0dXV1dXV2dnZ2d3d3d3h4eHh4eXl5eXp6enp6e3t7e3x8fHx8fX19fX5+fn5+f39/f3+AgICAgYGBgYGCgoKCgoODg4ODhISEhISFhYWFhYaGhoaGh4eHh4eHiIiIiIiJiYmJiYqKioqKiouLi4uLi4qKioqKiYmJiYmIiIiIiIeHh4eHhoaGhoaGhYWFhYWEhISEhISDg4ODg4KCgoKCgoGBgYGBgICAgICAf39/f39/fn5+fn5+fX19fX19fHx8fHx8e3t7e3t7enp6enp6eXl5eXl5eXh4eHh4eHd3d3d3d3d2dnZ2dnZ1dXV1dXV2dnZ2dnd3d3d3d3h4eHh4eHl5eXl5enp6enp6e3t7e3t7fHx8fHx8fX19fX19fn5+fn5+fn9/f39/f4CAgICAgIGBgYGBgYGCgoKCgoKCg4ODg4ODhISEhISEhIWFhYWFhYWGhoaGhoaGh4eHh4eHh4eIiIiIiIiIiYmJiYiIiIiIiIiHh4eHh4eGhoaGhoaGhYWFhYWFhYSEhISEhISDg4ODg4ODg4KCgoKCgoKBgYGBgYGBgICAgICAgIB/f39/f39/f35+fn5+fn59fX19fX19fXx8fHx8fHx8e3t7e3t7e3t7enp6enp6enp5eXl5eXl5eXl4eHh4eHh4eHh3eHh4eHh4eHh5eXl5eXl5eXp6enp6enp7e3t7e3t7e3x8fHx8fHx8fX19fX19fX19fn5+fn5+fn5/f39/f39/f3+AgICAgICAgIGBgYGBgYGBgYKCgoKCgoKCgoKDg4ODg4ODg4OEhISEhISEhISEhYWFhYWFhYWFhYaGhoaGhoaGhoaGhoaGhoaGhoWFhYWFhYWFhYSEhISEhISEhIODg4ODg4ODg4KCgoKCgoKCgoKBgYGBgYGBgYGBgICAgICAgICAgH9/f39/f39/f39/fn5+fn5+fn5+fn19fX19fX19fX19fHx8fHx8fHx8fHx8e3t7e3t7e3t7e3t7enp6enp6enp6enp6enp6enp7e3t7e3t7e3t7e3x8fHx8fHx8fHx8fX19fX19fX19fX19fn5+fn5+fn5+fn5/f39/f39/f39/f39/gICAgICAgICAgICAgYGBgYGBgYGBgYGBgYGCgoKCgoKCgoKCgoKCgoODg4ODg4ODg4ODg4ODg4SEhISEhISEhISEhISEhISEg4ODg4ODg4ODg4ODg4KCgoKCgoKCgoKCgoKCgYGBgYGBgYGBgYGBgYGAgICAgICAgICAgICAgICAf39/f39/f39/f39/f39/f35+fn5+fn5+fn5+fn5+fn5+fn19fX19fX19fX19fX19fX19fX18fHx8fHx8fHx8fHx8fHx8fHx9fX19fX19fX19fX19fX19fX5+fn5+fn5+fn5+fn5+fn5+fn5/f39/f39/f39/f39/f39/f39/f3+AgICAgICAgICAgICAgICAgICAgICAgIGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgoKCgoKCgoKCgoKCgoKCgoKCgoGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgH9/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn9/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f3+AgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIA=","grass":"gIOGh4WEhISCfHl5en58enh0d36Ag4SEfXZ6gYF9gISEhYWBgIJ/ent8enx8fn98eHR1fYSBf3+AgoKDgoGAgYSAeXd5f4SFhYWBenZ4fICCfXt8gYOChIaHhoGAfXdzc3qAfn2AgIGBfnyAhouJgXt8e3t/gX+ChoWCgoSIjIuGf4CGiouEenV2fICBhISFf3p+hIJ8enp9gIKBg4iKioqLioB3eHx8e3p7gYWGhYSBfHx9e3t8f3x6en2DhYN9fH9+gIKCg4B/gIR/eXuDiIN5dXh9hIF9eHl+gIGEhH11dX2Dg4OEhoJ9eX6FhX97en2EhoWEhoR9eXd4d3V1fH9+fX1+e3Z1d3t/f3+Bg4WEhYN7d3Z3fH+DhIKBfoCDgX15eYGKjIWBgIGGh4F6fIOGhYJ9eXmAhIWFgn99e3+Gi42JhYF9eHV3e317fYGChYSAgIKGg4OHhoJ8e358foSGh4WAfX18e358enp9f3+AgICAfX+AfHd3eHh7gIJ+e3t+g4V/eHV4foWKhn55en6Bfnx+fn1/f3t6f4J/gIWIh4R+en1+fX6Ch4eCfHl5eXp/hoV/e32DhoOEhYN9eHd5fn9/f4CAgYF/fHx+gISIhYGDhIKEhoWDgoF/fn59gYSAe3x8foF9e3+Bg4N+fYOFg4KAe3d2enx9f316e4CAfHt+hISAgYKChIODgYCAe3l7e36AgIKEhoiHhoODgn9+gIOEgn98fYKDgYB/fXx+f4CDh4iGg35+goWFgoGBgX9+f4J/fX1/g4WDfXl8fXx6eHt/gYOFh4eBfoGCgoODf36ChIaEgX15d3l9fXt8fYCDhIWFhIB+fn19f4CDhIB+fH1/gIGAgICBgoOEg4KBgYKBgIKEg4B9e32Af3x6e36BgICAgH+BgoGBg4SCgICAgX+BhIWEg4B7eXp+f39/gIODgn99f4KEhIN/foGCgIGAgIKCf319fH2BhISDgoB+fX1/goOBgYOEgX58e36BgX99fH6AgH6AgYB9fH19foCBgH5/fn18foKFhIOBfXx9fn9/fn58f4OFhYJ+fH+ChIJ+fH6Cg4SEg4ODgHx6e36ChIF/fnx7fICCgoKDgYF/f4CBgoJ/fX+AgH5+f39+fXx8fH18fH5/fnx7e319fX1+gYF/foCCgX9+fXx8fX6AgoGAgH5+fn59fHt+f39/f3+BgoB/fn+AgYGAgoJ/fn6AgH59fHx9f4GDgn9+f39+fXx+gIODgX59f4GAf39/gICCgoB+f39/f318fX9+fn+AgH9+fn9/f4B/fn5/gH9/gIGCgYKBgH9+fX1+gIGBgoF/fX1+f35+fn+BgH9+f39/f4CBgH+AgYB/foCBgYCAgICAf39/f3+AgYKCgYCAgH+AgH9/f39/f39/f4CBgYGBgICAgH9/gICAgICAgIB/f39/f4CAgH9/f4CBgYB/f4CBgYB/f4CAgIB/f4CAf39/f39/f3+AgICAgIGBgICAgIB/f39/f39/f4CAf39/gICAgH+AgH9/f39/gH9/f39/f3+AgICAgICAgIB/f39/gICAgIB/f39/f39/f39/f39/gH+AgH+AgICAf39/f39/f39/gICAgIB/fw==","stone":"gIGChoqGfXh7foKGhn54e4KGiouIhYaNj4V5d3p+h42MiIeNkpaZk3prcHyAf3x4dnuFiIF6gZGXkImFhIeOkoJubHmBf3t3dHV/h42Sko6KioyMiIV5bHCIlI2CgYmMg3uBj5SOiH92c3N0cGtrbnF7hImNjYF4dHNybmxxeH+JjHxqaniAd2xtd31+fISQkoN3cG1zhY6Edm9rbHF2dnJye4J9cXCCj4yDfXd2hJOWkY6Qko+Hg4B/eW9ueYKIjY6QkIZ8dW1qa21vcnR9g4eKi42NiIKBhIV+d3uKkIBwb3V6fHyAhoeFg4aLjpKSiH59goR4bXB7f3VtbG9xb21wdHqGi4aAf4OFhYSGjI2De3t+f318gYiGfHd/iYRzbX+QkIeBe3iAi4+PjYuKi4uMiYaCe3l9gYKBgYKDgoF/eHWBj5GKhYmPkIyIe3J0e4GLkIp/foaNj4+Je3R4fnxzbm9xe4qLe293hYuLiH93dXh7f4KAe3p/g4N/fXp6goyPjot9cW9ydXh5f4iLgXh0c3aCioqHgnhzcnJ5hot+cG90d3Z0dXh5eXl/homHhX54eX+CfXl6foB+fH6Cg398gIiGenN5goaGhYiLiYSAd3J1fICEhoaGhoWFiY6PjoyCenl7foSIiIeGhYWEhISDg4iMh3lzfIaKjIl9dXmBhH98f4WGhIF/fYGJjIR9eHR0en9+enqBh4mKhHdxeoWKjIuFgIGEhoaGgXt5fH55c3R6fXp1d32ChoiDeXiCi4h/e3h4gIiHf3p/hYJ4c3qBhYiJiouKiIV+eXl6fYOGiImGfnyCh4aCgH9/f358d3R1eHt/gYGAf359fHx9fn6AgYGBgH9+fn6Bh4mEfnt6e4GGh4eGgn98enl7fHx7enl5eXh4eHmAhYN9e36BgoOBenZ6f4KEhYeJg3l2e4CAfX6FioR7eX+Dgn99e3yCiImJiIeGgn19goWAenqCh4R+foGDgX59fH2EiIWAfXt6enp7f4B8eHl+gX56eHl7gISFhIJ8eXyAgoODgX9/gIGDhYWDgX58fX5+fHp6en2DhX94eX+CfXl4ent+gIKEg398foGCgX97eHqAgn56en1+f4CBg4SGhoB5d3l6enp6fH1/gICBgoGAfnx7eXl9goJ+fICDhIKBgICAgYF/fX19foKEhYaEf32AhIN+fHx9gISEf3t7fH18e36CgXx6fH+BhIR/e3t+gICAgICBg4OAfH2ChISCgH9/gIGAfn1+foGDhIKBgH9+fHx+gIKDg4KAf318fHt8fX6AgoGAgIGBgYF/fn1/gH9+foGDgn9+fn19fH2BgoGAfn19gYOCgX99fHx9fn5/gIKCgYGAgH9+fn19foCAfnx+gIB/fX5+fn5+fn9/fn6BgoF+fX6AgYGCgYF/fn5/gIGCgX9+fn5+fn6AgYGBgH5+f4GBf35/gIB+fn5/gIGAf35+f39/fn9/f39/f39/f39/f3+AgH9/gICAf39/f39/gICAgH9/f4CAf39/f39/f4CAgICAf39/gICAgIB/gICAgH9/f38=","frost":"f3+Afnp9foR/e4WBhXt/fYJ/iIR7fHl8gYB8iX5/gX+Dh4WCg3l+hoJ9h3x1f3t3eYB8g4SDeXt/g4F7hX+CeHx9fXp+fYeGgYV9eHiCgIN7e3iCioCBg4WGdoSAhH14f4F4gH+AgnmCeIB7fH6EgoCIe3l3g4eChoB8fYOHf359fIJ+gn2CeH6AgIOBgX6Ig3qGfn+BfnuBhn19eXuCe3mBhX16gYeFh358h4B7fH2Bfoh9gISBiH2Cfoh5f3yHd4J7fnx/eYl7fn6Fg4V+gH6BfXqBf399hnyEhnl7iYZ2eX+CeoR4eXuDhoiCfH+EfIOIhIGDfIR7gYV8f3+DgoWHeXiDdoZ/fnuHfnt+hoKEeoCDgX6DgYGFf358fHR3f4uGg4N+goCFen6CgHaAgXqAgH+Hd3p6e4V7fXeIfICAgoF8gYN/hX2CgISAfoF5hYiCe3x9e3yBgHyBhYKAf316eXmLfneAfH9/hYGEeH10fot8gXmBg395hYCCg398eX93fIV+iYCBhYCDhYp/g35/e3l/gIN+d3iBgIR+gnt8f4B9hYCGgIOFenuIhIF7e3l6gYOAg3p7fH+DgoaEgnt7hoN7gYKEf31+eX6Ff32Bg4h8goOEenx6en1/gX96g358e4N7f32HhH1/e3t6gX6DfoZ6hoeBf3uEhYGBf4GDhIaFf316g4J9foZ6fHl7f316e35/f3t9fYCIiYZ/foB9gYF8f4OFgoB+goF7eoKFgIJ7hIN/fIh/e4Z7fnh+fX+HfH9/fYB9gn+AhHx+h4B9fIB7gH6BfIaCeoOBen16g4F/eX98gYV+hoF7fH2Fhnl6fHp4hn2EfX14g4GCf3p/hnt/goV/hXqChYKCf4KAg32Bgn6Fhn99gX16e36AhX2ChYN7g4N8fn+AfIV7eoV8gH16hX5+g3t8hnyEhH97gX58gHqEen6HgXl/f4B+g4aDf4GDg4J8eHyAhIOBg4KAf4N7fYN6fnx8fX17eYGCf4aFf31/hXt/g36Af4R8fnuAfoF9enl7foF5gYSGhHyBhIR8enqCf4WBgoWGfIJ8gIKEgXx6fIZ9f3+Cf32GfICDgX9+hH99fYJ8fHqDgnx9eoSAfIB+f4CAiH99eXx8hYOCfHp+fYR+foWFg32Dg4CBgXyAe3p+gYKBhn9/gYN8fn5+fX9+gYN7fICAgH97eX97h4F8foCAfH9+g4Z7fYGAfICCh4WCfYWBf4KDgH+EgnuFgH1/fYB+f4KCfYJ+g4OCeX19gn56gIF9hYF7gIGDgYCAgIR+goN9f4N/fX18eoB7gH1+fICCgIF6g4GDgYB8fIB/gn98foODf4F8gYF8f32BfoKAgX+BeX18f39/hIN/f4B6goB9fX9+f4CAgH2CgH97gnyCg36Cg4B+fn1/hH+DgX6BfYCBfIF9gH2Ae4N+foGBfn99gIN/f4N/foCAgH2DgoCBfoJ/f4SBe358foN/gXt9f4ODfn97gX1/g39+gYGAf4J+e32AgICBgYB7gYGCf4J/f4J+gH+Bg4CDf4F/gn9/g36Af4CBfYF+fn9+f32Cf4GBgH5/gYB/f4N8gIB8gIKEfn9+gX9+g4B9fYKAg36DfoGBgYJ9fnx+g3x/goCAgoKCgH2AgIF+f39+gH6AfH+Cf36Df39+f4GAgIGAgIB+f31+goF9foF+f4GAg31/gX19f4GDfoB9gICAfoF8gX6Af3+Bfn+AgYF/gn9/f4B/gn57gHyAf359g3yCfn5+f35+gX5/foCBgH2BgIF/gX6Bf3+CgIJ/fYB/f3+AgYB9gIB+gIN/foB/gH+BgH1+gICAf36Af3+AgnyAgICDgH+AgX98f39/foCAgYN+fn+AgX+BgH+AgH99gH99fYCAgIB/f4B9f4CDgYF/gX5/f36Bg4F+gn+AgH+AgX+Cf3+Afn5/gH+AgH6AfoCBf4B/gIGBf36Af4B+fX9+fn5/foCAf3+Af3+AgX99f4CAgoGAgoCBgX6AgX9+f39/f4B9gIGAgH+AgIGAfn1/gIB9gH+Af4B/f4CAgYB/f3+BgIB/gH+Afn9+gIF/f4B/gH9/f35+f36AgYCAgICAf4B/gICAf4B+gH+AgIGAgYB/fn+AgIB/f4B/gH6Af4CAf4B/f35+f4B/gIB/gH+BgH+Af4B/f3+Af4CAfoCAgIF/f4CAgYF/gH5/gIB/gIB+f39/gH+AgH9/gH9/f39/gIB/gH9/f4B/f3+AgICAgH+AgICAf39/f4B/gICAf3+AgICAf4CAgH9/gH9/f39/f39/gH+AgH+AgIB/gH9/f3+Af39/gICAf39/f4B/gH+AgIB/f4B/f4CAf4B/gIB/f39/gH9/gICAf39/gH+Af3+AgICAf4B/f3+AgIB/f4CAf4CAgH9/f4CAgH+Af3+AgH9/gH9/f3+AgIB/f3+Af4CA","bell":"gICAgICAgIGBgYGCgoKCgoKCgoKCgYGAgH9/fn19fHt7enp5eXl4eHl5eXp6e3x9fn+AgYKEhYaHiImKiouLi4uLioqJiIeFhIKAf317eXh2dXNycXBwb29wcHFyc3R2eHp8foCDhYeKjI6PkZKTlJSUlJOSkZCOjImHhIF+fHl2c3FubGppaGdmZmdnaWpsbnF0d3p9gYSIi46RlJaZmpydnZ2dnJuZlpSRjoqGgn56dnJvbGlmZGJhYF9fYGFjZWdqbnF1eX2BhYmMkJOWmZudnp+goJ+enJqYlZKOioeDfnp3c29saWZkYmFgX19gYWNlZ2ptcXR4fICEiIyQk5aZm52en6Cgn56cmpiVko6Lh4N/e3dzb2xpZmRiYWBfX2BhY2Vnam1xdHh8gISIjJCTlpmbnZ6foKCfnpyamJWSj4uHg397d3NwbGlmZGJhYF9fYGFjZWdqbXB0eHyAhIiMj5OWmZudnp+goJ+enZuYlZKPi4eDf3t3c3BsaWdkYmFgX19gYWJkZ2ptcHR4fICEiIuPk5aYm52en6Cgn56dm5iWko+Lh4SAe3h0cG1pZ2RiYWBfX2BhYmRnaWxwdHd7f4OHi4+SlZibnZ6foKCfnp2bmJaTj4yIhIB8eHRwbWpnZGJhYF9fYGFiZGZpbHBzd3t/g4eLj5KVmJqcnp+goJ+enZuZlpOPjIiEgHx4dHBtamdlY2FgX19gYWJkZmlsb3N3e3+Dh4uOkpWYmpyen6Cgn56dm5mWk5CMiISAfHh0cW1qZ2VjYWBfX2BhYmRmaWxvc3d7f4OHi46SlZianJ6foKCfnp2bmZaTkIyIhYF8eHVxbWpnZWNhYF9fYGFiZGZpbG9zdnp+goaKjpGVmJqcnp+goJ+enZuZlpOQjYmFgX15dXFuamhlY2FgX19gYGJkZmhrb3J2en6ChoqOkZSXmpyen6Cgn5+dm5mXlJCNiYWBfXl1cW5raGVjYWBfX2BgYmNmaGtvcnZ6foKGio6RlJeanJ6fn6Cfn52cmZeUkY2JhYF9eXVybmtoZWNhYGBfYGBiY2Zoa25ydnp+goaKjZGUl5qcnZ+foJ+fnZyal5SRjYmGgn15dnJua2hlY2JgYF9gYGJjZWhrbnJ1eX2BhYmNkZSXmZydn5+gn5+enJqXlJGNioaCfnp2cm5raGZjYmBgX2BgYWNlaGtucXV5fYGFiY2QlJeZnJ2fn6Cgn56cmpeUkY6KhoJ+enZyb2toZmRiYGBfX2BhY2Voa25xdXl9gYWJjZCUl5mbnZ+foKCfnpyal5WRjoqGgn56dnJvbGlmZGJhYF9fYGFjZWdqbnF1eX2BhYmMkJOWmZudnp+goJ+enJqYlZKOioeDfnp3c29saWZkYmFgX19gYWNlZ2ptcXR4fICEiIyQk5aZm52en6Cgn56cmpiVko6Lh4N/e3dzb2xpZmRiYWBfX2BhY2Vnam1xdHh8gISIjJCTlpmbnZ6foKCfnpyamJWSj4uHg397d3NwbGlmZGJhYF9fYGFjZWdqbXB0eHyAhIiMj5OWmZudnp+goJ+enZuYlZKPi4eDf3t3c3BsaWdkYmFgX19gYWNlZ2ptcHR4fICEiIuPkpWYm5yen5+fn56cmpiVko+Lh4OAfHh0cG1qZ2VjYWBgYGBhY2Vnam1wdHd7f4OHi4+SlZianJ6fn5+fnpyamJWSj4uIhIB8eHRxbWpnZWNiYWBgYGFjZWdqbXB0d3t/g4eLjpKVl5qcnZ6fn56enJqYlZKPi4iEgHx4dHFuamhlY2JhYGBhYmNlZ2ptcHN3e3+Dh4qOkZSXmZudnp+fnp2cmpiVko+MiISAfHh1cW5raGZkYmFhYWFiY2Vnam1wc3d7f4OGio6RlJeZm52enp6enZyamJWSj4yIhIB9eXVybmtoZmRjYWFhYWJjZWdqbXBzd3t+goaKjZGUlpmbnJ2enp6dnJqYlZKPjIiFgX15dXJvbGlmZGNiYWFhYmNlZ2ptcHN3en6ChomNkJOWmJqcnZ6enp2bmpiVko+MiIWBfXl2cm9saWdlY2JhYWJiZGVnam1wc3d6foKFiY2Qk5aYmpydnZ6dnZuamJWSj4yJhYF9enZzb2xqZ2VkYmJiYmNkZWdqbXBzdnp+gYWJjJCTlZiam5ydnZ2cm5qYlZKPjImFgX56dnNwbWpoZmRjYmJiY2RlZ2ptcHN2en6BhYmMj5KVl5mbnJ2dnZybmZeVko+MiYWCfnp3c3BtamhmZGNiYmJjZGZoam1wc3Z6fYGFiIyPkpWXmZucnJ2dnJuZl5WSkIyJhYJ+end0cG1raGZlY2NiY2NkZmhqbW9zdnp9gYSIi4+SlJeZmpucnJycm5mXlZKQjImGgn57d3RxbmtpZ2VkY2NjY2RmaGptb3N2eX2BhIiLjpGUlpiam5ycnJyamZeVkpCMiYaCf3t4dHFua2lnZWRjY2NkZWZoam1vcnZ5fYCEh4uOkZSWmJqbnJycm5qZl5WSkI2JhoJ/e3h0cW5saWdmZGRjY2RlZmhqbW9ydnl9gISHio6Rk5aYmZqbnJybmpmXlZKQjYmGg398eHVyb2xqaGZlZGNkZGVmaGptb3J2eXyAg4eKjZCTlZeZmpubm5uamZeVkpCNioaDf3x4dXJvbGpoZmVkZGRkZWZoam1vcnV5fICDhoqNkJKVl5mam5ubm5qYl5WSkI2KhoOAfHl1cm9tamhnZWRkZGRlZ2hqbW9ydXl8f4OGiY2QkpWXmJmam5uampiXlZKQjYqGg4B8eXZzcG1raWdmZWRkZWZnaGptb3J1eHx/g4aJjI+SlJaYmZqbm5qZmJeVkpCNioeDgH15dnNwbWtpZ2ZlZWVlZmdpam1vcnV4fH+ChomMj5GUlpiZmpqampmYlpWSkI2Kh4OAfXl2c3Bua2loZmVlZWVmZ2lrbW9ydXh7f4KFiYyPkZOWl5mZmpqamZiWlJKQjYqHhIB9end0cW5samhnZmVlZWZnaWttb3J1eHt/goWIi46Rk5WXmJmampmZmJaUkpCNioeEgX16d3RxbmxqaGdmZWVmZmdpa21vcnV4e36ChYiLjpCTlZeYmZmZmZmXlpSSkI2Kh4SBfXp3dHFvbGppZ2ZmZmZnaGlrbW9ydXh7foGFiIuOkJKUlpiYmZmZmJeWlJKQjYqHhIF+e3d0cm9ta2loZ2ZmZmdoaWttb3J1eHt+gYSHio2QkpSWl5iZmZmYl5aUkpCNioeEgX57eHVyb21raWhnZmZmZ2hpa21vcnV4e36BhIeKjY+SlJaXmJiZmZiXlpSSkI2Kh4SBfnt4dXJwbWtqaGdnZmdnaGlrbW9ydXh7foGEh4qNj5GTlZeYmJiYmJeVlJKQjYqIhYF+e3h1c3BubGppaGdnZ2doamttb3J1d3p9gYSHioyPkZOVlpeYmJiXl5WUkpCNioiFgn97eHZzcG5samloZ2dnaGhqa21vcnR3en2Ag4aJjI+Rk5WWl5iYmJeWlZSSkI2LiIWCf3x5dnNxbmxraWhoZ2doaWprbW9ydHd6fYCDhomMjpCSlJaXl5iYl5aVlJKQjYuIhYJ/fHl2c3FvbWtqaWhoaGhpamxtb3J0d3p9gIOGiYuOkJKUlZaXl5eXlpWTkpCNi4iFgn98eXZ0cW9ta2ppaGhoaGlqbG1wcnR3en2Ag4aIi46QkpSVlpeXl5eWlZOSj42LiIWCf3x5d3Ryb21samloaGhpaWpsbnBydHd6fYCDhYiLjZCSk5WWlpeXlpaVk5GPjYuIhYKAfXp3dHJwbmxraWloaGlpa2xucHJ0d3p9f4KFiIuNj5GTlJWWlpaWlZSTkY+Ni4iFg4B9end1cnBubGtqaWlpaWprbG5wcnR3enx/goWIio2PkZOUlZaWlpaVlJORj42LiIWDgH16d3VycG5ta2ppaWlpamtsbnBydHd5fH+ChYeKjI+RkpSVlZaWlpWUk5GPjYuIhoOAfXp4dXNxb21samppaWlqa2xucHJ0d3l8f4KEh4qMjpCSk5SVlpaVlZSTkY+Ni4iGg4B9e3h1c3FvbWxramppamprbG5wcnR3eXx/gYSHiYyOkJKTlJWVlZWVlJKRj42LiIaDgH57eHZzcW9ubGtqampqa2ttbnBydHd5fH+BhIeJi46QkZOUlZWVlZSTkpGPjYuIhoOBfnt5dnRycG5sa2tqamprbG1ucHJ0d3l8foGEhomLjY+RkpOUlZWVlJOSkY+Ni4iGg4F+e3l2dHJwbm1sa2pqamtsbW5wcnR3eXx+gYSGiYuNj5GSk5SUlZSUk5KRj42LiIaDgX58eXd0cnBvbWxra2tra2xtb3BydHd5fH6Bg4aIi42PkJKTlJSUlJSTkpCPjYuIhoSBfnx5d3VycG9tbGtra2trbG1vcHJ0dnl7foGDhoiKjI6QkZOTlJSUlJOSkI+Ni4mGhIF/fHl3dXNxb25tbGtra2xsbW9wcnR2eXt+gIOFiIqMjpCRkpOUlJSTk5GQj42LiYaEgX98end1c3Fvbm1sbGtrbG1ub3BydHZ5e36Ag4WIioyOj5GSk5OUk5OSkZCOjYuJhoSBf3x6eHVzcXBubWxsbGxsbW5vcXJ0dnl7foCDhYeKjI2PkJKSk5OTk5KRkI6Ni4mGhIJ/fXp4dnRycG9ubWxsbGxtbm9xcnR2eXt9gIKFh4mLjY+QkZKTk5OTkpGQjo2LiYaEgn99enh2dHJwb25tbGxsbW1ub3FydHZ5e32AgoWHiYuNjpCRkpKTk5KSkZCOjYuJhoSCf317eHZ0cnFvbm1tbGxtbW5vcXN0dnl7fYCChIeJi42OkJGSkpKSkpKRj46Mi4mGhIKAfXt5dnRzcXBubm1tbW1ubnBxc3R2eXt9f4KEhoiKjI6PkJGSkpKSkZCPjoyLiYaEgoB9e3l3dXNxcG9ubW1tbW5vcHFzdHZ4e31/goSGiIqMjo+QkZKSkpKRkI+OjIuJh4SCgH17eXd1c3Jwb25ubW1tbm9wcXN0dnh7fX+BhIaIioyNj5CRkZKSkZGQj46MiomHhIKAfnt5d3VzcnFvbm5ubW5ub3Bxc3V2eHt9f4GDhoiKi42Oj5CRkZGRkZCPjoyKiYeEgoB+fHl3dnRycXBvbm5ubm5vcHFzdXZ4e31/gYOFh4mLjY6PkJGRkZGQkI+NjIqJh4WCgH58enh2dHJxcG9ubm5ub29wcnN1dnh6fX+Bg4WHiYuMjo+QkJGRkZCPj42MiomHhYKAfnx6eHZ0c3Fwb29ubm5vcHFyc3V2eHp8f4GDhYeJi4yNj4+QkJGQkI+OjYyKiIeFg4B+fHp4dnVzcnFwb29vb29wcXJzdXd4enx/gYOFh4mKjI2Oj5CQkJCQj46NjIqIh4WDgX58enh3dXNycXBvb29vb3BxcnN1d3h6fH6Ag4WGiIqMjY6Pj5CQkJCPjo2MioiHhYOBf317eXd1dHJxcHBvb29wcHFyc3V3eHp8foCChIaIiouNjo+PkJCQj4+OjYuKiIeFg4F/fXt5d3V0c3FxcHBvb3BwcXJ0dXd4enx+gIKEhoiJi4yNjo+Pj4+Pjo6Ni4qIh4WDgX99e3l3dnRzcnFwcHBwcHFxcnR1d3h6fH6AgoSGiImLjI2Oj4+Pj4+OjYyLioiHhYOBf317eXh2dHNycXFwcHBwcXJzdHV3eHp8foCChIaHiYqMjY6Oj4+Pj46NjIuKiIeFg4F/fXt6eHZ1c3JxcXBwcHFxcnN0dXd4enx+gIKEhYeJiouMjY6Oj4+Ojo2Mi4qIh4WDgX99fHp4dnV0c3JxcXBxcXFyc3R1d3h6fH6AgoOFh4iKi4yNjo6Ojo6OjYyLioiHhYOBf358enh3dXRzcnFxcXFxcXJzdHV3eHp8foCBg4WHiIqLjI2Njo6Ojo2NjIuJiIeFg4GAfnx6eXd2dHNycnFxcXFycnN0dnd4enx+f4GDhYaIiYuMjI2Ojo6OjY2Mi4mIhoWDgYB+fHp5d3Z1dHNycnFxcnJzc3R2d3l6fH5/gYOFhoiJiouMjY2Ojo2NjIuKiYiGhYOBgH58e3l3dnV0c3JycnJycnN0dXZ3eXp8fX+Bg4SGh4mKi4yNjY2NjY2Mi4qJiIaFg4KAfnx7eXh2dXRzc3JycnJyc3R1dnd5enx9f4GDhIaHiYqLjIyNjY2NjIyLiomIhoWDgoB+fXt5eHd1dHRzcnJycnNzdHV2d3l6fH1/gYKEhYeIiYqLjIyNjY2MjIuKiYiGhYOCgH59e3p4d3Z1dHNzcnJzc3N0dXZ3eXp8fX+BgoSFh4iJiouMjIyNjIyLi4qJiIaFg4KAfn17enh3dnV0c3Nzc3NzdHR1dnd5enx9f4CChIWGiImKi4uMjIyMjIuLiomIhoWDgoB/fXx6eXd2dXR0c3Nzc3N0dXV2eHl6fH1/gIKDhYaHiYqKi4yMjIyMi4qKiYeGhYOCgH99fHp5eHZ2dXR0c3NzdHR1dnd4eXp8fX+AgoOFhoeIiYqLi4yMjIuLiomIh4aFg4KAf318enl4d3Z1dHR0c3R0dHV2d3h5enx9f4CCg4SGh4iJiouLi4uLi4uKiYiHhoWDgoB/fXx7eXh3dnV1dHR0dHR0dXZ3eHl6fH1/gIGDhIaHiImKiouLi4uLioqJiIeGhYOCgH9+fHt6eHd2dnV0dHR0dHV1dnd4eXp8fX6AgYOEhYeIiYmKiouLi4uKiomIh4aFg4KBf358e3p5eHd2dXV0dHR1dXV2d3h5enx9foCBg4SFhoeIiYqKiouLioqJiYiHhoWDgoF/fn17enl4d3Z1dXV1dXV1dnZ3eHl6fH1+gIGChIWGh4iJiYqKioqKiomJiIeGhYOCgX9+fXt6eXh3dnZ1dXV1dXV2d3d4eXp8fX6AgYKEhYaHiImJioqKioqKiYiIh4aEg4KBf359fHp5eHd3dnZ1dXV1dnZ3eHh5e3x9foCBgoOFhoeHiImJioqKiomJiIeHhoSDgoGAfn18e3p5eHd2dnZ1dXZ2dnd4eXp7fH1+f4GCg4SFhoeIiYmJioqJiYmIh4aFhIOCgYB+fXx7enl4d3d2dnZ2dnZ3d3h5ent8fX5/gYKDhIWGh4iIiYmJiYmJiIiHhoWEg4KBgH59fHt6eXh3d3Z2dnZ2dnd3eHl6e3x9fn+BgoOEhYaHh4iIiYmJiYmIiIeGhYSDgoGAf318e3p5eHh3d3Z2dnZ3d3d4eXp7fH1+f4CCg4SFhoaHiIiJiYmJiIiHh4aFhIOCgYB/fnx7enl5eHd3d3Z2d3d3eHh5ent8fX5/gIGDhIWFhoeHiIiIiIiIiIeHhoWEg4KBgH9+fXx7enl4eHd3d3d3d3d4eXl6e3x9fn+AgYKDhIWGh4eIiIiIiIiHh4aGhYSDgoGAf359fHt6eXl4eHd3d3d3eHh5eXp7fH1+f4CBgoOEhYaGh4eIiIiIiIeHhoaFhIOCgYB/fn18e3p5eXh4d3d3d3h4eHl6ent8fX5/gIGCg4SFhYaHh4eIiIiHh4eGhYWEg4KBgH9+fXx7enp5eHh4eHh4eHh5eXp6e3x9fn+AgYKDhIWFhoaHh4eHh4eHhoaFhYSDgoGAf359fHt7enl5eHh4eHh4eHl5ent7fH1+f4CBgoOEhIWGhoeHh4eHh4eGhoWEhIOCgYB/fn18fHt6enl5eHh4eHh5eXl6e3t8fX5/gIGCg4OEhYWGhoeHh4eHhoaFhYSEg4KBgH9+fX18e3p6eXl5eHh4eXl5enp7fHx9fn+AgYKCg4SFhYaGhoaHh4aGhoWFhIODgoGAf35+fXx7e3p6eXl5eXl5eXl6ent8fH1+f4CBgYKDhISFhYaGhoaGhoaGhYWEg4OCgYB/f359fHt7enp5eXl5eXl5enp6e3x8fX5/gICBgoODhIWFhYaGhoaGhoWFhISDg4KBgH9/fn18fHt7enp5eXl5eXl6ent7fH19fn+AgIGCg4OEhIWFhYaGhoaFhYWEhIOCgoGAf39+fX18e3t6enp5eXl6enp6e3t8fX1+f4CAgYKCg4SEhYWFhYWFhYWFhYSEg4KCgYCAf359fXx7e3t6enp6enp6ent7fHx9fX5/f4CBgoKDg4SEhYWFhYWFhYWEhIODgoKBgIB/fn19fHx7e3p6enp6enp6e3t8fH19fn9/gIGBgoODhISEhYWFhYWFhISEg4OCgoGAgH9+fn18fHt7e3p6enp6ent7e3x8fX1+f3+AgYGCgoODhISEhYWFhYSEhISDg4KBgYCAf35+fX18fHt7e3t7ent7e3t8fHx9fn5/f4CBgYKCg4OEhISEhISEhISEg4OCgoGBgIB/fn59fXx8fHt7e3t7e3t7e3x8fX1+fn9/gICBgoKDg4OEhISEhISEhIODg4KCgYGAgH9/fn19fXx8fHt7e3t7e3t8fHx9fX5+f3+AgIGBgoKDg4OEhISEhISDg4ODgoKBgYCAf39+fn19fHx8fHt7e3t7fHx8fH19fn5/f4CAgYGCgoODg4ODhISEg4ODg4KCgoGBgIB/f35+fX19fHx8fHx8fHx8fHx9fX1+fn9/gICBgYKCgoODg4ODg4ODg4ODgoKCgYGAgH9/fn5+fX19fHx8fHx8fHx8fX19fn5+f3+AgIGBgYKCgoODg4ODg4ODg4KCgoGBgYCAf39+fn59fX19fHx8fHx8fH19fX1+fn5/f4CAgIGBgoKCgoODg4ODg4OCgoKCgYGBgIB/f39+fn59fX19fHx8fHx9fX19fX5+fn9/gICAgYGBgoKCgoKCgoKCgoKCgoGBgYCAgH9/f35+fn19fX19fX19fX19fX1+fn5/f3+AgICBgYGBgoKCgoKCgoKCgoKCgYGBgICAf39/fn5+fn19fX19fX19fX19fn5+fn9/f4CAgICBgYGBgoKCgoKCgoKCgoGBgYGAgIB/f39/fn5+fn59fX19fX19fX5+fn5+f39/gICAgIGBgYGBgYKCgoKCgoGBgYGBgICAgH9/f39+fn5+fn5+fX19fn5+fn5+fn9/f3+AgICAgIGBgYGBgYGBgYGBgYGBgYGAgICAf39/f39+fn5+fn5+fn5+fn5+fn5+f39/f4CAgICAgIGBgYGBgYGBgYGBgYGBgICAgICAf39/f39+fn5+fn5+fn5+fn5+fn9/f39/f4CAgICAgIGBgYGBgYGBgYGBgYCAgICAgIB/f39/f39/fn5+fn5+fn5+fn9/f39/f39/gICAgICAgICAgYGBgYGBgICAgICAgICAgH9/f39/f39/f39/f39/f39/f39/f39/f3+AgICAgICAgICAgICAgICAgICAgICAgICAf39/f39/f39/f39/f39/f39/f39/f39/f4CAgICAgICAgICAgICAgICAgICAgICAgIB/f39/f39/f39/f39/f39/f39/f39/f39/gICAgICAgICAgICAgICAgICAgICAgICAgH9/f39/f39/f39/f39/f39/f39/f39/f3+AgICAgICAgICAgICA","chime":"gICAgICAgICAf39+fn5+fn5+fn5+fn19fX19fX19fX18gYODg4ODg4ODgXt7e3t7e3t7e3t7enp6enp6enp6enp5fYaGhoaGhoaGhnl4eHh4eHh4eHh4d3d3d3d3d3d3d3d3d4eIiIiIiIiIiH53d3d3d3d3d3d3d3d3d3d3d3d3d3d3d4GIiIiIiIiIiIV3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3qIiIiIiIiIiIh6d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3eFiIiIiIiIiIiBd3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d+iIiIiIiIiIiHd3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d4iIiIiIiIiIiIfHd3d3d3d3d3d3d3d3d3d3d3d3d3d3d3g4iIiIiIiIiIg3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3fIiIiIiIiIiIiHh3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d4eIiIiIiIiIiH53d3d3d3d3d3d3d3d3d3d3d3d3d3d3d4GIiIiIiIiIiIV3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3qIiIiIiIiIiIh6d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3eFiIiIiIiIiIiBd3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d+iIiIiIiIiIiHd3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d4iIiIiIiIiIiIfHd3d3d3d3d3d3d3d3d3d3d3d3d3d3d3g4iIiIiIiIiIg3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3fIiIiIiIiIiIiHh3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d4eIiIiIiIiIiH53d3d3d3d3d3d3d3d3d3d3d3d3d3d3d4GIiIiIiIeHh4R4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHuHh4eHh4eHh4d7eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHiEh4eHh4eHh4eAeHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh/h4eHh4eHh4eGeHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh5h4eHh4eHh4eHfXh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4goeHh4eHh4eHgnh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4fYeHh4eHh4eHh3l4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eIaHh4eHh4eHh394eHh4eHh4eHh4eHh4eHh4eHh4eHh4eICHh4eHh4eHh4R4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHuHh4eHh4eHh4d7eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHiEh4eHh4eHh4eAeHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh/h4eHh4eHh4eGeHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh5h4eHh4eHh4eHfXh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4goeHh4eHh4eHgnl5eXl5eXl5eXl5eXl5eXl5eXl5eXl5fYaGhoaGhoaGhnl5eXl5eXl5eXl5eXl5eXl5eXl5eXl5eYaGhoaGhoaGhn95eXl5eXl5eXl5eXl5eXl5eXl5eXl5eYCGhoaGhoaGhoR5eXl5eXl5eXl5eXl5eXl5eXl5eXl5eXuGhoaGhoaGhoZ7eXl5eXl5eXl5eXl5eXl5eXl5eXl5eXmEhoaGhoaGhoaAeXl5eXl5eXl5eXl5eXl5eXl5eXl5eXl/hoaGhoaGhoaFeXl5eXl5eXl5eXl5eXl5eXl5eXl5eXl6hoaGhoaGhoaGfXl5eXl5eXl5eXl5eXl5eXl5eXl5eXl5goaGhoaGhoaGgnl5eXl5eXl5eXl5eXl5eXl5eXl5eXl5fYaGhoaGhoaGhnp5eXl5eXl5eXl5eXl5eXl5eXl5eXl5eYWGhoaGhoaGhn95eXl5eXl5eXl5eXl5eXl5eXl5eXl5eYCGhoaGhoaGhoN5eXl5eXl5eXl5eXl5eXl5eXl5eXl5eXyGhoaGhoaGhoZ8eXl5eXl5eXl5eXl5eXl5eXl5eXl5eXmDhoaGhoaGhoaAeXl6enp6enp6enp6enp6enp6enp6enp/hYWFhYWFhYWFenp6enp6enp6enp6enp6enp6enp6enp6hYWFhYWFhYWFfXp6enp6enp6enp6enp6enp6enp6enp6goWFhYWFhYWFgnp6enp6enp6enp6enp6enp6enp6enp6fYWFhYWFhYWFhXt6enp6enp6enp6enp6enp6enp6enp6eoSFhYWFhYWFhX96enp6enp6enp6enp6enp6enp6enp6eoCFhYWFhYWFhYN6enp6enp6enp6enp6enp6enp6enp6enyFhYWFhYWFhYV8enp6enp6enp6enp6enp6enp6enp6enqDhYWFhYWFhYWAenp6enp6enp6enp6enp6enp6enp6enp/hYWFhYWFhYWEenp6enp6enp6enp6enp6enp6enp6enp7hYWFhYWFhYWFfnp6enp6enp6enp6enp6enp6enp6enp6gYWFhYWFhYWFgXp6enp6enp6enp6enp6enp6enp6enp6foWFhYWFhYWFhXt6enp6enp6enp6enp6enp6enp6enp6eoSFhYWFhYWFhX96enp6ent7e3t7e3t7e3t7e3t7e3t7e4CEhISEhISEhIN7e3t7e3t7e3t7e3t7e3t7e3t7e3t7e3yEhISEhISEhIR8e3t7e3t7e3t7e3t7e3t7e3t7e3t7e3uDhISEhISEhISAe3t7e3t7e3t7e3t7e3t7e3t7e3t7e3t/hISEhISEhISEe3t7e3t7e3t7e3t7e3t7e3t7e3t7e3t7hISEhISEhISEfnt7e3t7e3t7e3t7e3t7e3t7e3t7e3t7gYSEhISEhISEgXt7e3t7e3t7e3t7e3t7e3t7e3t7e3t7foSEhISEhISEhHx7e3t7e3t7e3t7e3t7e3t7e3t7e3t7e4OEhISEhISEhH97e3t7e3t7e3t7e3t7e3t7e3t7e3t7e4CEhISEhISEhIJ7e3t7e3t7e3t7e3t7e3t7e3t7e3t7e32EhISEhISEhIR9e3t7e3t7e3t7e3t7e3t7e3t7e3t7e3uChISEhISEhISAe3t7e3t7e3t7e3t7e3t7e3t7e3t7e3t/hISEhISEhISDe3t7e3t7e3t7e3t7e3t7e3t7e3t7e3t8hISEhISEhISEfnt7e3t7e3t8fHx8fHx8fHx8fHx8fHx8gYODg4ODg4ODgXx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8foODg4ODg4ODg3x8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fIODg4ODg4ODg398fHx8fHx8fHx8fHx8fHx8fHx8fHx8fICDg4ODg4ODg4J8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fH2Dg4ODg4ODg4N9fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHyCg4ODg4ODg4OAfHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx/g4ODg4ODg4ODfHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8g4ODg4ODg4ODfnx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8gYODg4ODg4ODgXx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8foODg4ODg4ODg318fHx8fHx8fHx8fHx8fHx8fHx8fHx8fIKDg4ODg4ODg398fHx8fHx8fHx8fHx8fHx8fHx8fHx8fICDg4ODg4ODg4F8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fH6Dg4ODg4ODg4N+fHx8fHx8fHx8fH19fX19fX19fX19fX2BgoKCgoKCgoKAfX19fX19fX19fX19fX19fX19fX19fX1/goKCgoKCgoKCfX19fX19fX19fX19fX19fX19fX19fX19goKCgoKCgoKCfn19fX19fX19fX19fX19fX19fX19fX19gYKCgoKCgoKCgX19fX19fX19fX19fX19fX19fX19fX19f4KCgoKCgoKCgn19fX19fX19fX19fX19fX19fX19fX19fYKCgoKCgoKCgn99fX19fX19fX19fX19fX19fX19fX19fYCCgoKCgoKCgoF9fX19fX19fX19fX19fX19fX19fX19fX6CgoKCgoKCgoJ+fX19fX19fX19fX19fX19fX19fX19fX2BgoKCgoKCgoKAfX19fX19fX19fX19fX19fX19fX19fX1/goKCgoKCgoKBfX19fX19fX19fX19fX19fX19fX19fX1+goKCgoKCgoKCf319fX19fX19fX19fX19fX19fX19fX19gIKCgoKCgoKCgH19fX19fX19fX19fX19fX19fX19fX19f4KCgoKCgoKCgn59fX19fX19fX19fX19fn5+fn5+fn5+foGBgYGBgYGBgX9+fn5+fn5+fn5+fn5+fn5+fn5+fn5+foCBgYGBgYGBgYF+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn6BgYGBgYGBgYF+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn6BgYGBgYGBgYGAfn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5/gYGBgYGBgYGBfn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+gYGBgYGBgYGBf35+fn5+fn5+fn5+fn5+fn5+fn5+fn5+gIGBgYGBgYGBgH5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+f4GBgYGBgYGBgX5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+foGBgYGBgYGBgX9+fn5+fn5+fn5+fn5+fn5+fn5+fn5+foCBgYGBgYGBgYB+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn+BgYGBgYGBgYF/fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn6AgYGBgYGBgYGAfn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5/gYGBgYGBgYGAfn5+fn5+fn5+fn5+fn5+fn5/f39/f39/gICAgICAgICAf39/f39/f39/f39/f39/f39/f39/f39/gICAgICAgICAgH9/f39/f39/f39/f39/f39/f39/f39/f4CAgICAgICAgH9/f39/f39/f39/f39/f39/f39/f39/f4CAgICAgICAgH9/f39/f39/f39/f39/f39/f39/f39/f4CAgICAgICAgIB/f39/f39/f39/f39/f39/f39/f39/f3+AgICAgICAgIB/f39/f39/f39/f39/f39/f39/f39/f3+AgICAgICAgICAf39/f39/f39/f39/f39/f39/f39/f39/gICAgICAgICAf39/f39/f39/f39/f39/f39/f39/f39/gICAgICAgICAf39/f39/f39/f39/f39/f39/f39/f39/gICAgICAgICAgH9/f39/f39/f39/f39/f39/f39/f39/f4CAgICAgICAgH9/f39/f39/f39/f39/f39/f39/f39/f4CAgICAgICAgH9/f39/f39/f39/f39/f39/f39/f39/f4CAgICAgICAgIB/f39/f39/f39/f39/f39/f39/fw==","gate":"f39/f39/f39/f39/f4CAgH9/f3+AgICAgIB/f35+fn9/gICAgIB/f35+fn9/f39+fn5+f35+f4GCgoKBgH9+fn5+f3+AgICBgYGBf35+f39/f35+fX1+fn+AgIKCgoGAgIGAgICBgoODg4ODhISDgoB+fX5/gYF/fXt6enp6enp6e3x9fn9/gICAgIGDg4B9foCCg4KAfX5/f35+gYSGh4aEgoB/f399e3t9gIKDgn58fH2AhIWFhIOBfXt8f4KCgH57eXd3dnh+g4SCgYCAgoWHiIaBfX+CgHx9gYSFhYSEhIWGhYOBfn5/f317foOGh4R/e3yAg4ODhIN/enl7fn9/gIGCg4OCgX56eXp7fHt7e3t7e3x8fHx6eXd1dHd8fXt5d3Z6foKDgoKBf3x6eXl6fHt7fYGDgX18fHp3d3yCh4mLjo6MioqLjY2LhX59gIB9ent8e3p3dXNydHh/g4WEgn56d3d6fHt5dnN1fIKAe3d2eHyCiI2QkI6LiISAfXp8gYeHhIKBgoSGhYN/fHt9gIOFh4mJg318f4B+fX6AgH97dXFydXl8fnx7f4WKjpCSk5OSjomEf3x2cGxqamtsbm9yd3uBhIJ6c25tdoKHhoF4cXN4eXd1d3p5dXd/h46SjoiFiYyIgX5/goeLjIuMj5COioN7d3Z5g42OiYJ9enp6d3JyeYKHh4qOkIuEfnl2dHWAi46LiIqLhXx6f4SJjIyLhn94dHN4gIaJiH91cHBwcG9tamxxeYWOkpCLhICFjY+MhXpycHJycXF1en6AfXZxb3B2foODgYWKioR/fn54cGllZnOCkJugoJ6dm5B9cXV+f3p6gYmRlZWRiHhscX2Hi42Qko+KhIKAfn2AiIyJgnhuam10gIuLgndsZ2hucnNzeHx5cm92foF/fXx9g4iGgX19fHZtZV9hcICOlpSJgYKHjI6OjIqLjod5cHV/g4F6bmZpcXVzdX+KioN4bmp1hIZ6c3uHjo+SmZyPfm1hXWVwe4OCd294h4+OiH95f4uQjYiKjod3cHyLiXxycHBrZWp3fnVrcYCFfHFtb3qJlp2ejXZsdICNlY16bGpubGZkanOAjY2DeG9qbXJ3d3RsZF1XV2BreISEeGleWVthZ2preY2coKCfnp2cmI2ChJGampSDcW18jpuinpWPk5iNe3J4g42VmZmUhXRsa250eoiXm5OGdmtyhpiipJ+XkpCSlpqgpqmno6KkpaKahnBjYWNgXF9odIKMkI6He3R7h4h8cGpobHF4gIR7a2JhZGZoZWBfZW16h5KZnJiRkZeblIiBgYOFh4+ZnZePh4F7dG5nYl9eZXqQoaqmlYR8fIGLkY2HhYmQmZ6YjYWGiIR9gI6ampSLg4CCh4qKjI+QjIZ6amBhaHeKkoZ0bnN2bmRdWV5qd4GHi46KeWhodICFhYJ+dmxkY2Voa21tbG5xeIeWn6OZgWpgYWx+iod8dXV2dHBraGViYm+AhXlpX1xeYmp7jZGJf3dyamJkd4qJfHN0en+Ch46Tk5CRlpmVjYN4bmRfZG9+j5qPe3WBj5SSiX96gYuLgXp+hIN8cmdib4SVnp6ThHVoYmRqbm5tbG14ipeamJmcmId4eYWSnKOmpp6Pg4CEjJebjHlwcnd3d4KSnqGenp6ajoJ0aWNlbH6Rk4R3e4aDdWZbV1xncnuAhIWKkpmRgXp/iI6Si3lpYWBoeIWKiYF0a2hpb3h8d29rbW1nYGJobWxpZ2due4Z/cXCBkpOLg35/i5qbkYNzaW18jZ2mmoFrYWBodH6ChIuTlYyBdGphW1haYG2CkIh1aWVqfZOcl4+IhHxvZ2tydnNze4WOk5B+a2p2f354eoCIkpqen5V+anCEjYJyaWZmZmdudX2FiYaBfXt7gYeHgXp3d3Vva2ttd4WQl5iPfnBrbnmIjoFuaG12fYKMmJyNenF1e3+BiZWeo6Wgl4+KiI+bpKipo5qQhn9/hIJ0Z3CFk5KNjpSbo6ilnJB+cGZiXltYWl1lcXt+fHhyb3WAh4eGjJWepKWTeWlnbnuIk5yej3lranCAkJSKfXl8enJpZ2pweICGi4+Tl52jpaOdj35wZWBod4GDg4OEgnt2eYCIjpKSkY2IhYKAf3x6dXFyeICIjpCOi4qMkZqglX9rXlheanBuZ2BcYHCAh4aCfXhwaGRnbHF1dXFsaGRgXFlWVFhneIudo5WAbV9cbIGOkZGVmZSHfHp+eWxiZ3SElZ+ckYeAfoiWoaemknpra3J/jI+If4GLj4d9gY6WkIZ7cm5ucX+SoKWjm5GJg394bmhrcXqDio6QiHdtdoiYoaSfl5OVmJKKhoySkImIkZuYjHxsYGBocHFwdHuDi5CNgXZva2pscH6Plo+FfHdya2VfW19reomVm5mSgm9mcoWLhXtuZFtWV2qBlaKnpJ6coKGQd2x0gYJ6dXmAgoB+f4B5a2Z2jaCrq5R3Y11dYGNpcnqAg4iRmJGDd3JyeICCd2pob3VuY15gYmBcYGx4fX19gYR/dnF2fn13c3iAipWdoKCempiboKKgnp+ino+AeHh7f4OKkpSNg319fXRnaXuOmJudoaOVf2xgW2JueH6Af3t3cWtsdn99d3JxdH6JkI+LfWpibH2GhHxxZmZwfIeOlZ2jpKGajH9/iZSZm5aMgXJlXFlZW11fY2ZoaGhpa3SBjZifln9pX15lcn+Ijot8bW58i5OWmqGik35xcHaDkZufnpeNgXBhWlpdZGpsaGVseIKGiIySlpWRjoyKgnhuYlpWVV10ipSTinhlWVRXbYeSinxvZ2ZsdHl8foOJhHZscX2FhIB/goSDf3lzcX2MjHtraG92eXuEkpqYkoNvYV1ga3uKmaSpp6GWioB8e3t8foSMkpaWlZKKeGdmd4WBcmZhYF9eX2Rrc3yAfHRxdHqBiIh+c2tmZ3B6g4eHfnJwfYuSko6FfXNoYF9ha3yKkI+QmKCdkIFwYWR3iYqAe4OPm6SopaCblpKIfXZ0dHFsanSDkZ6lpJ6Uh313d3qBiZOepqimm4NsXFNQU1deZ3B/jpmen5eLhYqUnaKjmo+HhoiDeHF0fIWNk5icmYp7d3uDi5KZoqaYgXJzfIiUmIx5c36Lh3hoXVhcZ3N+hoV7cGlmaG51d3Vya2VpeoyJeWxyf4qNjYyMjpWcnJWNhH1+iZagpqWbkIR4cXeCg3ZoanmKmqatr66ooJuZmZGDdWpjZnN/fHBkXVxogZaZkoZ6cGplZWpyfpCdk3xpY2ZmYWByiZiZkouGhIOEiZGWkYZ/g4uTmpuMdmlobXFxc3uEhHltZmVrfI2Znp2QgHJoYmFiZWtxfY+enI+DgYSLkpeSiH1uYmV0gn9yam10cmliYWVue4aQmZ+hoJaDdG9ydXRycnR5hpSalY2OlpmJc2NcW2FpcX6KkpaXkouIi5GXnZ+ViH58foaPlpaRkZednJSNkJaWi4GAiZKboZyOgHVub36OkYZ5b2pqbHB8jpqTg3h4fYOJjZSal4d1Z1xYW2Bocnl6d3Nyc3Nxb2lhX2VvfY6bm5WNgnp9i5aMd2dkaHWHlZCCc2dfXWBldYeWn6OkpKCMdGVmbXR4enh1cWxpcoOPin53fYaGf3l7gYR/en6Jk5qcloh7f46YkYFzamZwgpCYmpaOhXpvaWlsbWxpY11baHh/eW9pZ2hqbHF6g42VmpWNgnVraWxxeH5+enR0eHt4c3Fzd4GPmaCio6OiknppZ292eXl/iY6He25hWFNTWGyFmKKkl39ucYCKhXt1c3WDlJ6dl4l2Z2FiZGZmZ2lteoyWjn9wZF5aWVlYV1lgaHOAhn9zaGFdYWlvb2tpbnV3dXFtam5+j5GDdHN6f3lvbniEgndxe4uUk42EenNtamx1fn52bGVgYGJmam5wcXJ0fomKgnhxbnGClZ6akYJyanSHmKGmo52XlpiXjoN6cmxlXVtia3uOnZ2UjI2Sj35tbHqHiYN5al5jd4qSkY+SlpeRi4qOjoFwZWVpaGFcY299jJiZkIiKlZ+lp52HcmReYHSMnaWlln9qXVZVVllfaXF2enpza2ZobG9xcnd+hZCZmZGHgX6Ai5eXh3VucXZ0b2tpam53gI6dpaCVhnRma32OkYuCdWpqd4SIhX9zaGRsdoaWoZuNf3NrbHZ/f3hwbm9wbmxvd4CIjo5/bmVlamlkX2Rtc3JuaGBcZXV/eWtmb3t6bmNiaG9xcXmKmqKjoaCfn56ck4NzaWNhX11dYGNob3NvZ2V3jpaMfHd7f3dpYGBlcoWVm5mVlZaZnqGhnpuXk41+bmlyfoSDgH+AgH57dGddY3WDhHt4gpCWk42EfHVrYV9qeIKFho6YnpiMgHZva2lpb3iCkJ+knpWNhoKBgYOIjYyCd3V8ho6TlZOQh3hqZWlweH6Bf3p9ipiYjH5tXlZZX2RmZWRjZHSJmaChmYVzaGRkZmdpbG9tZV1lfJKcnJWEc2lrcHNzcGlgXWh5hIiHhYKAfXp5f4iNjIiBenZ+jpmUh4CJlp+gnIt1ZnCEko+EgoyYlYV1aWJld4uXmZaXnaOoq6unopqNgYCJkpONhHZpaHqPlId3b3BzbWRkd46bm5SMhYKHkJifo6OemY19cW90fIaOjoN2cXV7enNvfZCfpaSainx+jJiOeWpxgoyJgXdsZWJjaHeIk5iYlI6Ie2pfZneGjY+IeWljZWpsamdgWlpnd4OIioeBfHZxbWhlZWpweIGIgnVpaG53g46UlJKOioaAeXNtZ2VlaHKGl52Zko6NinlnYXGFi4N1aWFfa3uKmqaii3Fpc4GBeG5udH2Nm6KhnJKEeXV1eoaVn6aoo5WIem1laXWAhYWAdWlpeo2Qg3RwdHyMnaGOdWlteYeVnaGhoKGjnot1amxzdG9qbXV8gIGCh4yJe25vfImIfXJvcXR2d3l8f3x0bniKmZ+fmINuYV1fZGtwb2tobHV/jJiZi3l0fYmMiIKDiY+Vm5uTiYiQm56alZWZnaKmooxzaHB+hoaEg4aHf3Rtb3WAkJ6glol5aWBpeoqWm52cmpWNhoSHi5Sepqekm4RsZHOJj4JvYVlVVVVZaHqJmKKkn5iMem1teISNk5KBbF5dYWx7h46Oi4J2bGRfX2t5gX95c25sbnR5d3BpY15hdo2XjHtwbXB8jZuhoJqIc2drdXp0am6BlZ+emZiampGDd29qZ2ZlZWZncYOQjHtsZmdqaWhtfpCUhXNjV1FRVFtvhpKIdGZla25tam96hYV9c2hfWVZVWWVyfomRlJOQj5CQjYiCdmlgWlhYW15iaGxvcHB3gImNjouBdXB6h4+Lg3t0cHeFkp6mqaObkH1qX11gYmBeYGZsdHuBjpylo5uQfWtgXV5janBuZVxcY2x+kZySfnFzfIeSmpyYkoyGgYCAgHhtZ3OFk5iYl5qenpiRiYB6eX2Ae3FreI2akH1wcnyAd2prfZCSgm9hWFdhcH2MmJuOfHN4g42WmpOCcm95hIiGg4GBgXt1b2tobX6PnKWpoZB/d3Z5e3x+iJWcloqDiJGYm5uUhXZtaGZqcXh/hoqEenBmXltibHeIl52ZkY2Nj4+MiYJ5cWdfW2JtdG9mX19hZWlramReYWx4h5egmYh6eoOKhnxxZFlVWV9iYF1mfJKbmZGAbF1XWFpaWVtrf4+aoJ2ShYKMmp6ViYaMlI17aV1WVVhcYF9bWFVTU1ZZX2hyfIiSmJyeoaapoJCCeXRzcnFzgZGalIh+eXl7gYWCdmpjYGBgX2Bug5OWj4V0Y1xpfpCdo56IcGNka25qZGZwenx1bXaJmpSAb3KDk5+lo5OAdXZ9hYyQinlnZHOFjYmBfHt8gYiMiYF6dXN0foqUm5+gnZqWko+KgXhwaWRiY2VyhpacmJKRkpWVlJOTk5KOiIJ0Z2R2jJeNe3J1foOCfnVnW2Bzh4+Lg3luZmRlZ2NeWVdYXHCIl5SJgoiSmpmVjYF2c3d+hIiKj5edlYJydYeXlIZ3a2NhZm52gImLf25iXFxhbHZ/h4uPlJiamJWNgHZ3g5Ganp2TgHF0gpCTjYaHjZOTkI6SmZ+hoqGipJ+NeW90fomRlZGFeHFxdHRybnWEkpKGeXR2e4OMkYh4bXWImJ+emYl4bnF6g4qNin1uZWNmam1wdH2FioyMjY+Rj4iBenJsa25ydnp8eXNvd4qaoJ2YkYyJiImKiYeGhoeGfG5mbnyFfW1gW1xjdYeUmpuZl5SNfW1lZWlyfoiSm6KlpqWbiHZsamtramlwfYmUnKCWhnl6hJCXmZeKd2ljY2VmZWNgW1hXVllpfouJfnZ4gIWBeXR3foJ/eXRzdHiCjI6AbWRteoF5bGVpcHyNm5uKdWVZVFxyiJCKgHdxbm1tbW5wcm9oYmNqcXqEi5CTlJmgpaCVioWFhomMjpCSlJWXl4t3ZmBiZ3eLmZSGd3BvcGtjX2d3gntsYGBnbm9raG11fIKHiIR9d29oZmx2fHdtZmdscnh8fHFkXF5lbHJ2dnFqZWJhaH2Uo6elnIZwZ3aMnqqvr6qjnZSNhXpxcoKVn5mOhIGBhZGcoJyVjYaBfXp3dXV0cWlgXGBoa2dhW1dVW2+Ej4yEgIiUnaGhnI6AdGtlZ3SCjZWZnKGlqKeloZiQhXRlX2Zye4CDgHduZ2JfYWx3gYiNjYiCfXh0cm9ubGpoZ2hpamtscH2MkYNuXlVSV2yDkY6CeHZ5f42bpKGYkJCVm6KoqqSbkoBuY2l4ho2PkJSbn5aIe3BnZXSLnaepppyPhYiSm6Sqraqln5B8bGRiZG59iId9cW90fIGFh4yUm5yYkpCSlY+AcnF/kJiUjIeJjZKZn5qEbWNqeIKEgn11b3GAkZ6mqaKLcV5VU1ZdZWlnY2Jwg46KfnV+j52ioJyVj4l+cWhkZGd2i5qWhnVtbXB8jZqhop+SfGlhYmdrbnB4h5ahqKurqKWjpKaoqqymkHltdIOOjomEhYmPl5+imYyAcWNbXmZudHZ2b2ZeWFRTU1VXWVtdZ3aDiouKgnVqbX6PlYt+eoOPl5WQjI2Rj4N1bWxvdoWVnpmPhX98e3VuanOCkJmdnpODdXByd3ZuZ2x+kJWMgH2FkI9/bGNreICAe3VuaWVgXFlbXmNvfYZ/cWZsfImGem1sc3p3al9icYGJh4J7c25xfYmMgXRwfY6UiHdscX2HiYeEg4WFgXx2cm5sbGxtdoWSlZKMh4SCfG9jXV5iaHB4f4qUlYVvYFtcY3iQoaajnY5+cm9xdoOToJmCbGRqdH+KkpmhqKuqp6KWioKAgoF3aWBhaG9ycXB4hpKboKOelY2Ffnp6fYGJlaCorK2ok3tqYV5fYmVocHmAh4+TlJOQlJykp6WhnZubm5ubl4yAd3Nzc3R0doCOmqOoqqKVioSCg4WJjI+QkYx+cGx7j5uakomBfHhxaWNgYWJjZGVte4eNj46OkZWTiHxyaGFicIOOhXJhWFVWX2t0cmheV1VVWV9lbn6NmKCmqKioo41zYWFrd3t5dXN0dXl+gn5yZmRxgY6XnJ6fn56dm5eJd2pwg5WTgW1fWVhgc4WLf25iYWVqamhlYFxaXmdwgJSjqqmlnZOJiJCam4lyZG2BkYx6amp1gYyVmZeQiYWFh4V7cGdgW1xmc32BgH12bWZwhZmlpqSfmpWUlpmYjH5zcXR3d3VzfpCfoZaKe2pdXW6Bj5WUj35pW1xlb3d9gIB9e3RqYWFtfIWGg395dHJ7iZWcn5+Yi395eHl9hY2QjYiBc2VdZniHjYuHg4B+gouUk4RzaGludXyCho2Vm5+io6CZk4dzYldUVVtpd393aV5eZm97iJGSjYZ+d3Fwd36EiIqMk52iloBtYFhVXG5/io+QkJKWl41/dn2OnZqKeW5rbG5wcnR8hId+b2RpeIaKhoB1aF5aXWNtgpehlH9tZ2ltb25sa21udoWUmpSKf3FmYGVwe4SKjoyGgHt2c3R9h4uCdGhiYGBmbnR6gYaFf3d1gZCYjnpqZWlwcW5pY11YXG2AjZOUk5eepKepqZ2GcWdsdn16dG1lXVlXWFpcYGNlaGtraGRlc4OQm6KkmIRzaGJhan+UnJGAcGNbWGBvfIiTm5aFc2tzgIyXn6Kbj4aFipCMfm9reYuWkoZ7dnZ4g5ShoI98c3yMl5iTjH9wZV9cXGd7jpWMfnR3gIiFfHR7i5ufloqAenh6hpOdoJ6bmZmZnKGmp6OdmpmZm5yenY53ZFxgZ3F9h46TlpaQhn51a2RhYGJkZmdnZWJha3yJiX5yb3Z/ipagpZ2RhomTnp6Th311b21vcXN0dHNuZV9kd4uVkYiAe3p7g42VlIqAfH6ChoWCf3x5d3Z1dXh+g4F0ZVtYWl1iZ2lnYVtZW19meIuYnZyZj4F2a2FZX3aPn56VjIJ7d3V0c3V6foGDhISFhoaAdmxrcnuBgX58fH1/hY+XmpiVlZuip6ekoZ2al4x6aml4ipaTi4FzZVxZWl1neImVoKerqKOenZ+gmox+d3h+gXxzbHB8iI+Qj4yFf3p0bmt0hZOWkIiDhoyPjIaAdmxlY2VoampqbH2RoJqGc2ZeW19seoJ/dm5wd359cmdjb32IioaBenJsaGVkan2SnZSCcmVeW2R5jZOFcWRrfIuQjomHh4iFd2liboKTn6WnopWJhY2YoJmMgHl2dnRsZWBeXmBiZGVufImUnqalk3xsbnyJjIJ2al9YVmBwfYqWnpuMfXeBkJuYjIKAiJCUkYyHgXx6g5CcoqWloJSIgomVnpeFdW5yeXt0amNkam9uaGFibHd9eG5mXlhWX3SHlZ+lp6enpZuLfXFkWldbYmhzf4iMjYuGfXNve46dm41/eoGLjoFuX1lZXGd5iJSfpqmno5+bl5WWnKGimIuCgYWJgnNkYnOHl6Gmpp+UioWEhYaHiImMj5GNhHx3eX2Ci5WbkoBvanaFj4yDenVzdHmEj5KJfHJ0fYaDdWZdX2VtfI2Xk4JxZmNkaXWCi5CRkIuBd29pZGJqdoGHiouKiomJjI+SjH1wbHSBiouIhIKDhYiNkpSSj4yCdmxmZGRncn6Gg3tzamBaWWRyfYaNkZWboJ+VioSJlaCmp6eil42FfHVxd4aUnZyZk4V2a2RgXmFseICGiYqCc2Vjbn2Ih4F6e4GIjZKUlZSTkYd4a2RhYWRsdnx6cmtoam50g5Kcn52Zj4Bza2lrb3yNmqCfm5SEdGpyhJSVg25iZ3N9em9kY214gH97dnV2eH2DiYyJg3+AhIiLjpCPhntzd4SQlIuAeYCNmJqTjIJzZmFwhZaWiHh0gJCalIh8c21qcIGSnaGfnJmXlpGEdmxpaWx2h5aajHhrb36Mk5KPioWAfXlzb29ydXqFkJeOfW1ocHyFhoOAgoqRlpaVko2Ggn56d3RuZ2NgX15mdoWNiYB4cGllZm11ent6eHh5e3p3c3F5hI2Sk5KRkZKTl5ygnJCFe3JqZ2tyeHp3c3J8iZSanp6dm5iWmZyfnJSLgnNkW1tfZGpwdHd5e3yAh4yLgndwbW5xeIONkIqBenZ2eHyEi46HfHRxc3Z6foGCf3l1dn2Fh4B2b3SCjpGHe3BmX1tkdoeQkIuHh4mLjIqHgnZqYmuAlKCioJyWkY6LiIWDgHx6eHZ1eIKLkIl8cWhiXl1bWltgaG93gYqPj42KhX12cWtmZGx5hI6YoKOgmpSLfXJqZF9dZ3iGj5KSkImBe3+MmZ2Qfm9rb3R4eHd2fIaNin5ybXWBjJSanZuWkIyIhYOAfHh4f4eNiX1ycX2LlpaQioWCgoF8dnJzeHyBiI6SkpGPjYuJiIN9eXl9goaJiouFfHVxcXJ1f4yWl4+GgIKIjZSboKCakYqDfHh1c3JydHZ3foqUl4p4amRkZ2lpaGhscnd2bmZkc4iZmYp6cHN6goN/e3uFj5eZmJWMe2xkaHJ8fXZuaWhpa2pnZGJkZ2loZmRncn6EfnJnanuNl5OIf32CiYyIgX2Ai5SboKKjo6Ojn5ePioiHiIqMjo+OjIqLjpCQjYiEe29nZWx1fYmVnaCgnZmNgHd6h5OZkYZ8dnNzcnFwcHuLmJ2WjYWBgYGDhYeIg3x3eYKKkJOTko2Gf3lya2doa29xbmlnbXqFhnxvZWJkZ2xydnhyaGFibXiAfXZvcn+MlZOOiIaIi4yJhIGDipCSkIyIfW5jYWp1fn98d3JqZGJoc3yGkpuelouBf4OKjIR4b2xvc3ZybGhpbnR2cWpkZGtyd3l6enp6enyDiY2IfnVxdXyCiZCUlpSSj46Ojo2JhYKEiY2Qk5STjYR8d3NwcXqIkpeXlZKMhoJ7cWhmcoSSm5+fmot5bGRhYWRpbnN6gomOlJmcmZKMh4J/fXZsY19eYGNufouSkY2Jf3NpZ3KAi5ScoJ+XjYaGi5GTjoaAd21mY2duc3NxbW11gIeHf3d0fIiSlI+Jg398e4GMlpydnJubnZ+emJGLhHx2dHR1d3RvaWZlZWZlY2FhZWpucG9ubm5ubmxpZWZxfoiOjo2KgXZvaGNgYGt5hYqJhoWKkpiWiXx1fImUl5GIgYOKkJKOiIOFio6Mf3BmaneEiH5xZmdweoGHiouGfXVzfo2Yn6GgnJGGfn+IkZiZl5WQiYN+eXRxdHuDh4R8dneBjJOQh396eHd5goyVm56fn5qTjoqFgX9+fX18e3p5fYSLj5GRkIl/dnJ5hI6Vm5+gnJWQjo+SlJicn5yQg3t8hY6Vm56elIJyanB8h5GZn5+Tg3VwdHqAiZOamZCGf4CFi4uAdGpnaWxwdnx/fXZvbnmHkpSLgHl1dHV4fICDg4GAgoqTmJOIfnZxbm10f4qQk5STjH9zbGlqa3B6g4iGf3lzbmpoa3F3enl1cnR5f4KCgX9/goeJhX13dHd7f4WLkJGPiod/dGplZWdqbGxsbXiGkZKEdGhiY2VreYaPk5ORkJOYnJ6dnJubnJ6ajX91b2tqbXmGj4x/cWhlZmlscXV4gY2VmZiVko6KiIaCfnt5d3Z3gIuUlpGKhH13cm9qZmNlbHN5hZKbnZmTjouKiod8b2ZncHqDi5GVlJCLh35za2x6i5eYj4V/gIWLjo+PjomDf3pzbWhlYmFjcYCMk5eYmJSQjIiCfXqAjJaakYR5cm1sbXWAiYuDenJwcnV6hI+Wlo+HgH17e32FjJGOhHp1eoOMkpmdnpuUjomDfnt+h4+UkoyHhIWIio2RlJWWl5eRhXl0eYSOkId7c25tbW5rZ2Vpd4WNjYiDgIGEh4aCfnt3dXR2fIKGi4+SkIV4bm54g4uJg3x2b2lnb3+OlpSMhX95dXN2e3+EjJSZmpeTkJGTlpWOhX9+gYaIg3lxa2hnZ2ltcXV/ipOSiHtycnd9gYKBgIOKkJSNgXdyc3d7fHt5eHuAhYaBfHh2dnZ2cmxoZ2twc3Z4eXuDjJKRiYB6cmtmZ295gYWHhoaGhoeHhYKAfnt5eHd3dnVzcG5wdnyBh4yQkpOUk5KPjYuJhYOBfnx7gIqUl419cGhkY2NnbnN3eXp6e32AgX97d3NuaWZocXl/gYB+fX6Agn94cWxsbnFzdXZ2eoOLj4yEfHh5e36AgYGAenFqZmZoanB7hYyKhH17gYqRk5KPjIaAfHl4eHh7gIaJioiGg396d3RycXB1fYWIhoF8fYWPlZGEdm93hZKanZ6clouBenVxb3B1e3+Eio6PhnpwamhoaW95g4mMjIuIgHhzdX2GjIh+dnBub3BydHZ4gIqTlo+FfHVuaWZobHB1f4qSl5qbmpeQioaAe3d2eX6BhoyRk4yAdm9qZ2ZreYeQjX9yamxzeX17d3R3gYqQjoZ/fIKNlZSHeG1nZWVnamxvdIGNlZiVko6Jg398eXd1c3BubXF4foKFiImLj5KVko2HhIWHioyPkZKOh395c2xnZWlucnV2d3d7gIaJi42Ni4R8dnJtamlrb3N3gY2Vlot+dXaBjZWWkYyJh4eHiY6SlZaVlJKRkI+NiIN/fXx8fYCGio6SlpmXjYJ7dnR0dX2Hj5KNhX59goiNjIV+e4CIj5CFeG1qbnN4fYKGiI2SlpaRjIeEgH59gYaLjo+OjYuGgn9/g4eKjpKVlpWSj4+RlJaWk5CNhHhvaWdnZ2lsbnB1e4GEgHZtaW94gIeOk5WVkY2KiYmKiYR+eHZ5fH58dG1ob32JkZGOi4mLj5KPhn54cWtnZWhtcXZ/iI2LgXhyc3mAg353cG52f4eIgnp1cnJzdHuDiYqBdm1scnuCh4yOj4yGgX+DiI2Nh396eoKKkJSXmJeTjomGg4GAfXVuampsb3J3fICEiY+TlZeXl5CCd3B0fomOjIV/fH+Dh4mKioqKioqKi4yMioJ5cnJ4gIaMkZWWjoF1bmlnZ2t4hpCVlpWTj4mEgYCAgIGDhoeFfnZwcnyHjouBd3Bze4OGf3Vtam1zeH2EiYyGem9pbXZ/g4B5c3F2fYKGioyNjo+QkIyHgoCBhIeIh4WDgoGAgIKGioyIg358gIWJiX90bGlrb3J3e3+Af3x5eX2ChoiHhYOAfXp5fYWNkY2EfHh8g4mOkJGRj4qGg353cW5tbnBye4eQk4yBeHV8hIuMh4B7d3NxcHR7gISFhYSEhYaHhX52cHF4gIaKjIyLgnduaGdnaWxze4GFiIqLiIF7d3uEjJGMgnp1dHV3eHd1dHV7gYWCeXFsb3eAhYN9d3V8hYyQkZGQi4B2cHB3foODfnl2dnh6e3hzb3B7ho+QhXhub3qGjo+KhYB8eXh2c25qaGdnaGlrbW5zfIaMjYiCfn6BhIeHhoSEiI2Rko6JhYSFh4iJiYiHiY2Qko2EfXd0cnFzeoKIi4qHhIF8eHV2en6BhIeKi42Oj4+MiISCgYCAgIKDhIJ9d3J0eoCFio+UlpWRjouEfHZzdHd6e3hzcG1sbGxxfIiQko6Kh4SCgYGChIaGgHdva250eXx6dnJyeH+FiY+TlZSPioeHi4+SlJWVk4p+c25yeoKHi4+QkI2JhoWHiYuJgnt2dnp+gYB+e3l5e31+gICBgYKDhIJ7c21qaWhpbXZ/hYeGhIJ/e3h2dXNycW9ta2x1g42Tko6KiIqPk5SRjImEe3JsbHF3fH5+fXx7eXd2dnd4eXl6enl2cm5scXd9gYaKjYyEenJwd3+GiouLioV7cmxud4CGiIaEgoCAf39/f39/enVxcHiDjJGRj42Kg314d3h6fH1/gIGBf359gIaMkI+KhYF9e3p6f4iPk5CJgn56eHd3eXp8foOIjIyFe3Nxd3+GiYaCfnx+gIKAeXJtbnR7gIWLj5GLgHZwb3J2eXdzb210f4mPjoqGg4KCgoJ/fHp5fYKGiIWAfXt6ent+hYuQkIqEf35/goOEgoB/fXl3dXqDjJGUlJSTkpCPjouHhIF+end1cm9tbXJ6gISEhIKAe3RvbW1ub3J6g4qLhHt0cXBxcnR4fH9/fXl3dXR0dHRzcnFxcXFxc3h8f4KGiIqIhYJ/f4CCg4KAf35+gIKDgX16eHh4eHh5eXl6gIiOkIl9c21qa2xtcHN1dnd3eHh9goWHhIB8e3+EiIuNj5GRkZGRkI2Kh4aFhISDgX58e3t7e32Ch4qKhX96eXyAg4SAe3Z0c3Jyc3Nzc3NzcnJ0eX6ChISDgn95c29tbm9wdX+HjY2GgHt3c3Fvb3BwcXaAio+QjIeEgX58e32Dh4uMjY2Mh352cW5vb3F1fIKGiYqKioqJiIeHhoWEgXp0cHJ4f4OCfXd0cnFxcnJzc3R3fIKFg355dXJwb25ubm5uc32GjI+OjYuKiIeHhYF+fH6Fi5CPiYN/fX6AgYF+e3p6fH+Af3l0cHN8hIuMiYWCfnhzcHJ3foKCfXh0cnR2eHp8fX6Ag4aJi42PkI6FfHVzdnp9fnx5d3Ryb25weYOLj5CQj46NjIyKgnhyb3N5f4KBf318gIWJioV8dXFzeHx/goSGhoeIiYmIhoWEgHt4dXV2eHh3dHJwdHqAhIN9eHR0dXh5eXh3dnV1dHR1dnZ3e4GHi4uIhIGBhIiKioWBfXx+gIKFiYyPkJGRkY+IgHp2dHNzdHp/hIaDfnt5e36Bg4B7dnRzc3R1d3p8fX6AgYGAfnt6fIKHi4iBeXR1fYWMjYmEgICDiIyOjIqHhoaGhoaFhIKBfHdzcnd/homGf3p3eoCGiYV9dXBwc3Z4enp6eX2Eio6NhoB7fIKIjY+OjYuLjI2Ojo2MiomGhIKAfHd0cnJzdXZ2dnZ3e4GGiYR8dXFubm9vcnZ5e36Dh4qJhH98e36ChYaGhoWDfXdycHR7gYSBe3Zzd36GioiCfHh4e36BgoOCgoB+fHp5enp6fICFiImKioqJg3t2dHh9goWFg4GAgIKDhIF8eHVzcnFxdXyDiIeCe3Z0c3R1dnl8fX5+fXx7fH1+f39/f39+fHp5d3Z1dXd9goWGhYOCg4aKjYyFfHVxcnV3eXh3dXR0dHV1eHyAg4WJjI6NiYWCgYKEhoaFg4GAfn59fXx6eXh3dnZ2eYCFiYeDfnt8goiMj4+Pj46Ojo6Ni4iFhIF+fHt5dnV0d32ChYSBfnt6ent8fHt7enp5eXh5fYGFhoN+enh2dnZ3eX2AgoSGiImJhoKAf4KGiYqHgn17fYKGiYeDf3x9gYWIiYaCgH5/gIGBf3t5d3VzcnJ2fIGFh4iJiYmKioqIgnx4dnZ3eHh3dnV0dHV2dnd4eHl9g4mNjo+Ojo2Mi4uJgnt2c3V5fH5/gICAf3t4d3d6foCBf317enl4d3d4ent8f4KFh4R+eHRzdnl7fX5/f3+Bg4WFhIF+fX+EiIuLiIWDgoOEhISBfXp4d3h4eXp8fn9/f39+f3+AgYGCgoKBf317enx/goSDgoB/f4CBgoODhISEhYaHh4aFhISCgYCAgIGBgoKEhoeHhoaFhIJ/fXx8fX5/fn17enyBhoqMi4mIh4eHh4eEgH17fH6Bg4OAfXt5d3Rzc3R1d3h5enp7foOIi4yLiYeFgX16eXt/gYOFiImKiYiHhoSBfn17eXd2dnuCiIuNjY2MiYR/fHt7fH1+gYSHiIWBfnx7enp6eXh2dXd8gYWIiYmJiIaCf316d3VzdHh7foCDhYeIiIaGhYSEhISDgH58fYGGiouHgX16e31/gIKDhISEgn99fHp5d3d3eHl5enx9fn+ChYeHh4aFhIOCgYGAgH9/f4CBgYF9eXZ0eH6DhoaCf3x8f4KEhYJ/fHt4dnV0dnuAg4OBfnx8foCCg4F+fHt7fX+BgoSGh4eGhYSEhYeIiYmJiIiIiImJiIaDgYB9enh3eX2Ag4OAfHp5eXp6e3p4d3Z4e36BgoODhIN/e3h3dnV1dXh9goWGhYSDgX98eXh5enx9fXp4dnZ4enx9fX19fX6AgoSDf3p3dnl+goSCfXl3d3t+gYF/fHl4en2AgYSGiImJiIeGhYWGhoaEgX99fHl3dnZ3eHl6fH1/f4GDhYaEgHx5eHp8foB+e3l3d3h5ent9f4CAgYGBgYB9enl6fYGEhoaGhoaGiImJh4F7d3Z3eHp8f4SHiYqJiYiHhoSDgoB+fXx9f4GCg4OCgoKBgYGBgX9+fn5/gIGBgH18e3t9fn9/fnx7e3+DhoeIiIiIh4aFhISCgYB/fnx7enl6enp7fH5/f317eXh3dnZ2eH6Dh4iFgX58foGFh4iHhoWFhoeIiIaCf318e3t7e3p6eXl5ent8fHt6eXl6e3x9f4OFh4aCfnt5eHd3d3l8foCCg4WGhoaGhYWFhoeIh4SBf35/gYKDg4ODg4KAfn18e3t7e3x/gYKBfnt4d3l8fn+Bg4SFhIJ/fX19f4CBgH9+fX1/gYKDgX99fHx8fH19e3p5eHp9gIKBf3x7e36ChoeGg4B+foCCg4SFhYWEgn56eHh6fH5/fn18fH2BhIaHhYOBgIGDhIWGhoaGhoaFhYWEgX9+fX19fX5/goSFhYWFhISFhoeHhoSCgX98enh3d3h4eHl6ent7e3p6enp6enp6ent7e3t6enp7e3x8e3p5eHh4eXp7fH5/gICAf35+gIOFh4eFg4KBgICAf358e3p6fH5/gH99fHt8f4GDg4F/fXx8fX5/f4GCgoOCgYGAf3x6eXh5ent8foKFhoeGhYWEgn99e3p6eXl6e3x9fX+Bg4SFhYWFhYSDgoKCgoOEhIWGhoaEgX99fHx8fH1/gYOEhYWGhoaGhYWFhISDg4KBf359fHt6ent9f4GBgH99fHx9fX5+fn5+foCChIWGhYWEhISEhYWEgoB/fn59fX19fX5/f4GDhIWEg4KBgH9/fn5+fn5/f35+fX1+f3+AgIB/f35+f39/f4CBgYGBgICAgYOEhYWDgX9+f4GCg4OBf359fn5/gICAgICAfn17e3p6e3t7fX5/gH9+fXx8e3t7e3x+f4CAgICAgH9/fn59fHt7e3x+gIGAfnx7enx+f4CBgYGBgYB/fn5+fn5+fn9/f39/f35+fn19fHx9foCAgH58e3p7fX5/gIB/f3+AgYGCgoGBgICAgYKCgoB/fX18fHx8fHx7e3x8fn5/gICBgYGBgYCAf358e3x+gYOEg4GAfn5/gYKDg4ODgoKBgIB/f359fXx8e3t7e3t7e3x+gIKCgYB+fX1+f4CBgYGBgYGCgoODg4KBgICAgICAgICAf3+AgYGBgYB/fn5/gIGBgYKCgoKCgoKCgX99fHx9fn5/f39/f3+AgYKCg4ODhISDg4ODg4KCgoKBgYGAf359fHx+gYOEg4KAf39/f39/f4CAgICAf39/fn59fX1+gIGBgYCAf39/fn59foCBgoKBgH5+fX18fHx9f4CBgYKCg4OCgYGAgH9+fn5/gIKDg4KAf39/fn9/f39/f3+AgIGBgYGBgoKBgH9+fn59fX1+gIGCgoGAfn19foCAgYB/fn5+fn+AgICAgH9/gICAgIB/fn19fn+AgIGAgICAgYGCgoKCgoKCgYGBgYCAf35+fn5+fn5+fX19foCBgoKCgIB/f4CBgYGBgYGBgH9+fn1+fn9/f39/fn5+fn5+fn+AgYKCgoGBgYB/fn5+fn9/f39/fn5+fn5+f3+AgICAgICAgIB/f35+f4CBgoKBgH9/f39/gICAgICAgYGBgYGAf35+fn19fX1+fn5/f3+AgICAf39/f39+fn5+fn5+fn+AgYGBgYCAgICBgYGBgH9+fX5/f4CAgH9+fn5/gIGBgX9+fn5+f3+AgICAf4CAgIGBgYGAgICAgICBgYCAgICAgIGBgYGBgYGBgICAgIB/f39/gICBgYGAgICAf39/fn5+fn9/f39/f39/f35+fn5+fn9/f4CAgICAf3+AgICAgIB/f39/f35+fn5/f39/f39/f39/gICAgICAgICAgICAgH9/f39/gICAgH9/f39/f39+f3+AgICBgICAgICAgH9/f4CAgICAgICAgH9/f39/f3+AgH9/f3+AgICAgICAgICAgICAgICAgIB/f4CAgH9/f39/f4CAgICAf39/f3+AgICAgICAgICAgICAgICAgH9/f39/f39/f4CAgICAgH9/f39/f39/f3+AgICAgH9/f39/f39/gICAgICAgIB/f39/f3+AgICAf39/f39/fw==","cue":"gIKEhYeIiouNjo+QkpKTlJWVlpaWlpaWlpWVlJOTkpGPjo2LiomHhYSCgH99e3p4d3V0cnFwb21tbGtqamlpaWlpaWlqamtsbG1ucHFydHV3eHp7fX+AgoSFh4iKi42Oj5GSk5OUlZWWlpaWlpaWlZWUk5KRkI+OjYuKiIeFg4KAfn17eXh2dXNycW9ubWxra2pqaWlpaWlpaWpqa2xtbm9wcXN0dnd5e3x+gIGDhYaIiYuMjo+QkZKTlJWVlpaWlpaWlpWVlJSTkpGQjo2MiomHhoSCgX99e3p4d3V0cnFwb21sbGtqamlpaWlpaWlqamtsbW5vcHFzdHZ3eXp8fn+Bg4SGiImLjI6PkJGSk5SVlZaWlpaWlpaVlZSUk5KRj46Ni4qIh4WEgoB/fXt6eHZ1c3Jxb25tbGtramlpaWlpaWlpamtrbG1ub3Fyc3V2eHl7fX6AgoOFh4iKi42Oj5GSk5OUlZWWlpaWlpaWlZWUk5KRkI+NjIuJiIaEg4F/fnx6eXd1dHJxcG9ubWxramppaWlpaWlpamprbG1ub3Byc3R2d3l7fH6AgYOFhoiKi42Oj5CRkpOUlZWWlpaWlpaWlZWUk5KRkI+OjIuJiIaEg4F/fXx6eHd1dHJxcG9tbGxramppaWlpaWlpamprbG1ub3Byc3V2eHl7fX+AgoSFh4mKjI2OkJGSk5SUlZaWlpaWlpaVlZSUk5KRj46Ni4qIh4WDgoB+fXt5eHZ0c3Jwb25tbGtqamlpaWlpaWlqamtsbW5vcHFzdHZ3eXt8foCCg4WHiIqLjY6PkZKTlJSVlZaWlpaWlpaVlJSTkpGQjo2MioiHhYOCgH59e3l4dnRzcnBvbm1sa2pqaWlpaWlpaWpqa2xtbm9wcnN0dnh5e31+gIKEhYeIioyNjpCRkpOUlJWWlpaWlpaWlZWUk5OSkI+OjYuKiIaFg4F/fnx6eXd1dHJxcG5tbGtramppaWlpaWlpamtrbG1ucHFydHV3eHp8fn+Bg4WGiImLjI6PkJGTk5SVlZaWlpaWlpaVlJSTkpGQjo2LioiHhYOCgH58e3l3dnRzcXBvbm1sa2pqaWlpaWlpaWpra2xtbnBxcnR1d3l6fH5/gYOEhoiJi4yOj5CRkpOUlZWWlpaWlpaVlZSTkpGQj46Mi4mIhoWDgX9+fHp5d3Z0c3Fwb25tbGtramppaWlqampra2xtbm9wcnN1dnh5e31+gIKDhYeIiouNjo+QkZKTlJSVlZWVlZWVlJSTkpGQj46Ni4qIh4WDgoB+fXt5eHZ1c3JxcG9ubWxra2pqampqamtrbG1tbm9xcnN1dnh5e3x+gIGDhYaIiYuMjY+QkZKSk5SUlZWVlZWUlJOTkpGQj46Mi4qIhoWDgoB+fXt6eHZ1dHJxcG9ubWxsa2tra2tra2tsbG1ub3BxcnR1d3h6e31/gIKDhYaIiYuMjY+QkZGSk5OUlJSUlJSUk5KSkZCPjo2LiomHhoSCgX9+fHp5d3Z1c3JxcG9ubW1sbGtra2trbGxtbW5vcHFydHV2eHl7fH6AgYOEhoeJiouNjo+QkZGSk5OTlJSUk5OTkpGRkI+OjIuKiYeGhIOBf358e3l4dnV0c3Fwb29ubW1sbGxsbGxsbW1ub3BxcnN0dXd4ent9foCBg4SGh4mKi4yOj4+QkZKSk5OTk5OTkpKRkZCPjo2Mi4mIh4WEgoF/fnx7eXh2dXRzcXBwb25ubW1sbGxsbW1tbm9wcHFzdHV2eHl6fH1/gIKDhYaIiYqLjY6Pj5CRkZKSkpKSkpKSkZCQj46NjIuKiIeFhIOBgH59e3p4d3Z0c3JxcHBvbm5tbW1tbW1tbm5vcHFyc3R1dnh5enx9f4CCg4WGh4mKi4yNjo+QkJGRkpKSkpKRkZGQj46OjYyKiYiHhYSCgYB+fXt6eHd2dXRzcnFwb29ubm5tbW5ubm9vcHFxcnN0dnd4eXt8fn+BgoOFhoeJiouMjY6Pj5CQkZGRkZGRkZCQj46OjYyLioiHhoSDgoB/fXx7eXh3dnRzcnJxcG9vb25ubm5ub29vcHFxcnN0dXd4eXp8fX+AgYOEhYeIiYqLjI2Oj4+QkJCRkZGQkJCPj46NjYyLiYiHhoWDgoF/fnx7enh3dnV0c3JxcXBwb29vb29vb29wcHFyc3R1dnd4eXt8fX+AgYOEhYaIiYqLjI2Njo+PkJCQkJCQkI+Pjo6NjIuKiYiHhYSDgoB/fnx7enh3dnV0c3JycXBwcG9vb29vcHBxcXJzc3R1dnh5ent9fn+AgoOEhoeIiYqLjI2Njo6Pj4+QkI+Pj4+OjY2Mi4qJiIeGhYOCgYB+fXx6eXh3dnV0c3JycXFwcHBwcHBwcXFxcnN0dXV2eHl6e3x+f4CBg4SFhoeIiYqLjI2Njo6Pj4+Pj4+Ojo6NjIyLiomIh4aEg4KBgH59fHt5eHd2dXR0c3JycXFxcHBwcHFxcXJzc3R1dnd4eXp7fX5/gIGDhIWGh4iJiouMjI2Njo6Ojo6Ojo6NjYyMi4qJiIeGhYSDgoB/fn18enl4d3Z1dXRzc3JycXFxcXFxcXJyc3N0dXZ3eHl6e3x9foCBgoOEhYaHiImKi4yMjY2Njo6Ojo6NjY2Mi4uKiYiHhoWEg4KBgH59fHt6eXh3dnV0dHNzcnJycnFycnJyc3N0dHV2d3h5ent8fX5/gYKDhIWGh4iJioqLjIyNjY2NjY2NjY2MjIuKiomIh4aFhIOCgYB+fXx7enl4d3Z1dXR0c3NycnJycnJyc3N0dHV2d3d4eXp7fH5/gIGCg4SFhoeIiYmKi4uMjIyNjY2NjIyMi4uKiomIh4aFhIOCgYB/fn18e3p5eHd2dnV0dHNzc3Nzc3Nzc3R0dXV2d3d4eXp7fH1+f4CBgoSFhYaHiImJiouLi4yMjIyMjIyLi4uKiYmIh4aFhIOCgYB/fn18e3p5eHh3dnV1dHR0c3Nzc3NzdHR0dXZ2d3h5eXp7fH1+f4CBgoOEhYaHiIiJioqLi4uLjIyMi4uLioqKiYiHh4aFhIOCgYB/fn18e3p5eXh3dnZ1dXR0dHR0dHR0dHV1dnZ3d3h5ent8fX5/gIGCgoOEhYaHiIiJiYqKi4uLi4uLi4uKiomJiIiHhoWEg4OCgYB/fn18e3p5eXh3d3Z1dXV1dHR0dHR1dXV2dnd4eHl6e3x8fX5/gIGCg4SFhoaHiIiJiYqKioqKioqKioqJiYiIh4eGhYSDg4KBgH9+fXx7enp5eHh3dnZ2dXV1dXV1dXV1dnZ3d3h5eXp7fH1+fn+AgYKDhISFhoeHiIiJiYmKioqKioqKiYmIiIeHhoWFhIOCgYCAf359fHt7enl4eHd3dnZ2dnV1dXV2dnZ2d3d4eXl6e3t8fX5/gICBgoOEhYWGh4eIiIiJiYmJiYmJiYmJiIiHh4aFhYSDgoKBgH9+fn18e3p6eXh4d3d3dnZ2dnZ2dnZ2d3d4eHl5ent7fH1+f3+AgYKDg4SFhYaHh4eIiIiJiYmJiYmIiIiHh4aGhYWEg4KCgYB/fn59fHt7enp5eHh4d3d3d3Z2dnd3d3d4eHl5enp7fHx9fn9/gIGCgoOEhIWGhoeHh4iIiIiIiIiIiIiHh4aGhYWEhIOCgYGAf35+fXx8e3p6eXl4eHh3d3d3d3d3d3h4eHl5enp7e3x9fX5/gICBgoKDhISFhYaGh4eHiIiIiIiIh4eHh4aGhYWEhIOCgoGAgH9+fX18e3t6enl5eXh4eHh4d3h4eHh4eXl5enp7e3x9fX5/f4CBgYKDg4SEhYWGhoeHh4eHh4eHh4eHhoaFhYWEg4OCgoGAgH9+fn18fHt7enp5eXl4eHh4eHh4eHh5eXl6ent7fHx9fn5/f4CBgYKDg4SEhYWFhoaGhoeHh4eHhoaGhoWFhYSEg4OCgYGAgH9+fn19fHt7e3p6eXl5eXl5eXl5eXl5enp6e3t8fH19fn5/gICBgYKDg4SEhIWFhYaGhoaGhoaGhoaFhYWEhISDg4KCgYCAf39+fn18fHx7e3p6enp5eXl5eXl5eXp6ent7e3x8fX1+fn9/gIGBgoKDg4OEhIWFhYWFhoaGhoaFhYWFhISEg4OCgoGBgIB/f35+fX18fHx7e3t6enp6enp6enp6enp7e3t8fHx9fX5+f3+AgIGBgoKDg4SEhISFhYWFhYWFhYWFhYSEhIODg4KCgYGAgH9/fn59fX18fHt7e3t6enp6enp6enp7e3t7fHx8fX1+fn9/gICAgYGCgoODg4SEhISEhYWFhYWEhISEhIODg4KCgoGBgICAf39+fn19fXx8fHt7e3t7e3t7e3t7e3t7fHx8fX19fn5/f3+AgIGBgYKCgoODg4SEhISEhISEhISEhIODg4OCgoKBgYCAgH9/fn5+fX19fHx8fHx7e3t7e3t7e3t8fHx8fX19fn5+f39/gICBgYGCgoKCg4ODg4ODhISEhIODg4ODg4KCgoKBgYGAgIB/f39+fn59fX19fHx8fHx8fHx8fHx8fHx9fX19fn5+fn9/f4CAgIGBgYKCgoKDg4ODg4ODg4ODg4ODgoKCgoKBgYGAgIB/f39/fn5+fX19fX19fHx8fHx8fHx8fX19fX19fn5+fn9/f4CAgICBgYGBgoKCgoKCgoODg4OCgoKCgoKCgoGBgYGAgICAf39/f35+fn59fX19fX19fX19fX19fX19fX5+fn5+f39/f4CAgICAgYGBgYGCgoKCgoKCgoKCgoKCgoKBgYGBgYCAgICAf39/f39+fn5+fn59fX19fX19fX19fX5+fn5+fn5/f39/f4CAgICAgIGBgYGBgYGBgYKCgoKBgYGBgYGBgYGBgICAgICAf39/f39/fn5+fn5+fn5+fn5+fn5+fn5+fn5+f39/f39/f4CAgICAgICBgYGBgYGBgYGBgYGBgYGBgYGBgICAgICAgIB/f39/f39/f39+fn5+fn5+fn5+fn5+fn5/f39/f39/f39/gICAgICAgICAgICAgICBgYGBgYCAgICAgICAgICAgICAgH9/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f3+AgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAf39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f4CAgICAgICAgICAgICAgICAgICA"};
@@ -1200,27 +1200,27 @@ function interact(){
     return;
   }
   const item=target();
-  if(!item){say("靠近地图上的地标或物件，再按 E 互动。","denied");return;}
+  if(!item){say("Press E to interact with the landmark or object close to the map.","denied");return;}
   if(item.type==="board"){interactCommissions();return;}
   if(item.type==="landmark"){discoverLandmark(item);return;}
   if(item.type==="blessing"||item.type==="treasure"){interactLoot(item);return;}
   if(item.type==="camp"){
-    player.hp=maxHealth();renderHud();sound("heal");setMessage("你在篝火旁恢复了生命。");return;
+    player.hp=maxHealth();renderHud();sound("heal");setMessage("You've recovered your life by the bonfire.");return;
   }
   if(item.type==="gate"){
-    sound(lit.size===3?"cue":"denied");setMessage(lit.size===3?"封印已开启。灰烬守卫在门后。":"封印仍在。先点亮三座祭坛。");return;
+    sound(lit.size===3?"cue":"denied");setMessage(lit.size===3?"The seal is open. The ashes are behind the door.":"The seal is still in place. Light three altars first.");return;
   }
   if(item.type==="core"){
-    if(enemies.some(e=>e.id==="keeper"&&e.hp>0))setMessage("灰烬守卫仍在守护火种。");
+    if(enemies.some(e=>e.id==="keeper"&&e.hp>0))setMessage("Ashes guard is still guarding fire.");
     else if(lit.size===3)finish(true);
     return;
   }
-  if(lit.has(item.sealId)){sound("cue");setMessage(item.name+"已经点亮。");return;}
-  if(enemies.some(e=>e.id===item.guard&&e.hp>0)){sound("denied");setMessage("先击败"+item.region+"的守卫。");return;}
+  if(lit.has(item.sealId)){sound("cue");setMessage(item.name+"It's lit.");return;}
+  if(enemies.some(e=>e.id===item.guard&&e.hp>0)){sound("denied");setMessage("First beat"+item.region+"Guards.");return;}
   lit.add(item.sealId);player.hp=Math.min(maxHealth(),player.hp+2);renderHud();sound("seal");
   const p=point(item.x,item.y);sparks(p.x,p.y-8,item.color,18);
   if(lit.size===3)sound("gate");
-  setMessage(lit.size===3?"三座祭坛已经点亮。东边的门打开了。":item.name+"已亮起，恢复了生命。");
+  setMessage(lit.size===3?"Three altars have been lit. The east door is open.":item.name+"It's lit up and it's back to life.");
 }
 function hurtFromEnemy(source,damage){
   if(player.hurt>0||phase!=="play")return false;
@@ -1369,11 +1369,11 @@ function enemyUpdate(e,dt){
 function zoneAt(){
   const x=player.x/SIZE,y=player.y/SIZE;
   if(mode==="survival")return biomeAt(Math.floor(x),Math.floor(y))?.name??
-    (x<23&&y>8&&y<24?"林间营地":y<12?"北林":y>22?"南坡":"林野");
-  if(x>=36)return"封印遗迹";
-  if(y<12)return x>17?"赤石废墟":"苔林";
-  if(y>21)return"寒潭";
-  return x<11?"篝火营地":"旧林径";
+    (x<23&&y>8&&y<24?"Woodland Camp":y<12?"Northern Woods":y>22?"South Slope":"Woodlands");
+  if(x>=36)return"Sealed Ruins";
+  if(y<12)return x>17?"Redstone Ruins":"Mosswood";
+  if(y>21)return"Frost Pool";
+  return x<11?"Campfire Camp":"Old Woodland Trail";
 }
 function update(dt){
   elapsed+=dt;player.hurt=Math.max(0,player.hurt-dt);player.cooldown=Math.max(0,player.cooldown-dt);
@@ -2630,7 +2630,7 @@ const campMapMark={...camp,kind:"camp"};
 const encounterMarks=()=>(seededWorld?.encounters??[]).filter(site=>survival.encounterProgress.discovered.includes(site.id));
 function paintLandmarkControls(){
   const select=$("landmarkTarget");
-  select.replaceChildren(new Option("篝火营地",CAMP_LANDMARK),...survival.landmarks.map(mark=>
+  select.replaceChildren(new Option("Campfire Camp",CAMP_LANDMARK),...survival.landmarks.map(mark=>
     new Option(landmarkKinds[mark.kind].name+" · "+mark.x+", "+mark.y,landmarkId(mark))),...encounterMarks().map(site=>new Option(encounterById.get(site.templateId).name+" · "+site.x+", "+site.y,site.id)));
   select.value=survival.landmarkTarget;
   $("removeLandmark").disabled=survival.landmarkTarget===CAMP_LANDMARK||survival.encounterProgress.discovered.includes(survival.landmarkTarget);
@@ -2651,7 +2651,7 @@ function drawLandmarks(left,top,position){
   if(target!==campMapMark)drawSurvivalMapMark(mini,campMapMark,origin,playerDot,false);
   drawSurvivalMapMark(mini,target,origin,playerDot,true);
   const {distance,direction}=landmarkBearing(position,target);
-  const label=distance?direction+" · "+distance+" 格":"已到达";
+  const label=distance?direction+" · "+distance+" tiles":"Arrival";
   const bearing=$("landmarkBearing");
   if(bearing.textContent!==label)bearing.textContent=label;
 }
@@ -2864,7 +2864,7 @@ $("primary").addEventListener("click",()=>{
   else if(phase==="lost")respawnSurvival();
   else if(phase==="menu"){
     if(mode==="survival"&&survival&&!writeSave()){
-      $("overlayText").textContent="本地存档未能写入。你可以继续当前生存。";
+      $("overlayText").textContent="Local archive failed to write. You can continue with the current survival.";
       return;
     }
     window.location.assign("./index.html");
@@ -2875,7 +2875,7 @@ $("modeMenu").addEventListener("click",()=>{if(phase!=="menu")modeMenu();});
 $("pause").addEventListener("click",togglePause);
 function updateAutoAttackButton(){
   const button=$("autoAttack");
-  button.textContent=autoAttackEnabled?"自动开":"自动关";
+  button.textContent=autoAttackEnabled?"Auto-attack on":"Auto-attack off";
   button.setAttribute("aria-pressed",String(autoAttackEnabled));
 }
 $("autoAttack").addEventListener("click",()=>{
@@ -2884,13 +2884,13 @@ $("autoAttack").addEventListener("click",()=>{
 });
 updateAutoAttackButton();
 function updateShakeButton(){
-  $("shake").textContent=shakeEnabled?"震动开":"震动关";
+  $("shake").textContent=shakeEnabled?"Screen shake on":"Screen shake off";
   $("shake").setAttribute("aria-pressed",String(shakeEnabled));
 }
 $("shake").addEventListener("click",()=>{shakeEnabled=!shakeEnabled;updateShakeButton();});
 updateShakeButton();
 $("mute").addEventListener("click",()=>{
-  muted=!muted;$("mute").textContent=muted?"声音关":"声音开";
+  muted=!muted;$("mute").textContent=muted?"Sound off":"Sound on";
   $("mute").setAttribute("aria-pressed",String(muted));if(!muted)unlockAudio();else if(audioMix)audioMix.gain.setTargetAtTime(0,audio.currentTime,.008);
 });
 const baseWorld = world.map(row=>row.slice());
@@ -3004,18 +3004,18 @@ const plans={
   miniBeacon:defineContent("build","miniBeacon",{metaUnlock:"unlock_summit_beacon",cost:{wood:5,stone:5,iron:2,coal:3}})
 };
 const technologies={
-  workshop:defineContent("tech","workshop",{cost:{wood:2,stone:1},detail:"解锁苇绳，用于制作远行装备。"}),
-  herbalism:defineContent("tech","herbalism",{requires:"workshop",cost:{herb:2,quartz:1},detail:"解锁银叶药膏，回复 3 点生命。"}),
-  distilling:defineContent("tech","distilling",{requires:"herbalism",cost:{frostBerry:1,frostOre:1},detail:"解锁霜露合剂，回复 4 点生命与 18 点饱食。"}),
-  foraging:defineContent("tech","foraging",{requires:"workshop",cost:{berry:2,wood:1},detail:"解锁巡林干粮，恢复 44 点饱食。"}),
-  trailgear:defineContent("tech","trailgear",{requires:"foraging",cost:{fur:1,shell:1},detail:"解锁远行靴，制作后移动速度提高 12%。"}),
-  metallurgy:defineContent("tech","metallurgy",{requires:"workshop",cost:{copper:2,stone:2},detail:"解锁铜镐，制作后采石与采矿每次多计 1 击。"}),
-  smithing:defineContent("tech","smithing",{requires:"metallurgy",cost:{iron:2,coal:1},detail:"解锁锻铁剑与营地火盆，提高近战伤害并扩大营地照明。"})
+  workshop:defineContent("tech","workshop",{cost:{wood:2,stone:1},detail:"Unlock the reeds for the preparation of the equipment for the long-distance journey."}),
+  herbalism:defineContent("tech","herbalism",{requires:"workshop",cost:{herb:2,quartz:1},detail:"Unlock the silver leaf ointment, respond to 3 points of life."}),
+  distilling:defineContent("tech","distilling",{requires:"herbalism",cost:{frostBerry:1,frostOre:1},detail:"Unlock the cream leachate, respond to 4 points of life and 18 points of food."}),
+  foraging:defineContent("tech","foraging",{requires:"workshop",cost:{berry:2,wood:1},detail:"Unlock the dry harvest and restore 44 points of food."}),
+  trailgear:defineContent("tech","trailgear",{requires:"foraging",cost:{fur:1,shell:1},detail:"Unlock the far boots, move 12% faster after production."}),
+  metallurgy:defineContent("tech","metallurgy",{requires:"workshop",cost:{copper:2,stone:2},detail:"Unlock the copper scavengers and then build a single overshoot each time the quarries are mined."}),
+  smithing:defineContent("tech","smithing",{requires:"metallurgy",cost:{iron:2,coal:1},detail:"Unlocking iron-strikes and camp fire pots, increasing near-war injuries and expanding camp lighting."})
 };
 const technologyBranches=[
-  {name:"草药",color:"#a9d5a4",nodes:["herbalism","distilling"]},
-  {name:"远行",color:"#eac183",nodes:["foraging","trailgear"]},
-  {name:"冶炼",color:"#9bcde1",nodes:["metallurgy","smithing"]}
+  {name:"Herbs",color:"#a9d5a4",nodes:["herbalism","distilling"]},
+  {name:"Expedition",color:"#eac183",nodes:["foraging","trailgear"]},
+  {name:"Smelting",color:"#9bcde1",nodes:["metallurgy","smithing"]}
 ];
 const wateringCanId=contentId("tool","can");
 const defaultQuickbar=[null,contentId("stock","seed"),wateringCanId,contentId("stock","wood"),contentId("stock","stone"),null,null,null];
@@ -3068,7 +3068,7 @@ function makeSurvival(seed=null){
 }
 function keyFromContentId(group,id){
   const entry=contentById.get(id);
-  if(entry?.group!==group)throw new Error("存档编号无效："+group+" / "+id);
+  if(entry?.group!==group)throw new Error("Invalid save slot: "+group+" / "+id);
   return entry.key;
 }
 function convertSurvivalSave(data,encode){
@@ -3095,10 +3095,10 @@ function writeSave(report=false){
     const serialized=JSON.stringify(state);
     worldBackups.set(activeWorld,serialized);
     localStorage.setItem(worldSlot(activeWorld),serialized);
-    if(report)setMessage("生存进度已保存。");
+    if(report)setMessage("Survival progress saved.");
     return true;
   }catch{
-    if(report)setMessage("浏览器无法写入存档。本次打开期间可以继续。");
+    if(report)setMessage("The browser cannot write to the archive. You can continue during this opening.");
     return false;
   }
 }
@@ -3144,7 +3144,7 @@ function randomWorldId(){
   return id;
 }
 const seedFromText=text=>parseSeedFromText(text,randomWorldId);
-const worldLabel=id=>id==="classic"?"旧林地":("种子 "+id);
+const worldLabel=id=>id==="classic"?"Old Woodland":("Seeds "+id);
 function registerWorld(){
   knownWorlds.add(activeWorld);
   try{
@@ -3190,7 +3190,7 @@ function resetTerrain(){
 }
 function changeMode(next,worldId=activeWorld){
   if(next!==mode)return;
-  breadcrumb("载入生存世界");
+  breadcrumb("Load Survival world");
   if(survival)writeSave();
   activeQuickSlot=0;chosenPlan="floor";quickbarUI="";naturalHits.clear();
   activeWorld=worldId;
@@ -3229,7 +3229,7 @@ function changeMode(next,worldId=activeWorld){
   dayTime=survival.age%DAY_SECONDS;
   $("weatherLabel").textContent=weatherMods.name;
   $("weatherLabel").hidden=false;
-  setMessage(saved?"已载入"+worldLabel(activeWorld)+"。":"左键长按采集，右键开垦。营火旁按 T 添柴或建造守营设施。");
+  setMessage(saved?"Loaded "+worldLabel(activeWorld)+".":"Hold left-click to gather and right-click to till. Press T at the campfire to add fuel or build defenses.");
   if(survival.raid.stage==="active")for(const saved of survival.raiders??[]){
     const mob=createSurvivalSeedEnemy(saved.id,saved.x,saved.y,nightSerial++);
     Object.assign(mob,{raid:true,persistent:true,hp:saved.hp,stakeAt:saved.stakeAt});enemies.push(mob);
@@ -3240,7 +3240,7 @@ function changeMode(next,worldId=activeWorld){
   for(const id of ["survivalPanel","quickbar","mapCoordinates","oreFilterLabel","biomeLegend","mapLandmarks","survivalKeys"])$(id).hidden=false;
   $("biomeLegend").innerHTML=biomes.map(b=>'<span><i style="background:'+b.map+'"></i>'+b.name+'</span>').join("");
   $("ecologyEntries").innerHTML=biomes.map(b=>"<dt>"+b.name+"</dt><dd>"+habitatSummary(b)+"</dd>").join("");
-  $("gameMode").textContent="生存";
+  $("gameMode").textContent="Survival";
   updateTime();renderHud();survivalHud();paintLandmarkControls();drawMini();
 }
 function modeMenu(){
@@ -3249,7 +3249,7 @@ function modeMenu(){
   writeSave();
   phase="menu";clearGameplayInput();
   $("pause").disabled=true;
-  show("EMBERWOOD","切换模式","前往冒险模式，或继续经营当前营地。","冒险模式");
+  show("EMBERWOOD","Switch modes","Go to adventure mode or continue operating the current camp.","Adventure Mode");
   $("survivalStart").hidden=false;
   $("survivalStart").focus();
 }
@@ -3288,20 +3288,20 @@ function selectQuickSlot(index){
   if(index!==activeQuickSlot)cancelPointerAction();
   activeQuickSlot=index;
   const item=heldQuickItem(),material=heldMaterial(),tool=heldTool();
-  if(material)setMessage(item.name+"在手。右键放置，按住右键移动可连续放置。");
-  else if(tool==="seed")setMessage("选中种子。点击空耕地播种，按住右键拖动可连播。");
-  else if(tool==="water")setMessage("选中水壶。点击作物浇水，按住左键拖动可连续浇水。");
-  else if(tool==="plant")setMessage(item.name+"在手。右键空地或触屏点按种植。");
-  else if(tool==="fertilize")setMessage(item.name+"在手。右键或触屏点按未成熟的植株施肥。");
-  else if(item&&provisions[item.key])setMessage(item.name+"在手。右键使用。");
-  else setMessage(item?item.name+"在手。左键长按可采集或拆除。":"左键长按可采集或拆除，空手右键可开垦。");
+  if(material)setMessage(item.name+"In hand. Right-click placement, right-clicking moves can be continuously placed.");
+  else if(tool==="seed")setMessage("Select the torrent. Click an empty crop to sow the seed, and hold the right button to drag it to the next line.");
+  else if(tool==="water")setMessage("Select the kettle. Click the crop to water it, press the left button to drag it over and over again.");
+  else if(tool==="plant")setMessage(item.name+"In your hand. Right-click empty space or touch screens press planting.");
+  else if(tool==="fertilize")setMessage(item.name+"In hand. Right key or touch screen to fertilize under-developed strains.");
+  else if(item&&provisions[item.key])setMessage(item.name+"In hand. Right key is used.");
+  else setMessage(item?item.name+"In hand. Left key length press collectable or remove.":"Left key lengths are collected or removed and empty right buttons are retrenched.");
   sound("cue");survivalHud();
 }
 function quickItemCount(entry){return survival.stock[entry.id===wateringCanId?"water":entry.key];}
 function quickSlotMarkup(selected,editing=false){
   return survival.quickbar.map((id,index)=>{
     const entry=quickItem(id),count=entry?quickItemCount(entry):null;
-    const name=index===0?"手":entry?.name??"空格";
+    const name=index===0?"Hand":entry?.name??"Space";
     const icon=index===0?itemIcon("hand"):entry?itemIcon(entry.id===wateringCanId?"water":entry.key):'<span class="empty-slot" aria-hidden="true">·</span>';
     const label=(index+1)+" · "+name+(count===null?"":" ×"+count);
     return '<button type="button" class="quick-slot'+(count===0?' is-empty-stock':'')+'" data-quick-slot="'+index+
@@ -3331,7 +3331,7 @@ function paintQuickbar(){
   }
   blueprint.value=chosenPlan;
   const plan=plans[chosenPlan],cost=availablePlanCost(plan,material);
-  $("buildCost").textContent=unlockProblem(plan.tech,plan.metaUnlock)||costLabel(cost)+(stockCanPay(cost)?"":" · 不足");
+  $("buildCost").textContent=unlockProblem(plan.tech,plan.metaUnlock)||costLabel(cost)+(stockCanPay(cost)?"":"  ·  Not enough");
   syncBlueprintMenu();
 }
 function closeBlueprintMenu(){$("blueprintList").hidden=true;$("blueprintBtn").setAttribute("aria-expanded","false");}
@@ -3349,12 +3349,12 @@ function survivalHud(){
   const signature=JSON.stringify([day,hunger,s,activeQuickSlot,survival.quickbar,chosenPlan,biome.name,survival.research]);
   if(survivalUI===signature)return;
   survivalUI=signature;
-  $("survivalDay").textContent="第 "+day+" 天";
+  $("survivalDay").textContent="No. No "+day+" days";
   $("hunger").value=hunger;$("hungerValue").textContent=hunger+"%";
   $("stock").innerHTML=Object.entries(stockLabels).filter(([id])=>basicStock[id]>0||s[id]>0).map(([id,name])=>
     '<div class="stock-item"><span class="stock-label">'+itemIcon(id)+name+"</span><b>"+s[id]+"</b></div>").join("");
   $("localEcology").textContent=biome.name+" · "+habitatSummary(biome);
-  $("openTech").innerHTML="<kbd>T</kbd> 科技树 "+survival.research.length+" / "+Object.keys(technologies).length;
+  $("openTech").innerHTML="<kbd>T</kbd> Technology tree "+survival.research.length+" / "+Object.keys(technologies).length;
   paintQuickbar();
 }
 function terrainTile(x,y){
@@ -3516,21 +3516,21 @@ function updateWildlife(){
 function tendWildAnimal(animal){
   const species=wildSpeciesById.get(animal.kind),readyAt=survival.wildFeed[animal.id];
   if(readyAt!==undefined){
-    if(readyAt>survival.age){say(species.name+"还需约 "+Math.ceil(readyAt-survival.age)+" 秒。");return false;}
+    if(readyAt>survival.age){say(species.name+"About "+Math.ceil(readyAt-survival.age)+" s.");return false;}
     delete survival.wildFeed[animal.id];
     dropGroundItems(animal,{[species.yield]:1});
-    say(stockLabels[species.yield]+"已掉落，靠近拾取。","seal");return true;
+    say(stockLabels[species.yield]+" dropped nearby. Move closer to pick it up.","seal");return true;
   }
-  if(survival.stock[species.food]<1){say("用 "+stockLabels[species.food]+" 喂"+species.name+"。","denied");return false;}
+  if(survival.stock[species.food]<1){say("You need "+stockLabels[species.food]+" to feed "+species.name+".","denied");return false;}
   animal.playerInteracted=true;
   survival.stock[species.food]--;
   survival.wildFeed[animal.id]=survival.age+species.time;
-  say("喂了"+species.name+"，约 "+species.time+" 秒后可收取产物。","heal");return true;
+  say("Hello"+species.name+", approx. "+species.time+" The product is collected in seconds.","heal");return true;
 }
 const terrainResources={
-  [terrainContent[0].id]:{product:"wood",count:3,hits:3,tool:"axe",action:"砍树"},
-  [terrainContent[6].id]:{product:"stone",count:2,hits:2,tool:"pick",action:"采石"},
-  [terrainContent[COAL_VEIN].id]:{product:"coal",count:2,hits:3,tool:"pick",action:"挖煤"}
+  [terrainContent[0].id]:{product:"wood",count:3,hits:3,tool:"axe",action:"Cut down the trees"},
+  [terrainContent[6].id]:{product:"stone",count:2,hits:2,tool:"pick",action:"Quarrying"},
+  [terrainContent[COAL_VEIN].id]:{product:"coal",count:2,hits:3,tool:"pick",action:"Dig coal"}
 };
 const harvestResource=type=>terrainResources[terrainContent[type]?.id];
 const harvestable=type=>Boolean(harvestResource(type));
@@ -3640,40 +3640,40 @@ function availablePlanCost(plan,material=null){
 }
 const costLabel=cost=>Object.entries(cost).map(([id,n])=>stockLabels[id]+" ×"+n).join(" · ");
 function unlockProblem(techKey,metaUnlockId){
-  if(metaUnlockId&&!crossModeUnlocks.has(metaUnlockId))return getUnlockDef(metaUnlockId)?.hint??"需要跨模式解锁";
-  if(techKey&&!survival.research.includes(technologies[techKey].contentId))return "需研究「"+technologies[techKey].name+"」";
+  if(metaUnlockId&&!crossModeUnlocks.has(metaUnlockId))return getUnlockDef(metaUnlockId)?.hint??"Need to unlock the cross-module";
+  if(techKey&&!survival.research.includes(technologies[techKey].contentId))return "Research required: "+technologies[techKey].name;
   return "";
 }
 function nearResearchDesk(){
   return Object.entries(survival.builds).some(([id,kind])=>kind==="researchDesk"&&distance(player,tilePoint(id))<=INTERACT_REACH);
 }
 function techProblem(tech,nearDesk){
-  if(survival.research.includes(tech.contentId))return "已研究";
-  return unlockProblem(tech.requires)||(!nearDesk?"需要靠近研究台":!stockCanPay(tech.cost)?"材料不足":"");
+  if(survival.research.includes(tech.contentId))return "Researched";
+  return unlockProblem(tech.requires)||(!nearDesk?"Move closer to the research table":!stockCanPay(tech.cost)?"Insufficient material":"");
 }
 function campProjectDone(id){return campProjectComplete(survival.campProjects,id);}
 function paintCampProjects(nearDesk=nearResearchDesk()){
   const progress=survival.campProjects,atFire=canReachCell(survivalCamp);
   const lit=survival.fuel>0,drain=fireDrainRate(weatherMods.fireDrainMult,campProjectDone("windHearth"),tuning.fuelConsumptionMultiplier);
   const radius=lit?hearth.baseRadiusPx*(campProjectDone("windHearth")?hearth.shelteredRadiusMult:1)*weatherMods.lightRadiusMult:0;
-  $("campProjectSummary").textContent="营地设施 · T"+campTier(progress);
+  $("campProjectSummary").textContent="Camp facility T"+campTier(progress);
   const auras=[];
-  if(campProjectDone("windHearth"))auras.push("护风抵消 "+Math.round((1-hearth.windPenaltyFraction)*100)+"% 额外风耗");
-  if(campProjectDone("watchPyre"))auras.push(lit?"哨柱照明 "+(hearth.beaconRadiusTiles*weatherMods.lightRadiusMult).toFixed(1)+" 格，封锁 "+hearth.guardHalfAngleDeg*2+"°":"哨柱待点火");
-  if(campProjectDone("stakes"))auras.push("拒马带 "+hearth.stakeInnerTiles+"–"+hearth.stakeOuterTiles+" 格，移速 ×"+hearth.stakeSpeedMult);
-  if(campProjectDone("stoker"))auras.push("炉心"+(winterPhase(dailyClock,dayTime)==="night"?"值守":"待夜")+"，燃料 ≤"+hearth.autoFeedThreshold+" 时添柴");
-  $("hearthControls").innerHTML='<p>炉塘燃料 '+Math.ceil(survival.fuel)+' / '+hearth.capacity+' · 燃耗 '+drain.toFixed(2)+' / 秒 · 主光圈 '+(radius/SIZE).toFixed(1)+' 格</p>'+
+  if(campProjectDone("windHearth"))auras.push("Wind guard off "+Math.round((1-hearth.windPenaltyFraction)*100)+"% extra wind consumption");
+  if(campProjectDone("watchPyre"))auras.push(lit?"The post is lit "+(hearth.beaconRadiusTiles*weatherMods.lightRadiusMult).toFixed(1)+" G, block it "+hearth.guardHalfAngleDeg*2+"°":"The post is on fire");
+  if(campProjectDone("stakes"))auras.push("The no-seat belt "+hearth.stakeInnerTiles+"–"+hearth.stakeOuterTiles+" G, move speed x"+hearth.stakeSpeedMult);
+  if(campProjectDone("stoker"))auras.push("The heart of the oven"+(winterPhase(dailyClock,dayTime)==="night"?"Watch out":"Stay the night")+", Fuel jer"+hearth.autoFeedThreshold+" to add firewood");
+  $("hearthControls").innerHTML='<p>- The fire-dam fuel '+Math.ceil(survival.fuel)+' / '+hearth.capacity+'  ·  Fire consumption '+drain.toFixed(2)+' / Second · Main light circle '+(radius/SIZE).toFixed(1)+' tiles</p>'+
     (auras.length?'<p>'+auras.join(" · ")+'</p>':"")+
-    Object.entries(hearth.fuelValues).map(([item,value])=>'<button data-fuel="'+item+'" '+(!atFire||survival.stock[item]<1||survival.fuel>=hearth.capacity?'disabled':'')+'>投入'+stockLabels[item]+'（+'+value+'）</button>').join("");
+    Object.entries(hearth.fuelValues).map(([item,value])=>'<button data-fuel="'+item+'" '+(!atFire||survival.stock[item]<1||survival.fuel>=hearth.capacity?'disabled':'')+'> Input'+stockLabels[item]+' (+'+value+')</button>').join("");
   $("campProjectList").innerHTML=Object.entries(campProjects).map(([id,project])=>{
     const done=campProjectDone(id);
     const nearby=project.tier?atFire:nearDesk,missing=missingCampProjects(progress,id);
     const canDonate=nearby&&!done&&Object.keys(campProjectContribution(progress,id,survival.stock)).length>0;
-    const label=done?(id==="watchPyre"&&!lit?"已建成 · 待点火":"已建成"):missing.length?"前置 · "+missing.map(key=>campProjects[key].name).join("、"):!nearby?(project.tier?"需靠近营火":"需靠近研究台"):canDonate?"交付现有材料":"缺少所需材料";
+    const label=done?(id==="watchPyre"&&!lit?"- It's already been built. - I'll light it":"Completed"):missing.length?"Prerequisite  ·  "+missing.map(key=>campProjects[key].name).join(", "):!nearby?(project.tier?"Move closer to the campfire":"Move closer to the research table"):canDonate?"Contribute available materials":"Required materials missing";
     const materials=Object.entries(project.cost).map(([item,needed])=>{
       const count=progress[id]?.[item]??0;
       return '<li data-complete="'+(count===needed)+'"><span>'+stockLabels[item]+'</span><span>'+count+' / '+needed+
-        '</span><progress max="'+needed+'" value="'+count+'" aria-label="'+stockLabels[item]+'交付进度"></progress></li>';
+        '</span><progress max="'+needed+'" value="'+count+'" aria-label="'+stockLabels[item]+'Progress in delivery"></progress></li>';
     }).join("");
     return '<article class="tech-node" data-learned="'+done+'" data-project="'+id+'" tabindex="-1"><h4>'+(project.tier?"T"+project.tier+" · ":"")+project.name+
       '</h4><p>'+project.detail+'</p><ul class="camp-materials">'+materials+'</ul><button type="button" data-donate="'+id+
@@ -3685,7 +3685,7 @@ function contributeCampProject(id){
   if(!donateCampMaterials(survival.campProjects,id,survival.stock))return;
   heatSourcesCache=null;
   const done=campProjectDone(id),name=campProjects[id].name;
-  const message=done?"已完成「"+name+"」。"+campProjects[id].detail:"已为「"+name+"」交付材料。";
+  const message=done?"Completed "+name+". "+campProjects[id].detail:"Contributed materials to "+name+".";
   $("techStatus").textContent=message;
   say(message,done?"seal":"stone");survivalHud();writeSave();paintTechTree();
   $("campProjectList").querySelector('[data-project="'+id+'"]').focus({preventScroll:true});
@@ -3696,8 +3696,8 @@ function paintTechTree(){
     const tech=technologies[key],problem=techProblem(tech,nearDesk);
     const learned=survival.research.includes(tech.contentId);
     return '<article class="tech-node" data-learned="'+learned+'"><h4>'+tech.name+'</h4><p>'+tech.detail+'</p><small>'+
-      (tech.requires?"前置 · "+technologies[tech.requires].name+"<br>":"")+costLabel(tech.cost)+
-      '</small><button type="button" data-research="'+key+'"'+(problem?" disabled":"")+'>'+(problem||"研究")+'</button></article>';
+      (tech.requires?"Prerequisite  ·  "+technologies[tech.requires].name+"<br>":"")+costLabel(tech.cost)+
+      '</small><button type="button" data-research="'+key+'"'+(problem?" disabled":"")+'>'+(problem||"Research")+'</button></article>';
   };
   const branches=technologyBranches.map(branch=>'<section class="tech-branch" style="--branch:'+branch.color+'"><h3>'+branch.name+
     '</h3>'+branch.nodes.map(node).join('<div class="tech-arrow" aria-hidden="true">↓</div>')+'</section>').join("");
@@ -3707,7 +3707,7 @@ function paintTechTree(){
 function openTechTree(){
   if(mode!=="survival"||phase!=="play"||craftJob)return;
   phase="tech";clearGameplayInput();
-  $("techStatus").textContent="靠近营火可添柴、建造守营设施；靠近研究台可研究科技、修缮旧设施。";
+  $("techStatus").textContent="The fire is close to the camp, which can feed firewood, build camp installations, research technology close to the research stations and repair old facilities. —.";
   paintTechTree();$("techDialog").showModal();
 }
 function closeTechTree(){
@@ -3721,7 +3721,7 @@ function researchTechnology(key){
   const problem=techProblem(tech,nearResearchDesk());
   if(problem){$("techStatus").textContent=problem;return false;}
   stockPay(tech.cost);survival.research.push(tech.contentId);
-  const message="已研究「"+tech.name+"」。"+tech.detail;
+  const message="Researched "+tech.name+". "+tech.detail;
   $("techStatus").textContent=message;
   say(message,"seal");survivalHud();writeSave();paintTechTree();
   return true;
@@ -3733,20 +3733,20 @@ function recipeProblem(id){
   const recipe=recipes[id];
   const locked=unlockProblem(recipe.tech,recipe.metaUnlock);
   if(locked)return locked;
-  if(recipe.project&&!campProjectDone(recipe.project))return "需要"+campProjects[recipe.project].name;
-  if(recipe.camp&&survival.fuel<=0)return "到营地按 T 添柴";
-  if(recipe.unique&&survival.stock[id]>0)return "已装备";
-  if(recipe.camp&&!canReachCell(survivalCamp))return "需要靠近篝火";
-  if(!stockCanPay(recipe.cost))return "材料不足";
+  if(recipe.project&&!campProjectDone(recipe.project))return "Yes"+campProjects[recipe.project].name;
+  if(recipe.camp&&survival.fuel<=0)return "Go to camp and press T for firewood";
+  if(recipe.unique&&survival.stock[id]>0)return "Equipped";
+  if(recipe.camp&&!canReachCell(survivalCamp))return "Move closer to the campfire";
+  if(!stockCanPay(recipe.cost))return "Insufficient material";
   return "";
 }
 function paintPackQuickbar(){
   $("packQuickSlots").innerHTML=quickSlotMarkup(packQuickSlot,true);
-  $("packQuickLabel").textContent="第 "+(packQuickSlot+1)+" 格";
+  $("packQuickLabel").textContent="No. No "+(packQuickSlot+1)+" tiles";
   const selectable=[wateringCanId,...Object.keys(stockLabels).map(key=>contentId("stock",key))];
   const choices=selectable.map(quickItem).filter(entry=>entry.id===wateringCanId||quickItemCount(entry)>0||survival.quickbar.includes(entry.id));
   const select=$("packQuickItem");
-  select.innerHTML='<option value="">空格</option>'+choices.map(entry=>'<option value="'+entry.id+'">'+entry.name+' ×'+quickItemCount(entry)+'</option>').join("");
+  select.innerHTML='<option value="">Space</option>'+choices.map(entry=>'<option value="'+entry.id+'">'+entry.name+' ×'+quickItemCount(entry)+'</option>').join("");
   select.value=survival.quickbar[packQuickSlot]??"";
 }
 function editableQuickSlot(index){
@@ -3759,7 +3759,7 @@ function assignQuickSlot(index,id){
   const previous=bar[index],source=id?bar.indexOf(id):-1;
   if(source>0)bar[source]=previous;
   bar[index]=id||null;packQuickSlot=index;
-  $("packStatus").textContent=entry?"第 "+(index+1)+" 格 · "+entry.name:"已清空第 "+(index+1)+" 格。";
+  $("packStatus").textContent=entry?"No. No "+(index+1)+" tiles  ·  "+entry.name:"Cleared "+(index+1)+" tiles.";
   paintPackQuickbar();survivalHud();writeSave();
 }
 function paintPack(){
@@ -3771,15 +3771,15 @@ function paintPack(){
     if(!provisions[id])return '<div class="stock-item">'+label+'</div>';
     const effect=provisions[id];
     const ready=stock[id]>0&&!craftJob&&((effect.health&&player.hp<MAX_HP)||(effect.hunger&&hunger<100)||effect.warmth);
-    const verb=effect.health?"使用":"食用";
-    const value=[effect.warmth&&"抗寒 "+effect.warmth+" 秒",effect.health&&"回复 "+effect.health+" 生命",effect.hunger&&"恢复 "+effect.hunger+" 饱食"].filter(Boolean).join(" · ");
+    const verb=effect.health?"Use":"Eat";
+    const value=[effect.warmth&&"Cold resistance "+effect.warmth+" s",effect.health&&"Heal "+effect.health+" Health",effect.hunger&&"Restore "+effect.hunger+" Fullness"].filter(Boolean).join(" · ");
     return '<button type="button" class="stock-item" data-use="'+id+'" title="'+value+'" aria-label="'+verb+name+'，'+value+'" aria-disabled="'+!ready+'">'+label+'</button>';
   }).join("");
   $("recipeList").innerHTML=Object.entries(recipes).map(([id,recipe])=>{
     const problem=recipeProblem(id);
     return '<li><span class="gear-item">'+itemIcon(id)+'<span><b>'+stockLabels[id]+' ×'+recipe.count+
-      '</b><small>'+costLabel(recipe.cost)+(recipe.camp?' · 篝火':'')+'</small></span></span>'+
-      '<button type="button" data-craft="'+id+'"'+(craftJob||problem?' disabled':'')+'>'+(problem||"合成")+'</button></li>';
+      '</b><small>'+costLabel(recipe.cost)+(recipe.camp?'  ·  Campfire':'')+'</small></span></span>'+
+      '<button type="button" data-craft="'+id+'"'+(craftJob||problem?' disabled':'')+'>'+(problem||"Craft")+'</button></li>';
   }).join("");
 }
 function drawCraftPreview(id,index){
@@ -3819,7 +3819,7 @@ function openPack(){
   phase="pack";clearGameplayInput();
   packQuickSlot=Math.max(1,activeQuickSlot);
   craftResult=null;
-  $("packStatus").textContent="选择可用配方，或点击物品使用。";
+  $("packStatus").textContent="Select the formula to be used, or click on the object.";
   paintPack();drawCraftPreview();
   $("packDialog").showModal();
 }
@@ -3828,7 +3828,7 @@ function beginCraft(id){
   if(mode!=="survival"||!recipe||craftJob||(phase!=="play"&&phase!=="pack")||recipeProblem(id))return false;
   craftJob={id,elapsed:0,frame:-1};
   craftResult=null;
-  const message="正在制作"+stockLabels[id]+"…";
+  const message="Crafting"+stockLabels[id]+"…";
   if(phase==="pack"){
     $("packStatus").textContent=message;paintPack();$("closePack").focus();
     drawCraftPreview(id,0);
@@ -3860,7 +3860,7 @@ function advanceCraft(dt){
   if(job.elapsed<craftDuration)return;
   cancelCraft();
   const problem=recipeProblem(job.id);
-  const message=problem||"制作完成，获得 "+recipe.count+" "+stockLabels[job.id]+"。";
+  const message=problem||"Crafted "+recipe.count+" "+stockLabels[job.id]+".";
   if(!problem){
     stockPay(recipe.cost);survival.stock[job.id]+=recipe.count;craftResult=job.id;
     sparks(player.x,player.y-4,"#ffd898",12,"magic");
@@ -3888,10 +3888,10 @@ function checkBuildPlacement(cell,type,material){
   if(![1,2,3,4,7].includes(type)||survival.plots[id]||survival.builds[id]||cultivatedAt(x,y)||featureAt(cell)||
      wildlife.some(animal=>animal.id===id)||cellOverlaps(player,at)||
      survival.animals.some(animal=>cellOverlaps(animal,at))||enemies.some(enemy=>enemy.hp>0&&cellOverlaps(enemy,at))){
-    return {problem:"选一格无人占用的空地。"};
+    return {problem:"Select an unoccupied empty space."};
   }
   const cost=availablePlanCost(plan,material);
-  if(!cost||!stockCanPay(cost))return {problem:"材料不足，或配方与手持材料不符。"};
+  if(!cost||!stockCanPay(cost))return {problem:"Insufficient materials or formulations do not match hand-held materials."};
   return {cost};
 }
 function tapTerrain(cell,tool=heldTool()){
@@ -4000,56 +4000,56 @@ function holdPointer(){
 function actSurvival(cell=interactCell(),tool=heldTool()){
   if(craftJob)return;
   if(examineSite(cell))return;
-  if(!canReachCell(cell)){say("再靠近一点。","denied");return;}
+  if(!canReachCell(cell)){say("Move closer.","denied");return;}
   const {x,y}=cell,id=cellKey(x,y),at=point(x,y),type=terrainTile(x,y);
   const s=survival.stock,plot=survival.plots[id],build=survival.builds[id],plant=cultivatedAt(x,y);
   switch(tool){
     case "plant": {
       const itemId=heldQuickItem()?.key;
-      if(!itemId||!s[itemId]){say("手里的种苗已经用完。","denied");return;}
+      if(!itemId||!s[itemId]){say("The seedlings in hand are exhausted.","denied");return;}
       if(build||plot?.crop||featureAt(cell)||wildlife.some(animal=>animal.id===id)){
-        say("找一格空着的地面种植。","denied");return;
+        say("Find a blank ground plantation.","denied");return;
       }
       const nearWater=isSurvivalNearWater(x,y);
       const planted=plantFromSeed(plantRegistry,x,y,itemId,getSurvivalTerrainTag(x,y,nearWater),nearWater);
       if(!planted){
         const def=getPlantBySeed(itemId);
-        say(def?.requiresNearWater?"冰沼苇根需种在两格内有水的沼地或岸边。":"这里的地形不适合这种种苗，或已有植物。","denied");return;
+        say(def?.requiresNearWater?"The raspberry must be planted in a swamp or shore with water in two grids.":"The terrain is not suitable for this seedling or for plants already present.","denied");return;
       }
       s[itemId]--;nextWork=tick+PLACE_INTERVAL;
       actionAt("dig",at,"hoe");sparks(at.x,at.y,"#9cc694",7,"wood");
-      say("已种下"+getPlantDef(planted.plantId).name+"。浇水和施肥可以加快生长。","grass");break;
+      say("Planted"+getPlantDef(planted.plantId).name+".Water and fertilizer can accelerate growth.","grass");break;
     }
     case "fertilize": {
       const itemId=heldQuickItem()?.key,fertilizer=getFertilizerDef(itemId);
-      if(!fertilizer||!s[itemId]){say("手里的肥料已经用完。","denied");return;}
+      if(!fertilizer||!s[itemId]){say("The fertilizer in your hands is exhausted.","denied");return;}
       if(plant&&getPlantDef(plant.plantId).solid&&!canMatureSurvivalPlant(plant)){
-        say("请先离开树苗所在的格子。","denied");return;
+        say("Please leave the tree seedlings in the grid.","denied");return;
       }
       obstacleVersion++;
-      if(!fertilizePlantAt(plantRegistry,x,y,itemId)){say("肥料只用于尚未成熟的植株。","denied");return;}
+      if(!fertilizePlantAt(plantRegistry,x,y,itemId)){say("Fertilizer is only used in the form of plants that are not yet mature.","denied");return;}
       s[itemId]--;nextWork=tick+PLACE_INTERVAL;
       actionAt("reach",at,"hand");sparks(at.x,at.y-3,"#ffc887",10,"ember");
-      say(fertilizer.advanceFullStage?"余烬暖肥推进一阶，并抵御暴雪 240 秒。":"灰烬堆肥推进 45 秒生长进度，并加快接下来 180 秒的生长。","heal");break;
+      say(fertilizer.advanceFullStage?"The rest of the remains are warm and fattening up one step and fighting against the snow  seconds.":"Ash compost drives 45 seconds to grow and accelerates the next 180 seconds.","heal");break;
     }
     case "chopPlant": {
       obstacleVersion++;const result=chopPlantAt(plantRegistry,x,y);
-      if(!result){say("这格没有可清理的植被。","denied");return;}
+      if(!result){say("This category has no vegetation to clear.","denied");return;}
       const def=getPlantDef(result.plant.plantId);
       nextWork=tick+HARVEST_INTERVAL;
       actionAt("chop",at,def.harvestMode==="fell"?"axe":"hoe");
       sparks(at.x,at.y-4,"#c8a67e",result.action==="hit"?6:12,"wood");
       if(result.action==="hit"){
         const max=result.plant.stump?def.stumpHp:def.chopHp;
-        say(def.name+(result.plant.stump?"树桩":"")+" · "+result.plant.hp+" / "+max,"hit");
+        say(def.name+(result.plant.stump?"Tree stump":"")+" · "+result.plant.hp+" / "+max,"hit");
       }else{
         if(pointerPress)pointerPress.workedCell=true;
         if(result.action==="removed"&&result.plant.wild&&!removedResources.has(String(id))){
           removedResources.add(String(id));survival.removed.push(id);
         }
         const dropped=dropCultivatedItems(at,result.drops);
-        say(result.action==="felled"?def.name+"已砍倒，留下可继续清理的树桩。":
-          def.name+"已清理。"+(dropped?"掉落物在脚边。":""),"hit");
+        say(result.action==="felled"?def.name+"Cut down and left a tree stake that could continue to be cleared.":
+          def.name+"Cleaned up."+(dropped?"Dropped things on the foot.":""),"hit");
       }
       break;
     }
@@ -4064,7 +4064,7 @@ function actSurvival(cell=interactCell(),tool=heldTool()){
       useProvision(heldQuickItem()?.key);return;
     case "axe": {
       const resource=harvestResource(type);
-      if(!resource){say("这里没有可采集的树木、岩石或矿脉。","denied");return;}
+      if(!resource){say("There are no trees, rocks or mineral veins to collect.","denied");return;}
       const material=resource.tool==="pick"?rockMaterial(x,y,type):null;
       const ore=material&&oreTypes[material];
       const upgraded=resource.tool==="pick"&&s.copperPick>0,need=resource.hits;
@@ -4082,56 +4082,56 @@ function actSurvival(cell=interactCell(),tool=heldTool()){
       const loot={[resource.product]:resource.count};
       if(type===0&&hash(x,y,survival.seed??0)>.5)loot.seed=1;
       if(ore)loot[material]=1;
-      dropGroundItems(at,loot);setMessage(Object.keys(loot).map(key=>stockLabels[key]).join("、")+"已掉落，靠近拾取。");
+      dropGroundItems(at,loot);setMessage(Object.keys(loot).map(key=>stockLabels[key]).join(", ")+" dropped nearby. Move closer to pick it up.");
       break;
     }
     case "hoe":
-      if(!tillable(cell)){say("找一格未占用的肥沃地面开垦。","denied");return;}
+      if(!tillable(cell)){say("Find an unoccupied fertile ground to reclaim.","denied");return;}
       nextWork=tick+TILL_INTERVAL;
       actionAt("dig",at,"hoe");sparks(at.x,at.y,"#a48364",7,"dust");
       survival.plots[id]={contentId:plotId,crop:null,growth:0,water:0};
       miniOrigin=null;visibleCells=null;
-      say("耕地已开垦。短按空耕地播种。","grass");break;
+      say("The cropland is cultivated. the cropland is planted on a short scale.","grass");break;
     case "seed":
-      if(!plot||plot.crop||plant||s.seed<=0){say(s.seed<=0?"种子用完了。收获小麦可获得种子。":"种子要播在空耕地。","denied");return;}
+      if(!plot||plot.crop||plant||s.seed<=0){say(s.seed<=0?"Seeds are out. Seeds are available for wheat harvest.":"Seeds are to be planted in empty land.","denied");return;}
       actionAt("reach",at,"hand");sparks(at.x,at.y-1,"#bd8d5d",4,"wood");
-      s.seed--;plot.crop=wheatCropId;say("已播种。浇水后开始生长。","grass");break;
+      s.seed--;plot.crop=wheatCropId;say("Sowing. Watering starts growing.","grass");break;
     case "water":
-      if(type===5||sameTile(cell,well)){actionAt("reach",at,"can");s.water=WATER_CAPACITY;say("水壶已装满。","heal");break;}
+      if(type===5||sameTile(cell,well)){actionAt("reach",at,"can");s.water=WATER_CAPACITY;say("The canteen is full.","heal");break;}
       if(plant){
-        if(s.water<=0){say("水壶空了。在水井或池边装水。","denied");return;}
-        if(!waterPlantAt(plantRegistry,x,y)){say(plant.stage===2?"这株植物无需浇水。":"土壤已经湿润。","denied");return;}
+        if(s.water<=0){say("The kettle is empty. Water is loaded at wells or by the pool.","denied");return;}
+        if(!waterPlantAt(plantRegistry,x,y)){say(plant.stage===2?"This plant does not need water.":"The soil is already wet.","denied");return;}
         s.water--;actionAt("pour",at,"can");sparks(at.x,at.y-2,"#87cbd3",8,"water");
-        say("已浇水，植株会保持润泽。","frost");break;
+        say("Water has been poured, and the plant will keep the radiance.","frost");break;
       }
-      if(!plot?.crop||s.water<=0){say(s.water<=0?"水壶空了。在水井或池边装水。":"先在耕地播种。","denied");return;}
-      if(plot.water>2||plot.growth>=24){say(plot.growth>=24?"小麦已成熟，可以收获。":"土壤已经湿润。");return;}
+      if(!plot?.crop||s.water<=0){say(s.water<=0?"The kettle is empty. Water is loaded at wells or by the pool.":"First, we plant in the fields.","denied");return;}
+      if(plot.water>2||plot.growth>=24){say(plot.growth>=24?"Wheat is mature and harvestable.":"The soil is already wet.");return;}
       actionAt("pour",at,"can");
-      plot.water=21;s.water--;sparks(at.x,at.y-2,"#87cbd3",10,"water");say("已浇水。天亮且土壤湿润时会生长。","frost");break;
+      plot.water=21;s.water--;sparks(at.x,at.y-2,"#87cbd3",10,"water");say("Water is watered. The soil grows when it is sunny and wet.","frost");break;
     case "build": {
       const plan=plans[chosenPlan];
       const placement=checkBuildPlacement(cell,type,heldMaterial());
       if(!placement.cost){say(placement.problem,"denied");return;}
       const roost=chosenPlan==="coop"?[[1,0],[-1,0],[0,1],[0,-1]]
         .map(([dx,dy])=>point(x+dx,y+dy)).find(p=>clearAt(p.x,p.y,3)):null;
-      if(chosenPlan==="coop"&&!roost){say("畜棚旁需要一格可站立的地面。","denied");return;}
+      if(chosenPlan==="coop"&&!roost){say("A single standing ground is needed by the barn.","denied");return;}
       stockPay(placement.cost);survival.builds[id]=chosenPlan;heatSourcesCache=null;raidPaths=null;obstacleVersion++;
       if(buildLightRadius[chosenPlan])igniteBesideTorch(x,y);
       miniOrigin=null;visibleCells=null;
       nextWork=tick+PLACE_INTERVAL;
       if(chosenPlan==="coop")survival.animals.push({kind:henId,...roost,home:at,roost,feed:0,ready:false});
-      actionAt("dig",at,"hammer");sparks(at.x,at.y-4,"#c8a778",10,"wood");say("已建造"+plan.name+"。","stone");break;
+      actionAt("dig",at,"hammer");sparks(at.x,at.y-4,"#c8a778",10,"wood");say("Built "+plan.name+".","stone");break;
     }
     case "salvage":
-      if(!build){say("这里没有可拆除的建筑。","denied");return;}
-      if(build==="coop"&&survival.animals.some(animal=>distance(animal.home,at)<1)){say("正在使用的畜棚不能拆除。","denied");return;}
+      if(!build){say("There are no structures to be demolished.","denied");return;}
+      if(build==="coop"&&survival.animals.some(animal=>distance(animal.home,at)<1)){say("The sheds in use cannot be demolished.","denied");return;}
       dropGroundItems(at,{wood:Math.ceil(plans[build].cost.wood/2)});
       delete survival.builds[id];delete survival.open[id];heatSourcesCache=null;raidPaths=null;obstacleVersion++;
       miniOrigin=null;visibleCells=null;
       nextWork=tick+HARVEST_INTERVAL;
       wildlifeSector="";
       actionAt("chop",at,"hammer");sparks(at.x,at.y-3,"#c39b6f",10,"wood");
-      say("已拆除"+plans[build].name+"，木材掉落在原地。","stone");break;
+      say("Dismantled"+plans[build].name+", Wood fell to its original location.","stone");break;
     default:
       if(!useHand(cell,id,at,plot,build))return;
   }
@@ -4153,7 +4153,7 @@ function harvestCultivated(cell){
   const at=point(x,y),name=getPlantDef(result.plant.plantId).name;
   const dropped=dropCultivatedItems(at,result.drops);
   actionAt("reach",at,"hand");sparks(at.x,at.y-3,"#bfdfab",7,"wood");
-  say("已采摘"+name+"。植株会重新生长。"+(dropped?"靠近拾取掉落物。":""),"grass");
+  say("Picked"+name+".The plant will grow again."+(dropped?"Close to pick up the fall.":""),"grass");
   return true;
 }
 function harvestPlant(cell,plot){
@@ -4162,42 +4162,42 @@ function harvestPlant(cell,plot){
   if(ripeCrop(plot)){
     dropGroundItems(at,{wheat:2,seed:2});plot.crop=null;plot.growth=0;plot.water=0;
     actionAt("reach",at,"hand");sparks(at.x,at.y-4,"#f1c773",12,"wood");
-    say("小麦和种子已掉落，靠近拾取。","seal");return true;
+    say("Wheat and seeds have fallen, close to picking up.","seal");return true;
   }
   const plant=wildPlantAt(x,y);
   if(!plant)return false;
   survival.wildPlantTimers[id]=survival.age+rates.wildRegrowthSec;
   dropGroundItems(at,{[plant]:2});
   actionAt("reach",at,"hand");sparks(at.x,at.y-3,wildPlants[plant].color,6,"wood");
-  say("采下了"+stockLabels[plant]+"，靠近拾取。","grass");return true;
+  say("Pick it up"+stockLabels[plant]+", Close to pick up.","grass");return true;
 }
 function useHand(cell,id,at,plot,build){
   const cultivated=cultivatedAt(cell.x,cell.y);
   if(cultivated){
     if(harvestCultivated(cell))return true;
     const def=getPlantDef(cultivated.plantId);
-    say(def.harvestMode==="fell"?"左键长按砍伐或清理树桩。":def.name+"还在生长。");
+    say(def.harvestMode==="fell"?"Left key long press to cut or clear the stake.":def.name+"Still growing.");
     return false;
   }
   if(sameTile(cell,survivalCamp)){
     if(survival.fuel<=0){openTechTree();return false;}
     if(stockCanPay(recipes.bread.cost)){beginCraft("bread");}
-    else if(survival.hunger>=42&&player.hp<MAX_HP){player.hp=MAX_HP;survival.hunger-=12;renderHud();say("篝火旁已恢复生命。","heal");}
-    else {say("按 T 查看炉塘燃料与守营设施。也可用 2 小麦烤面包。");return false;}
+    else if(survival.hunger>=42&&player.hp<MAX_HP){player.hp=MAX_HP;survival.hunger-=12;renderHud();say("Life has been restored by the bonfire.","heal");}
+    else {say("Press T to view the tank fuel and camp facility.2 may also be used for wheat toast.");return false;}
     return true;
   }
   if(build==="gate"){
     if(survival.open[id]&&[player,...survival.animals,...enemies.filter(e=>e.hp>0)].some(e=>cellOverlaps(e,at))){
-      say("栅门被挡住了。","denied");return false;
+      say("The fence is blocked.","denied");return false;
     }
     actionAt("reach",at,"hand");
-    survival.open[id]=!survival.open[id];raidPaths=null;obstacleVersion++;say(survival.open[id]?"栅门已打开。":"栅门已关上。","stone");return true;
+    survival.open[id]=!survival.open[id];raidPaths=null;obstacleVersion++;say(survival.open[id]?"The gate is open.":"The fence is closed.","stone");return true;
   }
   if(build==="researchDesk"){openTechTree();return false;}
   if(build==="bed"){
-    if(dayTime<dailyClock.nightStart){say("天还亮着。薄暮之后才能睡觉。","denied");return false;}
+    if(dayTime<dailyClock.nightStart){say("It's still light. It's not until dark.","denied");return false;}
     if(survival.raid.day===dailyClock.day&&["waiting","active"].includes(survival.raid.stage)){
-      say("袭营之夜无法安睡，先守住营地。","denied");return false;
+      say("The night of the raid was not able to sleep, but the camp was secured.","denied");return false;
     }
     const rest=DAY_SECONDS-dayTime;
     const savedHunger=insideCamp(cell.x,cell.y)&&campProjectDone("restCorner")?campProjectEffects.restHungerSaved:0;
@@ -4213,11 +4213,11 @@ function useHand(cell,id,at,plot,build){
     survival.age=dailyClock.day*DAY_SECONDS;dayTime=0;const reward=beginWinterDay();emberBrazierTime=0;player.hp=Math.min(MAX_HP,player.hp+2);
     survival.hunger=Math.max(1,survival.hunger-(10-savedHunger));
     for(const animal of survival.animals)progressAnimal(animal,rest);
-    updateTime();renderHud();say(reward||"你睡到了第二天黎明。","heal");return true;
+    updateTime();renderHud();say(reward||"You slept till the next day at dawn.","heal");return true;
   }
   if(plot?.crop){
     if(harvestPlant(cell,plot))return true;
-    say("小麦生长 "+Math.floor(plot.growth/24*100)+"%"+(plot.water>0?"，土壤湿润。":"，需要浇水。"));return false;
+    say("Wheat grows "+Math.floor(plot.growth/24*100)+"%"+(plot.water>0?", Soil humid.":", Water needs to be poured."));return false;
   }
   const animal=build==="coop"?survival.animals.find(a=>distance(a.home,at)<1):
     survival.animals.find(a=>distance(a,at)<11);
@@ -4229,7 +4229,7 @@ function useHand(cell,id,at,plot,build){
     actionAt("reach",wildAnimal,"hand");return true;
   }
   if(harvestPlant(cell,plot))return true;
-  say("用手收获作物、照顾动物或使用附近设施。");return false;
+  say("The harvest of crops, the care of animals or the use of nearby facilities is carried out by hand.");return false;
 }
 function careFor(animal){
   const s=survival.stock,name=contentById.get(animal.kind).name,hen=animal.kind===henId;
@@ -4237,12 +4237,12 @@ function careFor(animal){
     const home=worldCell(animal.home);
     const bonus=hen&&insideCamp(home.x,home.y)&&campProjectDone("feedingTrough")?campProjectEffects.bonusEggs:0;
     dropGroundItems(animal,hen?{egg:2+bonus}:{wool:1});
-    animal.ready=false;say(hen?"鸡蛋已掉落，靠近拾取。":"羊毛已掉落，靠近拾取。","seal");return true;
+    animal.ready=false;say(hen?"Eggs have fallen, near pick.":"The wool has fallen, near to pick it up.","seal");return true;
   }
-  if(animal.feed>0){say(name+"已喂过了，还需约 "+Math.ceil(animal.feed)+" 秒。");return false;}
-  if(s.wheat<=0){say("需要 1 小麦喂"+name+"。","denied");return false;}
+  if(animal.feed>0){say(name+"We've been fed and we need to make an appointment "+Math.ceil(animal.feed)+" s.");return false;}
+  if(s.wheat<=0){say("You need Wheat to feed "+name+".","denied");return false;}
   s.wheat--;animal.feed=animalFeedTime[hen?"hen":"sheep"];
-  sparks(animal.x,animal.y-5,"#eab399",8);say("喂了"+name+"。","heal");return true;
+  sparks(animal.x,animal.y-5,"#eab399",8);say("Fed "+name+".","heal");return true;
 }
 function useProvision(id){
   if(mode!=="survival"||craftJob||(phase!=="play"&&phase!=="pack"))return;
@@ -4255,7 +4255,7 @@ function useProvision(id){
   s[id]--;
   if(healed){player.hp=Math.min(MAX_HP,player.hp+provision.health);renderHud();}
   if(fed)survival.hunger=Math.min(100,survival.hunger+provision.hunger);
-  const message=(provision.health?"使用了":"吃了")+stockLabels[id]+(provision.warmth?"，抗寒 "+provision.warmth+" 秒。":"。");
+  const message=(provision.health?"Used ":"Ate ")+stockLabels[id]+(provision.warmth?", Cold resistance "+provision.warmth+" s.":".");
   say(message,"heal");sparks(player.x,player.y-2,healed?"#a6dfba":"#f0cd93",8,"magic");
   survivalHud();writeSave();
   if(phase==="pack"){
@@ -4265,10 +4265,10 @@ function useProvision(id){
 }
 function eat(){
   if(mode!=="survival"||phase!=="play"||craftJob)return;
-  if(survival.hunger>=100){say("你现在不饿。");return;}
+  if(survival.hunger>=100){say("You're not hungry now.");return;}
   const food=["egg","bread","boiled","berry","frostBerry","sandFruit","honey","trailmix"].find(id=>survival.stock[id]>0);
   if(food)useProvision(food);
-  else say("没有食物。可以收鸡蛋，或到篝火用小麦烤面包。","denied");
+  else say("No food. You can collect eggs or bake bread with wheat on a bonfire.","denied");
 }
 function progressAnimal(a,dt){
   if(a.feed<=0)return;
@@ -4310,15 +4310,15 @@ function tickRaid(){
     const budget=forecast.due?raidBudget(dailyClock.day,campTier(survival.campProjects),rates.clearNightWaveSize,weatherMods.spawnRateMult):0;
     const event=advanceRaid(raid,forecast,budget&&inBeaconProtection()?1:budget);
     if(event==="warning"){
-      const notices=["","远处传来风啸，准备回营。","低吼近了，给炉塘添柴。","林缘有动静，守住营地！"];
-      announceWinter(notices[raid.warning]+" 距袭营 "+Math.ceil(forecast.seconds)+" 秒。",["","raidWind","raidGrowl","raidClose"][raid.warning]);writeSave();
+      const notices=["","Afar from the wind is coming, ready to go back to camp.","The low-roar is closing in, filling the pond with wood.","The forest is moving and the camp is secured!"];
+      announceWinter(notices[raid.warning]+" From the attack camp "+Math.ceil(forecast.seconds)+" s.",["","raidWind","raidGrowl","raidClose"][raid.warning]);writeSave();
     }
-    if(event==="arrival"){raidPaths=null;announceWinter("夜袭抵达！本波共 "+raid.budget+" 名袭营者。","raidClose");}
+    if(event==="arrival"){raidPaths=null;announceWinter("Night raid arriving! Bennett "+raid.budget+" A camp attacker.","raidClose");}
   }
   if(raid.stage!=="active")return;
   if(raid.remaining&&survival.age>=raid.retryAt){spawnRaid();writeSave();}
   if(finishRaid(raid,enemies.filter(e=>e.raid&&e.hp>0).length)){
-    announceWinter("袭营者已全部击退。黎明将收获炉灰（余烬尘）。");writeSave();
+    announceWinter("The attackers have all been defeated. The ashes will be harvested at dawn).");writeSave();
   }
 }
 function beginWinterDay(){
@@ -4327,7 +4327,7 @@ function beginWinterDay(){
   const ash=dawnAsh(raid);
   clearNightThreats(true);raidPaths=null;syncDailyClock();
   if(raid.day>0&&raid.day<dailyClock.day)survival.raid=scheduleRaid(survival.seed,dailyClock.day-1,tuning.spawnFrequency);
-  if(ash){survival.stock.ember_dust+=ash;return "守营成功！黎明收获炉灰 · 余烬尘 ×"+ash+"。";}
+  if(ash){survival.stock.ember_dust+=ash;return "Raid repelled! Dawn reward: "+ash+" Ember Dust.";}
   return "";
 }
 let previousEncounterCell=null;
@@ -4338,7 +4338,7 @@ function observeEncounters(){
   for(const site of seededWorld?.encounters??[]){
     if(discoverEncounter(survival.encounterProgress,site,here)){
       for(const e of site.entities)if(e.kind==="plant"){obstacleVersion++;spawnPlant(plantRegistry,e.ref,e.x,e.y,{stage:2});}
-      const message="发现奇遇 · "+encounterById.get(site.templateId).name;
+      const message="Find out what a surprise is  ·  "+encounterById.get(site.templateId).name;
       say(message);const toast=$("encounterToast");toast.textContent=message;toast.hidden=false;
       clearTimeout(discoveryTimer);discoveryTimer=setTimeout(()=>toast.hidden=true,2800);
       paintLandmarkControls();writeSave();
@@ -4380,7 +4380,7 @@ function examineSite(cell,nearby=false){
   for(const site of seededWorld?.encounters??[]){
     const p=site.trigger;
     if(!canReachCell(p)||(!sameTile(cell,p)&&!(nearby&&distance(player,point(p.x,p.y))<=SIZE*1.6)))continue;
-    if(!resolveSite(site))say("这里已经探索过了。");
+    if(!resolveSite(site))say("It's been explored here.");
     return true;
   }
   return false;
@@ -4408,16 +4408,16 @@ function updateSurvival(dt){
   updateWildlife();
   dayTime=survival.age%DAY_SECONDS;
   if(dailyClock.day!==Math.floor(survival.age/DAY_SECONDS)+1){
-    const reward=beginWinterDay();announceWinter(reward||"黎明到了，夜行怪退回林中。");writeSave();
+    const reward=beginWinterDay();announceWinter(reward||"Dawn is here, Nightwalkers return to the woods.");writeSave();
   }
   const night=winterPhase(dailyClock,dayTime)==="night";
   if(previous<dailyClock.duskStart&&dayTime>=dailyClock.duskStart)
-    announceWinter("天色渐暗，趁黄昏回营添柴。","dusk");
+    announceWinter("And the sky is darkening, and the day is returning to the camp to fill the wood.","dusk");
   const wasLit=survival.fuel>0;
   tickHearth(survival,dt,weatherMods.fireDrainMult,tuning.fuelConsumptionMultiplier,night);
   if(wasLit!==(survival.fuel>0))heatSourcesCache=null;
   updateTime();tickRaid();
-  if(weatherEvent)say("天气转变为："+weatherEvent.name);
+  if(weatherEvent)say("The weather turns into something: "+weatherEvent.name);
   survival.hunger=Math.max(0,survival.hunger-dt*(player.moving?rates.movingHungerPerSec:rates.idleHungerPerSec));
   if((night||weatherMods.blizzard)&&survival.warmUntil<=survival.age&&
       !survivalHeatSources().some(source=>distance(player,source)<=source.radius)){
@@ -4432,7 +4432,7 @@ function updateSurvival(dt){
     emberBrazierTime+=dt;
     if(emberBrazierTime>=8){
       emberBrazierTime-=8;player.hp=Math.min(maxHealth(),player.hp+1);
-      renderHud();say("余烬火坛的暖光恢复了 1 点生命。","heal");
+      renderHud();say("The warmth of the flame-throwing altar restored one point of life.","heal");
       sparks(player.x,player.y-4,"#ffd394",8,"ember");
     }
   }else emberBrazierTime=0;
@@ -4463,7 +4463,7 @@ function respawnSurvival(){
   survival.hunger=72;survival.stock.wood=Math.ceil(survival.stock.wood*.75);
   if(survival.raid.stage==="active")survival.raid.stage="expired";
   clearNightThreats(true);emberBrazierTime=0;phase="play";$("overlay").hidden=true;$("pause").disabled=false;keys.clear();
-  renderHud();writeSave();setMessage("已在营地醒来。农田和建筑仍在，遗失了部分木材。");
+  renderHud();writeSave();setMessage("The camp woke up. The fields and buildings were still in place and some of the wood was lost.");
 }
 function drawPlots(){
   for(const [id,plot] of visibleSurvivalCells().plots){
@@ -4708,7 +4708,7 @@ function drawTileCursor(){
   const id=cellKey(cell.x,cell.y),animal=wildlife.find(a=>a.id===id);
   const plant=wildPlantAt(cell.x,cell.y,type),ore=veinAt(cell.x,cell.y,type);
   const cultivated=cultivatedAt(cell.x,cell.y);
-  const name=cultivated?getPlantDef(cultivated.plantId).name+(cultivated.stump?"树桩":cultivated.stage<2?"幼株":""):
+  const name=cultivated?getPlantDef(cultivated.plantId).name+(cultivated.stump?"Tree stump":cultivated.stage<2?"Young":""):
     animal?wildSpeciesById.get(animal.kind).name:plant?wildPlants[plant].name:oreTypes[ore]?.name;
   if(name){
     const left=clamp(x+8-name.length*4-3,1,383-name.length*8-6),top=clamp(y-12,1,211);
@@ -4725,20 +4725,20 @@ function drawTileCursor(){
   }
 }
 const blessings=[
-  defineContent("blessing","vigor",{id:"vigor",x:8,y:14,label:"生命上限 +2，并回复 2 点生命",color:"#88dfaa",mods:{health:2}}),
-  defineContent("blessing","might",{id:"might",x:11,y:5,label:"攻击伤害 +0.4",color:"#f8a384",mods:{power:.4}}),
-  defineContent("blessing","ward",{id:"ward",x:29,y:9,label:"受到伤害降低 18%",color:"#f2c98b",mods:{guard:.18}}),
-  defineContent("blessing","wind",{id:"wind",x:11,y:26,label:"移动速度 +15%，攻击间隔缩短 12%",color:"#96cfff",mods:{speed:.15,haste:.12}})
+  defineContent("blessing","vigor",{id:"vigor",x:8,y:14,label:"Life cap +-Aren and reply 2 points of life",color:"#88dfaa",mods:{health:2}}),
+  defineContent("blessing","might",{id:"might",x:11,y:5,label:"Attack injury +0.4",color:"#f8a384",mods:{power:.4}}),
+  defineContent("blessing","ward",{id:"ward",x:29,y:9,label:"The harm is down by 18%",color:"#f2c98b",mods:{guard:.18}}),
+  defineContent("blessing","wind",{id:"wind",x:11,y:26,label:"Move speed + 15%, attack interval reduced by 12%",color:"#96cfff",mods:{speed:.15,haste:.12}})
 ];
 const blessingRunes=Object.fromEntries(blessings.map(({id,color})=>[id,{
   bright:shrineRune(shrineRunes[id],color),
   spent:shrineRune(shrineRunes[id],"#a8a196")
 }]));
 const qualities=[
-  {name:"普通",color:"#d2c5af"},{name:"精良",color:"#9cdea2"},
-  {name:"稀有",color:"#87cfff"},{name:"传说",color:"#ffd27f"}
+  {name:"Normal",color:"#d2c5af"},{name:"Very good",color:"#9cdea2"},
+  {name:"Very rare",color:"#87cfff"},{name:"Legendary",color:"#ffd27f"}
 ];
-const gearSlots={weapon:"武器",armor:"护甲",boots:"靴子",charm:"护符"};
+const gearSlots={weapon:"Weapon",armor:"Armor",boots:"Boots",charm:"Charms"};
 const blades=defineContentGroup("equipment",{
   worn:{power:1,range:30,arc:.12,delay:.31,color:"#ffe1a7"},
   sword:{power:1.32,range:33,arc:.04,delay:.34,color:"#ffdca1"},
@@ -4759,10 +4759,10 @@ const gearBases={
   heart:{slot:"charm",mods:q=>({health:q>=2?2:1,guard:.04+q*.025})}
 };
 const chestStyles=[
-  {name:"木箱",wood:"#a6754d",lid:"#c59261",edge:"#624943",latch:"#e9bd77",light:"#d8a771",band:"#886e57"},
-  {name:"铁箱",wood:"#496173",lid:"#7b91a0",edge:"#364354",latch:"#d3e1dc",light:"#a6babc",band:"#87959a"},
-  {name:"晶箱",wood:"#57517c",lid:"#796dac",edge:"#413858",latch:"#c9a8ff",light:"#a599d0",band:"#7f71a2"},
-  {name:"古金箱",wood:"#97713d",lid:"#d3a95f",edge:"#634d37",latch:"#ffe6a4",light:"#ecc779",band:"#bb9360"}
+  {name:"The wooden box",wood:"#a6754d",lid:"#c59261",edge:"#624943",latch:"#e9bd77",light:"#d8a771",band:"#886e57"},
+  {name:"Iron box",wood:"#496173",lid:"#7b91a0",edge:"#364354",latch:"#d3e1dc",light:"#a6babc",band:"#87959a"},
+  {name:"The Crystal Box",wood:"#57517c",lid:"#796dac",edge:"#413858",latch:"#c9a8ff",light:"#a599d0",band:"#7f71a2"},
+  {name:"Gugkin Box",wood:"#97713d",lid:"#d3a95f",edge:"#634d37",latch:"#ffe6a4",light:"#ecc779",band:"#bb9360"}
 ];
 const chestClosedPattern=`
   ...oooooooooo...
@@ -4806,7 +4806,7 @@ const treasures=[
   defineContent("chest","sealedRuins",{x:39,y:13,style:3,pool:["sword","dagger","spear","axe","bow"],tiers:[[3,1]]})
 ];
 const wornWeapon=defineContent("equipment","worn",{id:blades.worn.contentId,base:"worn",slot:"weapon",tier:0,mods:{}});
-const statNames={power:"攻击",health:"生命",guard:"减伤",speed:"移速",haste:"攻速"};
+const statNames={power:"Attack",health:"Health",guard:"Cut",speed:"Move it",haste:"Attack speed"};
 const itemValue=(id,val)=>["guard","speed","haste"].includes(id)?Math.round(val*100)+"%":Number(val.toFixed(2));
 const blessingText=mods=>Object.entries(mods).map(([id,val])=>statNames[id]+" "+(val>0?"+":"")+itemValue(id,val)).join(" · ");
 const actionTiles=[
@@ -4853,13 +4853,13 @@ function commissionProgress(commission,quests){
 function renderAdventureQuests(){
   const quests=loadout()?.quests;
   if(!quests)return;
-  $("mainQuest").textContent=quests.recovered?"火种已取回。":lit.size<3?"点亮祭坛 "+lit.size+" / 3":
-    enemies.some(e=>e.id==="keeper"&&e.hp>0)?"通过东侧封印门，击败灰烬守卫。":"靠近火种，按 E 取回。";
+  $("mainQuest").textContent=quests.recovered?"The fire has been recovered.":lit.size<3?"Light the altar "+lit.size+" / 3":
+    enemies.some(e=>e.id==="keeper"&&e.hp>0)?"The seal was sealed east, and the ashes were defeated.":"Close to the fire, press E to get back.";
   $("contracts").innerHTML=commissions.map(commission=>{
     const progress=commissionProgress(commission,quests);
-    let status="到营地委托牌领取";
-    if(quests.claimed.has(commission.contentId))status="已领取奖励";
-    else if(quests.accepted)status=progress>=commission.goal?"返回委托牌领赏":progress+" / "+commission.goal;
+    let status="Get the camp entrusted card";
+    if(quests.claimed.has(commission.contentId))status="Incentives have been received";
+    else if(quests.accepted)status=progress>=commission.goal?"Returns the commission":progress+" / "+commission.goal;
     return "<li>"+commission.name+" · "+status+"</li>";
   }).join("");
 }
@@ -4867,7 +4867,7 @@ function interactCommissions(){
   const gear=loadout(),quests=gear.quests,rewards=[];
   if(!quests.accepted){
     quests.accepted=true;
-    say("已领取营地委托。地图上标出了待勘察的地标。","cue");
+    say("The site was commissioned.marks are marked on the map for survey.","cue");
   }else{
     for(const commission of commissions){
       if(quests.claimed.has(commission.contentId)||commissionProgress(commission,quests)<commission.goal)continue;
@@ -4875,8 +4875,8 @@ function interactCommissions(){
       gear.inventory.push(reward);
       quests.claimed.add(commission.contentId);rewards.push(reward.name);
     }
-    if(rewards.length)say("委托奖励已入包。获得"+rewards.join("、")+"，按 I 换装。","seal");
-    else say(quests.claimed.size===commissions.length?"营地委托已全部完成。":"完成委托后，回来领取奖励。","cue");
+    if(rewards.length)say("Commission rewards: "+rewards.join(", ")+". Press I to equip.","seal");
+    else say(quests.claimed.size===commissions.length?"The camp commission has been fully completed.":"After the commission is completed, you return for the reward.","cue");
   }
   renderAdventureQuests();
 }
@@ -4884,7 +4884,7 @@ function discoverLandmark(item){
   const quests=loadout().quests;
   const fresh=!quests.visited.has(item.contentId);
   quests.visited.add(item.contentId);
-  say((fresh?"已勘察":"已记录")+item.name+"。"+item.notes,fresh?"heal":"cue");
+  say((fresh?"Surveyed ":"Recorded ")+item.name+". "+item.notes,fresh?"heal":"cue");
   renderAdventureQuests();drawMini();
 }
 function makeGearItem(base,tier,id){
@@ -4901,18 +4901,18 @@ function lootFrom(chest,random=Math.random){
 function interactLoot(item){
   const gear=loadout(),at=point(item.x,item.y);
   if(item.type==="blessing"){
-    if(gear.used.has(item.contentId)){say(item.name+"的祝福已经生效。");return;}
+    if(gear.used.has(item.contentId)){say(item.name+"The blessing has come into effect.");return;}
     const before=maxHealth();
     gear.used.add(item.contentId);recalcGear();
     player.hp=Math.min(maxHealth(),player.hp+maxHealth()-before);
-    sparks(at.x,at.y-8,item.color,22);say(item.name+"： "+item.label+"。","seal");renderHud();
+    sparks(at.x,at.y-8,item.color,22);say(item.name+":  "+item.label+".","seal");renderHud();
     return;
   }
-  if(gear.opened.has(item.contentId)){say("这个"+item.name+"已经打开。");return;}
+  if(gear.opened.has(item.contentId)){say("This"+item.name+"Already open.");return;}
   const loot=lootFrom(item);
   gear.inventory.push(loot);gear.opened.add(item.contentId);
   sparks(at.x,at.y-6,qualities[loot.tier].color,14+loot.tier*6);
-  say("获得 "+qualities[loot.tier].name+"·"+loot.name+"。按 I 查看并换装。",loot.tier>=2?"seal":"heal");
+  say("Get in "+qualities[loot.tier].name+"·"+loot.name+".Press I to view and change.",loot.tier>=2?"seal":"heal");
   renderHud();
 }
 function equipItem(id){
@@ -4921,35 +4921,35 @@ function equipItem(id){
   if(gear.equipped[item.slot]===id){
     if(id===wornWeapon.id)return;
     gear.equipped[item.slot]=item.slot==="weapon"?wornWeapon.id:null;
-    say("已卸下"+item.name+"。");
+    say("Unequipped "+item.name+".");
   }else{
     gear.equipped[item.slot]=item.id;
-    say("已装备"+item.name+"。");
+    say("Equipped "+item.name+".");
   }
   recalcGear();player.hp=Math.min(maxHealth(),player.hp);renderHud();paintGear();
 }
 function gearDetails(item){
   const weapon=blades[item.base];
   if(!weapon)return blessingText(item.mods);
-  return "伤害 "+itemValue("power",weapon.power+(item.mods.power||0))+" · "+(weapon.ranged?"远程箭矢":weapon.range>=40?"长距近战":weapon.range<=25?"短距近战":"中距近战")+" · "+weapon.delay.toFixed(2)+" 秒/击";
+  return "Hurt "+itemValue("power",weapon.power+(item.mods.power||0))+" · "+(weapon.ranged?"Remote arrow":weapon.range>=40?"Long range close":weapon.range<=25?"Short-range close-off":"- It's a little close")+" · "+weapon.delay.toFixed(2)+" Seconds";
 }
 function paintGear(){
   const gear=loadout();
   if(!gear)return;
   const {stats}=gear;
-  $("equipmentStats").textContent="伤害 "+itemValue("power",stats.damage)+" · 生命 "+stats.health+" · 减伤 "+itemValue("guard",stats.guard)+
-    " · 移速 "+Math.round(stats.move/91*100)+"% · "+stats.delay.toFixed(2)+" 秒/击";
+  $("equipmentStats").textContent="Hurt "+itemValue("power",stats.damage)+"  ·  Health "+stats.health+"  ·  Cut "+itemValue("guard",stats.guard)+
+    "  ·  Move it "+Math.round(stats.move/91*100)+"% · "+stats.delay.toFixed(2)+" Seconds";
   $("blessingSummary").textContent=gear.used.size
-    ?blessings.filter(shrine=>gear.used.has(shrine.contentId)).map(shrine=>shrine.name+"（"+shrine.label+"）").join(" · ")
-    :"尚未获得祭坛祝福";
+    ?blessings.filter(shrine=>gear.used.has(shrine.contentId)).map(shrine=>shrine.name+" ("+shrine.label+")").join(" · ")
+    :"No altar blessings yet";
   $("gearSlots").innerHTML=Object.entries(gearSlots).map(([slot,label])=>{
     const item=gear.inventory.find(entry=>entry.id===gear.equipped[slot]);
-    return '<div><small>'+label+'</small><span class="gear-item">'+(item?itemIcon(item.base):"")+"<b style='color:"+qualities[item?.tier??0].color+"'>"+(item?.name??"空")+"</b></span></div>";
+    return '<div><small>'+label+'</small><span class="gear-item">'+(item?itemIcon(item.base):"")+"<b style='color:"+qualities[item?.tier??0].color+"'>"+(item?.name??"Empty")+"</b></span></div>";
   }).join("");
   $("lootList").innerHTML=gear.inventory.map(item=>{
     const active=gear.equipped[item.slot]===item.id,quality=qualities[item.tier],starter=item.id===wornWeapon.id;
     return '<li><div class="gear-item">'+itemIcon(item.base)+"<div><b style='color:"+quality.color+"'>"+quality.name+" · "+item.name+"</b><small>"+gearSlots[item.slot]+" · "+gearDetails(item)+
-      "</small></div></div><button type='button' data-equip='"+item.id+"' "+(active&&starter?"disabled":"")+">"+(active?(starter?"已装备":"卸下"):"装备")+"</button></li>";
+      "</small></div></div><button type='button' data-equip='"+item.id+"' "+(active&&starter?"disabled":"")+">"+(active?(starter?"Equipped":"Unload"):"Equipment")+"</button></li>";
   }).join("");
 }
 function updateGearHud(){
@@ -5027,9 +5027,9 @@ function strikeEnemy(enemy,damage,dx,dy){
     defeated++;sparks(enemy.x,enemy.y,"#fd9c72",13,"ember");
     if(enemy.max>2&&enemy.id!=="keeper")drops.push(healingDrop(enemy));
     const altar=altars.find(value=>value.guard===enemy.id);
-    if(altar)setMessage(altar.region+"守卫已倒下。现在可以点亮祭坛。");
-    if(enemy.id==="keeper")setMessage("灰烬守卫已倒下。靠近火种，按 E 取回它。");
-    if(enemy.id==="shield")setMessage("盾卫已击败。可在营地委托查看进度。");
+    if(altar)setMessage(altar.region+"The guards have fallen. Now we can light the altar.");
+    if(enemy.id==="keeper")setMessage("Ashes guard down. Close to the fire, press E to get it back.");
+    if(enemy.id==="shield")setMessage("The shield has been defeated. the camp is commissioned.");
     renderAdventureQuests();
   }
   return {power,x:enemy.x,y:enemy.y};
@@ -5063,7 +5063,7 @@ function strikeSurvivalEnemy(enemy,damage,dx,dy){
 function strikeFeedback(result,dx,dy){
   if(result.power===0){
     sound("block",(result.x-player.x)/48);
-    setMessage("盾卫格挡了正面攻击。绕到背后，或等它冲锋后再出手。");
+    setMessage("Shields are blocking the front. Go around the back, or wait until it hits the back.");
     return;
   }
   const kind=["","strike","finisher","boss"][result.power];
@@ -5319,7 +5319,7 @@ window.addEventListener("storage",event=>{
 });
 for(const event of ["pointerdown","keydown"])window.addEventListener(event,unlockAudio,{passive:true,once:true});
 setSnapshotReader(()=>({
-  mode:"生存",schemaVersion:SAVE_VERSION,phase,seed:survival?.seed,
+  mode:"Survival",schemaVersion:SAVE_VERSION,phase,seed:survival?.seed,
   ageSec:survival?Math.floor(survival.age):undefined,day:dailyClock?.day,
   weather:weatherMods?.name,raidStage:survival?.raid?.stage,
   hero:player?{x:Math.round(player.x),y:Math.round(player.y),hp:player.hp}:undefined,

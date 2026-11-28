@@ -49,7 +49,7 @@ export interface SurvivalBiome {
 
 export const SURVIVAL_BIOMES: readonly SurvivalBiome[] = [
   {
-    name: "草甸",
+    name: "The meadow",
     floor: 1,
     land: "#3d5436",
     detail: "#5b6f45",
@@ -63,7 +63,7 @@ export const SURVIVAL_BIOMES: readonly SurvivalBiome[] = [
     veins: ["quartz"],
   },
   {
-    name: "密林",
+    name: "The Meereen",
     floor: 1,
     land: "#283f33",
     detail: "#405742",
@@ -77,7 +77,7 @@ export const SURVIVAL_BIOMES: readonly SurvivalBiome[] = [
     veins: ["copper"],
   },
   {
-    name: "冻沼泽",
+    name: "The frozen swamp",
     floor: 4,
     land: "#34483e",
     detail: "#4b6b55",
@@ -91,7 +91,7 @@ export const SURVIVAL_BIOMES: readonly SurvivalBiome[] = [
     veins: ["clay"],
   },
   {
-    name: "风蚀岩坡",
+    name: "Windworn Rocky Slope",
     floor: 3,
     land: "#4b423d",
     detail: "#746350",
@@ -106,7 +106,7 @@ export const SURVIVAL_BIOMES: readonly SurvivalBiome[] = [
     coal: true,
   },
   {
-    name: "极寒冻原",
+    name: "Extremely cold",
     floor: 4,
     land: "#50616e",
     detail: "#829399",
@@ -120,7 +120,7 @@ export const SURVIVAL_BIOMES: readonly SurvivalBiome[] = [
     veins: ["frostOre"],
   },
   {
-    name: "深雪松林",
+    name: "Deep cedars",
     floor: 1,
     land: "#273d3d",
     detail: "#445c58",
@@ -134,7 +134,7 @@ export const SURVIVAL_BIOMES: readonly SurvivalBiome[] = [
     veins: ["copper", "quartz"],
   },
   {
-    name: "灰烬焦土",
+    name: "Ashes of the ground",
     floor: 3,
     land: "#694c3b",
     detail: "#967354",
@@ -148,7 +148,7 @@ export const SURVIVAL_BIOMES: readonly SurvivalBiome[] = [
     veins: ["salt"],
   },
   {
-    name: "花谷",
+    name: "Hanaya",
     floor: 1,
     land: "#52603c",
     detail: "#6f8050",
@@ -162,7 +162,7 @@ export const SURVIVAL_BIOMES: readonly SurvivalBiome[] = [
     veins: ["quartz", "clay"],
   },
   {
-    name: "菌林",
+    name: "The fungus",
     floor: 4,
     land: "#463d50",
     detail: "#695977",

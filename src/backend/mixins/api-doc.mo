@@ -1,6 +1,6 @@
 mixin () {
   public query func getApiDoc() : async Text {
-    "# 余烬林：最后一炬 (Ember Forest: The Last Torch) — Backend API\n" #
+    "# Surrounded forest: Last torch # # # # # # # # # # # # # # leftovers # # #sunsets # #s\n" #
     "\n" #
     "## Purpose\n" #
     "\n" #

@@ -7,19 +7,19 @@ import { type RecipeCategory, type RecipeRow, useUi } from "./store";
 type CraftFilter = "all" | RecipeCategory;
 
 const FILTERS: readonly { id: CraftFilter; label: string }[] = [
-  { id: "all", label: "全部" },
-  { id: "equipment", label: "装备" },
-  { id: "supply", label: "补给" },
-  { id: "camp", label: "营火与材料" },
+  { id: "all", label: "All" },
+  { id: "equipment", label: "Equipment" },
+  { id: "supply", label: "Supplies" },
+  { id: "camp", label: "Camp and materials" },
 ];
 
 function RecipeCard({ row }: { row: RecipeRow }) {
   if (!row.unlocked)
     return (
       <li className="pixel-panel-flat border-dashed p-3 text-muted-foreground">
-        <h3>未解锁 · {row.name}</h3>
+        <h3>Locked · {row.name}</h3>
         <p className="text-xs">
-          {row.hint} · 需营火 Lv.{row.minCampLevel}
+          {row.hint} · Requires a Level {row.minCampLevel} campfire
         </p>
       </li>
     );
@@ -33,16 +33,16 @@ function RecipeCard({ row }: { row: RecipeRow }) {
           {row.unread && (
             <button
               type="button"
-              aria-label={`查看新配方：${row.name}`}
+              aria-label={`View new recipe: ${row.name}`}
               className="border border-ember px-1 text-xs text-ember"
               onClick={() => commands.viewRecipe(row.id)}
             >
-              新 · 查看
+              New · View
             </button>
           )}
         </h3>
         <span className="font-pixel shrink-0 text-xs text-frost">
-          需营火 Lv.{row.minCampLevel}
+          Campfire Lv. {row.minCampLevel}
         </span>
       </div>
       <p className="text-xs text-muted-foreground">{row.description}</p>
@@ -67,7 +67,7 @@ function RecipeCard({ row }: { row: RecipeRow }) {
         <p
           className={`text-xs ${row.blockedReason ? "text-warning" : "text-hp"}`}
         >
-          {note ?? "材料齐全"}
+          {note ?? "All materials are available"}
         </p>
         <PixelButton
           disabled={disabled}
@@ -77,7 +77,7 @@ function RecipeCard({ row }: { row: RecipeRow }) {
           }}
           className="shrink-0 px-3 py-1.5"
         >
-          制作
+          Craft
         </PixelButton>
       </div>
     </li>
@@ -96,22 +96,23 @@ export function CraftPanel() {
   return (
     <div className="pointer-events-auto absolute inset-0 flex items-center justify-center bg-night/60 p-3">
       <section
-        aria-label="营火制作"
+        aria-label="Campfire crafting"
         className="pixel-panel flex max-h-full w-full max-w-4xl flex-col gap-3 p-4"
       >
         <header className="flex items-center justify-between gap-3">
           <div>
             <h2 className="font-pixel flex items-center gap-2 text-lg font-bold text-ember-glow">
-              <Flame size={20} /> 营火制作
+              <Flame size={20} /> Campfire crafting
             </h2>
             <p className="text-xs text-frost">
-              营火等级 Lv.{craft.campLevel} / {craft.maxCampLevel} · 接力火盆
-              持有 {craft.relayKits}，空闲火站 {craft.unlitRelays}
+              Campfire level {craft.campLevel} / {craft.maxCampLevel} · Relay
+              Braziers {craft.relayKits} · Unlit fire stations{" "}
+              {craft.unlitRelays}
             </p>
           </div>
           <PixelButton
             variant="ghost"
-            aria-label="关闭"
+            aria-label="Close"
             onClick={() => commands.closeCraft()}
             className="p-2"
           >
@@ -120,7 +121,7 @@ export function CraftPanel() {
         </header>
         <div
           role="tablist"
-          aria-label="配方分类"
+          aria-label="Formula classification"
           className="flex flex-wrap gap-1.5"
         >
           {FILTERS.map((tab) => {
@@ -149,7 +150,7 @@ export function CraftPanel() {
             checked={showLocked}
             onChange={(e) => setShowLocked(e.target.checked)}
           />{" "}
-          显示未解锁剪影
+          Displays unlocked clips
         </label>
         <ul className="grid min-h-0 flex-1 grid-cols-1 gap-3 overflow-y-auto pr-1 md:grid-cols-2 lg:grid-cols-3">
           {rows
@@ -159,7 +160,8 @@ export function CraftPanel() {
             ))}
         </ul>
         <p className="text-xs text-muted-foreground">
-          面板打开期间时间暂停。接力火盆在废磨坊火盆旁按 E 点燃。
+          The time is paused during the panel opening. The relay fire basins are
+          set on E by the scrap mill fire.
         </p>
       </section>
     </div>

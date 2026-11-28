@@ -1,87 +1,82 @@
-# 《余烬林：最后一炬》架构评审（基础任务）
+# Emberwood: Last Torch Architecture Review
 
-评审对象：`GDD_AND_SPEC.md`、`MVP_HANDOFF.md`、`src/data/*.json`、`tools/validate-mvp.cjs`、`src/vfx/*.js`。
-结论：`node tools/validate-mvp.cjs` 通过（15 物品、9 配方、5 敌人、4 区域、2 驻守奖励、VFX 导入）。该脚本只校验引用，不校验运行时规则，下列条目是读文档、读 JSON 和读 VFX 源码时发现的不一致与风险。路径均相对 `src/frontend/src/`。
+The initial MVP review covered `GDD_AND_SPEC.md`, `MVP_HANDOFF.md`, `src/data/*.json`, `tools/validate-mvp.cjs`, and `src/vfx/*.js`. The validation script passed for 15 items, 9 recipes, 5 enemies, 4 regions, 2 fixed rewards, and VFX imports. It checked references. The findings below came from reviewing the documentation, JSON, and VFX source. Paths are relative to `src/frontend/src/` unless stated otherwise.
 
-## 一、不一致与修复
+## 1. Inconsistencies and fixes
 
-| # | 问题 | 修复 | 落点 |
+| # | Issue | Resolution | Location |
 | --- | --- | --- | --- |
-| 1 | GDD 规定 Vite + 原生 JS，本项目是 React 19 + TypeScript strict，且 `allowJs` 为 false，7 个 VFX 模块是纯 JS，也不满足本项目 lint 规则。 | `tsconfig.json` 开启 `allowJs`、关闭 `checkJs`，保留 `resolveJsonModule`。`biome.json` 忽略 `src/vfx/**`。VFX 文件内容与公开签名未改。 | `tsconfig.json`、`biome.json` |
-| 2 | 交接文档把 `step` 签名写成 `step(state, {sec,input,frame,commands}, systems)`，而 `createRun(config, snapshot?)` 的 `config` 内容未定义。 | `step(state, request, systems?)`，`systems` 缺省取 `getSystems()`。`createRun(config?: {systems?, seed?, runId?}, snapshot?)`，快照经校验和深拷贝后使用。 | `core/run.ts`、`core/systems.ts`、`core/types.ts` |
-| 3 | GDD 称系统函数为 `inventory.use`，函数名 `use*` 被 React hooks lint 规则判为 Hook，在条件分支里调用会报错。 | 改名为 `consumeItem`，其余名称保持，面板命令里的类型仍是 `use`。 | `systems/inventory.ts`、`core/commands.ts` |
-| 4 | 地图文件 `snowland.json` 与 Tiled 图集缺失，而 regions.json 的对象 ID 与 spawnId 需要坐标。 | 按固定种子程序生成 96×64 瓦片网格和碰撞，只含 `camp_edge`（x 0–47）与 `old_mill`（x 48–95，y 0–47）。对象 ID 全部取自 regions.json，坐标集中在 `worldLayout.ts`，将来换成 Tiled 时只需替换该层。 | `systems/world/worldLayout.ts`、`worldGen.ts` |
-| 5 | regions.json 中的 `relaySocketId` 含 `ice_gorge_relay`，该区域不在本阶段范围，若直接统计会误算「未点亮插槽」。 | 配方上限与火圈计算只统计存在于当前世界的插槽。 | `systems/crafting.ts`（`unlitRelaySlots`）、`systems/campCircle.ts` |
-| 6 | 昼夜相位、天数既可存也可推导，存档里存旧值会和 `elapsedSec` 冲突。 | 相位和天数一律由 `elapsedSec` 推导，读档时丢弃存档里的值并重算。 | `core/clock.ts`、`core/snapshot.ts` |
-| 7 | 饱食流失按「每分钟」配置，其余指标按秒，容易用错单位。 | 统一在 survival 里换算为每秒并累加，小数保留在状态里。 | `systems/survival.ts` |
-| 8 | 受伤无敌 0.65 秒由玩家受击、饥饿和黑暗三类伤害共享，GDD 没写被无敌挡住的饥饿、黑暗伤害是否丢失。 | 被挡住的饥饿和黑暗伤害不清零计时，下一帧重试，避免伤害被无敌窗口吞掉。 | `systems/survival.ts`（`damageHero`） |
-| 9 | 胜负同帧冲突只说「死亡优先」，没有覆盖「风暴失守」与死亡同帧。 | HP ≤ 0 判死亡优先，其后才判 `elapsedSec ≥ runLimitSec`；终局后 `step` 不再推进。 | `core/run.ts`（`checkEnd`） |
-| 10 | 事件的 `x`、`y` 允许为 `null`，而 VFX 对非有限坐标会抛错。 | `toVfxEvent` 对无位置或非有限坐标的事件返回 null；`camp.upgraded` 映射为点火爆发。 | `core/vfxBridge.ts` |
-| 11 | 局外笔记「结算按 runId 幂等」没有数据结构支撑。 | meta 存 `settledRunIds`（最多 20 条），同一 `runId` 的 `run.ended` 不重复触发笔记；笔记存于独立 `metaKey`，不与局内存档混写。 | `core/meta.ts` |
-| 12 | 存档损坏、版本不符、存储被禁用三种情形的提示未区分。 | `loadRun` 返回 `empty/ok/recovered_backup/fallback_new/unavailable` 和中文提示；主档失败时尝试备份；`saveRun` 写入前先把当前有效主档复制到备份键，失败不破坏上一次好档。 | `core/save.ts`、`core/storage.ts` |
-| 13 | 固定战利品（炉印）的「待拾取」状态：背包满时拾取被拒，不能丢失。 | 炉印以 `pickupId` 写入 `changesByObjectId[...].loot`，状态为 `pending` 或 `picked`，拾取被拒时留在地面。`seals` 保存已拾取的 `pickupId`，读档时按它重建背包里的 `ember_seal` 数量。 | `systems/combat/loot.ts`、`core/snapshot.ts` |
-| 14 | 夜袭实例 ID 文档只说「由轮次与出生点共同派生」。 | 规定为 `night{round}_{spawnId}`，同时写入 `nightRound`，天亮按 `nightRaid.spawnedIds` 撤离。 | `systems/combat/enemySpawn.ts` |
-| 15 | 读档时英雄坐标可能落在碰撞格内（地图改版或存档被改）。 | 读档校验坐标有限并在地图范围内，落在实体格时重置到 `heroStart`。 | `core/snapshot.ts` |
-| 16 | 存档里的数量、血量、计时没有范围校验，非有限值会污染计时。 | 所有数值字段做有限值与范围检查，不合格整份存档视为损坏。库存数量不得超过 `maxStack`，物品 ID 必须存在。 | `core/snapshot.ts` |
+| 1 | The GDD described Vite and plain JavaScript. The project uses React 19 and strict TypeScript, and seven JavaScript VFX modules did not conform to the lint settings. | Enable `allowJs`, disable `checkJs`, retain `resolveJsonModule`, and exclude `src/vfx/**` in Biome. Preserve the VFX code and public signatures. | `tsconfig.json`, `biome.json` |
+| 2 | The handoff documented `step(state, {sec,input,frame,commands}, systems)` without defining the `createRun(config, snapshot?)` config. | Use `step(state, request, systems?)`, defaulting to `getSystems()`, and `createRun(config?: {systems?, seed?, runId?}, snapshot?)`. Validate and clone snapshots first. | `core/run.ts`, `core/systems.ts`, `core/types.ts` |
+| 3 | The GDD called a system function `inventory.use`. React hook lint treats names beginning with `use` as hooks and rejects conditional calls. | Rename it to `consumeItem`. The command type remains `use`. | `systems/inventory.ts`, `core/commands.ts` |
+| 4 | The `snowland.json` map and Tiled atlas were missing, and region object IDs and spawn IDs needed coordinates. | Generate a seeded 96×64 collision and terrain grid containing `camp_edge` (x 0–47) and `old_mill` (x 48–95, y 0–47). Take object IDs from `regions.json` and centralize coordinates in `worldLayout.ts`. This is the layer to replace when introducing Tiled. | `systems/world/worldLayout.ts`, `systems/world/worldGen.ts` |
+| 5 | `regions.json` includes `ice_gorge_relay`, which was outside the initial map and would inflate the unlit socket count. | Count sockets that exist in the current world for recipes and firelight. | `systems/crafting.ts` (`unlitRelaySlots`), `systems/campCircle.ts` |
+| 6 | Stored day and phase values could conflict with `elapsedSec`. | Derive both values from `elapsedSec` and recompute them when loading. | `core/clock.ts`, `core/snapshot.ts` |
+| 7 | Hunger used per-minute tuning while other stats used seconds. | Convert hunger to a per-second rate, preserving fractional values in state. | `systems/survival.ts` |
+| 8 | Hits, hunger, and darkness share 0.65 seconds of invulnerability. The GDD did not say how to handle blocked hunger or darkness ticks. | Keep the timers when invulnerability blocks hunger or darkness damage and retry on the next frame. | `systems/survival.ts` (`damageHero`) |
+| 9 | The end-state rule gave death priority but did not cover death and a storm timeout in the same frame. | Check HP ≤ 0 before `elapsedSec ≥ runLimitSec`. Stop stepping after the run ends. | `core/run.ts` (`checkEnd`) |
+| 10 | Event `x` and `y` can be null, and VFX throws on invalid coordinates. | Return null from `toVfxEvent` for missing or nonfinite positions. Map `camp.upgraded` to an ignition burst. | `core/vfxBridge.ts` |
+| 11 | Camp notes needed idempotent end-of-run handling by `runId`. | Store up to 20 `settledRunIds` and award notes once per `runId`. Save notes under an independent `metaKey`. | `core/meta.ts` |
+| 12 | Invalid versions, corrupted saves, and unavailable storage needed distinct messages. | `loadRun` returns `empty/ok/recovered_backup/fallback_new/unavailable` with a player notice. It tries a backup on primary failure. Before writing, `saveRun` copies a valid primary to the backup key. A failure preserves the last good save. | `core/save.ts`, `core/storage.ts` |
+| 13 | Fixed loot such as Ember Seals must remain on the ground when the inventory is full. | Store each `pickupId` under `changesByObjectId[...].loot` with `pending` or `picked`. `seals` records collected pickup IDs and reconstructs the `ember_seal` stack on load. | `systems/combat/loot.ts`, `core/snapshot.ts` |
+| 14 | Night raid IDs were described as depending on wave and spawn point. | Use `night{round}_{spawnId}`, save `nightRound`, and remove the units listed in `nightRaid.spawnedIds` at dawn. | `systems/combat/enemySpawn.ts` |
+| 15 | A map change or edited save can leave the hero inside a solid tile. | Validate finite, in-bounds coordinates. Reset a hero on a solid tile to `heroStart`. | `core/snapshot.ts` |
+| 16 | Invalid item quantities, health, or timers in saves could corrupt the run. | Validate numeric bounds and finiteness. Treat an invalid save as corrupted. Item IDs must exist and quantities cannot exceed `maxStack`. | `core/snapshot.ts` |
 
-## 二、缺失的边界情况（已补）
+## 2. Edge cases covered
 
-- 背包满时采集：拒绝并返回原因，节点 `gathered` 保持 false，资源不丢失（`systems/inventory.ts` 的 `pickUp`）。
-- 绷带在满血时拒绝，不消耗物品（`consumeItem`，`requiresBelowMax`）。
-- 配方缺料时按材料逐项返回缺口，不消耗任何输入（`systems/crafting.ts`）。
-- 唯一装备（提灯、铁矛）已持有时拒绝再次制作；火盆一次最多制作「未点亮插槽数」个。
-- 暖汤重复使用刷新时长，不叠层；提灯与暖汤的火光消耗倍率相乘（`systems/buffs.ts`）。
-- 单帧 `sec` 为负、NaN、过大时被夹到 `[0, maxStepSec]`（`core/clock.ts`）。
-- 磨坊门在营火 1 级时拒绝，原因码 `camp_level_too_low`，由 `reasonMessage` 转为中文。
+- A full inventory rejects gathering, reports why, and keeps the resource node available. See `pickUp` in `systems/inventory.ts`.
+- Using a Bandage at full health rejects the action without consuming it. See `consumeItem` and `requiresBelowMax`.
+- Crafting with missing ingredients reports the shortfall for each ingredient and consumes nothing.
+- Unique equipment such as the Iron Lantern and Iron Spear can be crafted once. The number of Relay Braziers is limited by unlit sockets.
+- Reusing Warm Frostcap Stew refreshes its duration. Its torch drain multiplier combines with the lantern's multiplier.
+- `core/clock.ts` clamps negative, NaN, and oversized step durations to `[0, maxStepSec]`.
+- The Old Mill gate requires a Level 2 campfire. The stable reason code is `camp_level_too_low`, which `reasonMessage` displays to the player.
 
-## 三、性能风险
+## 3. Performance considerations
 
-| 风险 | 事实 | 处理 |
+| Area | Observation | Handling |
 | --- | --- | --- |
-| 粒子预算 | `particles.js` 在减弱动效时硬编码 `Math.min(30, maxParticles)`，与 `balance.limits.reducedMotionMaxParticles` 是两处独立常量。冲击环数量上限同样等于 `maxParticles`（`particleSimulation.js` 中 `rings.length>=maxParticles`），最坏情况可达 120 个环；环境粒子上限为 `min(150, 60%)`。 | VFX 公共接口不可改，因此在 `core/vfxBridge.ts` 提供 `particleBudget(data, reducedMotion)`，让场景传入一致的上限；场景应同时限制每帧事件数。 |
-| 冲击环数组 | 超限时用 `rings.shift()`，每次 O(n)。 | 上限 120，可接受，不修改 VFX。 |
-| Canvas 纹理缓存 | `setBounded` 默认上限 256 项，先进先出淘汰。`registerCanvasTexture` 已注册到 Phaser 的纹理不会随之释放。 | 启动阶段只生成本次使用的纹理（GDD 已要求）；场景销毁时调用 `fx.destroy()`。 |
-| 逐帧分配 | `step` 在 `input` 缺省时才创建空对象；碰撞移动复用同一输出对象；敌人遍历用 `for...in`，不建数组；`buildHudModel` 会分配，所以仅用于 HUD 刷新频率。 | 场景侧应复用同一个 `request` 对象，HUD 以约 10 Hz 刷新。 |
-| 同屏实体 | 活动敌人上限 8、弹体 12。 | 夜袭生成与弹体发射均检查 `balance.limits`（`enemySpawn.ts`、`enemyAi.ts`）。 |
-| 单帧步长 | 规则步长封顶 0.05 秒，帧率低于 20 FPS 时游戏时间慢于现实。 | 与 GDD 一致，视为有意的设计（等同于卡顿时暂停）。 |
-| 文件长度 | GDD 规定每文件不超过 299 行。 | 当前最长文件为 272 行（`core/snapshot.ts`）。 |
+| Particle budget | Reduced motion has a hardcoded `Math.min(30, maxParticles)` independent of `balance.limits.reducedMotionMaxParticles`. The shock ring cap equals `maxParticles`, up to 120 rings. Ambient particles are capped at `min(150, 60%)`. | `particleBudget(data, reducedMotion)` in `core/vfxBridge.ts` keeps the scene limit consistent without changing the VFX interface. Scenes also cap events per frame. |
+| Shock ring array | `rings.shift()` on overflow costs O(n). | The 120-ring bound is acceptable for the MVP. |
+| Canvas texture cache | `setBounded` defaults to a first-in, first-out cap of 256 entries. Eviction does not release textures registered with Phaser. | Generate only needed textures at startup and call `fx.destroy()` when the scene ends. |
+| Per-frame allocations | `step` creates an input object only when omitted. Collision reuses its output object. Enemy iteration uses `for...in`. `buildHudModel` allocates. | Reuse the scene request and refresh the HUD at about 10 Hz. |
+| Active entities | The initial limits were 8 enemies and 12 projectiles. | Night spawns and projectiles check `balance.limits` in `enemySpawn.ts` and `enemyAi.ts`. |
+| Step size | Simulation steps cap at 0.05 seconds, so the game clock slows below 20 FPS. | This matches the GDD's behavior during stalls. |
+| File length | The GDD capped files at 299 lines. | The longest MVP file was `core/snapshot.ts` at 272 lines. |
 
-## 四、已知未实现或待确认
+## 4. MVP limitations and assumptions
 
-- GDD 提到的「开发环境 30 秒昼夜验证开关」本阶段未实现；`RunConfig` 尚无时钟倍率，可在后续任务中加入。
-- 冰角兽、煤影、烽台守卫的数据已加载，但它们所在区域不在本阶段范围内，不会在 `camp_edge`、`old_mill` 出现。
-- `legacyAssetReferences` 只作迁移参考，运行时不读取。
-- `core` 与 `systems` 之间存在仅类型层面的相互导入（`RunState` 引用 `World`），运行时无循环依赖。
+- The initial MVP had no development switch for a 30-second day/night test. `RunConfig` did not expose a clock multiplier.
+- The Ice Ram, Coal Shade, and Beacon Keeper were loaded but placed outside `camp_edge` and `old_mill`.
+- `legacyAssetReferences` is migration reference data. The old `outputs/Emberwood.html` was missing from the handoff archive, so its references could not be checked. New runs use the new IDs.
+- `core` and `systems` cross-reference types, such as `RunState` and `World`, without runtime import cycles.
+- The procedural grid stood in for `snowland.json`. `createTileTextures` generated terrain art, and `worldLayout.ts` defined coordinates.
+- Procedural textures and simple geometry stood in for the character, enemy, item, and icon atlas.
+- Sound synthesis used the `GameEvent` stream because the original handoff included no audio files.
+- Rule systems return stable reason codes. `reasonMessage` maps them to the current English interface.
 
-## 五、占位资源假设
+## 5. Survival shorelines and camp art
 
-1. 瓦片地图：用程序生成的瓦片类型网格代替 `snowland.json`；地面纹理由 VFX 的 `createTileTextures` 提供，坐标常量在 `worldLayout.ts`。
-2. 角色、敌人、物品、图标：无图集，场景任务用 `proceduralTextures` 生成的纹理或简单几何形状作占位。
-3. 音效：无音频文件；事件流（`GameEvent`）是后续合成音效的唯一入口。
-4. 旧版 `outputs/Emberwood.html` 不在交接包内，因此 `legacyAssetReferences` 无法核对，新游戏全部使用新 ID。
-5. 界面文字全部为中文，机器原因码通过 `reasonMessage` 映射。
+- Shorelines select pixel patterns from adjacent water, diagonal water, and biome. World changes clear terrain caches, while shoreline patterns can be reused between worlds.
+- Wheat chooses one of four textures from saved growth. Fences connect to cardinal neighbors, and gates use their open state and neighboring fences. The combined fence and gate cache holds at most 48 textures.
+- The Survival entry point generates both sets of textures through the pixel drawing functions. Terrain seeding, growth progress, collisions, and save fields keep their existing rules.
+- Wetland, tundra, and fungal forest trees have roots and three canopy layers. Draw the pattern once, then apply mirror and height variants and wind offsets during rendering.
+- Livestock feeding frames use the existing remaining feed time. Pausing freezes animation, while cooldowns and yields stay in the normal update path.
+- The seven mineral icons and rock textures share the palette in `survivalRockArt.json`. Inventory, quick slots, pickup notices, and ground drops share item textures.
+- The weather layer reports screen coordinates when selected raindrops hit the ground. Survival maps them to world coordinates and terrain materials. It retains at most 32 impacts, clips them to their tiles, and draws them before characters and lighting.
+- Snowberry, Ice Bog Reed, and Frost Fungus use their mature palettes for seedling and intermediate textures. Saved growth selects the texture, and harvesting resets it to the seedling stage.
+- Fence and gate previews use the same tile, occupancy, and material checks as construction. The preview uses the build texture for the target tile's neighbor mask and updates when adjacent structures change.
 
-## 六、生存模式岸线与营地美术
+## 6. Survival night raids and camp projects
 
-- 岸线使用相邻水格、对角水格和生物群系选择像素图案。世界切换沿用地形缓存清理，岸线图案可以跨世界复用。
-- 麦田按存档中的生长进度选择四阶段贴图。围栏按上下左右的相邻建筑拼接，栅门由当前开关状态和相邻围栏决定外观。围栏与栅门贴图按组合缓存，最多 48 张。
-- 两套美术模块通过生存入口的像素绘制函数生成贴图。地形种子计算、耕作进度、建筑碰撞和存档字段沿用现有规则。
-- 湿地、霜原和菌林的树木各有根部与三层树冠。像素图案预绘一次，随后按原有规则生成镜像和高度变体，并在渲染时沿各层施加风摆位移。
-- 家畜用现有的喂食剩余时间计算进食帧。游戏暂停时动作冻结，冷却和产出由原有更新流程处理。
-- 七种矿物图标与岩块贴图共用 `survivalRockArt.json` 中的色板。背包、快捷栏、拾取提示与地面掉落都读取同一套物品贴图。
-- 天气层在部分雨线到达地面时报告屏幕坐标。生存入口转换为世界坐标并按地格选材质。最多保留 32 个落点，地面效果在角色和光照之前绘制，并裁剪在落点所在格内。
-- 雪莓、冰沼芦苇和微光冻菌的幼芽与中期贴图沿用各自的成熟色板。绘制按存档中的阶段选择贴图，采摘后将原有阶段归零即可显示对应幼芽。
-- 围栏和栅门的预览与建造共用地格、占用及材料判定。预览按目标格的邻接掩码取实际建造会使用的纹理，方向随相邻围栏和栅门即时更新。
+- At dawn, the current Survival day and weather set the three phase boundaries. The clock, terrain colors, farming, sleep, and raids share them. The default cycle is 192 seconds, and existing saves retain their original timeline for days survived.
+- The world seed chooses raid days and whether arrival is at nightfall or midnight. Material contributions determine camp tier. Tier, day, and weather set the wave budget. The director records warnings, pending spawns, and living enemies. Candidates must be outside the viewport, reachable from the camp, within category capacity, and eligible under lighting rules. Lit Watch Beacons block their approach direction.
+- Repelling a full wave marks its reward pending. Natural dawn and sleep use the same resolution. Ember Dust and the next raid schedule save together. Dawn removes remaining raiders if the wave was not cleared. Hearth Ash contributes to tier 3 and 4 facilities.
+- `survivalCampProjects.json` defines three repairs and four camp defense tiers. Defenses accept partial contributions by the campfire. Weather affects hearth use. Lighting, heat, camp UI, decorations, and gameplay benefits share the resulting completion state. At the research table, each contribution is limited by missing materials and stock. A restored well automatically fills an equipped watering can within two tiles. Manual refills at wells and ponds remain immediate.
+- `campProjects`, `landmarks`, and `landmarkTarget` save with the world. Older saves use defaults. Vein, crossing, and camp markers use world coordinates, with one marker per tile. Campfire Camp is a built-in target. Direction arrows and markers draw over the cached terrain minimap.
 
-## 七、生存模式夜袭与营地经营
+## 7. Survival encounter ambush persistence
 
-- 生存入口在黎明以生存天数和当时天气锁定三段边界。时钟扇区、地表色调、耕作、睡眠和夜袭共用这些边界。默认周期仍为 192 秒，旧档的已生存天数继续按原时间轴计算。
-- 袭营日期与入夜或子夜的抵达时刻由世界种子推导。累计交料决定营地等级，等级、天数与天气决定波次预算。导演记录已经播过的预警、待生成数量和存活敌人。候选位置必须满足营地四向可达、视野外、阵营数量上限和光照条件，点亮的哨柱还会封锁自身所在方向。
-- 击退整波后进入待领奖状态。自然天亮与睡眠走同一黎明结算，余烬尘与下一波排期一起写入当前世界。未清场时天亮会撤怪。炉灰可以投入三级和四级设施。
-- `survivalCampProjects.json` 定义三项生活修缮和四级守营设施。守营设施在营火旁分批建造，炉塘按天气消耗燃料，光照格、热源和营地界面读取同一次建造结果。研究台范围内可分批交付，交付量按欠缺材料和现有库存取小值。完成由已交材料推导，像素装饰及实装收益读取同一判定。持水壶走进修好井台的 2 格范围会自动补水，水井和池边的手动装水仍即时生效。
-- `campProjects`、`landmarks` 和 `landmarkTarget` 随当前世界写入本地存档。旧档凭缺省值载入。矿点、渡口和临时营地以世界坐标为键，同一格保留一个标记。篝火营地是内置目标，远端箭头和标记每次刷新都会叠加到缓存的地形小地图上。
-
-## 八、生存模式奇遇伏击存档
-
-- 读档复验发现，暗影侵蚀石阵触发后只保存了已探索记录和地面奖励，刷新会清掉仍存活的伏击怪。格式 8 新增可选字段 `survival.encounterEnemies`，按奇遇 ID 与实体序号记录存活伏击怪的位置和生命。读档从已消耗奇遇的当前模板恢复这些怪物，并校验生命和坐标。
-- 伏击怪战败时，地面战利品和去掉该怪物的状态一同写入本地存档。清理夜袭时保留存活伏击怪。已经探索、缺少该字段的旧档照常加载，旧伏击状态按空处理。
+- Revisiting a save after triggering a Shadowed Stone Circle revealed that surviving ambushers disappeared on reload. Save format 8 adds optional `survival.encounterEnemies`, keyed by encounter and entity index, with position and health. Loading restores surviving enemies from the current template for spent encounters and validates their health and coordinates.
+- On defeat, a new save records both the ground loot and the removed ambusher. Raid cleanup leaves living ambushers in place. Older explored saves without the field continue to load with empty ambush state.

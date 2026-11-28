@@ -2,7 +2,7 @@ import { type Session, editable, selected, toolNames } from "../state/selection"
 import { changePoint, removePoint, resetPoint } from "../state/mapCommands";
 import { button, choice, el, group, itemOptions, numberBox } from "../ui/controls";
 export function mapPanel(root: HTMLElement, s: Session) {
-  const tools = group(root, "对象工具");
+  const tools = group(root, "Object tool");
   if (s.mode === "adventure") {
     const strip = el("div", "", "tool-strip");
     toolNames.forEach((name, i) => {
@@ -15,26 +15,26 @@ export function mapPanel(root: HTMLElement, s: Session) {
     });
     tools.append(strip);
     if (s.tool === 2)
-      choice(tools, "放置物资", itemOptions, s.itemId, (v) => {
+      choice(tools, "Putting the material in place", itemOptions, s.itemId, (v) => {
         s.itemId = v;
       });
     if (s.tool === 3)
       choice(
         tools,
-        "放置怪物",
+        "Put the monster in",
         s.store.draft["enemies.json"].enemies.map((e) => [e.id, e.name]),
         s.placeEnemy,
         (v) => {
           s.placeEnemy = v;
         },
       );
-  } else tools.append(el("p", "此模式使用独立生成器，可平移、缩放和检视。"));
-  const inspect = group(root, "点位检视");
+  } else tools.append(el("p", "This mode uses an independent generator that can be scaled, scaled and reviewed."));
+  const inspect = group(root, "Organisation");
   const points = [...s.map.spawns, ...s.map.objects];
   choice(
     inspect,
-    "地图点位",
-    [["", "选择点位"], ...points.map((p) => [p.id, p.label + " · " + p.id] as const)],
+    "Map site",
+    [["", "Select the point"], ...points.map((p) => [p.id, p.label + " · " + p.id] as const)],
     s.selected ?? "",
     (id) => {
       s.selected = id || null;
@@ -46,7 +46,7 @@ export function mapPanel(root: HTMLElement, s: Session) {
   );
   const p = selected(s);
   if (!p) {
-    inspect.append(el("p", "点击地图选择点位。滚轮缩放，WASD 平移。"));
+    inspect.append(el("p", "Click the map to select a point. Rolling wheels zoom, wadissing."));
     return;
   }
   inspect.append(el("div", p.id + " · (" + p.tx + ", " + p.ty + ")", "detail"));
@@ -56,16 +56,16 @@ export function mapPanel(root: HTMLElement, s: Session) {
   }
   const update = (key: string, v: unknown) => changePoint(s, p, { [key]: v });
   for (const axis of ["tx", "ty"] as const)
-    numberBox(inspect, axis === "tx" ? "横坐标 tx" : "纵坐标 ty", p[axis], (v) => update(axis, v), "1");
+    numberBox(inspect, axis === "tx" ? "tx" : "Vertical coordinates ty", p[axis], (v) => update(axis, v), "1");
   if ("itemId" in p) {
-    choice(inspect, "产出物品", itemOptions, p.itemId!, (v) => update("itemId", v));
-    numberBox(inspect, "单次产出", p.yield ?? 1, (v) => update("yield", v), "1");
+    choice(inspect, "Output items", itemOptions, p.itemId!, (v) => update("itemId", v));
+    numberBox(inspect, "Single output", p.yield ?? 1, (v) => update("yield", v), "1");
     choice(
       inspect,
-      "黎明再生",
+      "Dawn reborn",
       [
-        ["0", "关闭"],
-        ["1", "开启"],
+        ["0", "Close"],
+        ["1", "Turn it on"],
       ],
       p.renewable ? "1" : "0",
       (v) => update("renewable", v === "1"),
@@ -73,22 +73,22 @@ export function mapPanel(root: HTMLElement, s: Session) {
     const o = s.store.draft["worldOverrides.json"];
     const config = o.addedObjects.find((n) => n.id === p.id) ?? o.editedObjects[p.id];
     const rules = s.store.draft["encounters.json"].resources;
-    const timing = group(inspect, "单点刷新", false);
+    const timing = group(inspect, "Single-point refresher", false);
     numberBox(
       timing,
-      "再生次数上限",
+      "The maximum number of rebirths",
       config?.renewalLimit ?? rules?.renewalLimit ?? 1,
       (v) => update("renewalLimit", v),
       "1",
     );
-    numberBox(timing, "刷新冷却（秒）", config?.respawnCooldownSec ?? rules?.cooldownSec ?? 60, (v) =>
+    numberBox(timing, "Refresh cooling (seconds))", config?.respawnCooldownSec ?? rules?.cooldownSec ?? 60, (v) =>
       update("respawnCooldownSec", v),
     );
-    timing.append(el("p", "单点参数优先于全局设置，适用于可再生物资。"));
+    timing.append(el("p", "Single point parameters take precedence over global settings and apply to renewable materials."));
   } else if ("enemyId" in p) {
     choice(
       inspect,
-      "常驻怪物",
+      "Stay with the monster",
       s.store.draft["enemies.json"].enemies
         .map((e) => [e.id, e.name] as const)
         .concat(s.store.draft["legacyEnemies.json"].enemies.map((e) => [e.id, e.name] as const)),
@@ -100,13 +100,13 @@ export function mapPanel(root: HTMLElement, s: Session) {
     );
     choice(
       inspect,
-      "所属区域",
+      "Region",
       s.map.regions.map((r) => [r.id, r.name]),
       p.regionId!,
       (v) => update("regionId", v),
     );
     inspect.append(
-      button("调优这只怪物", () => {
+      button("Get this monster", () => {
         s.tab = "enemy";
         s.enemyId = p.enemyId!;
         s.refresh();
@@ -114,7 +114,7 @@ export function mapPanel(root: HTMLElement, s: Session) {
     );
   }
   inspect.append(
-    button("复原点位", () => resetPoint(s, p)),
-    button("删除点位", () => removePoint(s, p)),
+    button("Restores the point", () => resetPoint(s, p)),
+    button("Deletes the point", () => removePoint(s, p)),
   );
 }

@@ -1,15 +1,15 @@
-# 余烬林世界观与英雄
+# Emberwood Lore and Heroes
 
-风暴切断了余烬林各营地之间的道路。拾烬人从炉边雪林出发，经废磨坊、密林深处和霜渊山脊抵达东端烽台。废磨坊督工与霜渊守炬者各守一枚炉印，两枚炉印可以重燃烽火，为山下的人指路。冰峡与旧烽台的故事也留在区域文案中。
+The storm cut off the roads between Emberwood's camps. The Ember Gatherer sets out from the Fireside Woods and passes through the Old Mill, the deep woods, and the Frost Abyss ridge to reach the beacon at the eastern end. The Old Mill Overseer and the Summit Pyre Warden each guard an Ember Seal. Together, the two seals can relight the beacon and guide the people below. The region descriptions also tell the story of the Ice Gorge and the old beacon.
 
-## 英雄
+## Heroes
 
-| 英雄 | 来历与特质 | 解锁条件 |
+| Hero | Background and trait | Unlock requirement |
 | --- | --- | --- |
-| 凛 · 末代拾烬人 | 沿巡火旧路寻找幸存者。「余温」加快火圈内火炬恢复。 | 默认解锁 |
-| 格雷 · 磨坊老铁匠 | 曾为巡火人修理工具。「炉锤」强化生命与攻击，移动稍慢，夜间耗光稍快。 | 击败废磨坊督工 |
-| 素蘅 · 冻沼采药人 | 沿途留下草药与绷带。「回春」增加道具的回血量。 | 累计制作 5 次食物、药品或消耗品 |
-| 鸦羽 · 暮色巡猎者 | 在暮色中辨认兽径。「掠影」加快移动，延长受伤后的无敌时间，生命上限较低。 | 累计击败 15 只怪物 |
-| 艾尔文 · 灰烬书吏 | 把失散营地的笔记抄进同一本册子。「观火」扩大光圈、减少夜间耗光，移动略快，生命上限较低。 | 收集 2 条营地笔记 |
+| Lin · Last of the Ember Gatherers | Searches the old fire patrol routes for survivors. Lingering Warmth recharges the torch faster within firelight. | Available by default |
+| Gale · Veteran Mill Blacksmith | Once repaired the patrol's tools. Forge Hammer increases health and damage. Gale moves slightly slower and burns through torchlight faster at night. | Defeat the Old Mill Overseer |
+| Suheng · Frost Bog Herbalist | Leaves herbs and bandages along the trails. Revival increases healing from items. | Craft food, medicine, or consumables five times |
+| Corvus · Dusk Hunter | Tracks animals in the twilight. Shadowstep increases movement speed and extends invulnerability after a hit. Corvus has lower maximum health. | Defeat 15 enemies |
+| Alvin · Ash Scribe | Copies the lost camps' notes into one book. Firewatch widens the light radius and slows torch drain at night. Alvin moves slightly faster and has lower maximum health. | Collect two camp notes |
 
-拾取炉印、拾取余烬尘和重燃烽台分别解锁一条营地笔记。笔记与英雄解锁跨局保留。世界、英雄、区域短句与结局文案的游戏内版本分别见 `src/frontend/src/data/lore.json` 和 `src/frontend/src/data/heroes.json`。
+Picking up an Ember Seal, picking up Ember Dust, and rekindling the beacon each unlock a camp note. Notes and hero unlocks persist across runs. In-game world lore, hero descriptions, region text, and ending text live in `src/frontend/src/data/lore.json` and `src/frontend/src/data/heroes.json`.

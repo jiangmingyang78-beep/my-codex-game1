@@ -28,7 +28,7 @@ function scenario(high: boolean) {
     Math.random = random;
   }
   const { sys } = run,
-    label = high ? "高压" : "默认";
+    label = high ? "High pressure" : "Default";
   const move = (x: number, y: number) => Object.assign(run.state.hero, { x, y });
   const advance = (input: StepRequest["input"] = {}) => {
     // Keep both runs alive for two full nights while all movement, AI, spawns and survival clocks step normally.
@@ -42,24 +42,24 @@ function scenario(high: boolean) {
   const renewals = () => run.state.changesByObjectId[node.id]?.renewals ?? 0;
   const gathered = () => !!run.state.changesByObjectId[node.id]?.gathered;
   function reload() {
-    check(run.save(), label + " 写入 localStorage 失败");
+    check(run.save(), label + " Writing to _Other Organiser failed.___BAR__Return_reform_reform_reform_");
     const elapsed = run.state.elapsedSec;
     run = new RunSession("continue");
-    check(run.state.seed === seed && run.state.elapsedSec === elapsed, label + " 继续游戏没有恢复测试档");
+    check(run.state.seed === seed && run.state.elapsedSec === elapsed, label + " The game continues without the test file being restored");
   }
-  check(harvest(), label + " 初次采集失败");
+  check(harvest(), label + " The first collection failed");
   while (run.state.elapsedSec < 1) advance();
   reload();
   while (run.state.elapsedSec < 2.9) advance();
-  check(gathered(), label + " 冷却到期前已刷新");
+  check(gathered(), label + " The cooling is updated before the expiration date");
   while (run.state.elapsedSec < 3.15 && gathered()) advance();
   const afterCooldown = renewals();
   const readyAt = afterCooldown ? Number(run.state.elapsedSec.toFixed(2)) : null;
-  check(high ? afterCooldown === 1 && !gathered() : afterCooldown === 0 && gathered(), label + " 首次再生不符合配置");
+  check(high ? afterCooldown === 1 && !gathered() : afterCooldown === 0 && gathered(), label + " The first regeneration did not match the configuration");
   if (high) {
-    check(harvest(), label + " 二次采集失败");
+    check(harvest(), label + " Secondary collection failed");
     reload();
-    check(renewals() === 1 && gathered(), label + " 重载丢失次数或已采集状态");
+    check(renewals() === 1 && gathered(), label + " Number of loads lost or collected");
   }
 
   // Find a one-tile wall with open approaches on both sides in the real map.
@@ -69,13 +69,13 @@ function scenario(high: boolean) {
       if (!solidAt(sys.world, {}, x, y)) continue;
       if ([-2, -1, 1, 2, 3].every((offset) => !solidAt(sys.world, {}, x + offset, y))) wall = { x, y };
     }
-  if (!wall) throw Error("找不到撞墙对照地块");
+  if (!wall) throw Error("No wall-to-wall blocks found");
   move(tile(wall.x - 1), tile(wall.y));
   for (let i = 0; i < 4; i++) advance({ moveX: i === 0 ? 1 : 0, dashPressed: i === 0 });
   const wallX = run.state.hero.x;
   check(
     wallX + 5 <= wall.x * 16 + 1e-5 && !blockedAt(sys.world, run.state.changesByObjectId, wallX, run.state.hero.y, 5),
-    label + " 急步穿过单格墙",
+    label + " Step through the single-gauge wall",
   );
 
   // Stage a resident near the open mill gate, then cross with actual movement input.
@@ -88,7 +88,7 @@ function scenario(high: boolean) {
   for (let i = 0; i < 12; i++) advance({ moveX: 1 });
   const after = resident.phase,
     destination = run.state.regionId;
-  check(before === "chase" && after === "idle" && destination === "old_mill", label + " 常驻怪跨区脱战异常");
+  check(before === "chase" && after === "idle" && destination === "old_mill", label + " The permanent residence is off the hook");
 
   move(sys.world.heroStart.x, sys.world.heroStart.y);
   const counts = () =>
@@ -119,7 +119,7 @@ function scenario(high: boolean) {
     );
     if (run.state.phase === "night") {
       const night = nights[run.state.day - 1];
-      if (!night) throw Error("日期异常");
+      if (!night) throw Error("Dates are abnormal");
       const current = counts();
       night.active = Math.max(night.active, current.active);
       night.raid = Math.max(night.raid, current.raid);
@@ -144,23 +144,23 @@ function scenario(high: boolean) {
     }
     if (!high && run.state.phase === "day" && run.state.day === 2 && renewals() === 1 && !gathered()) {
       move(node.x, node.y);
-      check(harvest(), "默认第二次采集失败");
+      check(harvest(), "Default second collection failed");
       reload();
       move(sys.world.heroStart.x, sys.world.heroStart.y);
     }
   }
   const limit = sys.data.balance.limits.activeEnemies;
-  check(crossing > 0, label + " 第一晚未进入磨坊");
-  check(raidChasedAcross, label + " 邻近夜袭怪没有跨区追击");
+  check(crossing > 0, label + " The first night was not in the mill");
+  check(raidChasedAcross, label + " The nearby night raiders did not pursue the area");
   check(
     nights.every((n) => n.active <= limit),
-    label + " 夜袭跨区后活跃敌人超过 " + limit,
+    label + " Night raids across the area have been active against more enemies " + limit,
   );
   check(
     nights.every((n) => n.raid > 0) && raidAfterDawn === 0 && counts().raid === 0,
-    label + " 夜袭生成或黎明退场异常",
+    label + " Night raids are generated or dawn exits are abnormal",
   );
-  check(high ? renewals() === 1 && gathered() : renewals() === 2 && !gathered(), label + " 两晚后的再生次数或状态错误");
+  check(high ? renewals() === 1 && gathered() : renewals() === 2 && !gathered(), label + " The rebirths after two nights or the state of the wrong");
   return {
     label,
     seed,

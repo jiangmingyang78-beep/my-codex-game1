@@ -41,7 +41,7 @@ function arena() {
   return { sys, state, events, tick };
 }
 
-it("阵营锁定附近敌对生物，攻击实际伤害目标，随后优先反击玩家", () => {
+it("The camp targeted nearby hostile organisms, attacked actual targets and then gave priority to the player", () => {
   const { sys, state, events, tick } = arena();
   const wolf = addTestEnemy(state, sys, "ash_wolf", { x: 843, y: 408 });
   const shade = addTestEnemy(state, sys, "cinder_husk", { x: 860, y: 408 });
@@ -63,7 +63,7 @@ it("阵营锁定附近敌对生物，攻击实际伤害目标，随后优先反�
   assert.equal(wolf.targetId, "player");
 });
 
-it("中立生物遭袭才呼援，远处同族不响应", () => {
+it("Neutral organisms were attacked and called for help, far from their own communities", () => {
   const { sys, state, tick, events } = arena();
   const herd = [820, 840, 1200].map((x) =>
     addTestEnemy(state, sys, "ice_ram", { x, y: 400 }),
@@ -78,7 +78,7 @@ it("中立生物遭袭才呼援，远处同族不响应", () => {
   );
 });
 
-it("黑雾山猫在火圈边缘移动且不穿入深处，近身可诱导可弹反的突刺", () => {
+it("Black mists can induce a reboundable sprint by moving around the edge of the ring without entering deep into it. —", () => {
   const { sys, state, tick } = arena();
   const tile = sys.data.tileSize;
   ignite(state, { id: "test-fire", x: 800, y: 400, radius: 8 * tile }, 10);
@@ -119,7 +119,7 @@ it("黑雾山猫在火圈边缘移动且不穿入深处，近身可诱导可弹�
   assert.ok(retreated);
 });
 
-it("首次拾取合并解锁提示，消耗材料后存档仍保留配方和角标", () => {
+it("The first time a combined lock-free tip was picked up and the formula and the corner sign were retained for archiving after the consumption of the material", () => {
   const { state, sys, events } = arena();
   const before = buildCraftView(state, sys).rows.find(
     (r) => r.id === "make_spear",
@@ -138,7 +138,7 @@ it("首次拾取合并解锁提示，消耗材料后存档仍保留配方和角�
   assert.equal(events.filter((e) => e.payload.recipeNames).length, 1);
   assert.match(
     String(events.find((e) => e.payload.recipeNames)?.payload.message),
-    /等 \d+ 项/,
+    /Wait \d+ Item/,
   );
   assert.ok(state.unreadRecipeIds.has("make_spear"));
   assert.ok(
@@ -155,7 +155,7 @@ it("首次拾取合并解锁提示，消耗材料后存档仍保留配方和角�
   assert.ok(!restored.unreadRecipeIds.has("make_spear"));
 });
 
-it("完成营火工程解锁后续配方，旧档从材料和已建营地回溯", () => {
+it("The camp fire works were completed and the subsequent formulation was unlocked and the old batch traced back from the materials and the camp that was built", () => {
   const sys = getTestSystems(),
     state = createTestRun({ inventory: { wood: 6, stone: 4 } });
   Object.assign(state.hero, sys.world.campfire);
@@ -173,7 +173,7 @@ it("完成营火工程解锁后续配方，旧档从材料和已建营地回溯"
   assert.equal(loaded.unreadRecipeIds.size, 0);
 });
 
-it("每 200 毫秒重评最近敌对目标，忽略感知范围外的生物", () => {
+it("The most recent hostile targets are re-evaluated every 200 milliseconds, ignoring organisms beyond the perception range", () => {
   const { state, sys } = arena();
   const wolf = addTestEnemy(state, sys, "ash_wolf", { x: 500, y: 400 });
   const def = sys.data.enemies.get("ash_wolf")!;
@@ -192,7 +192,7 @@ it("每 200 毫秒重评最近敌对目标，忽略感知范围外的生物", ()
   assert.equal(selectTarget(state, sys, wolf, def), far);
 });
 
-it("架设废磨坊接力火盆即可发现余烬提灯，旧存档从已点亮火站回溯", () => {
+it("The remaining ash lamps are found by setting up a fire-fighting pot for the used mill, and the old archive is traced back from the point of fire", () => {
   const sys = getTestSystems();
   const state = createTestRun({ inventory: { relay_kit: 1 } });
   const socket = sys.world.objects.get("old_mill_relay")!;

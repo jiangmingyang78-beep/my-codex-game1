@@ -18,6 +18,6 @@ export function resolveEncounter(
     stamp.footprint.w !== piece.footprint.w ||
     stamp.footprint.h !== piece.footprint.h
   )
-    throw new Error(`LDtk 布景尺寸与模板不符：${piece.id}`);
+    throw new Error(`The LTtk layout does not match the template: ${piece.id}`);
   return { ...piece, ...stamp };
 }

@@ -30,12 +30,12 @@ export interface RecipeRow {
   description: string;
   category: RecipeCategory;
   materials: MaterialRow[];
-  /** "营火 Lv.1 → Lv.2" style line for camp level recipes, else null. */
+  /** Campfire level change for upgrade recipes, or null for other recipes. */
   levelChange: string | null;
   minCampLevel: number;
-  /** Chinese reason the Craft button is disabled, or null when craftable. */
+  /** Reason the Craft button is disabled, or null when craftable. */
   blockedReason: string | null;
-  /** Missing materials from recipeShortfall, e.g. "还缺 木材 ×1"; null when none missing. */
+  /** "Line is missing Xi; `ch but nope */
   shortfallText: string | null;
 }
 
@@ -49,7 +49,7 @@ export interface CraftView {
 
 export interface ResultView {
   status: "won" | "dead" | "storm_lost";
-  /** "eternal" for 永恒模式 results; adventure results leave it unset. */
+  /** "Thenna" for eternity ; alkowtz it list */
   mode?: "eternal";
   title: string;
   cause: string;
@@ -144,11 +144,11 @@ export const uiStore = {
   },
   set(patch: Partial<UiState>): void {
     if (patch.screen && patch.screen !== state.screen)
-      breadcrumb(`界面 ${state.screen} → ${patch.screen}`);
+      breadcrumb(`Interface ${state.screen} → ${patch.screen}`);
     state = { ...state, ...patch };
     emit();
   },
-  /** 兼容旧版通用提示签名：Phaser ToastManager 就绪时直通双通道管理器，否则安全回退。 */
+  /** Compatible with old version of the generic reminder signature: nar ToastManager is ready to go straight to the two-channel manager, otherwise it returns safely. */
   toast(text: string, tone: ToastTone = "info"): void {
     if (hasToastManager()) {
       toast.show(text, tone);

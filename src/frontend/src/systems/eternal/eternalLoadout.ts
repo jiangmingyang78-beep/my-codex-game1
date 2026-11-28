@@ -90,15 +90,20 @@ export function toggleEquipment(
   const rt = getEternalRuntime(state);
   const item = sys.data.items.get(id);
   if (!rt || item?.type !== "equipment")
-    return { ok: false, message: "无法选择该装备" };
+    return { ok: false, message: "Could not select the equipment" };
   const has = owned(state, id);
   if (rt.phase === "combat") {
-    if (has) return { ok: false, message: "战斗中无法卸下已装备的物品" };
+    if (has)
+      return {
+        ok: false,
+        message:
+          "The fighting was unable to unload the items that were already equipped",
+      };
     if (rt.pendingPicks <= 0)
-      return { ok: false, message: "没有可用的补选额度" };
+      return { ok: false, message: "No by-elections available" };
     withHpSync(state, sys, () => setOwned(state, id, true));
     rt.pendingPicks--;
-    return { ok: true, message: `已补选：${item.name}` };
+    return { ok: true, message: `By-election: ${item.name}` };
   }
   if (has || rt.loadoutMode === "free") {
     withHpSync(state, sys, () => setOwned(state, id, !has));
@@ -107,7 +112,11 @@ export function toggleEquipment(
   const weapon = isWeapon(id);
   const quotas = loadoutQuotas(state, sys);
   if (!weapon && quotas.gear.used >= quotas.gear.max)
-    return { ok: false, message: "防具 / 照明配额已满，请先取消一件" };
+    return {
+      ok: false,
+      message:
+        "The quota for defensive devices/lighting has been filled, please remove one",
+    };
   withHpSync(state, sys, () => {
     if (weapon)
       for (const other of ownedIds(state, sys, true))
@@ -124,7 +133,10 @@ export function setLoadoutMode(
 ): LoadoutResult {
   const rt = getEternalRuntime(state);
   if (!rt || rt.phase !== "prep")
-    return { ok: false, message: "只能在准备阶段切换配装模式" };
+    return {
+      ok: false,
+      message: "The assembly mode can only be changed at the preparatory stage",
+    };
   rt.loadoutMode = mode;
   if (mode === "standard")
     withHpSync(state, sys, () => trimToQuota(state, sys));
@@ -139,14 +151,17 @@ export function setAllEquipment(
 ): LoadoutResult {
   const rt = getEternalRuntime(state);
   if (!rt || rt.phase !== "prep" || rt.loadoutMode !== "free")
-    return { ok: false, message: "仅自由配装的准备阶段可用" };
+    return {
+      ok: false,
+      message: "Only the preparatory stage of free assembly is available",
+    };
   withHpSync(state, sys, () => {
     for (const item of equipmentItems(sys)) setOwned(state, item.id, on);
   });
   return { ok: true };
 }
 
-/** Starting rations for both modes: 烤莓饼 x2, 绷带 x2, 雪草药膏 x1. */
+/** ♪ The ♪ ♪ The ♪ The ♪ ♪ The ♪ The ♪ ♪ The ♪ ♪ The ♪ The ♪ The ♪ ♪ The ♪ The ♪ The ♪ ♪ The ♪ The ♪ The ♪ ♪ The ♪ The ♪ The */
 export function grantStartingSupplies(state: RunState, sys: Systems): void {
   for (const [id, count] of Object.entries(ETERNAL.startingSupplies)) {
     const missing = count - (state.inventory[id] ?? 0);

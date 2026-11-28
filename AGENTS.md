@@ -2,10 +2,12 @@
 
 ## User Preferences
 
-- 游戏内文字与回复使用中文
-- Phaser 3.90.0，纯前端，存档使用 localStorage
-- 复用现有 vfx 模块且保持其公开接口不变；物品、配方、敌人、区域、平衡数据以 JSON 为准
-- 模块化，单文件职责清晰
+- Use English for in-game text and Chinese when replying to the user.
+- Use English for new Git commit messages.
+- Use Phaser 3.90.0, keep the game fully client-side, and save progress in `localStorage`.
+- Reuse the existing VFX modules and preserve their public interfaces. JSON is the source of truth for items, recipes, enemies, regions, and balance data.
+- Keep the code modular and give each file a clear responsibility.
+- For every game source or development change, update `docs/AI_HANDOFF.md` and link to it in the reply. The standalone Markdown file is intended for upload to a web AI assistant. Start with the task, baseline commit, uncommitted changes, reproduction steps, and acceptance criteria. End with the relevant source excerpts or minimal diff, the tests performed, their results, and anything still to verify.
 
 ## Accepted Requirements
 

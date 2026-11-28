@@ -8,7 +8,7 @@ import { createSystems } from "@/core/systems";
 import { createRun } from "@/core/run";
 import { it } from "./fixtures/it";
 
-it("真实目录可完整加载，旧怪物、奖励与模式可见性相容", () => {
+it("Real catalogues can be loaded in their entirety, old monsters, rewards and patterns of visibility", () => {
   const data = loadGameData();
   assert.equal(data.enemies.size, 20);
   assert.equal(data.enemies.get("beacon_keeper")?.attack.type, "alternating");
@@ -157,7 +157,7 @@ const cases: [string, (files: typeof dataFiles) => void][] = [
   ],
 ];
 for (const [path, mutate] of cases)
-  it("启动校验定位 " + path, () => {
+  it("Activate verification positioning " + path, () => {
     const files = structuredClone(dataFiles);
     mutate(files);
     assert.throws(
@@ -167,7 +167,7 @@ for (const [path, mutate] of cases)
   });
 
 for (const version of [1, 2, 3, 4])
-  it(`v${version} 存档保留旧怪物 ID 与固定拾取，读入 v4`, () => {
+  it(`v${version} Archived with old monster ID with fixed pick, read v4`, () => {
     const sys = createSystems(),
       storage = createMemoryStorage();
     const state = createRun({ systems: sys, seed: 42, runId: "migration" });
@@ -193,7 +193,7 @@ for (const version of [1, 2, 3, 4])
     assert.ok(result.snapshot?.seals.includes("ice_gorge_ember_seal"));
   });
 
-it("各阶段怪物攻击与特殊行为均可定位到具体字段", () => {
+it("Each stage of a monster attack and specific conduct can be located in a specific field", () => {
   const f = structuredClone(dataFiles);
   const i = f.enemies.enemies.findIndex((e) => e.seedType === "warden_phase");
   f.enemies.enemies[i].phases![0].overrides.attack.windupSec = NaN;

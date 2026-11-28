@@ -1,5 +1,5 @@
 /**
- * 5 位英雄的极简剪影色板与规格定义（每人严格 4–5 种 RGB）。
+ * 5 An extremely simple clipboard for a hero and a specification definition (strict 4–5 RGBs per person)).
  */
 
 export function hex(code, alpha = 255) {
@@ -12,7 +12,7 @@ export function hex(code, alpha = 255) {
   ];
 }
 
-/** 统一深冷靛蓝描边与剪影暗部色 */
+/** The dark side of the dark side is the same as the dark side of the dark side of the cold thug */
 export const O = hex("#181c2b");
 
 export const PALETTES = {

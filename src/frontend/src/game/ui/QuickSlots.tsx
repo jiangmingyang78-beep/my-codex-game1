@@ -35,7 +35,7 @@ export const QuickSlots = memo(
           <button
             key={slot.slot}
             type="button"
-            aria-label={`快捷栏 ${slot.slot}：${slot.name}，数量 ${slot.count}`}
+            aria-label={`Quick slot ${slot.slot}: ${slot.name}, quantity ${slot.count}`}
             onClick={(e) => {
               commands.quickUse(slot.slot);
               e.currentTarget.blur();

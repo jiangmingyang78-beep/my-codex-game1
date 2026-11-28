@@ -4,8 +4,8 @@ import { ToastManager } from "../ui/ToastManager";
 import { attachToastManager, detachToastManager } from "../ui/toastBridge";
 
 /**
- * 独立 1:1 屏幕坐标叠加场景：专用于承载 ToastManager，
- * 避免受到 GameScene 相机整数缩放（2×–5×）与受击震屏影响。
+ * Independence 1:1 Screen coordinates superimposed scenes: dedicated to carrying ToastManager,
+ * Avoid the effects of the integer scaling of the Scree camera (2x–5x) and the shock screen.
  */
 export class ToastScene extends Phaser.Scene {
   private manager: ToastManager | null = null;
@@ -33,7 +33,7 @@ export class ToastScene extends Phaser.Scene {
     this.events.once(Phaser.Scenes.Events.DESTROY, this.cleanup, this);
   }
 
-  /** 根据已锻装备数量与当前视口重新计算安全锚点（兼容冒险模式与无尽模式）。 */
+  /** Recalculate the security anchor points based on the number of active equipment and current visual openings (compatible risk-taking and end-of-life models)). */
   setHudEquipmentCount(count: number): void {
     this.observeHud();
     if (this.equipmentCount === count) return;
@@ -64,7 +64,7 @@ export class ToastScene extends Phaser.Scene {
     const viewH = this.scale.height;
     const compact = viewW < 640;
 
-    // 避开左上角血条/饱食/火炬面板与目标栏，至少留出 16px 纵向安全间距
+    // Avoid the upper left corner blood bar/saturated/burn panel and target bar, leaving at least 16 px vertical safety spacing
     let lootY = compact ? 200 : 216;
     if (typeof document !== "undefined") {
       const box = document
@@ -75,7 +75,7 @@ export class ToastScene extends Phaser.Scene {
       }
     }
 
-    // 若装备环栏（冒险/无尽模式）出现在左上角下方，则水平避让其列宽
+    // If the equipment loop (at risk/infinite mode) appears below the top left corner, the horizontal width is avoided
     let lootX = compact ? 12 : 16;
     if (this.equipmentCount > 0) {
       const badgeStep = compact ? 44 : 48;
@@ -85,7 +85,7 @@ export class ToastScene extends Phaser.Scene {
       lootX = (compact ? 8 : 12) + cols * badgeStep + 8;
     }
 
-    // 底部快捷栏高度：桌面 72px + bottom 12px = 84px；窄屏 64px + 12px = 76px；再留 20px 安全间距
+    // Allow 84px for the desktop quick bar or 76px on narrow screens, plus 20px of clearance.
     const feedbackOffsetY = compact ? 96 : 104;
     return { lootX, lootY, feedbackOffsetY };
   }

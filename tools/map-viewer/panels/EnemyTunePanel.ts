@@ -6,14 +6,14 @@ let query = "",
   region = "",
   rank = "";
 export function enemyPanel(root: HTMLElement, s: Session) {
-  const list = group(root, "怪物名录");
+  const list = group(root, "The list of monsters");
   const catalog = (["enemies.json", "legacyEnemies.json"] as const).flatMap((file) =>
     s.store.draft[file].enemies.map((e, index) => ({ e, file, index })),
   );
   const search = el("input");
   search.type = "search";
-  search.placeholder = "按名称或 ID 查找";
-  search.ariaLabel = "怪物名称";
+  search.placeholder = "Finds by name or IX";
+  search.ariaLabel = "The name of the monster";
   search.value = query;
   list.append(search);
   const redraw = () => {
@@ -21,9 +21,9 @@ export function enemyPanel(root: HTMLElement, s: Session) {
   };
   choice(
     list,
-    "区域",
+    "Region",
     [
-      ["", "全部区域"],
+      ["", "All regions"],
       ...(s.map.mode === "adventure"
         ? s.map.regions.map((r) => [r.id, r.name] as const)
         : s.base.regions.map((r) => [r.id, r.name] as const)),
@@ -36,11 +36,11 @@ export function enemyPanel(root: HTMLElement, s: Session) {
   );
   choice(
     list,
-    "分类",
+    "Classification",
     [
-      ["", "全部"],
-      ["normal", "普通"],
-      ["boss", "首领"],
+      ["", "All of it"],
+      ["normal", "Normal"],
+      ["boss", "Boss"],
     ],
     rank,
     (v) => {
@@ -59,12 +59,12 @@ export function enemyPanel(root: HTMLElement, s: Session) {
   search.oninput = () => {
     query = search.value;
     s.refresh();
-    const next = document.querySelector<HTMLInputElement>('[aria-label="怪物名称"]');
+    const next = document.querySelector<HTMLInputElement>('[aria-label="The name of the monster"]');
     next?.focus();
     next?.setSelectionRange(query.length, query.length);
   };
   if (!matches.length) {
-    list.append(el("p", "没有匹配的怪物"));
+    list.append(el("p", "No match for the monster"));
     return;
   }
   const current = matches.find(({ e }) => e.id === s.enemyId) ?? matches[0];
@@ -74,7 +74,7 @@ export function enemyPanel(root: HTMLElement, s: Session) {
     s.selected = s.map.spawns.find((p) => p.enemyId === e.id)?.id ?? null;
   choice(
     list,
-    "怪物",
+    "Monster",
     matches.map(({ e }) => [e.id, e.name]),
     e.id,
     (v) => {
@@ -87,7 +87,7 @@ export function enemyPanel(root: HTMLElement, s: Session) {
   if (sites.length)
     choice(
       list,
-      "预览刷点",
+      "Previews the brushpoint",
       sites.map((p) => [p.id, p.id]),
       s.selected ?? "",
       (v) => {
@@ -95,28 +95,28 @@ export function enemyPanel(root: HTMLElement, s: Session) {
         s.focus();
       },
     );
-  else list.append(el("p", "当前地图没有该怪物的刷点。"));
+  else list.append(el("p", "The current map does not have the finger of the monster."));
   const monitor = el("section", "", "monitor");
   monitor.id = "monitor";
   root.append(monitor);
   const path = ["enemies", index];
-  const base = group(root, "基础属性");
+  const base = group(root, "Base attributes");
   for (const [k, label] of [
-    ["maxHp", "生命上限"],
-    ["attackDamage", "单次伤害"],
-    ["moveSpeedPxPerSec", "移速（像素/秒）"],
+    ["maxHp", "Life cap"],
+    ["attackDamage", "Single injury"],
+    ["moveSpeedPxPerSec", "Speeds of movement (pixels/sec))"],
   ])
     numeric(base, s, file, [...path, k], label);
-  const view = group(root, "索敌与脱战预览", false);
-  view.append(el("p", "蓝灰圈显示怪物进入追击和脱战的距离。橙圈使用当前怪物的攻击数据。"));
+  const view = group(root, "Enemy and off-war preview", false);
+  view.append(el("p", "Blue gray rings show the distance from the monster to the chase and to the battle. Orange rings use the current monster attack data."));
   for (const [k, v] of Object.entries(scenarioDefaults.perception))
-    numeric(view, s, "encounters.json", ["perception", k], k === "aggroTiles" ? "索敌（格）" : "脱战（格）", v);
+    numeric(view, s, "encounters.json", ["perception", k], k === "aggroTiles" ? "Soyuz)" : "Get out of the war)", v);
   if ("phases" in e && e.phases) {
     s.phase = Math.min(s.phase, e.phases.length - 1);
     choice(
       view,
-      "预览阶段",
-      e.phases.map((p, i) => [String(i), "阶段 " + (i + 1) + " · " + p.hpThreshold * 100 + "%"]),
+      "Preview phase",
+      e.phases.map((p, i) => [String(i), "Phase " + (i + 1) + " · " + p.hpThreshold * 100 + "%"]),
       String(s.phase),
       (v) => {
         s.phase = Number(v);
@@ -124,17 +124,17 @@ export function enemyPanel(root: HTMLElement, s: Session) {
       },
     );
   }
-  if (e.attack) numbers(group(root, "攻击距离与节奏"), s, file, [...path, "attack"]);
-  if ("phases" in e && e.phases) numbers(group(root, "阶段攻击"), s, file, [...path, "phases"]);
-  const drops = group(root, "掉落表");
+  if (e.attack) numbers(group(root, "Attack distance and rhythm"), s, file, [...path, "attack"]);
+  if ("phases" in e && e.phases) numbers(group(root, "Stage attack"), s, file, [...path, "phases"]);
+  const drops = group(root, "Drop the watch");
   e.drops.forEach((d, i) => {
-    const box = group(drops, "掉落 " + (i + 1)),
+    const box = group(drops, "Fall " + (i + 1)),
       p = [...path, "drops", i];
-    choice(box, "物品", itemOptions, d.itemId, (v) => s.store.field(file, [...p, "itemId"], v));
-    numeric(box, s, file, [...p, "count"], "数量");
-    numeric(box, s, file, [...p, "probability"], "概率");
+    choice(box, "Items", itemOptions, d.itemId, (v) => s.store.field(file, [...p, "itemId"], v));
+    numeric(box, s, file, [...p, "count"], "Quantity");
+    numeric(box, s, file, [...p, "probability"], "Probability");
     box.append(
-      button("移除掉落", () =>
+      button("Removes the fall", () =>
         s.store.edit(file, (doc) => {
           doc.enemies[index].drops.splice(i, 1);
         }),
@@ -142,7 +142,7 @@ export function enemyPanel(root: HTMLElement, s: Session) {
     );
   });
   drops.append(
-    button("添加掉落", () =>
+    button("Adds drop", () =>
       s.store.edit(file, (doc) => {
         Object.assign(doc.enemies[index], {
           drops: [...doc.enemies[index].drops, { itemId: "wood", count: 1, probability: 1 }],

@@ -55,7 +55,9 @@ export function buildWorldFromLdtk(
 ): World {
   const level = ldtk.levels[levelIndex];
   if (!level?.layerInstances) {
-    throw new Error("LDtk JSON 缺少有效的 level 或 layerInstances");
+    throw new Error(
+      "The LDtk level is missing valid dimensions or layerInstances",
+    );
   }
 
   const terrainLayer = level.layerInstances.find(
@@ -66,7 +68,7 @@ export function buildWorldFromLdtk(
   );
   if (!terrainLayer?.intGridCsv || !entityLayer?.entityInstances) {
     throw new Error(
-      "LDtk 需包含 IntGrid 图层「Terrain」与实体图层「Entities」",
+      "The LDtk level requires a Terrain IntGrid layer and an Entities layer",
     );
   }
 
@@ -88,7 +90,7 @@ export function buildWorldFromLdtk(
   let campfire = { x: tileSize * 2, y: tileSize * 2 };
 
   const addObj = (o: WorldObject) => {
-    if (objects.has(o.id)) throw new Error(`LDtk 重复对象 ID: ${o.id}`);
+    if (objects.has(o.id)) throw new Error(`LDtk repeats object :: ${o.id}`);
     objects.set(o.id, o);
   };
 
@@ -130,13 +132,14 @@ export function buildWorldFromLdtk(
       }
       case "Spawn": {
         const spawnId = field<string>(e, "spawnId", "");
-        if (!spawnId) throw new Error("LDtk Spawn 实体缺少 spawnId");
+        if (!spawnId)
+          throw new Error("The zzyId is missing from the LTtk PBOM entity");
         spawns.set(spawnId, { spawnId, regionId, x: cx, y: cy });
         break;
       }
       case "Gate": {
         const gateId = field<string>(e, "gateId", "");
-        if (!gateId) throw new Error("LDtk Gate 实体缺少 gateId");
+        if (!gateId) throw new Error("The LDkkuka entity lacks a Id");
         addObj({ id: gateId, kind: "gate", regionId, x: cx, y: cy });
         const tw = Math.max(1, Math.round(e.width / tileSize));
         const th = Math.max(1, Math.round(e.height / tileSize));
@@ -236,7 +239,7 @@ export function setPieceFromLdtk(
     (l) => l.__identifier === "Entities" && l.__type === "Entities",
   )?.entityInstances;
   if (!ground?.intGridCsv || !actors)
-    throw new Error(`LDtk 奇遇缺少图层：${ref}`);
+    throw new Error(`The \`least-structured'is missing: ${ref}`);
   const { __cWid: w, __cHei: h, intGridCsv: csv } = ground;
   if (
     !Number.isInteger(w) ||
@@ -248,7 +251,7 @@ export function setPieceFromLdtk(
     csv.length !== w * h ||
     csv.some((n) => !Number.isInteger(n) || n < 1 || n > 10)
   )
-    throw new Error(`LDtk 奇遇地形无效：${ref}`);
+    throw new Error(`The \`doltk' is not a valid terrain: ${ref}`);
   const stamp: StampableSetPiece = {
     footprint: { w, h },
     tiles: Array.from({ length: h }, (_, y) =>
@@ -276,7 +279,7 @@ export function setPieceFromLdtk(
         kind: e.__identifier.toLowerCase(),
         ref: field(e, "ref", ""),
       });
-    else throw new Error(`未知奇遇实体：${e.__identifier}`);
+    else throw new Error(`Unknown surprise entity: ${e.__identifier}`);
   }
   return stamp;
 }

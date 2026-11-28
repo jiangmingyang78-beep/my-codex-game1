@@ -1,5 +1,5 @@
 /**
- * 纯 Node + 内置 zlib 的 PNG 编码与像素画布工具。
+ * Pure Node+ PNG encoding with pixel canvas tool with Xalkin embedded.
  */
 import zlib from "node:zlib";
 
@@ -34,7 +34,7 @@ function pngChunk(type, data) {
   return Buffer.concat([lenBuf, typeBuf, data, crcBuf]);
 }
 
-/** 将 RGBA 像素缓冲区编码为无压缩过滤的 PNG Buffer。 */
+/** Encode RGBA pixel buffers into a non-compressive filter of PNG BIOD. */
 export function encodeRgbaPng(width, height, rgba) {
   const sig = Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]);
   const ihdr = Buffer.alloc(13);
@@ -58,7 +58,7 @@ export function encodeRgbaPng(width, height, rgba) {
   ]);
 }
 
-/** 创建指定尺寸的 RGBA 图层，提供像素、矩形与线段绘制方法。 */
+/** Creates a RGBA layer of specified dimensions, which provides pixels, rectangles and line segment drawing methods. */
 export function createLayer(w = 32, h = 32) {
   const buf = Buffer.alloc(w * h * 4, 0);
   const get = (x, y) => {
@@ -86,7 +86,7 @@ export function createLayer(w = 32, h = 32) {
   return { w, h, buf, get, set, rect, hline, vline };
 }
 
-/** 对图层执行 4 邻域外描边：凡透明且紧邻不透明像素的格子均填为描边色。 */
+/** Four adjoining extraterritorially: Any grid of transparent and closely adjacent non-transparent pixels is filled with border colours.44. */
 export function outline(layer, rgba) {
   const { w, h, buf } = layer;
   const src = Buffer.from(buf);
@@ -113,7 +113,7 @@ export function outline(layer, rgba) {
   }
 }
 
-/** 将不描边的特效层叠加到主体层上（半透明光晕仅落在透明像素，避免产生混合杂色）。 */
+/** Adding off-the-ground special effects layers to the main layer (semitransparent photodissipation falls only on transparent pixels, avoiding mixed colours)). */
 export function mergeFx(base, fx) {
   const { w, h, buf } = base;
   for (let y = 0; y < h; y++) {
@@ -130,7 +130,7 @@ export function mergeFx(base, fx) {
   }
 }
 
-/** 将单帧图层拷贝到大表指定格位 (cx, cy)。 */
+/** Copys the single frame layer to the large table with the cell slot (cx, cy). */
 export function blit(sheetBuf, sheetW, layer, cx, cy) {
   for (let y = 0; y < layer.h; y++) {
     for (let x = 0; x < layer.w; x++) {
@@ -144,7 +144,7 @@ export function blit(sheetBuf, sheetW, layer, cx, cy) {
   }
 }
 
-/** 最近邻放大预览图，并可选地在每行第 28 像素处绘制基线参考线。 */
+/** Recent neighbourhood-magnification previews and a baseline reference line can be drawn at line 28 pixels. */
 export function upscale(buf, w, h, k, baselineY = -1) {
   const outW = w * k;
   const outH = h * k;
@@ -161,7 +161,7 @@ export function upscale(buf, w, h, k, baselineY = -1) {
         out[di + 2] = buf[si + 2];
         out[di + 3] = buf[si + 3];
       } else {
-        // 棋盘格暗背景方便看清透明与深色轮廓
+        // The dark background of the chess board allows for a clear view of the transparency and dark colour contour
         const dark = (Math.floor(x / (k * 4)) + Math.floor(y / (k * 4))) % 2 === 0;
         out[di] = dark ? 22 : 30;
         out[di + 1] = dark ? 26 : 34;

@@ -18,7 +18,7 @@ export interface ToastLayoutConfig {
   feedbackOffsetY: number;
 }
 
-/** 创建单条提示的 Phaser 容器、背景、图标（缺失静默回退）与文字节点。 */
+/** Creates a single hint's jer container, background, icon (missing silent retreat) and text node. */
 export function createToastVisual(
   scene: Phaser.Scene,
   item: ToastItem,
@@ -69,7 +69,7 @@ function snapToast(container: Phaser.GameObjects.Container): () => void {
   };
 }
 
-/** 重新排布指定通道中的活跃条目，并驱动进场或队列位移补间。 */
+/** Re-routes active entries in the channel and drive field or queue transfer boxes. */
 export function layoutToastChannel(
   scene: Phaser.Scene,
   items: readonly ToastItem[],
@@ -154,7 +154,7 @@ export function layoutToastChannel(
   });
 }
 
-/** 拾取数量原地合并时的轻微弹跳动画。 */
+/** Picks up small pop-up animations when the number is in situ. */
 export function playPopFeedback(scene: Phaser.Scene, item: ToastItem): void {
   if (!item.container) return;
   scene.tweens.killTweensOf(item.container);
@@ -171,7 +171,7 @@ export function playPopFeedback(scene: Phaser.Scene, item: ToastItem): void {
   });
 }
 
-/** 警告类提示重复触发时的轻微左右抖动动画。 */
+/** The small oscillation animation of the warning class when the alarm type is repeated. */
 export function playShakeFeedback(scene: Phaser.Scene, item: ToastItem): void {
   if (!item.container) return;
   scene.tweens.killTweensOf(item.container);
@@ -190,7 +190,7 @@ export function playShakeFeedback(scene: Phaser.Scene, item: ToastItem): void {
   });
 }
 
-/** 播放退场补间，完成后立刻销毁容器并回调清理队列。 */
+/** The play-off booths are completed and the containers are destroyed and the clean-up queues are returned. */
 export function dismissToastVisual(
   scene: Phaser.Scene,
   item: ToastItem,

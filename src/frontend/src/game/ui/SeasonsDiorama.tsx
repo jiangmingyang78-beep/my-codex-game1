@@ -87,7 +87,7 @@ export function SeasonsDiorama() {
   const season = SEASONS[activeIndex];
   return (
     <div
-      aria-label="生存模式四季光影与天气变换预览"
+      aria-label="The four-season shades of survival pattern are changing from weather to weather"
       className="relative overflow-hidden border-2 border-border bg-night"
     >
       <canvas
@@ -108,7 +108,7 @@ export function SeasonsDiorama() {
         </div>
         <div
           role="tablist"
-          aria-label="切换四季预览"
+          aria-label="Switches to the four-quarter preview"
           className="pointer-events-auto flex gap-1"
         >
           {SEASONS.map((item, idx) => {
@@ -133,9 +133,9 @@ export function SeasonsDiorama() {
         </div>
       </div>
       <div className="pointer-events-none absolute inset-x-0 bottom-0 flex items-center justify-between bg-gradient-to-t from-night/85 via-night/40 to-transparent px-2.5 py-1.5 text-xs text-frost">
-        <span>沙盒营地 · 四季流转与光影天气循环</span>
+        <span>• Four seasons of gyro-smoke weather cycle</span>
         <span className="hidden text-muted-foreground sm:inline">
-          点击右上角可切换季节预览
+          Click the upper right corner to switch the season preview
         </span>
       </div>
     </div>

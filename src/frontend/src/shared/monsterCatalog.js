@@ -33,7 +33,7 @@ export function getSharedSurvivalEnemies(day = 1) {
 export function createSurvivalSeedEnemy(enemyId, x, y, index) {
   const def = getEnemyDef(enemyId);
   if (def?.scope !== "shared" || def.seedType === "warden_phase")
-    throw new Error(`生存模式怪物不可用：${enemyId}`);
+    throw new Error(`The survival pattern is not available: ${enemyId}`);
 
   return {
     id: `night:${enemyId}:${index}`,

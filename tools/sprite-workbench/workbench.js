@@ -5,7 +5,7 @@ const PALETTE = [
 const PALETTE_RGB = PALETTE.map((hex) => ({
   hex, r: parseInt(hex.slice(1, 3), 16), g: parseInt(hex.slice(3, 5), 16), b: parseInt(hex.slice(5, 7), 16),
 }));
-const ROW_LABELS = ["第0行·待机", "第1行·行走", "第2行·攻击", "第3行·急步受击"];
+const ROW_LABELS = ["Line 0. Stand by", "Line one: Walk", "Line two. Attack", "Line 3: The rush is under attack"];
 const state = {
   fileName: "demo.png", cols: 4, rows: 4, fw: 32, fh: 32, ax: 16, ay: 28,
   scale: 6, sheetScale: 3, row: 0, col: 0, playing: true, fps: 9,
@@ -35,14 +35,14 @@ function updateStats() {
     colors.add((d[i] << 16) | (d[i + 1] << 8) | d[i + 2]);
     if (Math.hypot(d[i] - 255, d[i + 1], d[i + 2] - 255) <= tol) mag += 1;
   }
-  $("diagBadge").textContent = `${workCanvas.width}×${workCanvas.height} | ${colors.size}色 | 毛边${semi} | 洋红${mag}`;
+  $("diagBadge").textContent = `${workCanvas.width}×${workCanvas.height} | ${colors.size}Color, hairy side${semi} - The red one${mag}`;
 }
 
 function rebuildRowButtons() {
   if (state.row >= state.rows) state.row = 0;
   const wrap = $("rowButtons"); wrap.innerHTML = "";
   for (let r = 0; r < state.rows; r += 1) {
-    const btn = document.createElement("button"); btn.textContent = ROW_LABELS[r] || `第${r}行`;
+    const btn = document.createElement("button"); btn.textContent = ROW_LABELS[r] || `No. No${r}All right`;
     btn.classList.toggle("active", r === state.row);
     btn.onclick = () => { state.row = r; state.col = 0; rebuildRowButtons(); renderAll(); };
     wrap.appendChild(btn);
@@ -88,7 +88,7 @@ function renderPreview() {
   const { fw, fh, scale: sc, row, col, ax, ay } = state, cw = fw * sc, ch = fh * sc;
   if (pCanvas.width !== cw || pCanvas.height !== ch) { pCanvas.width = cw; pCanvas.height = ch; }
   pCtx.imageSmoothingEnabled = false;
-  $("frameBadge").textContent = `行 ${row} · 列 ${col}/${state.cols - 1} (#${row * state.cols + col})`;
+  $("frameBadge").textContent = `All right ${row}  ·  Column ${col}/${state.cols - 1} (#${row * state.cols + col})`;
   drawBg(pCtx, cw, ch, sc, ax * sc, ay * sc);
   const sx = col * fw, sy = row * fh;
   if (sx < workCanvas.width && sy < workCanvas.height) {
@@ -134,7 +134,7 @@ function cleanMagenta() {
     for (let y = 1; y < h - 1; y += 1) { enq(0, y); enq(w - 1, y); }
     while (hd < tl) { const idx = q[hd++], p = idx * 4, x = idx % w, y = (idx - x) / w; if (d[p + 3]) { d[p] = d[p + 1] = d[p + 2] = d[p + 3] = 0; cleared += 1; } enq(x - 1, y); enq(x + 1, y); enq(x, y - 1); enq(x, y + 1); }
   }
-  workCtx.putImageData(img, 0, 0); updateStats(); renderAll(); log(`去除洋红底（容差 ${tol}）：已清除 ${cleared} 像素。`);
+  workCtx.putImageData(img, 0, 0); updateStats(); renderAll(); log(`Remove the ocean red bottom (decomposition) ${tol}): Cleared ${cleared} Pixels.`);
 }
 
 function snapPalette() {
@@ -151,7 +151,7 @@ function snapPalette() {
     }
     d[i] = best.r; d[i + 1] = best.g; d[i + 2] = best.b; if (harden) d[i + 3] = 255;
   }
-  workCtx.putImageData(img, 0, 0); updateStats(); renderAll(); log("已吸附至余烬林 16 色主色板。");
+  workCtx.putImageData(img, 0, 0); updateStats(); renderAll(); log("Sorrowed to the 16-colour main panel in the remaining forest.");
 }
 
 function loadMagentaDemo() {
@@ -165,24 +165,24 @@ function loadMagentaDemo() {
     ctx.fillStyle = "#e2bfa2"; ctx.fillRect(ox + 14, oy + 12 + bob, 4, 3);
     ctx.fillStyle = "#3e2a22"; ctx.fillRect(ox + 13, oy + 23, 2, 5); ctx.fillRect(ox + 17, oy + 23, 2, 5);
   }
-  loadSource(c, "demo_magenta.png", "sprite"); log("已加载 128×128 洋红底测试图。");
+  loadSource(c, "demo_magenta.png", "sprite"); log("— A chart of the  childbirth — 128 ocean red floor test was loaded.");
 }
 
 function loadUrlAsset(url, name, category) {
-  const img = new Image(); img.onload = () => { loadSource(img, name, category); log(`已加载项目资源：${name}`); };
-  img.onerror = () => log(`加载失败：${url}`); img.src = url;
+  const img = new Image(); img.onload = () => { loadSource(img, name, category); log(`Project resources loaded: ${name}`); };
+  img.onerror = () => log(`Loading failed: ${url}`); img.src = url;
 }
 
 function loadLocalFile(file) {
   const reader = new FileReader();
-  reader.onload = () => { const img = new Image(); img.onload = () => { loadSource(img, file.name, "sprite"); log(`已载入本地文件：${file.name}`); }; img.src = String(reader.result); };
+  reader.onload = () => { const img = new Image(); img.onload = () => { loadSource(img, file.name, "sprite"); log(`Loaded in local file: ${file.name}`); }; img.src = String(reader.result); };
   reader.readAsDataURL(file);
 }
 
 for (const hex of PALETTE) {
   const btn = document.createElement("button"); btn.className = "swatch";
   btn.innerHTML = `<span class="swatch-chip" style="background:${hex}"></span><span>${hex}</span>`;
-  btn.onclick = () => navigator.clipboard?.writeText(hex).then(() => log(`已复制 ${hex}`));
+  btn.onclick = () => navigator.clipboard?.writeText(hex).then(() => log(`Copyed ${hex}`));
   $("paletteGrid").appendChild(btn);
 }
 
@@ -198,12 +198,12 @@ $("fileInput").onchange = (e) => { if (e.target.files?.[0]) loadLocalFile(e.targ
 $("btnLoadMagenta").onclick = loadMagentaDemo;
 $("btnUndo").onclick = () => { const p = state.undoStack.pop(); if (!p) return; workCtx.putImageData(p, 0, 0); $("btnUndo").disabled = !state.undoStack.length; updateStats(); renderAll(); };
 $("btnReset").onclick = () => { pushUndo(); workCtx.clearRect(0, 0, workCanvas.width, workCanvas.height); workCtx.drawImage(origCanvas, 0, 0); updateStats(); renderAll(); };
-$("btnExport").onclick = () => workCanvas.toBlob((b) => { const a = document.createElement("a"); a.href = URL.createObjectURL(b); a.download = `${state.fileName.replace(/\.[^.]+$/, "")}_clean.png`; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000); log(`已导出 ${a.download}`); }, "image/png");
+$("btnExport").onclick = () => workCanvas.toBlob((b) => { const a = document.createElement("a"); a.href = URL.createObjectURL(b); a.download = `${state.fileName.replace(/\.[^.]+$/, "")}_clean.png`; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000); log(`Exported ${a.download}`); }, "image/png");
 $("btnLoadAsset").onclick = () => { const o = $("assetSelect").selectedOptions[0]; if (o) loadUrlAsset(o.value, o.textContent, o.dataset.cat); };
-$("btnPlayPause").onclick = () => { state.playing = !state.playing; $("btnPlayPause").textContent = state.playing ? "⏸ 暂停" : "▶ 播放"; $("btnPlayPause").classList.toggle("active", state.playing); };
+$("btnPlayPause").onclick = () => { state.playing = !state.playing; $("btnPlayPause").textContent = state.playing ? "- Stop" : ", play"; $("btnPlayPause").classList.toggle("active", state.playing); };
 $("btnPrev").onclick = () => { state.playing = false; state.col = (state.col - 1 + state.cols) % state.cols; renderAll(); };
 $("btnNext").onclick = () => { state.playing = false; state.col = (state.col + 1) % state.cols; renderAll(); };
-$("btnFlipX").onclick = () => { state.flipX = !state.flipX; $("btnFlipX").textContent = `⇄ flipX: ${state.flipX ? "开" : "关"}`; $("btnFlipX").classList.toggle("active", state.flipX); renderPreview(); };
+$("btnFlipX").onclick = () => { state.flipX = !state.flipX; $("btnFlipX").textContent = `⇄ flipX: ${state.flipX ? "Open" : "Off"}`; $("btnFlipX").classList.toggle("active", state.flipX); renderPreview(); };
 $("fpsRange").oninput = () => { state.fps = Number($("fpsRange").value); $("fpsVal").textContent = `${state.fps} fps`; };
 $("tolRange").oninput = () => { $("tolVal").textContent = $("tolRange").value; updateStats(); };
 $("chkGrid").onchange = () => { state.showGrid = $("chkGrid").checked; renderAll(); };

@@ -3,7 +3,7 @@
     {
       "id": "smelt_iron",
       "unlockOnPickup": ["ore"],
-      "name": "熔炼铁锭",
+      "name": "Smelt Iron Ingots",
       "stationId": "main_campfire",
       "minCampLevel": 2,
       "inputs": {
@@ -19,7 +19,7 @@
     {
       "id": "cook_ration",
       "starterUnlocked": true,
-      "name": "烤制莓饼",
+      "name": "Bake Berry Cakes",
       "stationId": "main_campfire",
       "minCampLevel": 1,
       "inputs": {
@@ -35,7 +35,7 @@
     {
       "id": "cook_stew",
       "unlockOnPickup": ["frostcap"],
-      "name": "烹煮霜菇暖汤",
+      "name": "Cook Warm Frostcap Stew",
       "stationId": "main_campfire",
       "minCampLevel": 2,
       "inputs": {
@@ -52,7 +52,7 @@
     {
       "id": "make_bandage",
       "starterUnlocked": true,
-      "name": "制作绷带",
+      "name": "Make Bandages",
       "stationId": "main_campfire",
       "minCampLevel": 1,
       "inputs": {
@@ -67,7 +67,7 @@
     {
       "id": "make_lantern",
       "unlockOnPickup": ["ingot"],
-      "name": "制作铁罩提灯",
+      "name": "Make an Iron Lantern",
       "stationId": "main_campfire",
       "minCampLevel": 2,
       "inputs": {
@@ -87,7 +87,7 @@
     {
       "id": "make_spear",
       "unlockOnPickup": ["ingot"],
-      "name": "制作铁矛",
+      "name": "Forge an Iron Spear",
       "stationId": "main_campfire",
       "minCampLevel": 2,
       "inputs": {
@@ -106,7 +106,7 @@
     {
       "id": "make_relay",
       "unlockOnCampProject": ["raise_camp_2"],
-      "name": "制作接力火盆",
+      "name": "Build a Relay Brazier",
       "stationId": "main_campfire",
       "minCampLevel": 2,
       "inputs": {
@@ -126,7 +126,7 @@
     {
       "id": "raise_camp_2",
       "starterUnlocked": true,
-      "name": "升级二级营火",
+      "name": "Upgrade Campfire to Level 2",
       "stationId": "main_campfire",
       "minCampLevel": 1,
       "inputs": {
@@ -144,7 +144,7 @@
     {
       "id": "raise_camp_3",
       "unlockOnCampProject": ["raise_camp_2"],
-      "name": "升级三级营火",
+      "name": "Upgrade Campfire to Level 3",
       "stationId": "main_campfire",
       "minCampLevel": 2,
       "inputs": {
@@ -163,7 +163,7 @@
     {
       "id": "cook_roast_meat",
       "unlockOnPickup": ["raw_meat"],
-      "name": "炭烤兽肉",
+      "name": "Grill Meat",
       "stationId": "main_campfire",
       "minCampLevel": 1,
       "inputs": {
@@ -179,7 +179,7 @@
     {
       "id": "craft_herb_salve",
       "unlockOnPickup": ["herb"],
-      "name": "雪草药膏",
+      "name": "Make Snow Herb Salve",
       "stationId": "main_campfire",
       "minCampLevel": 1,
       "inputs": {
@@ -195,7 +195,7 @@
     {
       "id": "craft_resin_torch",
       "unlockOnPickup": ["resin"],
-      "name": "松脂火把",
+      "name": "Make a Resin Torch",
       "stationId": "main_campfire",
       "minCampLevel": 1,
       "inputs": {
@@ -211,7 +211,7 @@
     {
       "id": "craft_fur_cloak",
       "unlockOnPickup": ["pelt"],
-      "name": "兽皮防寒披风",
+      "name": "Sew a Fur Cloak",
       "stationId": "main_campfire",
       "minCampLevel": 2,
       "inputs": {
@@ -230,7 +230,7 @@
     {
       "id": "craft_iron_blade",
       "unlockOnPickup": ["iron_scrap"],
-      "name": "淬炭短刃",
+      "name": "Forge a Charcoal-Tempered Blade",
       "stationId": "main_campfire",
       "minCampLevel": 2,
       "inputs": {
@@ -251,7 +251,7 @@
       "id": "craft_ember_lantern",
       "unlockOnCampProject": ["old_mill_relay"],
       "unlockOnPickup": ["iron_scrap"],
-      "name": "余烬提灯",
+      "name": "Make an Ember Lantern",
       "stationId": "main_campfire",
       "minCampLevel": 3,
       "inputs": {
@@ -271,7 +271,7 @@
     {
       "id": "craft_ash_compost",
       "unlockOnPickup": ["charcoal"],
-      "name": "调制灰烬堆肥",
+      "name": "Mix Ash Compost",
       "stationId": "main_campfire",
       "minCampLevel": 1,
       "inputs": { "fiber": 2, "charcoal": 1, "berry": 1 },
@@ -280,7 +280,7 @@
     {
       "id": "craft_ember_mulch",
       "unlockOnPickup": ["ash_compost"],
-      "name": "炼制余烬暖肥",
+      "name": "Make Ember Mulch",
       "stationId": "main_campfire",
       "minCampLevel": 2,
       "inputs": { "ash_compost": 1, "ember_dust": 1, "resin": 1 },
@@ -289,7 +289,7 @@
     {
       "id": "craft_berry_cutting",
       "unlockOnPickup": ["berry"],
-      "name": "雪莓分株育苗",
+      "name": "Propagate a Snowberry Cutting",
       "stationId": "main_campfire",
       "minCampLevel": 1,
       "inputs": { "berry": 2, "fiber": 1 },
@@ -298,7 +298,7 @@
     {
       "id": "smelt_scrap",
       "unlockOnPickup": ["iron_scrap"],
-      "name": "重熔废铁片",
+      "name": "Remelt Iron Scrap",
       "stationId": "main_campfire",
       "minCampLevel": 2,
       "inputs": { "iron_scrap": 2, "charcoal": 1 },
@@ -307,7 +307,7 @@
     {
       "id": "craft_iron_buckler",
       "unlockOnPickup": ["ingot"],
-      "name": "锻造锻铁圆盾",
+      "name": "Forge a Wrought-Iron Buckler",
       "stationId": "main_campfire",
       "minCampLevel": 2,
       "inputs": { "ingot": 1, "wood": 2 },
@@ -317,7 +317,7 @@
     {
       "id": "craft_iron_armor",
       "unlockOnPickup": ["ingot"],
-      "name": "锻造锻铁胸甲",
+      "name": "Forge a Wrought-Iron Breastplate",
       "stationId": "main_campfire",
       "minCampLevel": 2,
       "inputs": { "ingot": 2, "fiber": 2 },
@@ -327,7 +327,7 @@
     {
       "id": "craft_iron_boots",
       "unlockOnPickup": ["ingot"],
-      "name": "锻造踏铁雪靴",
+      "name": "Forge Iron Snow Boots",
       "stationId": "main_campfire",
       "minCampLevel": 2,
       "inputs": { "ingot": 1, "pelt": 2, "fiber": 1 },
@@ -337,7 +337,7 @@
     {
       "id": "craft_iron_helm",
       "unlockOnPickup": ["ingot"],
-      "name": "锻造锻铁重盔",
+      "name": "Forge a Heavy Wrought-Iron Helm",
       "stationId": "main_campfire",
       "minCampLevel": 3,
       "inputs": { "ingot": 2, "iron_scrap": 2, "charcoal": 1 },

@@ -11,10 +11,10 @@ export function validateOverrides(
   const issues: Issue[] = [];
   const fail = (path: Path, message: string) => issues.push({ file: "worldOverrides.json", path, message });
   if (!isRecord(raw) || raw.version !== 1) {
-    fail(["version"], "地图覆写版本必须为 1");
+    fail(["version"], "Map overlay must be version 1");
     return issues;
   }
-  for (const key of Object.keys(raw)) if (!Object.hasOwn(emptyOverrides, key)) fail([key], "未知字段");
+  for (const key of Object.keys(raw)) if (!Object.hasOwn(emptyOverrides, key)) fail([key], "Unknown field");
   const occupied = new Set([...map.objects, ...map.spawns].map((p) => p.id));
   for (const kind of ["Object", "Spawn"] as const) {
     const resource = kind === "Object";
@@ -30,14 +30,14 @@ export function validateOverrides(
       const entries = raw[key];
       const list = op === "removed" || op === "added";
       if (list ? !Array.isArray(entries) : !isRecord(entries)) {
-        fail([key], "集合结构无效");
+        fail([key], "Invalid collection structure");
         continue;
       }
       for (const [index, entry] of Object.entries(entries as object)) {
         const path = [key, index];
         const id = op === "removed" ? entry : op === "added" && isRecord(entry) ? entry.id : index;
         if (!validId(id) || (op === "added" ? occupied.has(id) : !base.has(id)) || removed.has(id)) {
-          fail(path, "点位 ID 重复、受保护或不存在");
+          fail(path, "Point ID is duplicated, protected, or missing");
           continue;
         }
         if (op === "removed") {
@@ -45,7 +45,7 @@ export function validateOverrides(
           continue;
         }
         if (!isRecord(entry)) {
-          fail(path, "点位必须为对象");
+          fail(path, "Point must be an object");
           continue;
         }
         if (op === "added") occupied.add(id);
@@ -53,7 +53,7 @@ export function validateOverrides(
           ? ["itemId", "yield", "renewable", "renewalLimit", "respawnCooldownSec"]
           : ["enemyId", "regionId"];
         const allowed = op === "added" ? ["id", "tx", "ty", ...props] : op === "moved" ? ["tx", "ty"] : props;
-        if (Object.keys(entry).some((k) => !allowed.includes(k))) fail(path, "不支持的点位参数");
+        if (Object.keys(entry).some((k) => !allowed.includes(k))) fail(path, "Unsupported point parameters");
         if (op !== "edited") {
           const { tx, ty } = entry;
           if (
@@ -67,7 +67,7 @@ export function validateOverrides(
             ty >= map.height ||
             map.solidMask[ty * map.width + tx]
           )
-            fail(path, "点位位于阻挡格或地图边界外");
+            fail(path, "Position is on a blocked tile or outside the map");
         }
         for (const [field, ids] of [
           ["itemId", items],
@@ -78,21 +78,21 @@ export function validateOverrides(
             (field in entry || (op === "added" && field === (resource ? "itemId" : "enemyId"))) &&
             (typeof entry[field] !== "string" || !ids.has(String(entry[field])))
           )
-            fail([...path, field], "引用的 ID 不存在");
+            fail([...path, field], "Referenced ID does not exist");
         }
         if ("yield" in entry && !(Number.isSafeInteger(entry.yield) && Number(entry.yield) > 0))
-          fail([...path, "yield"], "产量须为正整数");
+          fail([...path, "yield"], "Yield must be a positive integer");
         if ("renewalLimit" in entry && (!Number.isSafeInteger(entry.renewalLimit) || Number(entry.renewalLimit) < 0))
-          fail([...path, "renewalLimit"], "再生次数须为非负整数");
+          fail([...path, "renewalLimit"], "The number of rebirths must be non-negative integer");
         if (
           "respawnCooldownSec" in entry &&
           (typeof entry.respawnCooldownSec !== "number" ||
             !Number.isFinite(entry.respawnCooldownSec) ||
             entry.respawnCooldownSec < 0)
         )
-          fail([...path, "respawnCooldownSec"], "刷新冷却须为有限非负数");
+          fail([...path, "respawnCooldownSec"], "The cooling must be limited and non-negative");
         if ("renewable" in entry && typeof entry.renewable !== "boolean")
-          fail([...path, "renewable"], "再生开关必须为布尔值");
+          fail([...path, "renewable"], "Regeneration switches must be for booleans");
       }
     }
   }

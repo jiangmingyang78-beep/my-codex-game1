@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>余烬林 · 像素精灵表预览与洗图工作台</title>
+  <title>Ashrewood Pixel Watch Preview and Map Workstation</title>
   <style>
     :root {
       --bg-app: #0c0f1a;
@@ -462,36 +462,36 @@
 </head>
 <body>
   <div id="dropOverlay" class="drop-overlay">
-    <div class="drop-overlay-card">松开鼠标以载入 PNG 精灵表</div>
+    <div class="drop-overlay-card">Loose mouse to load PNG The table of elfs</div>
   </div>
 
   <header class="topbar">
     <div class="brand">
       <span class="brand-dot"></span>
       <div>
-        <h1>余烬林 · 像素精灵表预览与洗图工作台</h1>
-        <div class="brand-sub">纯本地离线单文件 · 拖放 PNG / 粘贴图片 / 脚底基线校准 / 一键去洋红与 16 色吸附</div>
+        <h1>Ashrewood Pixel Watch Preview and Map Workstation</h1>
+        <div class="brand-sub">Pure local offline file. Drag and drop PNG / Paste pictures/ bottom of feet baseline calibration / one key to go red with 16 color adsorption</div>
       </div>
     </div>
     <div class="top-actions">
       <input id="fileInput" type="file" accept="image/png,image/*" hidden />
-      <button id="btnOpenFile" class="primary">📂 选择 PNG</button>
-      <button id="btnLoadDemoClean">🧪 载入透明样例图</button>
-      <button id="btnLoadDemoMagenta">🟣 载入含洋红底测试图</button>
-      <button id="btnUndo" disabled>↩ 撤销 (Ctrl+Z)</button>
-      <button id="btnReset">⟲ 重置原图</button>
-      <button id="btnExport" class="success">⬇ 导出透明底 PNG</button>
+      <button id="btnOpenFile" class="primary">📂 Choose PNG</button>
+      <button id="btnLoadDemoClean">🧪 Loads a transparent sample</button>
+      <button id="btnLoadDemoMagenta">🟣 Loads a test chart with the ocean red bottom</button>
+      <button id="btnUndo" disabled>↩ Undo (Ctrl+Z)</button>
+      <button id="btnReset">⟲ Reset the original</button>
+      <button id="btnExport" class="success">⬇ Export the bottom of transparency PNG</button>
     </div>
   </header>
 
   <main class="workspace">
-    <!-- 左栏：实时动画预览 + 整表浏览 -->
+    <!-- Left bar: Real-time animation preview + whole table browse -->
     <section class="col">
       <div class="panel">
         <div class="panel-header">
           <div class="panel-title">
-            <span>动画实时预览</span>
-            <span id="frameBadge" class="badge">行 0 · 帧 0/3 (全局 #0)</span>
+            <span>Animated preview in real time</span>
+            <span id="frameBadge" class="badge">Line 0. Frame 0/3 (Global #0)</span>
           </div>
           <div class="btn-group">
             <button data-scale="1">1x</button>
@@ -506,54 +506,54 @@
         </div>
 
         <div class="control-row">
-          <span class="control-label">行动作：</span>
+          <span class="control-label">Action done: </span>
           <div id="rowButtons" class="btn-group"></div>
         </div>
 
         <div id="subRangeRow" class="control-row" style="display:none;">
-          <span class="control-label">第3行分段：</span>
+          <span class="control-label">Line 3, subparagraph (c): </span>
           <div id="subRangeButtons" class="btn-group"></div>
         </div>
 
         <div class="control-row">
-          <span class="control-label">播放控制：</span>
-          <button id="btnPlayPause" class="active">⏸ 暂停 (Space)</button>
-          <button id="btnPrevFrame">⏮ 上一帧</button>
-          <button id="btnNextFrame">⏭ 下一帧</button>
-          <button id="btnFlipX">⇄ 镜像 flipX: 关 (F)</button>
-          <label class="check-label"><input id="chkOnion" type="checkbox" /> 洋葱皮残影</label>
+          <span class="control-label">Playback Control: </span>
+          <button id="btnPlayPause" class="active">⏸ Pause (Space)</button>
+          <button id="btnPrevFrame">⏮ Previous frame</button>
+          <button id="btnNextFrame">⏭ Next frame</button>
+          <button id="btnFlipX">⇄ Mirror flipX: Off (F)</button>
+          <label class="check-label"><input id="chkOnion" type="checkbox" /> Onion skin fragrant</label>
         </div>
 
         <div class="control-row">
-          <span class="control-label">帧率 FPS：</span>
+          <span class="control-label">Frame rate FPS: </span>
           <input id="fpsRange" type="range" min="4" max="20" step="1" value="9" style="width:170px;" />
           <span id="fpsVal" class="mono-val">9 fps</span>
-          <span class="hint">规范参考：待机 5 · 行走 9 · 攻击 16 · 急步 14</span>
+          <span class="hint">Rationale: Waiting for flight 5 Walk 9 Attack 16 Speeding. — 14</span>
         </div>
 
         <div class="control-row">
-          <span class="control-label">雪夜底色：</span>
+          <span class="control-label">Snow and night: </span>
           <div class="btn-group" id="bgButtons">
-            <button data-bg="checker" class="active">透明棋盘格</button>
-            <button data-bg="night">深靛雪夜 #121626</button>
-            <button data-bg="campfire">营火暖光圈模拟</button>
-            <button data-bg="snow">亮雪地 #dce7f2</button>
+            <button data-bg="checker" class="active">Transparency Board</button>
+            <button data-bg="night">Dark ravine snow night #121626</button>
+            <button data-bg="campfire">Campfire radiator simulation</button>
+            <button data-bg="snow">Snow #dce7f2</button>
           </div>
         </div>
 
         <div class="control-row">
-          <span class="control-label">参考线：</span>
-          <label class="check-label"><input id="chkGrid" type="checkbox" checked /> 网格与像素格线</label>
-          <label class="check-label"><input id="chkAnchor" type="checkbox" checked /> 脚底锚点十字线</label>
-          <label class="check-label"><input id="chkShadow" type="checkbox" checked /> 脚底投影模拟</label>
+          <span class="control-label">Reference line: </span>
+          <label class="check-label"><input id="chkGrid" type="checkbox" checked /> Grid with pixel lines</label>
+          <label class="check-label"><input id="chkAnchor" type="checkbox" checked /> The foot anchor crosses</label>
+          <label class="check-label"><input id="chkShadow" type="checkbox" checked /> Foot-and-foot projection simulation</label>
         </div>
       </div>
 
       <div class="panel">
         <div class="panel-header">
           <div class="panel-title">
-            <span>整表总览与点选定位</span>
-            <span id="hoverPixelBadge" class="badge">悬停画布查看像素坐标与色值</span>
+            <span>Tables the totals and points selected</span>
+            <span id="hoverPixelBadge" class="badge">Suspend canvas to see pixel coordinates and colour values</span>
           </div>
           <div class="btn-group" id="sheetZoomButtons">
             <button data-sheet-scale="1">1x</button>
@@ -566,124 +566,124 @@
           <canvas id="sheetCanvas" class="pixelated"></canvas>
         </div>
         <div class="hint" style="margin-top:8px;">
-          提示：可直接把 PNG 文件拖进窗口任意位置，或按 Ctrl+V 粘贴剪贴板图片；点击总览图中的任意格子可立即切换到该行与该帧。
+        Drop a PNG anywhere, or paste an image with Ctrl+V. Click any cell in the sheet preview to jump to its frame.
         </div>
       </div>
     </section>
 
-    <!-- 右栏：网格切分 + 洗图 + 16色色板吸附 + 诊断 -->
+    <!-- Right bar: Grid & Sever + Scheduling + 16 Colorboards adsorb to diagnosis -->
     <section class="col">
       <div class="panel">
         <div class="panel-header">
-          <div class="panel-title">网格切分与脚底锚点配置</div>
-          <button id="btnAutoFrameSize">📐 按图尺寸自动推导单帧</button>
+          <div class="panel-title">Grid cut-off and foot bottom anchor configuration</div>
+          <button id="btnAutoFrameSize">📐 Auto-promotion of frames by graph size</button>
         </div>
         <div class="field-grid">
           <div class="field">
-            <label for="inpCols">列数 (Cols)</label>
+            <label for="inpCols">Columns (Cols)</label>
             <input id="inpCols" type="number" min="1" max="32" value="4" />
           </div>
           <div class="field">
-            <label for="inpRows">行数 (Rows)</label>
+            <label for="inpRows">Lines (Rows)</label>
             <input id="inpRows" type="number" min="1" max="32" value="4" />
           </div>
           <div class="field">
-            <label for="inpFrameW">单帧宽 (px)</label>
+            <label for="inpFrameW">Single frame wide (px)</label>
             <input id="inpFrameW" type="number" min="8" max="256" value="32" />
           </div>
           <div class="field">
-            <label for="inpFrameH">单帧高 (px)</label>
+            <label for="inpFrameH">Single frame high (px)</label>
             <input id="inpFrameH" type="number" min="8" max="256" value="32" />
           </div>
           <div class="field">
-            <label for="inpAnchorX">锚点 X (px)</label>
+            <label for="inpAnchorX">The anchor X (px)</label>
             <input id="inpAnchorX" type="number" min="0" max="256" value="16" />
           </div>
           <div class="field">
-            <label for="inpAnchorY">锚点 Y (px)</label>
+            <label for="inpAnchorY">The anchor Y (px)</label>
             <input id="inpAnchorY" type="number" min="0" max="256" value="28" />
           </div>
         </div>
         <div class="control-row">
-          <button id="btnResetAnchorDefault">🎯 重置英雄标准锚点 (16, 28)</button>
-          <button id="btnCenterAnchor">⌖ 自动居中脚底 (W/2, H-4)</button>
+          <button id="btnResetAnchorDefault">🎯 Resets the Hero Standard anchor (16, 28)</button>
+          <button id="btnCenterAnchor">⌖ Centered to the bottom of the foot automatically (W/2, H-4)</button>
         </div>
       </div>
 
       <div class="panel">
         <div class="panel-header">
-          <div class="panel-title">图像诊断与一键洗图</div>
+          <div class="panel-title">Image diagnostic with a key schematic</div>
           <span id="fileNameBadge" class="badge">demo_hero.png</span>
         </div>
 
         <div class="stats-grid" style="margin-bottom:10px;">
           <div class="stat-box">
-            <div class="k">画布尺寸 / 网格</div>
+            <div class="k">Draw cloth size/ grid</div>
             <div class="v" id="statDim">128×128 (4×4)</div>
           </div>
           <div class="stat-box">
-            <div class="k">不透明颜色数</div>
+            <div class="k">Opaque colours</div>
             <div class="v" id="statColors">-</div>
           </div>
           <div class="stat-box">
-            <div class="k">半透明毛边像素</div>
+            <div class="k">Semitransparent pixels</div>
             <div class="v" id="statSemi">-</div>
           </div>
           <div class="stat-box">
-            <div class="k">疑似洋红像素</div>
+            <div class="k">Suspected of a red pixel</div>
             <div class="v" id="statMagenta">-</div>
           </div>
         </div>
 
         <div class="tool-card">
           <div class="tool-card-title">
-            <span>1. 去除洋红底（#ff00ff）</span>
-            <span class="hint">支持容差调节</span>
+            <span>1. Remove magenta background (#ff00ff)</span>
+            <span class="hint">Supports tolerance reconciliations</span>
           </div>
           <div class="slider-row">
-            <span class="hint">RGB 容差</span>
+            <span class="hint">RGB The tolerance</span>
             <input id="tolRange" type="range" min="0" max="150" step="1" value="38" />
             <span id="tolVal" class="mono-val">38</span>
           </div>
           <div class="control-row" style="margin-top:0;">
             <label class="check-label">
               <input id="chkFloodFill" type="checkbox" />
-              仅从图像边缘连通清除（防误删角色内部紫红）
+              Only connect from the edge of the image (foremost deletes the internal purple red from the character))
             </label>
           </div>
-          <button id="btnRemoveMagenta" class="primary">✨ 去除洋红底 (#ff00ff)</button>
+          <button id="btnRemoveMagenta" class="primary">✨ Remove magenta background (#ff00ff)</button>
         </div>
 
         <div class="tool-card">
           <div class="tool-card-title">
-            <span>2. 吸附至余烬林 16 色主色板</span>
-            <span class="hint">自动按人眼感知权重匹配最近色</span>
+            <span>2. Sorption to the remaining forest 16 coloured main panel</span>
+            <span class="hint">Automatically matches the most recent colour by the perceptive weight of the person</span>
           </div>
           <div class="control-row" style="margin-top:0;">
             <label class="check-label">
               <input id="chkHardenAlpha" type="checkbox" checked />
-              同步清理半透明毛边 (Alpha &lt; 128 置透明，≥ 128 置不透明)
+              Synchronizes the mound side of the translucent (Alpha & t;aut transparent, Çau opaque)
             </label>
           </div>
           <div style="display:flex; gap:8px; flex-wrap:wrap;">
-            <button id="btnSnapPalette" class="primary" style="flex:1;">🎨 吸附至余烬林 16 色主色板</button>
-            <button id="btnHardAlphaOnly">✂ 仅硬化半透明毛边</button>
+            <button id="btnSnapPalette" class="primary" style="flex:1;">🎨 Sorption to the remaining forest 16 coloured main panel</button>
+            <button id="btnHardAlphaOnly">✂ Sterilize only semi-transparent fur edges</button>
           </div>
         </div>
       </div>
 
       <div class="panel">
         <div class="panel-header">
-          <div class="panel-title">余烬林 16 色雪夜主色板</div>
-          <span class="hint">点击任意色块复制 Hex</span>
+          <div class="panel-title">The Ashide 16 Night Snow Main Palette. —</div>
+          <span class="hint">Click any color block to copy Hex</span>
         </div>
         <div id="paletteGrid" class="palette-grid"></div>
       </div>
 
       <div class="panel">
         <div class="panel-header">
-          <div class="panel-title">操作日志</div>
-          <button id="btnClearLog" style="padding:3px 8px;">清空</button>
+          <div class="panel-title">Operating log</div>
+          <button id="btnClearLog" style="padding:3px 8px;">Clear</button>
         </div>
         <div id="logBox" class="log-box"></div>
       </div>
@@ -721,10 +721,10 @@
       }));
 
       const DEFAULT_ROW_NAMES = [
-        { label: "第 0 行 · 待机", defaultFps: 5 },
-        { label: "第 1 行 · 行走", defaultFps: 9 },
-        { label: "第 2 行 · 攻击", defaultFps: 16 },
-        { label: "第 3 行 · 急步/受击", defaultFps: 10 },
+        { label: "Line 0 • Standby", defaultFps: 5 },
+        { label: "Line 1 - Walk", defaultFps: 9 },
+        { label: "Line 2 - Attack", defaultFps: 16 },
+        { label: "Line 3", defaultFps: 10 },
       ];
 
       const state = {
@@ -850,7 +850,7 @@
         el.btnUndo.disabled = state.undoStack.length === 0;
         refreshStats();
         renderAll();
-        log("已撤销上一步像素操作。");
+        log("Previous pixel operation was withdrawn.");
       }
 
       function resetToOriginal() {
@@ -862,7 +862,7 @@
         workingCtx.drawImage(originalCanvas, 0, 0);
         refreshStats();
         renderAll();
-        log(`已重置为原始图像 (${workingCanvas.width}×${workingCanvas.height})。`);
+        log(`Restored original image (${workingCanvas.width}×${workingCanvas.height}).`);
       }
 
       function loadImageFromCanvasOrImg(source, name, autoDeriveGrid = false) {
@@ -960,7 +960,7 @@
           }
 
           if (dead) {
-            // 倒地帧（脚底仍靠近 y=27）
+            // The floor frame is down (the sole foot is still close to y=27)
             p(ox, oy, 7, 23, 18, 5, "#181c2b");
             p(ox, oy, 8, 24, 15, 3, "#3d506b");
             p(ox, oy, 7, 23, 5, 4, "#2b3040");
@@ -980,31 +980,31 @@
           const skin = "#e2bfa2";
           const boot = "#3e2a22";
 
-          // 披风后摆
+          // The cape is out
           p(ox, oy, 10 + bx - (row === 3 ? 2 : 0), 17 + by, 4, 6, outline);
           p(ox, oy, 11 + bx - (row === 3 ? 2 : 0), 18 + by, 3, 4, scarf);
 
-          // 双腿（脚底落在 y=27,28 对齐锚点 y=28）
+          // Legs (legged at y = 27728 alignment anchor point y = 28)
           p(ox, oy, 13 + bx + legA, 23, 2, 5, outline);
           p(ox, oy, 13 + bx + legA, 24, 2, 3, boot);
           p(ox, oy, 17 + bx + legB, 23, 2, 5, outline);
           p(ox, oy, 17 + bx + legB, 24, 2, 3, boot);
 
-          // 躯干外套
+          // The torso coat
           p(ox, oy, 12 + bx, 16 + by, 8, 8, outline);
           p(ox, oy, 13 + bx, 17 + by, 6, 6, cloak);
           p(ox, oy, 14 + bx, 17 + by, 2, 5, cloakHi);
 
-          // 围巾
+          // Scarf
           p(ox, oy, 12 + bx, 15 + by, 8, 2, scarf);
 
-          // 兜帽头部
+          // The hood head
           p(ox, oy, 12 + bx, 9 + by, 8, 7, outline);
           p(ox, oy, 13 + bx, 10 + by, 6, 5, hood);
           p(ox, oy, 15 + bx, 12 + by, 4, 3, skin);
           p(ox, oy, 17 + bx, 13 + by, 1, 1, outline);
 
-          // 手持武器 / 火炬
+          // Hand-held weapon/ torch
           if (row === 2 && swing > 0) {
             p(ox, oy, 19 + bx, 16 + by, 8 + swing * 2, 2, "#dce7f2");
             p(ox, oy, 20 + bx, 15 + by, 7 + swing * 2, 1, "#7ce8ff");
@@ -1013,7 +1013,7 @@
             p(ox, oy, 10 + bx, 13 + by, 2, 6, "#8c93a3");
             p(ox, oy, 9 + bx, 12 + by, 2, 2, "#ffd166");
           } else {
-            // 提火炬
+            // Raise the torch
             p(ox, oy, 20 + bx, 15 + by, 2, 6, "#6b4730");
             p(ox, oy, 20 + bx, 13 + by, 2, 2, "#ff7a2f");
             p(ox, oy, 20 + bx, 12 + by, 1, 1, "#ffd166");
@@ -1026,7 +1026,7 @@
           }
         }
 
-        // 若是洋红测试图，刻意加一圈轻微抗锯齿紫红杂边，便于直接验证容差洗图效果
+        // In the case of ocean red tests, a small cross-section of anti-served purple rims is deliberately added, which allows for direct verification of the effect of the misbehaviour bathing
         if (magentaBg) {
           ctx.fillStyle = "#e012df";
           ctx.fillRect(12, 8, 1, 1);
@@ -1042,8 +1042,8 @@
         );
         log(
           magentaBg
-            ? "已载入含洋红底(#ff00ff)与杂边像素的 128×128 测试图，可直接试用“去除洋红底”与“16色吸附”。"
-            : "已载入内置 128×128（4×4，32×32）示例英雄精灵表。",
+            ? "A roux128 test map containing #ff00ff and Miscipulative pixels is included, which allows for the direct trial of \"dryminding\" and \"16-colour adsorption\"."
+            : "A list of the heroes is contained in the built-in urn 128 (4x14x1432x32) example.",
         );
       }
 
@@ -1056,7 +1056,7 @@
         for (let r = 0; r < rows; r += 1) {
           const btn = document.createElement("button");
           const meta = DEFAULT_ROW_NAMES[r];
-          btn.textContent = meta ? meta.label : `第 ${r} 行`;
+          btn.textContent = meta ? meta.label : `No. No ${r} All right`;
           if (r === state.activeRow) btn.classList.add("active");
           btn.addEventListener("click", () => {
             state.activeRow = r;
@@ -1076,10 +1076,10 @@
         el.subRangeRow.style.display = showSub ? "flex" : "none";
         if (showSub) {
           const ranges = [
-            { id: "all", label: "整行 (0-3)" },
-            { id: "dash", label: "急步 (0-1)" },
-            { id: "hurt", label: "受击 (2)" },
-            { id: "dead", label: "倒地 (3)" },
+            { id: "all", label: "Line (0-3)" },
+            { id: "dash", label: "Dash (0-1)" },
+            { id: "hurt", label: "(b) Subject (2)" },
+            { id: "dead", label: "Falling (3)" },
           ];
           el.subRangeButtons.innerHTML = "";
           for (const item of ranges) {
@@ -1171,7 +1171,7 @@
         const col = cols[state.frameCursor % cols.length];
         const row = state.activeRow;
         const globalIdx = row * state.cols + col;
-        el.frameBadge.textContent = `行 ${row} · 列 ${col} · 帧 ${state.frameCursor % cols.length + 1}/${cols.length} (索引 #${globalIdx})`;
+        el.frameBadge.textContent = `All right ${row}  ·  Column ${col}  ·  frames ${state.frameCursor % cols.length + 1}/${cols.length} (Indices #${globalIdx})`;
 
         const drawAnchorX = (state.flipX ? fw - state.anchorX : state.anchorX) * sc;
         const drawAnchorY = state.anchorY * sc;
@@ -1299,7 +1299,7 @@
           }
         }
 
-        // 高亮当前选中行与当前播放帧
+        // Highlights the current selected line and the current frame
         sheetCtx.save();
         sheetCtx.strokeStyle = "rgba(255, 209, 102, 0.45)";
         sheetCtx.lineWidth = 1;
@@ -1358,7 +1358,7 @@
         }
 
         el.statDim.textContent = `${w}×${h} (${state.cols}×${state.rows})`;
-        el.statColors.textContent = `${colors.size} 色`;
+        el.statColors.textContent = `${colors.size} Color`;
         el.statSemi.textContent = `${semiCount} px`;
         el.statMagenta.textContent = `${magentaCount} px`;
       }
@@ -1433,7 +1433,7 @@
         workingCtx.putImageData(img, 0, 0);
         refreshStats();
         renderAll();
-        log(`去除洋红底完成：容差 ${tol}（${floodOnly ? "边缘连通" : "全局"}），清除 ${cleared} 像素。`);
+        log(`Removed magenta background at tolerance ${tol} (${floodOnly ? "Edge connection" : "Global"}- Clear ${cleared} Pixels.`);
       }
 
       function hardenAlphaOnly() {
@@ -1461,7 +1461,7 @@
         workingCtx.putImageData(img, 0, 0);
         refreshStats();
         renderAll();
-        log(`Alpha 二值化完成：清除 ${cleared} 个弱毛边，固化 ${solidified} 个半透明像素。`);
+        log(`* Revalued complete: cleared ${cleared} A weak, flabby side, solidified ${solidified} A semitransparent pixel.`);
       }
 
       // Perceptual redmean color distance
@@ -1523,7 +1523,7 @@
         workingCtx.putImageData(img, 0, 0);
         refreshStats();
         renderAll();
-        log(`16 色吸附完成：从 ${beforeColors.size} 色归并至 ${afterColors.size} 色（余烬林主色板）。`);
+        log(`16 Tossing complete: from ${beforeColors.size} Colours are all together ${afterColors.size} Color (ashide forest master colour panel)).`);
       }
 
       function exportCleanPng() {
@@ -1546,22 +1546,22 @@
             if (blob) {
               const url = URL.createObjectURL(blob);
               triggerDownload(url, true);
-              log(`已导出透明底 PNG：${outName}`);
+              log(`Exported transparency base PNG: ${outName}`);
             } else {
               triggerDownload(workingCanvas.toDataURL("image/png"), false);
-              log(`已导出透明底 PNG（DataURL 回退）：${outName}`);
+              log(`Exported transparent base PNG (Dataurl retreat)): ${outName}`);
             }
           }, "image/png");
         } else {
           triggerDownload(workingCanvas.toDataURL("image/png"), false);
-          log(`已导出透明底 PNG：${outName}`);
+          log(`Exported transparency base PNG: ${outName}`);
         }
       }
 
       function handleFile(file) {
         if (!file) return;
         if (!file.type.startsWith("image/") && !/\.png$/i.test(file.name)) {
-          log(`忽略非图片文件：${file.name}`);
+          log(`Ignores non-photo files: ${file.name}`);
           return;
         }
         const reader = new FileReader();
@@ -1569,10 +1569,10 @@
           const img = new Image();
           img.onload = () => {
             loadImageFromCanvasOrImg(img, file.name, true);
-            log(`已加载图片 ${file.name} (${img.width}×${img.height})，自动推导单帧 ${state.frameW}×${state.frameH}。`);
+            log(`Loaded picture ${file.name} (${img.width}×${img.height}), automatically decomposition single frames ${state.frameW}×${state.frameH}.`);
           };
           img.onerror = () => {
-            log(`读取图片失败：${file.name}`);
+            log(`Reading pictures failed: ${file.name}`);
           };
           img.src = String(reader.result);
         };
@@ -1585,7 +1585,7 @@
           const item = document.createElement("button");
           item.type = "button";
           item.className = "swatch";
-          item.title = `点击复制 ${hex}`;
+          item.title = `Click for copy ${hex}`;
           const chip = document.createElement("span");
           chip.className = "swatch-chip";
           chip.style.background = hex;
@@ -1595,9 +1595,9 @@
           item.addEventListener("click", async () => {
             try {
               await navigator.clipboard.writeText(hex);
-              log(`已复制色值 ${hex}`);
+              log(`Colour value copied ${hex}`);
             } catch {
-              log(`色值：${hex}`);
+              log(`Colour value: ${hex}`);
             }
           });
           el.paletteGrid.appendChild(item);
@@ -1648,7 +1648,7 @@
 
         const togglePlay = () => {
           state.playing = !state.playing;
-          el.btnPlayPause.textContent = state.playing ? "⏸ 暂停 (Space)" : "▶ 播放 (Space)";
+          el.btnPlayPause.textContent = state.playing ? ", pause (single)" : ", play (sler)";
           el.btnPlayPause.classList.toggle("active", state.playing);
           state.lastStepMs = performance.now();
         };
@@ -1657,7 +1657,7 @@
         const stepFrame = (delta) => {
           const cols = getActiveFrameColumns();
           state.playing = false;
-          el.btnPlayPause.textContent = "▶ 播放 (Space)";
+          el.btnPlayPause.textContent = ", play (sler)";
           el.btnPlayPause.classList.remove("active");
           state.frameCursor = (state.frameCursor + delta + cols.length) % cols.length;
           renderAll();
@@ -1667,7 +1667,7 @@
 
         const toggleFlip = () => {
           state.flipX = !state.flipX;
-          el.btnFlipX.textContent = `⇄ 镜像 flipX: ${state.flipX ? "开" : "关"} (F)`;
+          el.btnFlipX.textContent = `Mirrors are: : : ${state.flipX ? "Open" : "Off"} (F)`;
           el.btnFlipX.classList.toggle("active", state.flipX);
           renderPreview();
         };
@@ -1715,7 +1715,7 @@
           el.inpFrameW.value = String(state.frameW);
           el.inpFrameH.value = String(state.frameH);
           renderAll();
-          log(`按画布 ${workingCanvas.width}×${workingCanvas.height} 与 ${state.cols}×${state.rows} 推导出单帧 ${state.frameW}×${state.frameH}。`);
+          log(`Press the canvas ${workingCanvas.width}×${workingCanvas.height} And ${state.cols}×${state.rows} Export single frames ${state.frameW}×${state.frameH}.`);
         });
 
         document.getElementById("btnResetAnchorDefault").addEventListener("click", () => {
@@ -1778,7 +1778,7 @@
             .join("")}`;
           const localX = px % state.frameW;
           const localY = py % state.frameH;
-          el.hoverPixelBadge.textContent = `图(${px},${py}) 帧内(${localX},${localY}) ${hex} α=${pixel[3]}`;
+          el.hoverPixelBadge.textContent = `Figure (${px},${py}( ) inside the frame (${localX},${localY}) ${hex} α=${pixel[3]}`;
         });
 
         // Drag & drop across entire window

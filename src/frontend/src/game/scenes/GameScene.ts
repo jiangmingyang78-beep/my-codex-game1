@@ -76,7 +76,7 @@ export class GameScene extends Phaser.Scene {
   }
 
   create(): void {
-    breadcrumb(`场景 ${SCENE.game}`);
+    breadcrumb(`Scene ${SCENE.game}`);
     this.ready = false;
     this.scenery = null;
     this.cleanups = [];
@@ -89,7 +89,10 @@ export class GameScene extends Phaser.Scene {
       this.ready = true;
     } catch (error) {
       console.error(error);
-      reportFailure("游戏场景启动失败，请返回标题后重试。", error);
+      reportFailure(
+        "Playground is starting unsuccessfully. Please return the title and try again.",
+        error,
+      );
       this.teardown();
     }
   }

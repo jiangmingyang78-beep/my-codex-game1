@@ -56,7 +56,7 @@ export function damageHero(
         makeEvent(EVT.blocked, hero.x, hero.y, {
           targetId: "hero",
           source: cause,
-          message: "锻铁圆盾格挡了攻击！",
+          message: "The iron-crack shield is in the way of the attack!",
         }),
       );
       if (source)
@@ -122,7 +122,7 @@ function tickRest(
   hero.hunger -= REST.hungerCost;
   events.push(
     makeEvent(EVT.notice, hero.x, hero.y, {
-      message: "篝火旁稍作休整，恢复 1 点生命",
+      message: "A little rest next to the bonfire, one point of life restored",
     }),
   );
 }

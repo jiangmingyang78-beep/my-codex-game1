@@ -69,33 +69,33 @@ export function Hud() {
           <div className="pixel-panel flex flex-col gap-2 p-2">
             <StatBar
               icon={HP_ICON}
-              label="生命"
+              label="Health"
               value={hud.hp}
               max={hud.maxHp}
               tone="bar-hp"
             />
             <StatBar
               icon={HUNGER_ICON}
-              label="饱食"
+              label="Fullness"
               value={hud.hunger}
               max={hud.maxHunger}
               tone="bar-hunger"
             />
             <StatBar
               icon={LIGHT_ICON}
-              label="火炬"
+              label="Torch"
               value={hud.light}
               max={hud.maxLight}
               tone="bar-torch"
             />
             <p className="text-xs text-frost">
               {hud.inFire
-                ? "在火圈内：火炬恢复中"
+                ? "In firelight: torch recharging"
                 : night
-                  ? "夜里火炬会渐渐熄灭"
-                  : "白天火炬不会消耗"}
+                  ? "The torch fades at night"
+                  : "The torch stays lit during daylight"}
               {hud.buffSecondsLeft > 0 &&
-                ` · 暖汤 ${Math.ceil(hud.buffSecondsLeft)} 秒`}
+                `  ·  Hot soup ${Math.ceil(hud.buffSecondsLeft)} s`}
             </p>
           </div>
           <p className="pixel-panel-flat px-3 py-2 text-xs leading-4 text-foreground">
@@ -113,7 +113,7 @@ export function Hud() {
         clockText={hud.eternal?.clockText ?? `${hud.dayLabel} · ${hud.clock}`}
         threatText={
           hud.eternal?.threatText ??
-          `${hud.regionName} · 风暴 ${formatStorm(hud.stormRemainingSec)}`
+          `${hud.regionName}  ·  Storm ${formatStorm(hud.stormRemainingSec)}`
         }
       />
       <HudActions />
@@ -174,7 +174,7 @@ const HudActions = memo(function HudActions() {
       >
         <PixelButton
           variant="ghost"
-          aria-label={muted ? "取消静音" : "静音"}
+          aria-label={muted ? "Unmute" : "Mute"}
           onClick={toggleMuted}
           className="p-2 [@media(pointer:coarse)]:min-h-11"
         >
@@ -182,7 +182,7 @@ const HudActions = memo(function HudActions() {
         </PixelButton>
         <PixelButton
           variant="ghost"
-          aria-label="暂停"
+          aria-label="Pause"
           onClick={() => commands.pause()}
           className="p-2 [@media(pointer:coarse)]:min-h-11"
         >
@@ -195,7 +195,7 @@ const HudActions = memo(function HudActions() {
           onClick={() => commands.openCraft()}
           className="absolute bottom-24 right-3 sm:bottom-28"
         >
-          营火：制作
+          Campfire: Craft
         </PixelButton>
       )}
     </>

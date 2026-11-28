@@ -25,10 +25,10 @@ export { RUN_SCHEMA_VERSION, SnapshotError } from "./saveMigration";
 
 const STATUSES: readonly RunStatus[] = ["playing", "won", "dead", "storm_lost"];
 
-/** 供诊断上报使用的只读摘要，避免包含完整存档。 */
+/** Read-only summaries for diagnostic reporting, avoiding full archiving. */
 export function summarizeRunSnapshot(run: RunState, eternal: boolean) {
   return {
-    mode: eternal ? "永夜" : "冒险",
+    mode: eternal ? "Eternal Night" : "Adventure",
     schemaVersion: run.schemaVersion,
     seed: run.seed,
     elapsedSec: Math.floor(run.elapsedSec),

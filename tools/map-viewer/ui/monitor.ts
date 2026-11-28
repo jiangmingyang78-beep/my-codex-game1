@@ -8,7 +8,7 @@ export function monitor(s: Session) {
     s.tab === "hero" ? heroMetrics(d, s.heroId) : enemyMetrics(d, s.enemyId, s.heroId);
   const before = compute(s.store.baseline) as Record<string, string>;
   root.replaceChildren(
-    el("h3", "实时指标"),
+    el("h3", "Real-time indicators"),
     ...Object.entries(compute(s.store.draft)).map(([label, value]) => {
       const r = el("div", "", "metric");
       r.append(

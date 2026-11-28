@@ -48,7 +48,11 @@ const EquipmentBadge = memo(
     const seconds = Math.ceil(remaining ?? 0);
     const readyRatio =
       max > 0 ? Math.min(1, Math.max(0, 1 - (remaining ?? 0) / max)) : 1;
-    const status = cooling ? `冷却 ${seconds} 秒` : ready ? "就绪" : "常驻生效";
+    const status = cooling
+      ? `Cool ${seconds} s`
+      : ready
+        ? "Ready"
+        : "Permanent presence in force";
     const url = getEquipmentIconUrl(item.id);
     const FallbackIcon = FALLBACK_ICONS.get(item.id) ?? Shield;
 
@@ -164,7 +168,7 @@ export const EquipmentRingRail = memo(
   function EquipmentRingRail({ items }: { items: HudEquipmentItem[] }) {
     return (
       <ul
-        aria-label="已锻装备"
+        aria-label="- We're getting out of here"
         className="flex max-h-[42dvh] flex-col flex-wrap content-start items-start gap-2 overflow-visible"
       >
         {items.map((item) => (

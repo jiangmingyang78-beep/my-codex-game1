@@ -38,7 +38,7 @@ async function until(read, ms = 15000) {
     if (value) return value;
     await delay(35);
   }
-  throw Error("测试条件超时");
+  throw Error("Test conditions are timed out");
 }
 try {
   await server.listen();
@@ -148,7 +148,7 @@ try {
     const counts = await run("regression.counts()");
     assert.equal(counts.region, target);
     assert(counts.active <= 8);
-    assert(counts.raiders.includes(near), "近处追兵丢失");
+    assert(counts.raiders.includes(near), "Close pursuit lost");
     crossings.push(counts);
   }
   async function dash(fixture, long) {
@@ -165,7 +165,7 @@ try {
     return until(() => run("regression.dashResult()"), 3500);
   }
   const raidPeak = await run("regression.raidPeak()");
-  assert(raidPeak <= 8, "往返过程中逐帧活跃数超过 8");
+  assert(raidPeak <= 8, "The number of active person-by-frames during round-trip movements exceeds 8");
   const iceDefault = await dash("ice", false),
     iceLong = await dash("ice", true);
   const narrow = await dash("open", true),
@@ -173,7 +173,7 @@ try {
   console.log(JSON.stringify({ near, crossings, raidPeak, iceDefault, iceLong, narrow, closed, errors }, null, 2));
   assert.equal(errors.length, 0);
   assert(iceLong.dash > iceDefault.dash * 3 && iceLong.iceFrames > 0);
-  assert(iceLong.coast <= iceDefault.coast + 6, "松键后的惯性超过默认急步的滑行量");
+  assert(iceLong.coast <= iceDefault.coast + 6, "The inertia after the key is loose is greater than the default fast-paced slide volume");
   assert(narrow.x > 62 * 16 && narrow.blockedFrames === 0);
   assert(closed.x + 5 <= 60 * 16 && closed.blockedFrames === 0);
   await send("Browser.close").catch(() => {});

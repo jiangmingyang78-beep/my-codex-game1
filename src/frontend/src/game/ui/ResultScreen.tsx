@@ -8,7 +8,7 @@ export function ResultScreen() {
   return (
     <div className="pointer-events-auto absolute inset-0 flex items-center justify-center bg-night/75 p-3">
       <section
-        aria-label="本局结算"
+        aria-label="Run results"
         className="pixel-panel flex w-full max-w-md flex-col gap-4 p-6"
       >
         <h2
@@ -18,7 +18,7 @@ export function ResultScreen() {
         </h2>
         {result.eternal?.newRecord && (
           <p className="font-pixel text-center text-sm font-bold text-warning">
-            ★ 新纪录 ★
+            New record
           </p>
         )}
         {result.cause && (
@@ -37,7 +37,7 @@ export function ResultScreen() {
         </dl>
         {result.notes.length > 0 && (
           <p className="text-center text-xs text-frost">
-            已收集营地笔记：{result.notes.join("、")}
+            Camp notes collected: {result.notes.join(", ")}
           </p>
         )}
         <div className="flex gap-3">
@@ -45,14 +45,14 @@ export function ResultScreen() {
             onClick={() => commands.restart()}
             className="flex-1 py-3"
           >
-            {result.mode === "eternal" ? "再来一局（永恒）" : "重新开始"}
+            {result.mode === "eternal" ? "Play Eternal again" : "Restart"}
           </PixelButton>
           <PixelButton
             variant="ghost"
             onClick={() => commands.toTitle()}
             className="flex-1 py-3"
           >
-            返回标题
+            Return to title
           </PixelButton>
         </div>
       </section>

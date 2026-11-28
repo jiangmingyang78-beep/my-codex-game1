@@ -101,7 +101,7 @@ export function preloadHeroSpritesheets(scene: Phaser.Scene): void {
     if (!queued.has(file.key) || failedSheets.has(file.key)) return;
     failedSheets.add(file.key);
     console.warn(
-      `[heroAnimations] 英雄精灵表加载失败，已降级为程序化贴图: ${file.key}`,
+      `[heroAnimip] The hero elf list failed to be loaded and downgraded to a program-based picture: ${file.key}`,
     );
   };
   scene.load.on("loaderror", onError);

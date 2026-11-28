@@ -131,7 +131,7 @@ export function createSurvivalTreePainter(
     const parts = stamps.get(biomeIndex);
     if (!parts) return false;
 
-    // 根部和三层树冠分别绘制，树冠继续使用现有的风摆位移。
+    // Roots and three-storey canopy are drawn separately, and canopy continues to be moved using the existing wind.
     const mirror = variant % 2 === 1;
     const tall = variant >= 2;
     parts.forEach(({ x, y, image }, band) => {

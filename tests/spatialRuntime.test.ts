@@ -9,7 +9,7 @@ import { projectilePool } from "@/systems/combat/projectilePool";
 import { MobPool } from "@/systems/combat/spawnRules";
 const wall = (x: number, y: number) =>
 	(Math.abs(x) <= 3 && y === 0) || (Math.abs(x) === 3 && y >= 0 && y <= 5);
-it("八象限可见墙面并遮住后方；第二盏灯与开门独立更新", () => {
+it("Eight quadrants were visible and covered the rear; the second light and the door were independently updated", () => {
 	for (const [dx, dy] of [
 		[1, 0],
 		[0, 1],
@@ -40,7 +40,7 @@ it("八象限可见墙面并遮住后方；第二盏灯与开门独立更新", (
 	grid.invalidate(1);
 	assert.ok(grid.blockAt(3, 0) > 0);
 });
-it("追击者从 U 形内部绕行至玩家，运动包含半径碰撞", () => {
+it("The pursuer goes from an inner U-shaped orbit to a player, and the movement consists of a radius collision", () => {
 	const light = new LightGrid(16);
 	const ctx = new WorldContext({
 		tileSize: 16,
@@ -79,7 +79,7 @@ it("追击者从 U 形内部绕行至玩家，运动包含半径碰撞", () => {
 	assert.ok(detour);
 	assert.ok(Math.hypot(hero.x - actor.x, hero.y - actor.y) < 1);
 });
-it("32×32 加权流场单次重算耗时分布", (t) => {
+it("32 x 32 Weighted flow field single-time recalculations", (t) => {
 	const field = new FlowField(),
 		cost = (x: number, y: number) =>
 			wall(x, y) ? 0 : 1 + (x % 4 === 0 ? 4 : 0);
@@ -99,9 +99,12 @@ it("32×32 加权流场单次重算耗时分布", (t) => {
 			" max=" +
 			samples[255].toFixed(3),
 	);
-	assert.ok(samples[255] < 1, `最慢一次流场重算为 ${samples[255].toFixed(3)} ms`);
+	assert.ok(
+		samples[255] < 1,
+		`The slowest run is counted ${samples[255].toFixed(3)} ms`,
+	);
 });
-it("1000 次对象池复用清除弹体目标、速度、生命和怪物可选状态", () => {
+it("The sub-object pool is resumed to clear the object, speed, life and monster options", () => {
 	const mobs = new MobPool<{ id: string; threat?: string }>();
 	let previous;
 	for (let i = 0; i < 1000; i++) {
@@ -121,7 +124,7 @@ it("1000 次对象池复用清除弹体目标、速度、生命和怪物可选�
 		mobs.release(e);
 	}
 });
-it("高火险绕行、同格玩家移动命中缓存、障碍版本触发重算", () => {
+it("High fire risk bypasses, peer player mobile life buffers, and the barrier version triggers a recalculation", () => {
 	let reads = 0,
 		closed = false;
 	const tuning = { brightCost: 0, fireCost: 16, hearingTiles: 1 };

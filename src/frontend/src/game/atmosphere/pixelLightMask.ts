@@ -5,7 +5,7 @@ export function makePixelHole(): HTMLCanvasElement {
   const half = size / 2;
   canvas.width = canvas.height = size;
   const context = canvas.getContext("2d");
-  if (!context) throw new Error("无法创建夜幕挖孔纹理");
+  if (!context) throw new Error("Can't create night-screen puncture");
   const pixels = context.createImageData(size, size);
   for (let y = 0; y < size; y++) {
     for (let x = 0; x < size; x++) {

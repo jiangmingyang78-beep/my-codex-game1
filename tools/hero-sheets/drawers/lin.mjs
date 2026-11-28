@@ -1,11 +1,11 @@
 /**
- * 凛（lin_tinder）：身高 18px。
- * 瘦长尖兜帽深灰斗篷 + 向后飘动暖橙长围巾 + 火把光点与细长铁矛。
+ * Rin (lin_t.del): Height 18px.
+ * The thin, long, sharp hood deep gray caps + the warm orange scarf + the fire light with the fine long iron spears.
  */
 import { drawLegs } from "../rig.mjs";
 
 function drawSpearRest(layer, cx, dy, pal) {
-  // 铁矛斜靠身后，矛尖与矛尾均不越出基线（y <= 25）
+  // The spear leans behind it and neither the spear nor the speartails cross the baseline (y< = 25))
   for (let i = 0; i <= 11; i++) {
     const sy = 12 + dy + Math.floor(i * 1.1);
     if (sy <= 25) layer.set(cx - 7 + i, sy, pal.O);
@@ -18,11 +18,11 @@ function drawSpearRest(layer, cx, dy, pal) {
 
 export function draw(layer, fx, pose, pal) {
   if (pose.anim === "dead") {
-    layer.rect(8, 24, 4, 3, pal.O); // 靴
-    layer.rect(12, 23, 8, 4, pal.cloak); // 斗篷
-    layer.rect(15, 23, 4, 2, pal.scarf); // 散落橙巾
-    layer.rect(20, 23, 4, 4, pal.cloak); // 兜帽
-    layer.rect(21, 24, 2, 2, pal.O); // 暗部轮廓
+    layer.rect(8, 24, 4, 3, pal.O); // Boots
+    layer.rect(12, 23, 8, 4, pal.cloak); // The cape
+    layer.rect(15, 23, 4, 2, pal.scarf); // Spread the orange towels
+    layer.rect(20, 23, 4, 4, pal.cloak); // The hood
+    layer.rect(21, 24, 2, 2, pal.O); // Dark contour
     layer.hline(9, 26, 15, pal.O);
     layer.set(24, 25, pal.iron);
     return;
@@ -33,28 +33,28 @@ export function draw(layer, fx, pose, pal) {
 
   drawLegs(layer, cx, pose, 2, 4);
 
-  // 背后斜靠铁矛（非攻击帧）
+  // The back is leaned against the iron spear (not the attack frame))
   if (pose.anim !== "attack") {
     drawSpearRest(layer, cx, dy, pal);
   }
 
-  // 瘦长斗篷主体（宽约 8px）
+  // Thin cape object (approx. 8px.))
   const cloakBottom = Math.min(24, 23 + dy);
   const cloakTop = 16 + dy;
   layer.rect(cx - 4, cloakTop, 8, cloakBottom - cloakTop + 1, pal.cloak);
   layer.rect(cx + 1, cloakTop + 2, 2, Math.max(2, cloakBottom - cloakTop - 2), pal.O);
 
-  // 尖兜帽与无五官暗面
+  // The hoods are dark with five officers
   layer.set(cx - 3, 11 + dy, pal.cloak);
   layer.hline(cx - 3, 12 + dy, 5, pal.cloak);
   layer.rect(cx - 3, 13 + dy, 6, 3, pal.cloak);
   layer.rect(cx, 13 + dy, 3, 3, pal.O);
 
-  // 暖橙长围巾（颈部 + 向后飘动尾端）
+  // Warm orange scarf (neck +) to the tail)
   layer.hline(cx - 3, 16 + dy, 6, pal.scarf);
   layer.hline(cx - 2, 17 + dy, 4, pal.scarf);
   if (pose.anim === "dash") {
-    // 急步拉成水平锐利橙线
+    // The rush is a horizontal sharp orange line
     layer.hline(cx - 12, 17 + dy, 9, pal.scarf);
     layer.hline(cx - 10, 18 + dy, 6, pal.scarf);
     fx.hline(cx - 14, 16 + dy, 5, pal.flame);
@@ -66,28 +66,28 @@ export function draw(layer, fx, pose, pal) {
     layer.set(cx - 10, 16 + dy + wave, pal.scarf);
   }
 
-  // 攻击或持火把动作
+  // Attack or firepuncher action
   if (pose.anim === "attack") {
     if (pose.step === 0) {
-      // 蓄力后拉铁矛
+      // After the pull-out, the spear
       layer.hline(cx - 8, 18 + dy, 10, pal.O);
       layer.hline(cx - 9, 18 + dy, 2, pal.iron);
     } else if (pose.step === 1 || pose.step === 2) {
-      // 前刺 + 动态亮线
+      // Procure + Dynamic bright lines
       const ext = pose.step === 1 ? 12 : 11;
       layer.hline(cx + 1, 18 + dy, ext, pal.O);
       layer.hline(cx + ext - 1, 18 + dy, 3, pal.iron);
       fx.hline(cx + 5, 17 + dy, 8, pal.flame);
       fx.hline(cx + 7, 19 + dy, 6, pal.scarf);
     } else {
-      // 收势
+      // - Get the signal
       layer.hline(cx + 2, 19 + dy, 6, pal.O);
       layer.set(cx + 8, 19 + dy, pal.iron);
     }
     return;
   }
 
-  // 左侧/前方持火把与微光
+  // Left/front torch with light
   const handX = cx + (pose.anim === "hurt" ? 3 : 5);
   const handY = 19 + dy;
   layer.vline(handX, handY, 3, pal.O);

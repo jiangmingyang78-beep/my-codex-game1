@@ -3,7 +3,7 @@
     {
       "id": "frost_pine",
       "flammable": true,
-      "name": "霜松",
+      "name": "Frost loose",
       "seedItemId": "pine_cone",
       "harvestMode": "fell",
       "solid": true,
@@ -23,7 +23,7 @@
     {
       "id": "ember_birch",
       "flammable": true,
-      "name": "灰桦",
+      "name": "Ash",
       "seedItemId": "birch_sapling",
       "harvestMode": "fell",
       "solid": true,
@@ -43,7 +43,7 @@
     {
       "id": "charred_ancient",
       "flammable": false,
-      "name": "焦炭古松",
+      "name": "Carkerine",
       "seedItemId": "ember_acorn",
       "harvestMode": "fell",
       "solid": true,
@@ -67,7 +67,7 @@
     {
       "id": "snow_berry_bush",
       "flammable": true,
-      "name": "雪莓灌木",
+      "name": "Snowberries shrub",
       "seedItemId": "berry_cutting",
       "harvestMode": "gather_regrow",
       "solid": false,
@@ -86,7 +86,7 @@
     {
       "id": "tundra_grass",
       "flammable": true,
-      "name": "冻原韧草",
+      "name": "The tundra rhea",
       "seedItemId": "grass_tuft",
       "harvestMode": "gather_regrow",
       "solid": false,
@@ -101,7 +101,7 @@
     {
       "id": "frost_herb_cluster",
       "flammable": false,
-      "name": "雪地草药簇",
+      "name": "Snow herb herb herbs",
       "seedItemId": "herb_seed",
       "harvestMode": "gather_regrow",
       "solid": false,
@@ -120,7 +120,7 @@
     {
       "id": "mire_reed",
       "flammable": true,
-      "name": "冰沼芦苇",
+      "name": "Ice rye",
       "seedItemId": "reed_root",
       "harvestMode": "gather_regrow",
       "solid": false,
@@ -139,7 +139,7 @@
     {
       "id": "glow_cap",
       "flammable": false,
-      "name": "微光冻菌",
+      "name": "Micro-photo-frozen fungus",
       "seedItemId": "spore_cap",
       "harvestMode": "gather_regrow",
       "solid": false,

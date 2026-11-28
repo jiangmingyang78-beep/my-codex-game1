@@ -1,70 +1,76 @@
-# LDtk 240×96 地图制作与接入指南
+# LDtk 240×96 Map Authoring and Integration
 
-> 对应适配器：[ldtkAdapter.ts](../src/frontend/src/systems/world/ldtkAdapter.ts)
+> Adapter: [ldtkAdapter.ts](../src/frontend/src/systems/world/ldtkAdapter.ts)
 >
-> 切换入口：`getWorld(data, ldtkMap)`（未传 `ldtkMap` 时保持默认程序生成 `240×96` 地图）
+> Use `getWorld(data, ldtkMap)` to load an LDtk map. Omitting `ldtkMap` keeps the default procedural 240×96 map.
 
-## 1. 画布与基础尺寸
-- **网格大小（Grid Size）**：`16` px（与 `balance.json` 中 `tileSize: 16` 一致）
-- **关卡尺寸**：`240 × 96` 格（`3840 × 1536` px）
-- 入口：`buildWorldFromLdtk(ldtk, data, levelIndex = 0)` 默认读取 `levels[0]`。
+## 1. Canvas and grid
 
-## 2. 必需图层（Layer Names）
-| 图层名 (`__identifier`) | 图层类型 (`__type`) | 必需 | 说明 |
+- Use a 16 px grid, matching the tile size in `balance.json`.
+- Set the level to 240 × 96 tiles (3840 × 1536 px).
+- `buildWorldFromLdtk(ldtk, data, levelIndex = 0)` reads `levels[0]` by default.
+
+## 2. Required layers
+
+| Name (`__identifier`) | Type (`__type`) | Required | Purpose |
 | --- | --- | --- | --- |
-| `Terrain` | `IntGrid` | 是 | 地形网格（导出 `intGridCsv`），1-based 编号 |
-| `Entities` | `Entities` | 是 | 出生点、篝火、区域、大门、火站、资源与事件实体 |
+| `Terrain` | `IntGrid` | Yes | Terrain, exported as 1-based `intGridCsv` values |
+| `Entities` | `Entities` | Yes | Spawns, campfires, regions, gates, fire stations, resources, and story objects |
 
-## 3. `Terrain` IntGrid 编号对照表
-适配器映射公式：`raw > 0 ? raw - 1 : TILE.wall`（`0` 为未涂刷空单元格，自动回落为 `TILE.wall`）。
+## 3. Terrain values
 
-| IntGrid 编号 | 目标 `TILE` 枚举 | 内部值 | 用途与物理特性 |
+The adapter uses `raw > 0 ? raw - 1 : TILE.wall`. Unpainted cells use `TILE.wall`.
+
+| IntGrid | Target | Internal value | Behavior |
 | --- | --- | --- | --- |
-| `0`（空） | `TILE.wall` | `3` | 未涂刷默认墙体，阻挡移动 |
-| `1` | `TILE.snow` | `0` | 普通雪地，可通行 |
-| `2` | `TILE.path` | `1` | 木栈道/小径（在冻沼中可豁免减速） |
-| `3` | `TILE.tree` | `2` | 树木碰撞与树冠绘制格，阻挡移动 |
-| `4` | `TILE.wall` | `3` | 岩壁/边界墙体，阻挡移动 |
-| `5` | `TILE.floor` | `4` | 营地/废墟地面，可通行 |
-| `6` | `TILE.door` | `5` | 门格（通常由 `Gate` 实体自动覆盖写入） |
-| `7` | `TILE.ice` | `6` | 滑冰路面（配合 `slippery_ice` 产生惯性滑行） |
-| `8` | `TILE.fireBase` | `7` | 火堆底座（`Campfire` / `RelaySocket` 会自动写入） |
-| `9` | `TILE.bog` | `8` | 冻沼泥地（配合 `dense_fog_bog` 触发 `0.65×` 减速） |
+| `0` (empty) | `TILE.wall` | `3` | Unpainted cells default to solid walls. |
+| `1` | `TILE.snow` | `0` | Walkable snow. |
+| `2` | `TILE.path` | `1` | Boardwalk or trail that can bypass the bog slowdown. |
+| `3` | `TILE.tree` | `2` | Tree collision and canopy draw tile. |
+| `4` | `TILE.wall` | `3` | Solid rock or boundary wall. |
+| `5` | `TILE.floor` | `4` | Walkable camp or ruin floor. |
+| `6` | `TILE.door` | `5` | Gate tile. A `Gate` entity normally paints it. |
+| `7` | `TILE.ice` | `6` | Ice that causes sliding with `slippery_ice`. |
+| `8` | `TILE.fireBase` | `7` | Fire base, painted by `Campfire` and `RelaySocket` entities. |
+| `9` | `TILE.bog` | `8` | Frozen bog, with `0.65×` movement under `dense_fog_bog`. |
 
-## 4. `Entities` 实体名与字段对照
-| 实体标识 (`__identifier`) | 必填字段 | 可选字段 | 映射说明 |
+## 4. Entities and fields
+
+| Identifier | Required fields | Optional fields | Mapping |
 | --- | --- | --- | --- |
-| `HeroStart` | 无 | 无 | 设置玩家出生点 `heroStart` |
-| `Campfire` | 无 | `regionId` | 主篝火并写格为 `TILE.fireBase` |
-| `Region` | `regionId` | 无 | 按实体宽高划分 `RegionBounds`（闭区间） |
-| `Spawn` | `spawnId` | `regionId` | 刷怪锚点 `spawns` |
-| `Gate` | `gateId` | `regionId` | 按覆盖格数填充 `TILE.door` 与 `gateTiles` |
-| `RelaySocket` | `relayId` | `regionId` | 中继火盆并写格为 `TILE.fireBase` |
-| `ResourceNode` | 无 | `objectId`, `itemId`, `yield`, `regionId` | 资源采集点（默认 `wood` ×1） |
-| `StoryProp` | 无 | `objectId`, `toast`, `unlockNoteId`, `regionId` | 叙事遗物 |
-| `ExplosiveBarrel` | 无 | `objectId`, `regionId` | 松脂桶（攻击/按 E 爆燃） |
-| `MirrorLamp` | 无 | `objectId`, `regionId` | 折镜铜灯 |
+| `HeroStart` | None | None | Set the player's `heroStart`. |
+| `Campfire` | None | `regionId` | Place the main campfire and paint `TILE.fireBase`. |
+| `Region` | `regionId` | None | Define inclusive `RegionBounds` from the entity dimensions. |
+| `Spawn` | `spawnId` | `regionId` | Add a spawn anchor to `spawns`. |
+| `Gate` | `gateId` | `regionId` | Paint covered `TILE.door` cells and populate `gateTiles`. |
+| `RelaySocket` | `relayId` | `regionId` | Place a relay socket and paint `TILE.fireBase`. |
+| `ResourceNode` | None | `objectId`, `itemId`, `yield`, `regionId` | Place a gatherable node. The default is one `wood`. |
+| `StoryProp` | None | `objectId`, `toast`, `unlockNoteId`, `regionId` | Place a story relic. |
+| `ExplosiveBarrel` | None | `objectId`, `regionId` | Place a resin barrel that ignites on attack or E. |
+| `MirrorLamp` | None | `objectId`, `regionId` | Place a brass mirror lamp. |
 
-## 5. 最小单元测试
-运行以下命令校验 LDtk JSON 到 `World` 的全字段映射与 `getWorld` 切换行为：
+## 5. Adapter tests
+
+This command checks the LDtk-to-`World` field mappings and the `getWorld` switch.
+
 ```bash
 node tests/run-ldtk-test.mjs
 ```
 
-## 6. 生存奇遇微关卡
+## 6. Survival encounter microlevels
 
-`encounters.json.setPieces` 定义每种布景的名称、地图像素图标、允许群系编号、距营地和同类布景的最小格数、世界配额与抽取权重。群系编号按 `survivalBiomes.ts` 的顺序从零开始。每一格都必须位于允许的群系。每个 32×32 道路分区最多容纳一处奇遇，出生营地分区留空。同类最小间距按两处布景的中心计算。
+`encounters.json.setPieces` defines each set piece's name, map icon, allowed biome indices, minimum distance from camp and matching pieces, world quota, and selection weight. Biome indices start at zero in `survivalBiomes.ts` order. Every occupied tile must lie in an allowed biome. Each 32×32 road district can contain at most one encounter, and the starting camp district stays clear. Minimum separation between matching pieces is measured center to center.
 
-| 字段 | 含义 |
+| Field | Meaning |
 | --- | --- |
-| footprint、tiles | 宽、高各 1–15 格。每个字符串是一行生存地形编号，按从上到下、从左到右排列。盖章会平整占地，保留原主路 |
-| props | 使用局部格坐标 x、y，kind 对应布景像素图。每处有一个 interactive 为真的主要调查物 |
-| entities | kind 为 plant 或 enemy，ref 引用植物表或生存可用的共享敌人。植物随探索出现，守卫在调查时出场 |
-| lootTable | 每项给出 itemId、count、probability。使用同时存在于物品表和生存库存的物品，各项独立按种子抽取 |
-| triggerEvent | cache 发放物资，trap 踩下或调查时扣一点生命，heal 恢复两点生命，ambush 触发预置敌人。每处实例只结算一次 |
-| rotate、mirror | 开启后可按 90° 旋转或水平镜像。地形、物件、实体和事件坐标共同变换 |
-| ldtkLevelRef | 可选。按 identifier 读取 encounterLevels.json 中的微关卡，以其中的地形、物件和实体作为实际盖章内容。尺寸须与 footprint 一致 |
+| `footprint`, `tiles` | Width and height are each 1–15 tiles. Each string represents one row of Survival terrain IDs, top to bottom and left to right. Stamping levels the footprint and keeps main roads. |
+| `props` | Local tile coordinates `x` and `y`, with `kind` selecting the pixel art. Each piece has one main investigation prop with `interactive: true`. |
+| `entities` | `kind` is `plant` or `enemy`. `ref` selects a plant or a shared Survival enemy. Plants appear on discovery, and guards spawn on investigation. |
+| `lootTable` | Entries have `itemId`, `count`, and `probability`. IDs must exist in both the item table and Survival inventory. The seed determines each roll independently. |
+| `triggerEvent` | `cache` supplies items, `trap` deals 1 damage on entry or investigation, `heal` restores 2 health, and `ambush` spawns preset enemies. Each instance resolves once. |
+| `rotate`, `mirror` | Permit 90° rotations or horizontal mirroring of terrain, props, entities, and trigger coordinates together. |
+| `ldtkLevelRef` | Optionally load terrain, props, and entities from the matching identifier in `encounterLevels.json`. Dimensions must match `footprint`. |
 
-雪橇模板使用 `IceSled` 微关卡。制作同类关卡时以 16 像素为一格，添加 `SurvivalTerrain` IntGrid 图层与 `Entities` 实体图层。IntGrid 数值为生存瓦片 ID 加一，每格都需要涂刷。实体支持 `Prop`（kind、interactive）、`Plant`（ref）与 `Enemy`（ref），位置读取实体的 __grid。物品、触发效果和投放约束仍由奇遇模板管理。
+The sled template uses the `IceSled` microlevel. Use 16 px tiles with a `SurvivalTerrain` IntGrid and an `Entities` layer. Paint every cell with Survival tile ID plus one. Supported entities are `Prop` with `kind` and `interactive`, `Plant` with `ref`, and `Enemy` with `ref`. Positions come from `__grid`. The encounter template still defines loot, triggers, and placement limits.
 
-生成器按种子排序候选分区，在营地周围最多检查 440 个分区，每区最多尝试 4 个合格模板。盖章后以四向 BFS 从调查物验证到主路出口及布景内部的通行性。耗尽候选且仍有未填名额时输出一次告警。进入新种子世界后，玩家距中心 6 格即可解锁地图图标和名称，按 E 调查。旧种子和经典存档继续使用原布局。
+The seed orders candidate districts. The generator checks up to 440 around camp and tries up to four eligible templates per district. After stamping, four-direction BFS checks the route from the investigation prop to the main road and through the set piece. The generator logs one warning if candidates run out before the quota is filled. In new seeded worlds, coming within six tiles of the center reveals the icon and name. Press E to investigate. Earlier seeds and classic saves retain their layouts.

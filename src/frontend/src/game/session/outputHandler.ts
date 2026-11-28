@@ -32,23 +32,26 @@ export function handleOutput(
   presentEvents(events, session.sys);
   scenery.emit(events);
   for (const e of events) {
-    if (reportedEvents.has(e.type)) breadcrumb(`游戏事件 ${e.type}`);
+    if (reportedEvents.has(e.type)) breadcrumb(`Game event ${e.type}`);
     if (e.type === EVT.openCraft) hooks.openCraft();
     else if (e.type === EVT.runEnded) hooks.ended();
     else if (e.type === EVT.hit && e.payload.kind === "hurt") hooks.hurt();
   }
-  if (out.autosaved) toast.info("已自动存档", "sys:autosave");
+  if (out.autosaved) toast.info("Automatically archived", "sys:autosave");
   for (const id of out.unlockedNotes) {
-    toast.gain(`营地笔记：${CAMP_NOTE_TEXT[id]?.title ?? id}`, `note:${id}`);
+    toast.gain(
+      `Camp notebooks: ${CAMP_NOTE_TEXT[id]?.title ?? id}`,
+      `note:${id}`,
+    );
   }
   for (const id of out.unlockedHeroes) {
     const hero = getHero(session.sys.data, id);
-    toast.gain(`英雄解锁：${hero.name} · ${hero.epithet}`, `hero:${id}`);
+    toast.gain(`Hero unlocked: ${hero.name} · ${hero.epithet}`, `hero:${id}`);
   }
   for (const id of out.unlockedCrossMode) {
     const rule = getUnlockDef(id);
     if (rule) {
-      toast.gain(`跨模式解锁：生存模式已开放「${rule.title}」`, `cross:${id}`);
+      toast.gain(`Unlocked in Survival: ${rule.title}`, `cross:${id}`);
     }
   }
 }

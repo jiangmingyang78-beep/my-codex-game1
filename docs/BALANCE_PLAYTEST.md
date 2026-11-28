@@ -1,45 +1,45 @@
-## 生存模式新档实测
+## Survival playtest from a new save
 
-使用 Chrome 独立档，从游戏菜单创建指定种子，保留默认生存配置。键鼠脚本通过正常交互采集、拾取、制作、添柴、交料和战斗。只读探针用于寻路和逐帧记录角色、燃料与波次。游戏以正常帧推进，全程无物资注入、时间倍率或睡眠跳时。
+The playtest used a fresh Chrome session, specified seeds from the game menu, and default Survival settings. Keyboard and mouse scripts used normal interactions for gathering, pickup, crafting, fueling, contributing materials, and combat. Read-only probes found paths and recorded the player, fuel, and raid waves each frame. The game ran at normal speed without injected supplies, time scaling, or sleep skips.
 
-### 草药架材料
+### Herb Drying Rack materials
 
-| 种子 | 最近苇茎采集位 | 最近可产粗纤维的韧草采集位 |
+| Seed | Nearest Reed Stalk gathering tile | Nearest Toughgrass tile that yields Rough Fiber |
 | --- | ---: | ---: |
-| 42 | 91 格 | 38 格 |
-| 3 | 55 格 | 22 格 |
-| 4 | 47 格 | 26 格 |
-| 23456 | 34 格 | 35 格 |
+| 42 | 91 tiles | 38 tiles |
+| 3 | 55 tiles | 22 tiles |
+| 4 | 47 tiles | 26 tiles |
+| 23456 | 34 tiles | 35 tiles |
 
-距离是从新档出生格到可操作采集位的四向步数。原配方在种子 42 的第 1 天能完成护风炉塘和炼炭窑，草药架仍缺冻沼泽苇茎。新配方以 2 粗纤维替换 2 苇茎，木材仍为 4。粗纤维每次采韧草可获得 2–3 份，也可从冰沼芦苇获取。四个种子中，最远的最近采集位由 91 格缩至 38 格。已经交付的苇茎随读档按同等数量计入粗纤维要求。
+Distance counts four-direction steps from the starting tile to an accessible gathering tile. With the original recipe and seed 42, the Stone Windbreak Hearth and Charcoal Kiln were complete on day 1. The Herb Drying Rack still needed Reed Stalks from the ice bog. The new recipe uses 2 Rough Fiber in place of 2 Reed Stalks and keeps the cost at 4 Wood. Toughgrass yields 2–3 Rough Fiber per harvest, and ice bog reeds can also supply it. Across the four seeds, the worst nearest gathering distance fell from 91 tiles to 38. Reed Stalks previously contributed count toward the Rough Fiber requirement on load.
 
-### 夜袭强度对照
+### Night raid difficulty comparison
 
-种子 42 的两次对照已使用粗纤维配方，营地等级的波次加成仍为 0.85。两次均在第 2 天升至 T3，首次收到预警时距离营地约 29.5 格，约 5.2–5.4 秒后回到营火交互范围，仍有约 34 秒备战。6 名袭营者同时入场。角色以 6 点生命和 161.87 燃料开战，两次均在约 31 秒后倒下。两晚的实际燃耗依次约 34.21 和 36.11，营火持续点燃。
+Two seed 42 comparison runs used the Rough Fiber recipe and a raid wave bonus of 0.85 per camp tier. Both reached T3 on day 2. The first warning fired about 29.5 tiles from camp, and it took about 5.2–5.4 seconds to return to interaction range, leaving about 34 seconds to prepare. Six attackers arrived together. The player started with 6 health and 161.87 fuel and fell after about 31 seconds in both runs. The campfire stayed lit and used about 34.21 and 36.11 fuel, respectively.
 
-将每级营地的加成降至 0.30 后，种子 42 第 2 天 T3 晴夜从 6 名降至 4 名。沿用炉边守法时，角色仍在约 31 秒后倒下，现场剩 2 名袭营者。
+After the tier bonus dropped to 0.30, the seed 42 clear-night raid on day 2 at T3 fell from six attackers to four. With the same fireside defense, the player still fell after about 31 seconds, with two attackers remaining.
 
-完成档在预警响起时距离营地 29.48 格。预报提前 39.63 秒，实际返营用时 5.39 秒，余下 34.24 秒。回营后吃面包备战，用旅人剑走位并追击拉开距离的敌人。约 31.97 秒击退全部 4 名袭营者，最低生命 2，清场时回到 6。黎明获得 3 份余烬尘，全程无死亡。成败同时受走位、食物与波次规模影响，6 人波次尚无同样打法的对照。
+In the completed run, the warning sounded 29.48 tiles from camp. It gave 39.63 seconds of notice. Returning took 5.39 seconds, leaving 34.24 seconds. The player ate Bread, used the Traveler's Sword while repositioning, and pursued enemies that pulled away. All four attackers were defeated in about 31.97 seconds. Health fell to 2 and recovered to 6 by the end. Dawn awarded 3 Ember Dust, and the player survived. Positioning, food, and wave size all affected the outcome. There is no six-attacker comparison with the same tactics.
 
-### 完成档建造进度
+### Building progress in the completed run
 
-| 等级 | 设施 | 建成日 | 当日经过时间 |
+| Tier | Facility | Day completed | Time into day |
 | --- | --- | ---: | ---: |
-| T1 | 石砌护风炉塘 | 1 | 19.96 秒 |
-| T2 | 草药烘干架 | 1 | 38.73 秒 |
-| T2 | 炼炭窑 | 1 | 57.34 秒 |
-| T3 | 哨戒烽火柱 | 2 | 80.13 秒 |
-| T4 | 拒马陷阱 | 3 | 12.08 秒 |
-| T4 | 自动添柴炉心 | 4 | 73.88 秒 |
+| T1 | Stone Windbreak Hearth | 1 | 19.96 seconds |
+| T2 | Herb Drying Rack | 1 | 38.73 seconds |
+| T2 | Charcoal Kiln | 1 | 57.34 seconds |
+| T3 | Watch Beacon | 2 | 80.13 seconds |
+| T4 | Stake Trap | 3 | 12.08 seconds |
+| T4 | Self-Feeding Hearth | 4 | 73.88 seconds |
 
-第 4 天从浏览器自动保存的同一档继续，扩大找矿范围后采齐最后 2 份铁矿。总计经过 649.95 游戏秒完成验证。余烬尘来自途中奇遇和首战黎明奖励。
+On day 4, the player continued from the same browser autosave and searched farther out for the last two Iron Ore. Verification took 649.95 in-game seconds. Ember Dust came from encounters and the dawn reward after the first raid.
 
-### 完成档逐夜燃料
+### Fuel by night in the completed run
 
-| 夜次 | 当夜天气 | 入夜燃料 | 夜内添入 | 实际消耗 | 黎明剩余 | 熄火时间 |
+| Night | Weather | Fuel at nightfall | Fuel added overnight | Fuel used | Fuel at dawn | Time extinguished |
 | --- | --- | ---: | ---: | ---: | ---: | ---: |
-| 1 | 灰雪微雨 → 晴冷微风 | 176.78 | 0 | 34.21 | 142.56 | 0 秒 |
-| 2 | 晴冷微风 → 灰雪微雨 | 161.87 | 0 | 36.11 | 125.76 | 0 秒 |
-| 3 | 晴冷微风 → 细雪飘落 | 146.14 | 0 | 37.41 | 108.73 | 0 秒 |
+| 1 | Ashen Sleet → Cold, Clear Breeze | 176.78 | 0 | 34.21 | 142.56 | 0 seconds |
+| 2 | Cold, Clear Breeze → Ashen Sleet | 161.87 | 0 | 36.11 | 125.76 | 0 seconds |
+| 3 | Cold, Clear Breeze → Light Snow | 146.14 | 0 | 37.41 | 108.73 | 0 seconds |
 
-燃耗按入夜至黎明累计，包含当夜可能发生的攻炉消耗。燃料保留两位小数。完成档在白天添燃料，三个完整夜晚均有余量，本轮维持现有燃料数值。
+Fuel use is measured from nightfall to dawn and includes any loss from attacks on the hearth. Fuel values are rounded to two decimals. The player refueled during the day and had fuel left after all three full nights, so this round kept the existing fuel values.

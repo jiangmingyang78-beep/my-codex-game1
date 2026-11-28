@@ -89,7 +89,7 @@ export function DevToolbar() {
       <div className="pointer-events-auto absolute bottom-2 right-2 z-30 sm:bottom-3 sm:right-3">
         <PixelButton
           variant="ghost"
-          aria-label="打开 DEV 调试面板"
+          aria-label="Open the debug panel for DeV"
           onClick={() => {
             syncDevList();
             setOpen(true);
@@ -104,53 +104,61 @@ export function DevToolbar() {
 
   return (
     <section
-      aria-label="DEV 调试工具"
+      aria-label="DeV debug tool"
       className="pixel-panel pointer-events-auto absolute bottom-2 right-2 z-30 flex w-[min(25rem,calc(100vw-1rem))] flex-col gap-2 p-2.5 text-xs sm:bottom-3 sm:right-3"
     >
       <div className="flex items-center justify-between gap-2">
         <span className="font-pixel font-bold text-ember">
-          DEV · 渲染 CPU {renderMs.toFixed(2)} ms
+          DEV · Render CPU {renderMs.toFixed(2)} ms
         </span>
         <PixelButton
           variant="ghost"
           onClick={() => setOpen(false)}
           className="px-2 py-0.5 text-xs"
         >
-          收起
+          Close
         </PixelButton>
       </div>
       <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-3">
         <PixelButton
           variant="ghost"
           onClick={() =>
-            act(commands.dev?.grantAllGear, "DEV：已发放全套装备与补给")
+            act(
+              commands.dev?.grantAllGear,
+              "DeV: Full equipment and supplies have been issued",
+            )
           }
           className="px-2 py-1 text-xs"
         >
-          一键全装
+          One key full
         </PixelButton>
         <PixelButton
           variant="ghost"
           onClick={() =>
-            act(commands.dev?.restoreAndReset, "DEV：已满状态并重置冷却")
+            act(
+              commands.dev?.restoreAndReset,
+              "DeV: Full state and reset cooling",
+            )
           }
           className="px-2 py-1 text-xs"
         >
-          满状态 / 清冷却
+          Full state / Clear cool
         </PixelButton>
         <PixelButton
           variant="ghost"
           onClick={() => act(commands.dev?.simulateHit)}
           className="px-2 py-1 text-xs"
         >
-          模拟受击 (测圆盾)
+          Simulate hit (CEA)
         </PixelButton>
         <PixelButton
           variant="ghost"
-          onClick={() => act(commands.dev?.togglePhase, "DEV：已切换昼夜")}
+          onClick={() =>
+            act(commands.dev?.togglePhase, "DeV: Switched to day and night")
+          }
           className="px-2 py-1 text-xs"
         >
-          切昼夜
+          Cut the night and day
         </PixelButton>
         <PixelButton
           variant={godMode ? "ember" : "ghost"}
@@ -158,13 +166,13 @@ export function DevToolbar() {
             const next = commands.dev?.toggleGodMode() ?? false;
             setGodMode(next);
             toast.info(
-              next ? "DEV：无敌已开启" : "DEV：无敌已关闭",
+              next ? "DeV: Invincible opened" : "DeV: Invincible closed. —",
               "dev:godmode",
             );
           }}
           className="px-2 py-1 text-xs"
         >
-          {godMode ? "无敌：开" : "无敌：关"}
+          {godMode ? "Invincible: open" : "Invincible: Close"}
         </PixelButton>
       </div>
       <label>
@@ -176,19 +184,19 @@ export function DevToolbar() {
             setDebug(e.target.checked);
           }}
         />{" "}
-        显示安全光区与刷怪环
+        Show safe lighting and spawn rings
       </label>
       {debug && (
         <canvas
           id="spawn-debug-map"
           width={150}
           height={150}
-          aria-label="安全光区、视口与刷怪双环"
+          aria-label="Safe light, eyes and brush rings"
         />
       )}
       <div className="flex items-center gap-1.5">
         <select
-          aria-label="选择怪物"
+          aria-label="Choose a monster"
           value={selectedEnemy}
           onChange={(e) => {
             setSelectedEnemy(e.target.value);
@@ -207,19 +215,24 @@ export function DevToolbar() {
           onClick={() => {
             if (!selectedEnemy) return;
             const ok = commands.dev?.spawnEnemy(selectedEnemy);
-            if (ok) toast.gain(`DEV：已召唤 ${selectedEnemy}`, "dev:spawn");
-            else toast.warn("DEV：召唤失败", "dev:spawn_fail");
+            if (ok) toast.gain(`DR: Called ${selectedEnemy}`, "dev:spawn");
+            else toast.warn("DR: Call failed", "dev:spawn_fail");
           }}
           className="shrink-0 px-2.5 py-1 text-xs"
         >
-          召唤
+          Call
         </PixelButton>
         <PixelButton
           variant="ghost"
-          onClick={() => act(commands.dev?.clearEnemies, "DEV：已清空战场怪物")}
+          onClick={() =>
+            act(
+              commands.dev?.clearEnemies,
+              "DeV: Cleared the battlefield monster",
+            )
+          }
           className="shrink-0 px-2.5 py-1 text-xs"
         >
-          清怪
+          Clear
         </PixelButton>
       </div>
     </section>

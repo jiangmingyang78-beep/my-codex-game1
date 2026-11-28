@@ -75,7 +75,8 @@ registerAdventureSpecial({
     if (!shieldUp) return { damage: incomingDamage };
     const dot = enemy.dirX * ctx.attackDirX + enemy.dirY * ctx.attackDirY;
     if (dot < -0.5) {
-      const msg = "正面攻击被冻木盾格挡，请绕后或等它冲刺后出手！";
+      const msg =
+        "Frost Shield blocked the frontal attack. Flank it or strike after it lunges!";
       ctx.events.push(
         makeEvent(EVT.blocked, enemy.x, enemy.y, {
           enemyId: enemy.enemyId,
@@ -133,7 +134,8 @@ registerAdventureSpecial({
     }
     events.push(
       makeEvent(EVT.notice, enemy.x, enemy.y, {
-        message: "焦毛狼王仰天长嚎，雪丛里窜出了霜毛雪鼠！",
+        message:
+          "The Scarred Alpha howled, and Frost Rats burst from the snow!",
       }),
     );
   },
@@ -161,7 +163,8 @@ registerAdventureSpecial({
         Math.hypot(o.x - enemy.x, o.y - enemy.y) <= lampRadius,
     );
     if (!illuminated) {
-      const msg = "暗影中的折镜鬼火无法伤及，先点亮折镜铜灯并将其引入光圈！";
+      const msg =
+        "The Mirror Wisp is immune in shadow. Light a brass mirror lamp and lure it into the light!";
       events.push(
         makeEvent(EVT.blocked, enemy.x, enemy.y, {
           enemyId: enemy.enemyId,

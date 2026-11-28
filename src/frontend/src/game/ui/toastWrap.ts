@@ -1,7 +1,7 @@
 import type Phaser from "phaser";
 
-const words = new Intl.Segmenter("zh-CN", { granularity: "word" });
-const glyphs = new Intl.Segmenter("zh-CN", { granularity: "grapheme" });
+const words = new Intl.Segmenter("en", { granularity: "word" });
+const glyphs = new Intl.Segmenter("en", { granularity: "grapheme" });
 
 /** Phaser has already synchronized the canvas font before invoking this callback. */
 export function wrapToastText(

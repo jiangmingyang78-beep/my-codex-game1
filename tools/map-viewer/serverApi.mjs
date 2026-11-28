@@ -19,7 +19,7 @@ const reject = (message, status = 400) => Object.assign(new Error(message), { st
 async function read(file) {
   const target = files.get(file);
   try {
-    if ((await realpath(target)) !== path.resolve(target)) throw reject("拒绝符号链接", 403);
+    if ((await realpath(target)) !== path.resolve(target)) throw reject("Denys the symlink", 403);
     return JSON.parse(await readFile(target, "utf8"));
   } catch (e) {
     if (e.code === "ENOENT") return {};
@@ -33,21 +33,21 @@ async function readAll() {
   return { documents: { ...docs, ...enemyDocuments(physicalEnemies) }, physicalEnemies };
 }
 async function body(req) {
-  if (!/^application\/json(?:;|$)/i.test(req.headers["content-type"] ?? "")) throw reject("需要 application/json", 415);
+  if (!/^application\/json(?:;|$)/i.test(req.headers["content-type"] ?? "")) throw reject("Need X/json", 415);
   const chunks = [];
   let bytes = 0;
   for await (const chunk of req) {
     bytes += chunk.length;
-    if (bytes > 2_000_000) throw reject("请求过大", 413);
+    if (bytes > 2_000_000) throw reject("The request is too big", 413);
     chunks.push(chunk);
   }
   let data;
   try {
     data = JSON.parse(Buffer.concat(chunks).toString("utf8") || "{}");
   } catch {
-    throw reject("JSON 格式无效");
+    throw reject("The Johnson format is invalid");
   }
-  if (!data || Array.isArray(data) || typeof data !== "object") throw reject("需要 JSON 对象");
+  if (!data || Array.isArray(data) || typeof data !== "object") throw reject("Needs a Jois object");
   return data;
 }
 function report(full, map) {
@@ -99,14 +99,14 @@ export function consoleApi(server) {
         !["localhost", "127.0.0.1", "[::1]"].includes(host.hostname) ||
         (req.headers.origin && req.headers.origin !== host.origin)
       )
-        throw reject("仅允许本机同源请求", 403);
+        throw reject("Only the same source request is allowed", 403);
       const route = req.url.split("?")[0];
       if (req.method === "GET" && route === "/health") return respond(200, { ready: true });
       if (req.method === "GET" && route === "/data") {
         const { documents: data } = await readAll();
         return respond(200, { data, baseline: data });
       }
-      if (req.method !== "POST" || !["/save", "/balance-check"].includes(route)) throw reject("未知接口", 404);
+      if (req.method !== "POST" || !["/save", "/balance-check"].includes(route)) throw reject("Unknown interface", 404);
       const emptyReport =
         route === "/balance-check" &&
         !req.headers["content-type"] &&
@@ -120,9 +120,9 @@ export function consoleApi(server) {
           return report(payload.full === true, make(disk["worldOverrides.json"], disk));
         }
         const { file, data, baseline } = payload;
-        if (!files.has(file)) throw reject("文件不在白名单", 403);
+        if (!files.has(file)) throw reject("The document is not on the White List", 403);
         if (baseline !== undefined && JSON.stringify(disk[file]) !== JSON.stringify(baseline))
-          throw reject(file + " 已在磁盘更改，请导出预设并重新加载", 409);
+          throw reject(file + " Changed on disk, please export preset and reload", 409);
         const make = await worldSource();
         const { validateDraft } = await server.ssrLoadModule("/state/validation.ts");
         const issues = validateDraft({ ...disk, [file]: data }, disk, make());
@@ -138,12 +138,12 @@ export function consoleApi(server) {
         const target = files.get(physicalFile);
         const before = isEnemyDocument(file) ? physicalEnemies : disk[file];
         const after = isEnemyDocument(file) ? mergeEnemyDocuments({ ...disk, [file]: data }, physicalEnemies) : data;
-        if ((await realpath(path.dirname(target))) !== path.dirname(target)) throw reject("拒绝链接目录", 403);
+        if ((await realpath(path.dirname(target))) !== path.dirname(target)) throw reject("Denys the link directory", 403);
         const tmp = target + "." + randomUUID() + ".tmp";
         try {
           await writeFile(tmp, JSON.stringify(after, null, 2) + "\n", { flag: "wx" });
           for(let attempt=0;;attempt++){
-            if(JSON.stringify(await read(physicalFile))!==JSON.stringify(before))throw reject(file+" 在写入前已更改",409);
+            if(JSON.stringify(await read(physicalFile))!==JSON.stringify(before))throw reject(file+" Changed before writing",409);
             try{await rename(tmp,target);break;}catch(e){
               if(attempt===4 || !["EPERM","EBUSY"].includes(e.code))throw e;
               await delay(30*(attempt+1));

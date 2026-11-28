@@ -18,7 +18,7 @@ import { syncRunLight, ignite } from "@/systems/world/runLight";
 import { spawnNightRaid } from "@/systems/combat/enemySpawn";
 import { blockedAt } from "@/systems/world/collision";
 
-it("火源叠加、移动、熄灭只影响对应瓦片，阴影怪避开微光", () => {
+it("Fire sources are stacked, moved and extinguished only to the corresponding tiles, and the shadows are kept away from the light", () => {
   const grid = new LightGrid(16);
   const p = { x: -8, y: 8 },
     fire = { ...p, id: "fire", radius: 36 },
@@ -41,7 +41,7 @@ it("火源叠加、移动、熄灭只影响对应瓦片，阴影怪避开微光"
   grid.sync(15, []);
   assert.equal(spawnLightAllowed(grid, p, "frost_rat"), false);
 });
-it("实际波次的候选点位于双环、视口外、可通行且符合光照", () => {
+it("The actual wave is located in two rings, out of sight, accessible and in line with light", () => {
   const sys = {
     ...getTestEternalSystems(),
     spawnView: { x: 80, y: 160, width: 320, height: 160 },
@@ -66,7 +66,7 @@ it("实际波次的候选点位于双环、视口外、可通行且符合光照"
     assert.equal(blockedAt(sys.world, {}, p.x, p.y, 6), false);
   }
 });
-it("超距释放分类上限，首领、剧情、任务和交互标记免疫", () => {
+it("Exceeding the upper limit of the classification of releases, chief, plot, task and cross-marking immunization", () => {
   const sys = getTestEternalSystems();
   const state = createTestRun({ systems: sys });
   const mob = addTestEnemy(state, sys, "frost_rat", { x: 5000 });
@@ -87,7 +87,7 @@ it("超距释放分类上限，首领、剧情、任务和交互标记免疫", (
   assert.equal(Object.keys(state.enemiesById).length, 4);
   assert.ok(hasCapacity(Object.values(state.enemiesById), "hostile", settings));
 });
-it("冒险常驻和固定波次带保护标记，临时燃烧到期后熄灭", () => {
+it("The risk-based permanent and fixed band protection mark is extinguished after the temporary burning has expired", () => {
   const sys = getTestSystems();
   const state = createTestRun({ elapsedSec: 360, phase: "night" });
   spawnNightRaid(state, sys, []);
@@ -102,7 +102,7 @@ it("冒险常驻和固定波次带保护标记，临时燃烧到期后熄灭", (
   assert.equal(syncRunLight(state, sys).getLightLevel(p.x, p.y).block, 0);
 });
 
-it("超宽视口没有合法环带时不会越过配置外环生成", () => {
+it("The hyper-vision mouth is not generated beyond the external ring of the configuration when it does not have a legal ring", () => {
   const sys = {
     ...getTestEternalSystems(),
     spawnView: { x: -500, y: -500, width: 1600, height: 1600 },
@@ -120,7 +120,7 @@ it("超宽视口没有合法环带时不会越过配置外环生成", () => {
   assert.equal(spawnPoint(state, sys, "frost_rat"), null);
 });
 
-it("分类上限独立覆写，非法环距回退，零上限禁止实际刷怪", async () => {
+it("The upper limit of the classification covers independently, the illegal loops retreat and the zero ceiling prohibits actual derision", async () => {
   const { loadSurvivalTuning } = await import("@/systems/survivalTuning");
   const base = getTestEternalSystems();
   const override = await loadSurvivalTuning(async () =>

@@ -50,7 +50,7 @@ export function valueAt(obj: unknown, path: Path): unknown {
   return obj;
 }
 export function put(obj: unknown, path: Path, value: unknown) {
-  if (!path.length || path.some((k) => !safeKey(String(k)))) throw Error("无效的字段路径");
+  if (!path.length || path.some((k) => !safeKey(String(k)))) throw Error("Invalid field path");
   const parent = valueAt(obj, path.slice(0, -1)) as Record<string, unknown>;
   const key = path[path.length - 1];
   if (value === undefined) {

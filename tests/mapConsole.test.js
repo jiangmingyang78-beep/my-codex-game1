@@ -73,13 +73,13 @@ function editedDraft() {
   return draft;
 }
 
-it("空白草稿有效，空覆写复用原地图", () => {
+it("The blank draft is valid and the original map is empty", () => {
   const world = generateWorld(buildGameData(), undefined, emptyOverrides);
   assert.deepEqual(validateDraft(clean, clean, map), []);
   assert.equal(applyWorldOverrides(world, emptyOverrides), world);
 });
 
-it("覆写更新点位和对应常驻表，重复同步保持幂等", () => {
+it("Overwrites updates of the location and corresponding permanent tables, repeats synchronisations, etc", () => {
   const data = structuredClone(buildGameData());
   const world = generateWorld(data, undefined, emptyOverrides);
   const draft = editedDraft();
@@ -121,7 +121,7 @@ it("覆写更新点位和对应常驻表，重复同步保持幂等", () => {
   assert.deepEqual(generateWorld(data, undefined, emptyOverrides), world);
 });
 
-it("运行时裁剪越界点位，编辑器报告越界", () => {
+it("Crops transboundary points at running time, and the editor reports crossing", () => {
   const world = generateWorld(buildGameData(), undefined, emptyOverrides);
   const draft = editedDraft();
   const edit = draft["worldOverrides.json"];
@@ -138,45 +138,45 @@ it("运行时裁剪越界点位，编辑器报告越界", () => {
 
 it.each([
   {
-    label: "阻挡格",
+    label: "blocked tile",
     change: (draft) => {
       draft["worldOverrides.json"].movedObjects[node.id] = { tx: 0, ty: 0 };
     },
   },
   {
-    label: "引用的 ID 不存在",
+    label: "Referenced ID does not exist",
     field: "enemyId",
     change: (draft) => {
       draft["worldOverrides.json"].addedSpawns[0].enemyId = "missing_enemy";
     },
   },
   {
-    label: "引用的 ID 不存在",
+    label: "Referenced ID does not exist",
     field: "itemId",
     change: (draft) => {
       draft["worldOverrides.json"].addedObjects[0].itemId = "missing_item";
     },
   },
   {
-    label: "生命上限",
+    label: "Maximum health",
     change: (draft) => {
       draft["balance.json"].stats.hp.max = -1;
     },
   },
   {
-    label: "0 到 1",
+    label: "between 0 and 1",
     change: (draft) => {
       draft["enemies.json"].enemies[0].drops[0].probability = 2;
     },
   },
   {
-    label: "间隔必须",
+    label: "The interval must be",
     change: (draft) => {
       draft["balance.json"].hero.attackCooldownSec = 0;
     },
   },
 ])(
-  ({ label, field }) => `拒绝无效草稿 · ${field ?? label}`,
+  ({ label, field }) => `Rejects invalid drafts  ·  ${field ?? label}`,
   ({ label, field, change }) => {
     const draft = editedDraft();
     change(draft);
@@ -190,7 +190,7 @@ it.each([
   },
 );
 
-it("命令历史保留最近 50 步，并可复原字段和导出预设", () => {
+it("Commands history to keep the most recent 50 steps and to restore fields and export presets", () => {
   const store = new ConsoleStore(clean, clean);
   const key = ["hero", "attackDamage"];
   const base = store.draft["balance.json"].hero.attackDamage;
@@ -205,7 +205,7 @@ it("命令历史保留最近 50 步，并可复原字段和导出预设", () => 
   assert.deepEqual(JSON.parse(store.preset()).files, store.draft);
 });
 
-it("地图控制台新旧怪物文档可分别编辑并合回同一物理表", async () => {
+it("The map control counter documents for old and new monsters can be edited separately and the same physical table can be combined", async () => {
   const original=JSON.parse(await readFile(new URL("../src/frontend/src/data/enemies.json",import.meta.url),"utf8"));
   const docs=enemyDocuments(structuredClone(original));
   assert.deepEqual(mergeEnemyDocuments(docs),original);

@@ -1,33 +1,33 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>余烬林 · 像素精灵表预览与洗图工作台</title>
+  <title>Emberwood Sprite Workbench</title>
   <link rel="stylesheet" href="./workbench.css" />
 </head>
 <body>
   <div id="dropOverlay" class="drop-overlay">
-    <div class="drop-card">松开鼠标以载入本地 PNG 精灵表</div>
+    <div class="drop-card">Drop a local PNG spritesheet here</div>
   </div>
 
   <header class="topbar">
     <div class="brand">
       <span class="brand-dot"></span>
       <div>
-        <h1>余烬林 · 像素精灵表预览与洗图工作台</h1>
-        <div class="sub">只读项目 assets/sprites &amp; portraits · 拖放本地 PNG · 脚底基线校准 · 16 色板洗图导出</div>
+        <h1>Emberwood Sprite Workbench</h1>
+        <div class="sub">Read-only project assets · Drop local PNGs · Adjust foot anchors · Export a 16-color transparent PNG</div>
       </div>
     </div>
     <div class="top-actions">
-      <select id="assetSelect" title="选择项目内现有 PNG 资源"></select>
-      <button id="btnLoadAsset" class="primary">加载项目资源</button>
+      <select id="assetSelect" title="Select a project PNG"></select>
+      <button id="btnLoadAsset" class="primary">Load asset</button>
       <input id="fileInput" type="file" accept="image/png,image/*" hidden />
-      <button id="btnOpenFile">📂 本地 PNG</button>
-      <button id="btnLoadMagenta">🟣 洋红测试图</button>
-      <button id="btnUndo" disabled>↩ 撤销</button>
-      <button id="btnReset">⟲ 重置</button>
-      <button id="btnExport" class="success">⬇ 导出透明 PNG</button>
+      <button id="btnOpenFile">📂 Local PNG</button>
+      <button id="btnLoadMagenta">🟣 Magenta test</button>
+      <button id="btnUndo" disabled>↩ Undo</button>
+      <button id="btnReset">⟲ Reset</button>
+      <button id="btnExport" class="success">⬇ Export transparent PNG</button>
     </div>
   </header>
 
@@ -36,8 +36,8 @@
       <div class="panel">
         <div class="panel-head">
           <div class="panel-title">
-            <span>动画实时预览</span>
-            <span id="frameBadge" class="badge">行 0 · 列 0</span>
+            <span>Live animation preview</span>
+            <span id="frameBadge" class="badge">Row 0 · Column 0</span>
           </div>
           <div class="btn-group" id="scaleBtns">
             <button data-scale="1">1x</button>
@@ -50,42 +50,42 @@
           <canvas id="previewCanvas" class="pixelated"></canvas>
         </div>
         <div class="ctrl-row">
-          <span class="ctrl-label">行动作：</span>
+          <span class="ctrl-label">Animation </span>
           <div id="rowButtons" class="btn-group"></div>
         </div>
         <div class="ctrl-row">
-          <span class="ctrl-label">播放控制：</span>
-          <button id="btnPlayPause" class="active">⏸ 暂停</button>
-          <button id="btnPrev">⏮ 上一帧</button>
-          <button id="btnNext">⏭ 下一帧</button>
-          <button id="btnFlipX">⇄ flipX: 关</button>
+          <span class="ctrl-label">Playback </span>
+          <button id="btnPlayPause" class="active">⏸ Pause</button>
+          <button id="btnPrev">⏮ Previous frame</button>
+          <button id="btnNext">⏭ Next frame</button>
+          <button id="btnFlipX">⇄ flipX: Off</button>
         </div>
         <div class="ctrl-row">
-          <span class="ctrl-label">FPS (4-20)：</span>
+          <span class="ctrl-label">FPS (4–20) </span>
           <input id="fpsRange" type="range" min="4" max="20" step="1" value="9" />
           <span id="fpsVal" class="mono-val">9 fps</span>
         </div>
         <div class="ctrl-row">
-          <span class="ctrl-label">雪夜底色：</span>
+          <span class="ctrl-label">Background </span>
           <div class="btn-group" id="bgButtons">
-            <button data-bg="checker" class="active">透明棋盘</button>
-            <button data-bg="night">深靛雪夜 #121626</button>
-            <button data-bg="campfire">营火暖光圈</button>
-            <button data-bg="snow">亮雪地 #dce7f2</button>
+            <button data-bg="checker" class="active">Checkerboard</button>
+            <button data-bg="night">Night #121626</button>
+            <button data-bg="campfire">Campfire glow</button>
+            <button data-bg="snow">Snow #dce7f2</button>
           </div>
         </div>
         <div class="ctrl-row">
-          <span class="ctrl-label">参考线：</span>
-          <label class="chk"><input id="chkGrid" type="checkbox" checked /> 32×32 网格线</label>
-          <label class="chk"><input id="chkAnchor" type="checkbox" checked /> 脚底锚点红十字 (16,28)</label>
+          <span class="ctrl-label">Guides </span>
+          <label class="chk"><input id="chkGrid" type="checkbox" checked /> 32×32 grid</label>
+          <label class="chk"><input id="chkAnchor" type="checkbox" checked /> Foot anchor (16, 28)</label>
         </div>
       </div>
 
       <div class="panel">
         <div class="panel-head">
           <div class="panel-title">
-            <span>整表总览（点击跳转帧）</span>
-            <span id="hoverBadge" class="badge">悬停查看坐标与色值</span>
+            <span>Spritesheet preview (click a frame)</span>
+            <span id="hoverBadge" class="badge">Hover to inspect coordinates and color</span>
           </div>
           <div class="btn-group" id="sheetScaleBtns">
             <button data-sheet-scale="1">1x</button>
@@ -103,42 +103,42 @@
     <section class="col">
       <div class="panel">
         <div class="panel-head">
-          <div class="panel-title">网格与锚点配置</div>
-          <button id="btnAutoFrame">📐 按图推导单帧</button>
+          <div class="panel-title">Grid and anchor settings</div>
+          <button id="btnAutoFrame">📐 Infer frame size</button>
         </div>
         <div class="grid-fields">
-          <label>列数<input id="inpCols" type="number" min="1" max="32" value="4" /></label>
-          <label>行数<input id="inpRows" type="number" min="1" max="32" value="4" /></label>
-          <label>单帧宽<input id="inpFW" type="number" min="8" max="512" value="32" /></label>
-          <label>单帧高<input id="inpFH" type="number" min="8" max="512" value="32" /></label>
-          <label>锚点 X<input id="inpAX" type="number" min="0" max="512" value="16" /></label>
-          <label>锚点 Y<input id="inpAY" type="number" min="0" max="512" value="28" /></label>
+          <label>Columns<input id="inpCols" type="number" min="1" max="32" value="4" /></label>
+          <label>Rows<input id="inpRows" type="number" min="1" max="32" value="4" /></label>
+          <label>Frame width<input id="inpFW" type="number" min="8" max="512" value="32" /></label>
+          <label>Frame height<input id="inpFH" type="number" min="8" max="512" value="32" /></label>
+          <label>Anchor X<input id="inpAX" type="number" min="0" max="512" value="16" /></label>
+          <label>Anchor Y<input id="inpAY" type="number" min="0" max="512" value="28" /></label>
         </div>
         <div class="ctrl-row">
-          <button id="btnDefaultAnchor">🎯 标准锚点 (16, 28)</button>
-          <span id="fileBadge" class="badge">未加载</span>
+          <button id="btnDefaultAnchor">🎯 Standard anchor (16, 28)</button>
+          <span id="fileBadge" class="badge">Not loaded</span>
         </div>
       </div>
 
       <div class="panel">
         <div class="panel-head">
-          <div class="panel-title">洗图工具与余烬林 16 色板吸附</div>
+          <div class="panel-title">Cleanup and 16-color palette</div>
           <span id="diagBadge" class="badge">-</span>
         </div>
         <div class="tool-card">
-          <div class="tool-title">去除洋红底（#ff00ff）</div>
+          <div class="tool-title">Remove magenta background (#ff00ff)</div>
           <div class="ctrl-row" style="margin-top:0">
-            <span>容差</span>
+            <span>The tolerance</span>
             <input id="tolRange" type="range" min="0" max="150" value="38" style="flex:1" />
             <span id="tolVal" class="mono-val">38</span>
           </div>
-          <label class="chk"><input id="chkFlood" type="checkbox" /> 仅从边缘连通清除（保护内部紫红）</label>
-          <button id="btnCleanMagenta" class="primary">✨ 去除洋红底 (#ff00ff)</button>
+          <label class="chk"><input id="chkFlood" type="checkbox" /> Only from the edges (protect internal purple red))</label>
+          <button id="btnCleanMagenta" class="primary">✨ Remove magenta background (#ff00ff)</button>
         </div>
         <div class="tool-card">
-          <div class="tool-title">吸附至余烬林 16 色主色板</div>
-          <label class="chk"><input id="chkHarden" type="checkbox" checked /> 同步硬化半透明毛边 (Alpha 二值化)</label>
-          <button id="btnSnapPalette" class="primary">🎨 吸附至 16 色主色板</button>
+          <div class="tool-title">Sorption to the remaining forest 16 coloured main panel</div>
+          <label class="chk"><input id="chkHarden" type="checkbox" checked /> Syncsify semi-transparent fur edges (Alpha Double)</label>
+          <button id="btnSnapPalette" class="primary">🎨 Adsorption to 16 colour main panel</button>
           <div id="paletteGrid" class="palette-grid"></div>
         </div>
         <div id="logBox" class="log-box"></div>

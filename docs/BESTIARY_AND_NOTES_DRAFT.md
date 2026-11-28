@@ -1,120 +1,114 @@
-# 《余烬林：最后一炬》怪物图鉴与营地笔记扩展草案
+# Emberwood: Last Torch Bestiary and Camp Note Draft
 
-> 本文档为纯设计文本与数据草案，未修改 `src/frontend/src/` 下任何源码或现有 JSON。所有 ID 严格对齐 `enemies.json`、`legacyEnemies.json`、`regions.json`、`heroes.json` 与 `lore.json`。
+This design draft proposes text and data only. Its IDs align with `enemies.json`, `legacyEnemies.json`, `regions.json`, `heroes.json`, `lore.json`.
 
----
+## 1. Bestiary entries
 
-## 一、全怪物图鉴条目（共 16 种）
+Each of the 16 entries includes a short field description, a tactical note, and a restrained comment from Alvin.
 
-文风统一为冷峻克制的雪夜生存手记体：每条包含「习性档案」（严格控制 40–60 字）、「应对建议」（1 句）与「艾尔文手记批注」（1 句）。
+### A. Current enemies (`enemies.json` · 12)
 
-### A. 现行怪物（`enemies.json` · 12 种）
+#### 1. Snow Weasel (`snow_weasel`)
+- **Habitat** · Fireside Woods (`camp_edge`) / Old Mill (`old_mill`)
+- **Behavior** · A slender beast that slips over snow, its coat whitening as cold fronts pass. It circles the edge of campfire light and lowers its back to spring the moment a traveler turns away for wood.
+- **Tactics** · Sidestep when it crouches for a straight lunge, then counter while it recovers.
+- **Alvin’s note** · The first thing to take a lone traveler’s berries or fingers is often something this small.
 
-#### 1. 雪鼬 (`snow_weasel`)
-- **出没区域**：炉边雪林 (`camp_edge`) / 废磨坊 (`old_mill`)
-- **习性档案**：贴雪潜行的瘦长野兽，毛色随寒潮泛出灰白。总爱绕着营火光圈外缘徘徊，在猎物转身拾柴的瞬间压低脊背猛扑。
-- **应对建议**：看见它伏身蓄力时先横移半步躲开直线扑击，再趁硬直反手补刀。
-- **艾尔文手记批注**：雪地里最先叼走孤单旅人指节与红莓的，往往是这种不起眼的小东西。
+#### 2. Frost Rat (`frost_rat`)
+- **Habitat** · Fireside Woods (`camp_edge`)
+- **Behavior** · Gray-white rats shelter under dead grass and between frozen roots. They endure bitter cold, gnaw fallen berries after dark, and dart a short distance to bite when startled.
+- **Tactics** · It has 1 health and a short lunge. Strike before it lifts its paws to spring.
+- **Alvin’s note** · They eat even frozen roots. The colder the woods, the deeper their burrows.
 
-#### 2. 霜毛雪鼠 (`frost_rat`)
-- **出没区域**：炉边雪林 (`camp_edge`)
-- **习性档案**：栖居在枯草堆与树根冰隙中的灰白鼠类。体形虽小却极耐严寒，常趁夜色啃食散落浆果，受惊时会短距蹿咬。
-- **应对建议**：血量仅 1 点且扑击距离极短，在其抬爪蓄势前迎面挥击即可一招清除。
-- **艾尔文手记批注**：它们连半截冻僵的草根也不放过，雪林越冷，鼠洞掘得越深。
+#### 3. Ash Wolf (`ash_wolf`)
+- **Habitat** · Old Mill (`old_mill`) / Shadowed Frost Bog (`deep_woods`)
+- **Behavior** · Hungry wolves with ash-stiffened backs hunt in pairs along the wind lanes. The scent of fresh meat or lingering campfire smoke brings them close enough for a powerful midrange pounce.
+- **Tactics** · Its pounce reaches 3 tiles. Sidestep when it crouches, then close in during recovery.
+- **Alvin’s note** · Once ash settled into their fur, they could smell only blood and coals that still burned.
 
-#### 3. 灰烬恶狼 (`ash_wolf`)
-- **出没区域**：废磨坊 (`old_mill`) / 密林深处 (`deep_woods`)
-- **习性档案**：脊背覆着焦灰硬毛的饥饿雪狼，常在林间风道成对游猎。嗅到鲜肉或篝火余烟便迅速逼近，中距离即可发力扑杀。
-- **应对建议**：它的扑咬距离达 3 格且前摇较长，看清低头伏地动作后侧闪拉开再追击收招隙。
-- **艾尔文手记批注**：灰烬落进狼群皮毛以后，它们连嗅觉都只认得血与未熄的木炭。
+#### 4. Shadow Lynx (`shadow_lynx`)
+- **Habitat** · Shadowed Frost Bog (`deep_woods`) / Frost Ridge Trail (`frost_ridge`)
+- **Behavior** · A swift predator that moves through black fog faster than a fire patrol can run. It avoids prolonged fights, sweeping low along the edge of sight before turning abruptly into a pounce.
+- **Tactics** · Hold position near firelight or a tree, and counter after it lands to catch its breath.
+- **Alvin’s note** · By the time the claws tear through the snow and those gray eyes appear, half the lamp oil has gone cold.
 
-#### 4. 黑雾山猫 (`shadow_lynx`)
-- **出没区域**：密林深处 (`deep_woods`) / 霜渊山脊 (`frost_ridge`)
-- **习性档案**：在浓黑雾气中穿行的高速掠食者，步幅比普通巡火人更快。它几乎不作纠缠，总从视野边缘贴地疾掠并瞬间折返扑击。
-- **应对建议**：别与它长距离对跑，尽量在火光边缘或树障旁卡住身位，等其落地回气时反击。
-- **艾尔文手记批注**：先听见雪面被利爪撕开的声音，再看见那双灰瞳时，灯油已经凉了半截。
+#### 5. Rotten Woodcutter (`rotted_woodcutter`)
+- **Habitat** · Fireside Woods (`camp_edge`) / Old Mill (`old_mill`)
+- **Behavior** · The remains of a lumber worker soaked in freezing fog. Rust, resin, and brittle branches cling to its shoulders. It follows tracks with slow, heavy steps and swings its arms hard when it closes.
+- **Tactics** · Use your speed to circle and retreat. It pauses with its arm raised before each close swing.
+- **Alvin’s note** · When the mill stopped, some workers never came down. A few still had their axes clenched in hand.
 
-#### 5. 迷雾朽木人 (`rotted_woodcutter`)
-- **出没区域**：炉边雪林 (`camp_edge`) / 废磨坊 (`old_mill`)
-- **习性档案**：被冻雾浸透的旧日伐木工残躯，肩背还嵌着生锈松脂与枯枝。脚步迟缓沉重，却会沿着人迹一路逼近并挥臂重击。
-- **应对建议**：利用移速优势绕圈拉扯即可轻松风筝，贴身挥斧前有明显抬手停顿。
-- **艾尔文手记批注**：磨坊停转那年，没有下山的不止工匠，还有几位攥着柴斧不肯松手的林工。
+#### 6. Cinder Husk (`cinder_husk`)
+- **Habitat** · Old Mill (`old_mill`) / Shadowed Frost Bog (`deep_woods`)
+- **Behavior** · A charred corpse with dark red coals glowing in its chest. Ash falls beneath each step. It is tougher and more violent than a Rotten Woodcutter, and faint light does little to hold it back.
+- **Tactics** · Use the Iron Spear’s 1.75-tile reach to strike and retreat without trading blows.
+- **Alvin’s note** · Fire once saved them. Later it burned their bones to charcoal that would not go out.
 
-#### 6. 余烬焦尸 (`cinder_husk`)
-- **出没区域**：废磨坊 (`old_mill`) / 密林深处 (`deep_woods`)
-- **习性档案**：胸腔仍残留暗红炭火的焦黑行尸，走动时脚下会落下零星灰烬。比起朽木人更耐打也更凶戾，挥击沉重且不惧微弱火光。
-- **应对建议**：不要和它硬换血量，建议持铁矛借 1.75 格手长优势反复点刺后撤。
-- **艾尔文手记批注**：火曾救过他们一命，后来却把骨头烧成了再也熄不掉的木炭。
+#### 7. Frozen Guard (`frozen_guard`)
+- **Habitat** · Frost Ridge Trail (`frost_ridge`)
+- **Behavior** · An old pass guard in heavy frozen armor. Black ice and shards of iron fill the seams. It moves slowly, but a frontal attack barely dents it and its heavy slash can crush light armor.
+- **Tactics** · Wear a Wrought-Iron Breastplate or use the Iron Spear’s 1.75-tile reach. Avoid being cornered on a narrow path.
+- **Alvin’s note** · The pass has been snowbound for years. They still hold rusty blades across their chests and wait for a watchword that will never come.
 
-#### 7. 霜甲卫兵 (`frozen_guard`)
-- **出没区域**：霜渊山脊 (`frost_ridge`)
-- **习性档案**：身披厚重冻铁残甲的旧关守卫，甲缝里结满黑冰与碎铁片。虽步履极慢，但正面极难撼动，一记重斩足以劈碎轻甲旅人。
-- **应对建议**：务必先做锻铁胸甲或利用 1.75 格铁矛错身输出，切忌在窄路上被它逼入死角。
-- **艾尔文手记批注**：石关早被雪封死了，可他们还把锈刃横在胸前，等一个再也不会来的换防口令。
+#### 8. Frost Crow Thrower (`frost_crow`)
+- **Habitat** · Old Mill (`old_mill`) / Shadowed Frost Bog (`deep_woods`)
+- **Behavior** · A large warped crow that nests in broken beams and high branches. It keeps four or five tiles between itself and a traveler, then beats its wings to throw hardened, ice-tipped feathers.
+- **Tactics** · Approach diagonally to avoid the projectile line. It has little defense at close range.
+- **Alvin’s note** · Corvus says birds know the wind better than anyone. These birds dive only at those who still carry fire.
 
-#### 8. 寒鸦投掷者 (`frost_crow`)
-- **出没区域**：废磨坊 (`old_mill`) / 密林深处 (`deep_woods`)
-- **习性档案**：盘踞于断梁与高枝上的畸变大鸦，羽翼覆满霜粉。它会刻意与旅人保持四五格距离，短暂振翅后甩出带冰刺的飞羽。
-- **应对建议**：不要直线迎着弹道冲锋，斜向接近贴脸后它几乎没有近身反制手段。
-- **艾尔文手记批注**：鸦羽总说飞禽最懂风向，可这些家伙只朝还亮着火的人影俯冲。
+#### 9. Bog Spitter (`bog_spitter`)
+- **Habitat** · Shadowed Frost Bog (`deep_woods`)
+- **Behavior** · A rotting mass half sunk in frozen mud, coated in weeping herbs and fungus. It lobs corrosive spore sacs high toward a target’s feet. A broad cloud of poison blooms on impact.
+- **Tactics** · Move at least 1.5 tiles clear of the warning circle and close in while it is on cooldown.
+- **Alvin’s note** · Suheng tried to peel herbs from its surface. Her note said only, “Even the dirt has rotted through.”
 
-#### 9. 冻沼毒孢怪 (`bog_spitter`)
-- **出没区域**：密林深处 (`deep_woods`)
-- **习性档案**：半截身躯扎进冻泥里的腐殖囊体，表面长满渗汁的苦草与菌斑。它会朝目标脚下高抛腐蚀孢囊，落地即炸开大片毒雾。
-- **应对建议**：看见脚下出现范围预警圈时立刻踏出 1.5 格以上，趁其漫长冷却期贴身速杀。
-- **艾尔文手记批注**：素蘅曾试着剥下它体表的药草，最后只在手记里写下“连泥土一起烂透了”。
+#### 10. Stray Ember Wisp (`ember_wisp`)
+- **Habitat** · Shadowed Frost Bog (`deep_woods`) / Frost Ridge Trail (`frost_ridge`)
+- **Behavior** · A blue-orange flame made from scattered firekeepers’ embers. It drifts quickly outside reach, then launches a fast ember bolt after a short wind-up. Walking straight away rarely works.
+- **Tactics** · Move sideways or Snow Dash past the first bolt, then close in during recovery.
+- **Alvin’s note** · From far away it looks like a relay fire left by a patrol. Up close, it wants to swallow your fire too.
 
-#### 10. 游离鬼火灵 (`ember_wisp`)
-- **出没区域**：密林深处 (`deep_woods`) / 霜渊山脊 (`frost_ridge`)
-- **习性档案**：由失散巡火人残烬聚成的青橙色浮火，飘忽迅疾且始终游离在射程之外。蓄势极短便会射出高速余烬弹，极难凭步行甩开。
-- **应对建议**：保持横向走位或用踏雪急步躲开第一发快弹，再趁其后摇期强行近身斩灭。
-- **艾尔文手记批注**：远看像前人留下的接力火盆，走近了才发现它只渴望把活人的火一并吞下。
+#### 11. Old Mill Overseer (Ember Seal Guardian) (`mill_overseer`)
+- **Habitat** · Old Mill (`old_mill`) · Adventure boss (`adventure_only`)
+- **Behavior** · The head blacksmith sealed inside the main hall, with half a hot Ember Seal embedded in his chest. He uses measured close-range hammer blows above half health and long charges below it.
+- **Tactics** · Bring an Iron Spear and Baked Berry Cakes. In phase two, dodge sideways after the long wind-up and counter during recovery.
+- **Alvin’s note** · Gale said, “Bring the Overseer out.” What remains in the mill understands only the sound of a hammer.
 
-#### 11. 旧磨坊督工（炉印守卫） (`mill_overseer`)
-- **出没区域**：废磨坊 (`old_mill`) · 冒险首领 (`adventure_only`)
-- **习性档案**：锁死磨坊正厅的铁匠头领，胸前仍嵌着半枚滚烫炉印。半血前以沉稳近身重锤压阵，跌破半血后改以长距冲撞撕开防线。
-- **应对建议**：备好铁矛与烤莓饼再进屋，二阶段看准长前摇垂直横移躲避冲刺并抓收招反击。
-- **艾尔文手记批注**：格雷只提过一句“把督工带出来吧”，可磨坊里剩下的早已只听得懂铁锤响。
+#### 12. Summit Pyre Warden (Final Guardian) (`summit_pyre_warden`)
+- **Habitat** · Frost Ridge Trail (`frost_ridge`) · Adventure boss (`adventure_only`)
+- **Behavior** · The last armored guardian of the eastern beacon holds the second Ember Seal. As health falls, it moves from heavy slashes to blasts of embers, then to a frenzied lunge that deals four damage.
+- **Tactics** · Forge the breastplate and heavy helm. Save Snow Dash for the final-phase lunge before finishing the fight.
+- **Alvin’s note** · When even the firekeeper doubts the flame will last until dawn, the Ember Gatherer must take the last step.
 
-#### 12. 霜渊守炬者（最终守卫） (`summit_pyre_warden`)
-- **出没区域**：霜渊山脊 (`frost_ridge`) · 冒险首领 (`adventure_only`)
-- **习性档案**：镇守东端烽台前的末代守炬重铠者，握持第二枚炉印。随血量跌落会依次切换重斩、范围余烬爆裂与四点伤害的狂暴突进。
-- **应对建议**：锻齐胸甲与重盔再决战，三阶段务必留好踏雪急步躲开高伤突进后再安全收尾。
-- **艾尔文手记批注**：若连守炬的人都怀疑火能撑到天亮，最后那一步便只能由拾烬人替他走完。
+### B. Legacy fire patrol enemies (`legacyEnemies.json` · 4)
 
----
+#### 13. Mill Spider (`mill_spider`)
+- **Habitat** · Old Mill (`old_mill`)
+- **Behavior** · A pale spider in the old mill’s eaves and wall shadows. It spins tough silk mixed with ice shards. It halts and spits when a traveler comes within six tiles, blocking the way.
+- **Tactics** · Look for the pause before the slow silk shot. Sidestep, then close in.
+- **Alvin’s note** · Lin recorded its timing in the first note. Its tough silk still works for wrapping a wound.
 
-### B. 旧巡火线遗留怪物（`legacyEnemies.json` · 4 种）
+#### 14. Ice Ram (`ice_ram`)
+- **Habitat** · Ice Gorge (`ice_gorge`)
+- **Behavior** · A massive tundra beast with blunt, icy horns. It lowers its head into the gorge wind to break snowbanks. Once it sees a lone figure, it builds momentum and charges straight for four tiles.
+- **Tactics** · Its wind-up is 0.75 seconds and it cannot turn mid-charge. Bait a miss to gain one full second to attack.
+- **Alvin’s note** · The old patrol used Ice Rams to open blocked paths. Now they crash through the gorge with no one to guide them.
 
-#### 13. 磨坊蛛 (`mill_spider`)
-- **出没区域**：废磨坊 (`old_mill`)
-- **习性档案**：盘踞在旧磨坊檐角与石墙暗影中的灰白大蛛，腹囊能纺出掺着冰屑的韧丝。猎物踏入六格内便会停步吐丝阻拦去路。
-- **应对建议**：吐丝前会有明显的停顿蓄势，横向走位躲开慢速丝团即可贴身击杀。
-- **艾尔文手记批注**：凛在第一张笔记里记过它的步点，那些硬韧蛛丝至今还能拿来缠伤口。
+#### 15. Coal Shade (`coal_shade`)
+- **Habitat** · Ice Gorge (`ice_gorge`)
+- **Behavior** · A black outline that drifts through the shaded Ice Gorge like a firekeeper quenched by freezing rain. Its close sweep wounds its victim and puts out much of the torchlight at once.
+- **Tactics** · Stay beyond two tiles, especially when the torch is low. Preserve light before closing in.
+- **Alvin’s note** · The wound is less frightening than the snow going suddenly dark after the shade sweeps past.
 
-#### 14. 冰角兽 (`ice_ram`)
-- **出没区域**：冰峡 (`ice_gorge`)
-- **习性档案**：生有粗钝寒冰双角的冻原重兽，习惯低头埋进峡风里用角破开雪障。一旦锁定前方孤影便会蓄足力气直冲四格距离。
-- **应对建议**：它的蓄力前摇足有 0.75 秒且冲锋不能拐弯，诱其撞空后有整整一秒喘息可输出。
-- **艾尔文手记批注**：旧巡火队过去拿冰角兽撞开塌方雪道，如今峡谷里只剩它们在风里乱撞。
+#### 16. Beacon Keeper (`beacon_keeper`)
+- **Habitat** · Ridge Beacon (`beacon`)
+- **Behavior** · A broken soldier at the edge of the old stone platform. It still holds the last Beacon Core. It alternates long charges with wide sweeps and attacks much more quickly below half health.
+- **Tactics** · Below half health, wait for the two-attack sequence to end. Land two hits and back away.
+- **Alvin’s note** · Snow piled on the platform for more winters than anyone remembers, and still he kept hold of the ember.
 
-#### 15. 煤影 (`coal_shade`)
-- **出没区域**：冰峡 (`ice_gorge`)
-- **习性档案**：徘徊于冰峡背阴处的焦黑影形，形似被冻雨浇熄的巡火人轮廓。贴身横扫时不但伤及血肉，还会直接扑灭大段火炬微光。
-- **应对建议**：切勿让它在火光低迷时贴身横扫，保持两格之外拉扯并优先保住火炬余量。
-- **艾尔文手记批注**：最可怕的不是皮肉被划破，而是那道黑影扫过之后，眼前骤然暗下去的雪路。
+## 2. Bestiary UI JSON draft (`bestiary.draft.json`)
 
-#### 16. 烽台守卫 (`beacon_keeper`)
-- **出没区域**：山脊烽台 (`beacon`)
-- **习性档案**：守候在旧石台边缘的残破甲士，怀里一直护着最后一枚烽芯。战斗中会交替施展长距冲锋与大扇形横扫，半血后攻势骤然紧凑。
-- **应对建议**：半血狂暴后间隔明显缩短，需在它完成二连招收势时稳步抢攻两下即退。
-- **艾尔文手记批注**：石台上的积雪压了不知多少冬，他却到倒下前都没松开手里的火种。
-
----
-
-## 二、图鉴 UI 接入用 JSON 草案（`bestiary.draft.json`）
-
-> 以下 JSON 块已按 16 只怪物完整对齐，未来可直接落盘为 `src/frontend/src/data/bestiary.json` 并由图鉴系统读取。
+The 16 entries are intended for `src/frontend/src/data/bestiary.json` when a bestiary UI is implemented.
 
 ```json
 {
@@ -123,254 +117,309 @@
     {
       "enemyId": "snow_weasel",
       "source": "enemies.json",
-      "name": "雪鼬",
-      "regionIds": ["camp_edge", "old_mill"],
+      "name": "Snow Weasel",
+      "regionIds": [
+        "camp_edge",
+        "old_mill"
+      ],
       "scope": "shared",
-      "lore": "贴雪潜行的瘦长野兽，毛色随寒潮泛出灰白。总爱绕着营火光圈外缘徘徊，在猎物转身拾柴的瞬间压低脊背猛扑。",
-      "tactics": "看见它伏身蓄力时先横移半步躲开直线扑击，再趁硬直反手补刀。",
-      "scribeNote": "雪地里最先叼走孤单旅人指节与红莓的，往往是这种不起眼的小东西。",
+      "lore": "A slender beast that slips over snow, its coat whitening as cold fronts pass. It circles the edge of campfire light and lowers its back to spring the moment a traveler turns away for wood.",
+      "tactics": "Sidestep when it crouches for a straight lunge, then counter while it recovers.",
+      "scribeNote": "The first thing to take a lone traveler’s berries or fingers is often something this small.",
       "unlockTrigger": "enemy_encountered"
     },
     {
       "enemyId": "frost_rat",
       "source": "enemies.json",
-      "name": "霜毛雪鼠",
-      "regionIds": ["camp_edge"],
+      "name": "Frost Rat",
+      "regionIds": [
+        "camp_edge"
+      ],
       "scope": "shared",
-      "lore": "栖居在枯草堆与树根冰隙中的灰白鼠类。体形虽小却极耐严寒，常趁夜色啃食散落浆果，受惊时会短距蹿咬。",
-      "tactics": "血量仅 1 点且扑击距离极短，在其抬爪蓄势前迎面挥击即可一招清除。",
-      "scribeNote": "它们连半截冻僵的草根也不放过，雪林越冷，鼠洞掘得越深。",
+      "lore": "Gray-white rats shelter under dead grass and between frozen roots. They endure bitter cold, gnaw fallen berries after dark, and dart a short distance to bite when startled.",
+      "tactics": "It has 1 health and a short lunge. Strike before it lifts its paws to spring.",
+      "scribeNote": "They eat even frozen roots. The colder the woods, the deeper their burrows.",
       "unlockTrigger": "enemy_encountered"
     },
     {
       "enemyId": "ash_wolf",
       "source": "enemies.json",
-      "name": "灰烬恶狼",
-      "regionIds": ["old_mill", "deep_woods"],
+      "name": "Ash Wolf",
+      "regionIds": [
+        "old_mill",
+        "deep_woods"
+      ],
       "scope": "shared",
-      "lore": "脊背覆着焦灰硬毛的饥饿雪狼，常在林间风道成对游猎。嗅到鲜肉或篝火余烟便迅速逼近，中距离即可发力扑杀。",
-      "tactics": "它的扑咬距离达 3 格且前摇较长，看清低头伏地动作后侧闪拉开再追击收招隙。",
-      "scribeNote": "灰烬落进狼群皮毛以后，它们连嗅觉都只认得血与未熄的木炭。",
+      "lore": "Hungry wolves with ash-stiffened backs hunt in pairs along the wind lanes. The scent of fresh meat or lingering campfire smoke brings them close enough for a powerful midrange pounce.",
+      "tactics": "Its pounce reaches 3 tiles. Sidestep when it crouches, then close in during recovery.",
+      "scribeNote": "Once ash settled into their fur, they could smell only blood and coals that still burned.",
       "unlockTrigger": "enemy_encountered"
     },
     {
       "enemyId": "shadow_lynx",
       "source": "enemies.json",
-      "name": "黑雾山猫",
-      "regionIds": ["deep_woods", "frost_ridge"],
+      "name": "Shadow Lynx",
+      "regionIds": [
+        "deep_woods",
+        "frost_ridge"
+      ],
       "scope": "shared",
-      "lore": "在浓黑雾气中穿行的高速掠食者，步幅比普通巡火人更快。它几乎不作纠缠，总从视野边缘贴地疾掠并瞬间折返扑击。",
-      "tactics": "别与它长距离对跑，尽量在火光边缘或树障旁卡住身位，等其落地回气时反击。",
-      "scribeNote": "先听见雪面被利爪撕开的声音，再看见那双灰瞳时，灯油已经凉了半截。",
+      "lore": "A swift predator that moves through black fog faster than a fire patrol can run. It avoids prolonged fights, sweeping low along the edge of sight before turning abruptly into a pounce.",
+      "tactics": "Hold position near firelight or a tree, and counter after it lands to catch its breath.",
+      "scribeNote": "By the time the claws tear through the snow and those gray eyes appear, half the lamp oil has gone cold.",
       "unlockTrigger": "enemy_encountered"
     },
     {
       "enemyId": "rotted_woodcutter",
       "source": "enemies.json",
-      "name": "迷雾朽木人",
-      "regionIds": ["camp_edge", "old_mill"],
+      "name": "Rotten Woodcutter",
+      "regionIds": [
+        "camp_edge",
+        "old_mill"
+      ],
       "scope": "shared",
-      "lore": "被冻雾浸透的旧日伐木工残躯，肩背还嵌着生锈松脂与枯枝。脚步迟缓沉重，却会沿着人迹一路逼近并挥臂重击。",
-      "tactics": "利用移速优势绕圈拉扯即可轻松风筝，贴身挥斧前有明显抬手停顿。",
-      "scribeNote": "磨坊停转那年，没有下山的不止工匠，还有几位攥着柴斧不肯松手的林工。",
+      "lore": "The remains of a lumber worker soaked in freezing fog. Rust, resin, and brittle branches cling to its shoulders. It follows tracks with slow, heavy steps and swings its arms hard when it closes.",
+      "tactics": "Use your speed to circle and retreat. It pauses with its arm raised before each close swing.",
+      "scribeNote": "When the mill stopped, some workers never came down. A few still had their axes clenched in hand.",
       "unlockTrigger": "enemy_encountered"
     },
     {
       "enemyId": "cinder_husk",
       "source": "enemies.json",
-      "name": "余烬焦尸",
-      "regionIds": ["old_mill", "deep_woods"],
+      "name": "Cinder Husk",
+      "regionIds": [
+        "old_mill",
+        "deep_woods"
+      ],
       "scope": "shared",
-      "lore": "胸腔仍残留暗红炭火的焦黑行尸，走动时脚下会落下零星灰烬。比起朽木人更耐打也更凶戾，挥击沉重且不惧微弱火光。",
-      "tactics": "不要和它硬换血量，建议持铁矛借 1.75 格手长优势反复点刺后撤。",
-      "scribeNote": "火曾救过他们一命，后来却把骨头烧成了再也熄不掉的木炭。",
+      "lore": "A charred corpse with dark red coals glowing in its chest. Ash falls beneath each step. It is tougher and more violent than a Rotten Woodcutter, and faint light does little to hold it back.",
+      "tactics": "Use the Iron Spear’s 1.75-tile reach to strike and retreat without trading blows.",
+      "scribeNote": "Fire once saved them. Later it burned their bones to charcoal that would not go out.",
       "unlockTrigger": "enemy_encountered"
     },
     {
       "enemyId": "frozen_guard",
       "source": "enemies.json",
-      "name": "霜甲卫兵",
-      "regionIds": ["frost_ridge"],
+      "name": "Frozen Guard",
+      "regionIds": [
+        "frost_ridge"
+      ],
       "scope": "shared",
-      "lore": "身披厚重冻铁残甲的旧关守卫，甲缝里结满黑冰与碎铁片。虽步履极慢，但正面极难撼动，一记重斩足以劈碎轻甲旅人。",
-      "tactics": "务必先做锻铁胸甲或利用 1.75 格铁矛错身输出，切忌在窄路上被它逼入死角。",
-      "scribeNote": "石关早被雪封死了，可他们还把锈刃横在胸前，等一个再也不会来的换防口令。",
+      "lore": "An old pass guard in heavy frozen armor. Black ice and shards of iron fill the seams. It moves slowly, but a frontal attack barely dents it and its heavy slash can crush light armor.",
+      "tactics": "Wear a Wrought-Iron Breastplate or use the Iron Spear’s 1.75-tile reach. Avoid being cornered on a narrow path.",
+      "scribeNote": "The pass has been snowbound for years. They still hold rusty blades across their chests and wait for a watchword that will never come.",
       "unlockTrigger": "enemy_encountered"
     },
     {
       "enemyId": "frost_crow",
       "source": "enemies.json",
-      "name": "寒鸦投掷者",
-      "regionIds": ["old_mill", "deep_woods"],
+      "name": "Frost Crow Thrower",
+      "regionIds": [
+        "old_mill",
+        "deep_woods"
+      ],
       "scope": "shared",
-      "lore": "盘踞于断梁与高枝上的畸变大鸦，羽翼覆满霜粉。它会刻意与旅人保持四五格距离，短暂振翅后甩出带冰刺的飞羽。",
-      "tactics": "不要直线迎着弹道冲锋，斜向接近贴脸后它几乎没有近身反制手段。",
-      "scribeNote": "鸦羽总说飞禽最懂风向，可这些家伙只朝还亮着火的人影俯冲。",
+      "lore": "A large warped crow that nests in broken beams and high branches. It keeps four or five tiles between itself and a traveler, then beats its wings to throw hardened, ice-tipped feathers.",
+      "tactics": "Approach diagonally to avoid the projectile line. It has little defense at close range.",
+      "scribeNote": "Corvus says birds know the wind better than anyone. These birds dive only at those who still carry fire.",
       "unlockTrigger": "enemy_encountered"
     },
     {
       "enemyId": "bog_spitter",
       "source": "enemies.json",
-      "name": "冻沼毒孢怪",
-      "regionIds": ["deep_woods"],
+      "name": "Bog Spitter",
+      "regionIds": [
+        "deep_woods"
+      ],
       "scope": "shared",
-      "lore": "半截身躯扎进冻泥里的腐殖囊体，表面长满渗汁的苦草与菌斑。它会朝目标脚下高抛腐蚀孢囊，落地即炸开大片毒雾。",
-      "tactics": "看见脚下出现范围预警圈时立刻踏出 1.5 格以上，趁其漫长冷却期贴身速杀。",
-      "scribeNote": "素蘅曾试着剥下它体表的药草，最后只在手记里写下“连泥土一起烂透了”。",
+      "lore": "A rotting mass half sunk in frozen mud, coated in weeping herbs and fungus. It lobs corrosive spore sacs high toward a target’s feet. A broad cloud of poison blooms on impact.",
+      "tactics": "Move at least 1.5 tiles clear of the warning circle and close in while it is on cooldown.",
+      "scribeNote": "Suheng tried to peel herbs from its surface. Her note said only, “Even the dirt has rotted through.”",
       "unlockTrigger": "enemy_encountered"
     },
     {
       "enemyId": "ember_wisp",
       "source": "enemies.json",
-      "name": "游离鬼火灵",
-      "regionIds": ["deep_woods", "frost_ridge"],
+      "name": "Stray Ember Wisp",
+      "regionIds": [
+        "deep_woods",
+        "frost_ridge"
+      ],
       "scope": "shared",
-      "lore": "由失散巡火人残烬聚成的青橙色浮火，飘忽迅疾且始终游离在射程之外。蓄势极短便会射出高速余烬弹，极难凭步行甩开。",
-      "tactics": "保持横向走位或用踏雪急步躲开第一发快弹，再趁其后摇期强行近身斩灭。",
-      "scribeNote": "远看像前人留下的接力火盆，走近了才发现它只渴望把活人的火一并吞下。",
+      "lore": "A blue-orange flame made from scattered firekeepers’ embers. It drifts quickly outside reach, then launches a fast ember bolt after a short wind-up. Walking straight away rarely works.",
+      "tactics": "Move sideways or Snow Dash past the first bolt, then close in during recovery.",
+      "scribeNote": "From far away it looks like a relay fire left by a patrol. Up close, it wants to swallow your fire too.",
       "unlockTrigger": "enemy_encountered"
     },
     {
       "enemyId": "mill_overseer",
       "source": "enemies.json",
-      "name": "旧磨坊督工（炉印守卫）",
-      "regionIds": ["old_mill"],
+      "name": "Old Mill Overseer (Ember Seal Guardian)",
+      "regionIds": [
+        "old_mill"
+      ],
       "scope": "adventure_only",
-      "lore": "锁死磨坊正厅的铁匠头领，胸前仍嵌着半枚滚烫炉印。半血前以沉稳近身重锤压阵，跌破半血后改以长距冲撞撕开防线。",
-      "tactics": "备好铁矛与烤莓饼再进屋，二阶段看准长前摇垂直横移躲避冲刺并抓收招反击。",
-      "scribeNote": "格雷只提过一句“把督工带出来吧”，可磨坊里剩下的早已只听得懂铁锤响。",
+      "lore": "The head blacksmith sealed inside the main hall, with half a hot Ember Seal embedded in his chest. He uses measured close-range hammer blows above half health and long charges below it.",
+      "tactics": "Bring an Iron Spear and Baked Berry Cakes. In phase two, dodge sideways after the long wind-up and counter during recovery.",
+      "scribeNote": "Gale said, “Bring the Overseer out.” What remains in the mill understands only the sound of a hammer.",
       "unlockTrigger": "enemy_defeated"
     },
     {
       "enemyId": "summit_pyre_warden",
       "source": "enemies.json",
-      "name": "霜渊守炬者（最终守卫）",
-      "regionIds": ["frost_ridge"],
+      "name": "Summit Pyre Warden (Final Guardian)",
+      "regionIds": [
+        "frost_ridge"
+      ],
       "scope": "adventure_only",
-      "lore": "镇守东端烽台前的末代守炬重铠者，握持第二枚炉印。随血量跌落会依次切换重斩、范围余烬爆裂与四点伤害的狂暴突进。",
-      "tactics": "锻齐胸甲与重盔再决战，三阶段务必留好踏雪急步躲开高伤突进后再安全收尾。",
-      "scribeNote": "若连守炬的人都怀疑火能撑到天亮，最后那一步便只能由拾烬人替他走完。",
+      "lore": "The last armored guardian of the eastern beacon holds the second Ember Seal. As health falls, it moves from heavy slashes to blasts of embers, then to a frenzied lunge that deals four damage.",
+      "tactics": "Forge the breastplate and heavy helm. Save Snow Dash for the final-phase lunge before finishing the fight.",
+      "scribeNote": "When even the firekeeper doubts the flame will last until dawn, the Ember Gatherer must take the last step.",
       "unlockTrigger": "enemy_defeated"
     },
     {
       "enemyId": "mill_spider",
       "source": "legacyEnemies.json",
-      "name": "磨坊蛛",
-      "regionIds": ["old_mill"],
+      "name": "Mill Spider",
+      "regionIds": [
+        "old_mill"
+      ],
       "scope": "legacy",
-      "lore": "盘踞在旧磨坊檐角与石墙暗影中的灰白大蛛，腹囊能纺出掺着冰屑的韧丝。猎物踏入六格内便会停步吐丝阻拦去路。",
-      "tactics": "吐丝前会有明显的停顿蓄势，横向走位躲开慢速丝团即可贴身击杀。",
-      "scribeNote": "凛在第一张笔记里记过它的步点，那些硬韧蛛丝至今还能拿来缠伤口。",
+      "lore": "A pale spider in the old mill’s eaves and wall shadows. It spins tough silk mixed with ice shards. It halts and spits when a traveler comes within six tiles, blocking the way.",
+      "tactics": "Look for the pause before the slow silk shot. Sidestep, then close in.",
+      "scribeNote": "Lin recorded its timing in the first note. Its tough silk still works for wrapping a wound.",
       "unlockTrigger": "enemy_encountered"
     },
     {
       "enemyId": "ice_ram",
       "source": "legacyEnemies.json",
-      "name": "冰角兽",
-      "regionIds": ["ice_gorge"],
+      "name": "Ice Ram",
+      "regionIds": [
+        "ice_gorge"
+      ],
       "scope": "legacy",
-      "lore": "生有粗钝寒冰双角的冻原重兽，习惯低头埋进峡风里用角破开雪障。一旦锁定前方孤影便会蓄足力气直冲四格距离。",
-      "tactics": "它的蓄力前摇足有 0.75 秒且冲锋不能拐弯，诱其撞空后有整整一秒喘息可输出。",
-      "scribeNote": "旧巡火队过去拿冰角兽撞开塌方雪道，如今峡谷里只剩它们在风里乱撞。",
+      "lore": "A massive tundra beast with blunt, icy horns. It lowers its head into the gorge wind to break snowbanks. Once it sees a lone figure, it builds momentum and charges straight for four tiles.",
+      "tactics": "Its wind-up is 0.75 seconds and it cannot turn mid-charge. Bait a miss to gain one full second to attack.",
+      "scribeNote": "The old patrol used Ice Rams to open blocked paths. Now they crash through the gorge with no one to guide them.",
       "unlockTrigger": "enemy_encountered"
     },
     {
       "enemyId": "coal_shade",
       "source": "legacyEnemies.json",
-      "name": "煤影",
-      "regionIds": ["ice_gorge"],
+      "name": "Coal Shade",
+      "regionIds": [
+        "ice_gorge"
+      ],
       "scope": "legacy",
-      "lore": "徘徊于冰峡背阴处的焦黑影形，形似被冻雨浇熄的巡火人轮廓。贴身横扫时不但伤及血肉，还会直接扑灭大段火炬微光。",
-      "tactics": "切勿让它在火光低迷时贴身横扫，保持两格之外拉扯并优先保住火炬余量。",
-      "scribeNote": "最可怕的不是皮肉被划破，而是那道黑影扫过之后，眼前骤然暗下去的雪路。",
+      "lore": "A black outline that drifts through the shaded Ice Gorge like a firekeeper quenched by freezing rain. Its close sweep wounds its victim and puts out much of the torchlight at once.",
+      "tactics": "Stay beyond two tiles, especially when the torch is low. Preserve light before closing in.",
+      "scribeNote": "The wound is less frightening than the snow going suddenly dark after the shade sweeps past.",
       "unlockTrigger": "enemy_encountered"
     },
     {
       "enemyId": "beacon_keeper",
       "source": "legacyEnemies.json",
-      "name": "烽台守卫",
-      "regionIds": ["beacon"],
+      "name": "Beacon Keeper",
+      "regionIds": [
+        "beacon"
+      ],
       "scope": "legacy",
-      "lore": "守候在旧石台边缘的残破甲士，怀里一直护着最后一枚烽芯。战斗中会交替施展长距冲锋与大扇形横扫，半血后攻势骤然紧凑。",
-      "tactics": "半血狂暴后间隔明显缩短，需在它完成二连招收势时稳步抢攻两下即退。",
-      "scribeNote": "石台上的积雪压了不知多少冬，他却到倒下前都没松开手里的火种。",
+      "lore": "A broken soldier at the edge of the old stone platform. It still holds the last Beacon Core. It alternates long charges with wide sweeps and attacks much more quickly below half health.",
+      "tactics": "Below half health, wait for the two-attack sequence to end. Land two hits and back away.",
+      "scribeNote": "Snow piled on the platform for more winters than anyone remembers, and still he kept hold of the ember.",
       "unlockTrigger": "enemy_defeated"
     }
   ]
 }
 ```
 
----
+## 3. The Five Eras and six proposed camp notes
 
-## 三、余烬林五纪编年史与 6 篇全新「营地笔记」草案
+### A. Timeline for notes, achievements, and story pop-ups
 
-### A. 五纪编年史骨架（供后续笔记、成就与剧情弹窗对齐）
-
-| 纪年 | 纪名 | 关键事件与物证 | 相关角色 / 区域 |
+| Era | Name | Events and evidence | Characters and regions |
 | --- | --- | --- | --- |
-| 第一纪 | **定炉纪** | 山下聚落立起东端石台烽火，铸双枚「炉印 (`ember_seal`)」与「烽芯 (`beacon_heart`)」，确立巡火人换防誓约。 | 无名先驱、`beacon` / `frost_ridge` |
-| 第二纪 | **磨坊与巡火道纪** | 沿雪线筑起木石道与接力火站 (`relay_kit`)；废磨坊开炉锻铁，为巡火人供应铁矛 (`iron_spear`) 与提灯 (`lantern`)。 | 格雷 (`gale_smith`)、`old_mill` |
-| 第三纪 | **黑雾沉降纪** | 白渊暴雪连月不止，黑雾 (`freezing_fog`) 顺密林漫延；林工、兽群与守炬者陆续异变，磨坊督工闭门失联。 | 素蘅 (`suheng_herb`)、`deep_woods` |
-| 第四纪 | **断道封关纪** | 冰峡塌雪、石门落锁，接力火盆尽熄；游离巡猎者与书吏分别在雪林边拾起残纸与脚印。 | 鸦羽 (`corvus_hunt`)、艾尔文 (`alvin_scribe`) |
-| 第五纪 | **末代拾烬纪** | 山下只余窗前微灯，末代拾烬人系上橙巾从炉边雪林 (`camp_edge`) 启程，重聚双印再燃东端烽火。 | 凛 (`lin_tinder`)、五人小队重聚 |
+| First | Founding of the Hearth | The settlements raised the eastern stone beacon, forged the two Ember Seals and the Beacon Core, and established the firekeepers’ watch oath. | Unnamed Forerunners, `beacon` and `frost_ridge` |
+| Second | Mill and Fire Patrol Roads | Roads and relay braziers crossed the snowline. The Old Mill opened its forge and supplied the patrol with Iron Spears and Iron Lanterns. | Gale (`gale_smith`), `old_mill` |
+| Third | Descent of the Black Fog | The White Abyss Blizzard lasted months. `freezing_fog` spread through the woods and twisted workers, beasts, and guardians. The Overseer sealed the mill and vanished. | Suheng (`suheng_herb`), `deep_woods` |
+| Fourth | Broken Roads and Sealed Gates | The Ice Gorge collapsed, gates locked, and the relays went dark. The hunter found tracks, and the scribe recovered loose pages. | Corvus and Alvin |
+| Fifth | Last Ember Gatherer | Lamps still glowed below. Lin set out from `camp_edge` in the orange scarf to reunite the seals and relight the eastern beacon. | Lin and the reunited group of five |
 
-### B. 6 篇全新碎片化「营地笔记」草案
+### B. Six proposed camp notes
 
-1. **凛 (`lin_tinder`) —《旧橙巾上的灰印》** (`note_orange_scarf`)
-   > 领口这条橙巾洗过三回雪水，线脚里还卡着上一位守火人留下的松烟。临走前他没说什么时候天亮，只把火石塞进我袖口：只要主火圈没灭，山脚下那些没拉上的窗帘，就会一直等在风口里。
+1. **Lin (`lin_tinder`) · Ash on the Old Orange Scarf** (`note_orange_scarf`)
+   > I washed this orange scarf in melted snow three times. Pine soot from the last firekeeper still clings in the seams. He never said when dawn would come. He slipped a flint into my sleeve. As long as the main fire burns, the people below will keep their curtains open and wait in the wind.
 
-2. **格雷 (`gale_smith`) —《停转的水轮》** (`note_stopped_millwheel`)
-   > 磨坊冰轮冻死那晚，炉膛其实还能再烧半宿。督工把两块铁坯锁进内屋后便不肯再开门，只剩铁锤隔着石墙一下一下敲。我拎着半袋废铁片撤回雪林时想，等风小了，总得有人再去替他把门推开。
+2. **Gale (`gale_smith`) · The Stilled Millwheel** (`note_stopped_millwheel`)
+   > The night the wheel froze, the forge still had half a night of heat. The Overseer locked two iron billets in the back room and refused to open the door. The hammer struck on through the stone. I carried half a sack of scrap back to the woods, thinking someone would have to push that door open when the wind died.
 
-3. **素蘅 (`suheng_herb`) —《冻叶下的根脉》** (`note_mire_veins`)
-   > 黑雾压下来以后，密林背阴处的霜菇长得比往年快，可雪地苦草却越发难找。我在沼泽边几处树桩下埋了备用药囊——谁要是被毒孢擦伤了手臂，记住先刮掉黑泥，再用松脂和苦草一起捣热敷上。
+3. **Suheng (`suheng_herb`) · Roots Beneath the Frozen Leaves** (`note_mire_veins`)
+   > When the black fog settled, frostcaps in the shaded woods grew faster than before, but bitter snow herbs grew scarce. I buried spare medicine under stumps by the bog. If spores graze your arm, scrape off the black mud and apply pine resin crushed with bitter herbs while it is warm.
 
-4. **鸦羽 (`corvus_hunt`) —《雪线以东的脚印》** (`note_lynx_tracks`)
-   > 山猫的爪印从来不走大路，专挑枯树根和背风坡拐弯。跟着它的浅印往东摸过两道沟，就能绕开正面扑来的狼群。可惜过了霜渊树线，所有兽迹都在石阶前突然折了回去——连野兽都知道前面站着谁。
+4. **Corvus (`corvus_hunt`) · Tracks East of the Snowline** (`note_lynx_tracks`)
+   > Lynx tracks avoid the roads. They turn at dead roots and sheltered slopes. Follow the shallow prints east across two gullies to pass the wolves unseen. Beyond the Frost Abyss tree line, every track turns back at the stone stairs. Even the animals know who stands ahead.
 
-5. **艾尔文 (`alvin_scribe`) —《五纪残页总抄》** (`note_five_eras_ledger`)
-   > 定炉、开道、雾降、封关、拾烬——前四个纪年写在羊皮册前端，墨迹一次比一次潦草。第五页我只先抄了一行空着的日期。等东端烽台再次烧透云层，再把还活着回到炉边的人名补在后面。
+5. **Alvin (`alvin_scribe`) · The Five Eras in Fragments** (`note_five_eras_ledger`)
+   > Hearth, road, fog, closed gates, and embers. The first four eras fill the front of the parchment book, each in a less steady hand. On the fifth page I left a date blank. When the eastern beacon burns through the clouds again, I will write the names of those who make it back to the hearth.
 
-6. **无名先驱 (`unnamed_forerunner`) —《第一枚烽芯的誓词》** (`note_first_beacon_oath`)
-   > 我们铸了两枚炉印交由前哨与关守分持，又把烽芯藏进石台背风槽里，为的是哪怕有一半人倒在半路，余下那枚火种仍能合拢。后来人啊，若你看见铁门锈死、火站熄灭，不必哀悼名字——把火重新点起来就好。
+6. **Unnamed Forerunner (`unnamed_forerunner`) · The Oath of the First Beacon Core** (`note_first_beacon_oath`)
+   > We forged two Ember Seals and gave one to the outpost and one to the pass guard. We hid the Beacon Core in a sheltered slot in the stone, so the flame could be made whole even if half of us fell on the road. If you find the gates rusted shut and the stations dark, spare the names your grief. Light the fire again.
 
-### C. 可选 `lore.json` / `balance.json` 接入片段
+### C. Optional snippets for `lore.json` and `balance.json`
 
 ```json
 {
   "campNotesExtension": {
     "note_orange_scarf": {
-      "title": "旧橙巾上的灰印",
-      "body": "领口这条橙巾洗过三回雪水，线脚里还卡着上一位守火人留下的松烟。临走前他没说什么时候天亮，只把火石塞进我袖口：只要主火圈没灭，山脚下那些没拉上的窗帘，就会一直等在风口里。"
+      "title": "Ash on the Old Orange Scarf",
+      "body": "I washed this orange scarf in melted snow three times. Pine soot from the last firekeeper still clings in the seams. He never said when dawn would come. He slipped a flint into my sleeve. As long as the main fire burns, the people below will keep their curtains open and wait in the wind."
     },
     "note_stopped_millwheel": {
-      "title": "停转的水轮",
-      "body": "磨坊冰轮冻死那晚，炉膛其实还能再烧半宿。督工把两块铁坯锁进内屋后便不肯再开门，只剩铁锤隔着石墙一下一下敲。我拎着半袋废铁片撤回雪林时想，等风小了，总得有人再去替他把门推开。"
+      "title": "The Stilled Millwheel",
+      "body": "The night the wheel froze, the forge still had half a night of heat. The Overseer locked two iron billets in the back room and refused to open the door. The hammer struck on through the stone. I carried half a sack of scrap back to the woods, thinking someone would have to push that door open when the wind died."
     },
     "note_mire_veins": {
-      "title": "冻叶下的根脉",
-      "body": "黑雾压下来以后，密林背阴处的霜菇长得比往年快，可雪地苦草却越发难找。我在沼泽边几处树桩下埋了备用药囊——谁要是被毒孢擦伤了手臂，记住先刮掉黑泥，再用松脂和苦草一起捣热敷上。"
+      "title": "Roots Beneath the Frozen Leaves",
+      "body": "When the black fog settled, frostcaps in the shaded woods grew faster than before, but bitter snow herbs grew scarce. I buried spare medicine under stumps by the bog. If spores graze your arm, scrape off the black mud and apply pine resin crushed with bitter herbs while it is warm."
     },
     "note_lynx_tracks": {
-      "title": "雪线以东的脚印",
-      "body": "山猫的爪印从来不走大路，专挑枯树根和背风坡拐弯。跟着它的浅印往东摸过两道沟，就能绕开正面扑来的狼群。可惜过了霜渊树线，所有兽迹都在石阶前突然折了回去——连野兽都知道前面站着谁。"
+      "title": "Tracks East of the Snowline",
+      "body": "Lynx tracks avoid the roads. They turn at dead roots and sheltered slopes. Follow the shallow prints east across two gullies to pass the wolves unseen. Beyond the Frost Abyss tree line, every track turns back at the stone stairs. Even the animals know who stands ahead."
     },
     "note_five_eras_ledger": {
-      "title": "五纪残页总抄",
-      "body": "定炉、开道、雾降、封关、拾烬——前四个纪年写在羊皮册前端，墨迹一次比一次潦草。第五页我只先抄了一行空着的日期。等东端烽台再次烧透云层，再把还活着回到炉边的人名补在后面。"
+      "title": "The Five Eras in Fragments",
+      "body": "Hearth, road, fog, closed gates, and embers. The first four eras fill the front of the parchment book, each in a less steady hand. On the fifth page I left a date blank. When the eastern beacon burns through the clouds again, I will write the names of those who make it back to the hearth."
     },
     "note_first_beacon_oath": {
-      "title": "第一枚烽芯的誓词",
-      "body": "我们铸了两枚炉印交由前哨与关守分持，又把烽芯藏进石台背风槽里，为的是哪怕有一半人倒在半路，余下那枚火种仍能合拢。后来人啊，若你看见铁门锈死、火站熄灭，不必哀悼名字——把火重新点起来就好。"
+      "title": "The Oath of the First Beacon Core",
+      "body": "We forged two Ember Seals and gave one to the outpost and one to the pass guard. We hid the Beacon Core in a sheltered slot in the stone, so the flame could be made whole even if half of us fell on the road. If you find the gates rusted shut and the stations dark, spare the names your grief. Light the fire again."
     }
   },
   "suggestedBalanceMetaTriggers": [
-    { "id": "note_orange_scarf", "trigger": "camp_level_2_reached" },
-    { "id": "note_stopped_millwheel", "trigger": "mill_overseer_defeated" },
-    { "id": "note_mire_veins", "trigger": "deep_woods_entered" },
-    { "id": "note_lynx_tracks", "trigger": "frost_ridge_entered" },
-    { "id": "note_five_eras_ledger", "trigger": "alvin_unlocked" },
-    { "id": "note_first_beacon_oath", "trigger": "both_seals_collected" }
+    {
+      "id": "note_orange_scarf",
+      "trigger": "camp_level_2_reached"
+    },
+    {
+      "id": "note_stopped_millwheel",
+      "trigger": "mill_overseer_defeated"
+    },
+    {
+      "id": "note_mire_veins",
+      "trigger": "deep_woods_entered"
+    },
+    {
+      "id": "note_lynx_tracks",
+      "trigger": "frost_ridge_entered"
+    },
+    {
+      "id": "note_five_eras_ledger",
+      "trigger": "alvin_unlocked"
+    },
+    {
+      "id": "note_first_beacon_oath",
+      "trigger": "both_seals_collected"
+    }
   ]
 }
 ```

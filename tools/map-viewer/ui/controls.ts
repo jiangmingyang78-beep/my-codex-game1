@@ -97,7 +97,7 @@ export function numeric(
   );
   slider.step = step;
   slider.value = String(value);
-  slider.ariaLabel = label + "滑块";
+  slider.ariaLabel = label + "Slider";
   const number = r.querySelector("input")!;
   let original: typeof s.store.draft | undefined;
   slider.oninput = () => {
@@ -121,59 +121,59 @@ export function numeric(
   slider.onblur = finish;
   r.insertBefore(slider, number);
   const reset = button("↺", () => s.store.reset(file, path));
-  reset.title = "恢复磁盘基准";
-  reset.ariaLabel = "复原" + label;
+  reset.title = "Restore disk base";
+  reset.ariaLabel = "Recovery" + label;
   reset.disabled = base === value || (base === undefined && valueAt(s.store.draft[file], path) === undefined);
   r.dataset.field = JSON.stringify([file, ...path]);
   r.append(reset);
 }
 const labels: Record<string, string> = {
-  maxHp: "生命上限",
-  attackDamage: "攻击伤害",
-  moveSpeedPxPerSec: "移速（像素/秒）",
-  windupSec: "前摇（秒）",
-  dashDurationSec: "突进时长（秒）",
-  recoverSec: "后摇（秒）",
-  recoverySec: "后摇（秒）",
-  cooldownSec: "攻击间隔（秒）",
-  intervalSec: "循环间隔（秒）",
-  activeSec: "判定时长（秒）",
-  travelSec: "冲锋时长（秒）",
-  triggerTiles: "起攻距离（格）",
-  triggerRangeTiles: "触发范围（格）",
-  preferredTiles: "施法距离（格）",
-  distanceTiles: "突进距离（格）",
-  reachTiles: "近战范围（格）",
-  rangeTiles: "横扫范围（格）",
-  arcDegrees: "扇形角度（°）",
-  radiusTiles: "爆发半径（格）",
-  projectileSpeedPxPerSec: "弹速（像素/秒）",
-  projectileLifetimeSec: "弹道寿命（秒）",
-  hpThreshold: "阶段生命比例",
-  maxHpDelta: "生命修正",
-  attackDamageDelta: "伤害修正",
-  moveSpeedMult: "移速倍率",
-  lightDrainMult: "耗光倍率",
-  lightRadiusMult: "光圈倍率",
-  immunityBonusSec: "额外无敌（秒）",
-  healBonus: "额外治疗",
-  inFireRegenMult: "火圈恢复倍率",
-  attackRangeTiles: "攻击半径（格）",
-  attackArcDegrees: "攻击角度（°）",
-  attackCooldownSec: "攻击间隔（秒）",
-  damageImmunitySec: "受伤无敌（秒）",
-  dayDrainPerMinute: "白天饱食消耗/分",
-  nightDrainPerMinute: "夜间饱食消耗/分",
-  nightDrainPerSec: "夜间耗光/秒",
-  initial: "初始值",
-  max: "上限",
-  inFireRegenPerSec: "火圈恢复/秒",
-  zeroDamage: "耗尽伤害",
-  zeroDamageIntervalSec: "耗尽伤害间隔（秒）",
-  count: "数量",
-  probability: "掉率",
-  lightDamage: "耗光伤害",
-  hpRatioAtOrBelow: "狂暴生命比例",
+  maxHp: "Life cap",
+  attackDamage: "Attack injury",
+  moveSpeedPxPerSec: "Speeds of movement (pixels/sec))",
+  windupSec: "Shake ahead (sec))",
+  dashDurationSec: "Break-in time (seconds))",
+  recoverSec: "Backslide (seconds))",
+  recoverySec: "Backslide (seconds))",
+  cooldownSec: "Attack interval (seconds))",
+  intervalSec: "Cycle interval (seconds))",
+  activeSec: "Determines the duration (sec))",
+  travelSec: "Long-time assault (seconds))",
+  triggerTiles: "- Get out of there)",
+  triggerRangeTiles: "Trigger range (g))",
+  preferredTiles: "- Pass the distance)",
+  distanceTiles: "- A stump distance)",
+  reachTiles: "Near-war range (g))",
+  rangeTiles: "(e) Scattered range (g))",
+  arcDegrees: "Sector angle (°))",
+  radiusTiles: "Radius (g))",
+  projectileSpeedPxPerSec: "Speed of bounce (pixels/sec))",
+  projectileLifetimeSec: "Ballistic lifetime (sec))",
+  hpThreshold: "Life-cycle ratio",
+  maxHpDelta: "Life fixation",
+  attackDamageDelta: "Harm correction",
+  moveSpeedMult: "Move rate multiple",
+  lightDrainMult: "Torch drain multiplier",
+  lightRadiusMult: "Halo multiplier",
+  immunityBonusSec: "Additional invincible (seconds))",
+  healBonus: "Additional treatment",
+  inFireRegenMult: "The ring is back to double",
+  attackRangeTiles: "(g) A radius of attack)",
+  attackArcDegrees: "Angle of attack (°))",
+  attackCooldownSec: "Attack interval (seconds))",
+  damageImmunitySec: "Invincible injury (seconds))",
+  dayDrainPerMinute: "Full consumption/points during the day",
+  nightDrainPerMinute: "(c) Saturation/scores at night",
+  nightDrainPerSec: "The night is spent with light/seconds",
+  initial: "Initial value",
+  max: "Upper limit",
+  inFireRegenPerSec: "Fire ring recovery/sec",
+  zeroDamage: "Exhausted injury",
+  zeroDamageIntervalSec: "Exhaustion of injury interval (sec))",
+  count: "Quantity",
+  probability: "The rate of loss",
+  lightDamage: "The emptiness of the injury",
+  hpRatioAtOrBelow: "The violent life ratio",
 };
 export function numbers(root: HTMLElement, s: Session, file: FileKey, path: Path) {
   const obj = valueAt(s.store.draft[file], path);
@@ -185,8 +185,8 @@ export function numbers(root: HTMLElement, s: Session, file: FileKey, path: Path
       numbers(
         group(
           root,
-          ({ moves: "招式", enrage: "狂暴", attack: "攻击", overrides: "阶段修正" } as Record<string, string>)[key] ??
-            (Number.isInteger(Number(key)) ? "第 " + (Number(key) + 1) + " 项" : key),
+          ({ moves: "Motion", enrage: "- Violent", attack: "Attack", overrides: "Phase amendments" } as Record<string, string>)[key] ??
+            (Number.isInteger(Number(key)) ? "No. No " + (Number(key) + 1) + " Item" : key),
         ),
         s,
         file,

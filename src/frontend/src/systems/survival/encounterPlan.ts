@@ -242,7 +242,7 @@ export function planEncounters(
   );
   if (missed.length)
     console.warn(
-      "奇遇投放达到候选区上限，跳过剩余名额",
+      "The surprises reached the maximum number of candidates and jumped over the remaining seats",
       seed,
       missed.map((t) => t.id),
     );

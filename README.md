@@ -26,9 +26,9 @@ I have a deep love for video games—they have given me the courage to face life
   - Adds flickering torchlight, drifting embers, a low-light vignette, and snow-only footprints. Chinese combat and loot toasts use a bundled pixel font.
   - Centralizes render depths and adds a shared unit-test entry point with `npm test`. Existing saves retain their format.
 
-- **三模式空间运行时 (v4.0.0)** · [版本标签](https://github.com/jiangmingyang78-beep/my-codex-game1/tree/v4.0.0)
-  - 冒险、生存和永夜共用遮挡视野、局部追击寻路与刷怪落点校验。
-  - 生存模式新增营地工程、寒潮和袭营预警。详见[空间运行时报告](docs/SPATIAL_RUNTIME.md)和[生存平衡报告](docs/BALANCE_REPORT.md)。
+- **Shared spatial runtime (v4.0.0)** · [Version tag](https://github.com/jiangmingyang78-beep/my-codex-game1/tree/v4.0.0)
+  - Adventure, Survival, and Eternal modes share line-of-sight checks, local pursuit pathfinding, and spawn-point validation.
+  - Survival Mode adds camp projects, cold fronts, and raid warnings. See the [spatial runtime report](docs/SPATIAL_RUNTIME.md) and [Survival balance report](docs/BALANCE_REPORT.md).
 
 ## Run Locally
 
@@ -48,37 +48,37 @@ pnpm build
 
 The production build is written to `src/frontend/dist/`.
 
-## 生存模式与数据校验
+## Survival Mode and data validation
 
-`src/frontend/survival.html` 是标题页和暂停菜单使用的生存模式入口，随 Vite 构建独立输出。它的库存目录和配方分别位于 `src/frontend/src/data/survivalCatalog.json` 和 `survivalRecipes.json`。冒险物品与生存库存各用自己的 ID（例如营地工程使用生存库存中的 `wheat`）。
+The title screen and pause menu open Survival Mode at `src/frontend/survival.html`, which Vite builds as a separate entry point. The inventory catalog and recipes live in `src/frontend/src/data/survivalCatalog.json` and `src/frontend/src/data/survivalRecipes.json`. Adventure and Survival use separate item IDs. For example, camp projects use `wheat` from the Survival inventory.
 
-游戏启动时先检查 JSON 字段，再按 ID 建立索引，最后验证引用、数量与掉落规则。配置错误会显示文件名及字段路径，例如 `regions.json.regions[0].residentSpawns[0].enemyId`。所有怪物和遭遇奖励都在 `enemies.json`。地图控制台仍可通过原有两个文档名分别编辑怪物。
+At startup, the game checks JSON fields, indexes records by ID, and validates references, quantities, and drop rules. Configuration errors identify the file and field path, such as `regions.json.regions[0].residentSpawns[0].enemyId`. Enemy definitions and encounter rewards live in `enemies.json`. The map console supports editing enemies through its two existing document names.
 
-生存数值默认值位于 `src/frontend/src/data/balance.json` 的 `survival` 段。编辑 `src/frontend/public/survival-balance.json` 后刷新生存页即可生效。文件可只填写要覆盖的字段。请求失败、JSON 损坏或任一字段非法时，整份覆写回退到默认值。运行 `node tools/balance-report.mjs --summary` 可查看有效昼夜时长、饥饿速率、资源刷新周期和刷怪数值。
+Survival defaults live under `survival` in `src/frontend/src/data/balance.json`. Edit `src/frontend/public/survival-balance.json` and reload Survival Mode to apply your changes. Include only the fields you want to override. If the request fails, the JSON is malformed, or any field is invalid, the game uses the defaults. Run `node tools/balance-report.mjs --summary` to see the effective day and night durations, hunger rates, resource respawn intervals, and enemy spawn settings.
 
-| 覆写字段 | 生存规则 |
+| Override field | Survival rule |
 |---|---|
-| `dayDurationMultiplier`、`nightDurationMultiplier` | 分别调整默认 120 秒白昼和 72 秒夜晚 |
-| `fuelConsumptionMultiplier` | 营火配方的耗煤倍率，按整份配方向上取整 |
-| `coldHungerPerSecond` | 暴雪中处于热源外时每秒额外消耗的饱食点数。默认 0 |
-| `hungerRateMultiplier` | 持续饥饿流失倍率。默认静止每秒 0.30 点、移动每秒 0.42 点 |
-| `spawnFrequency`、`spawnDensity` | 分别调整夜袭波次和每波基础敌人数 |
-| `resourceDensity`、`resourceRefreshMultiplier` | 分别调整资源格生成密度和野生资源再生速率 |
-| `startingSupplyMultiplier` | 新世界初始库存倍率 |
+| `dayDurationMultiplier`, `nightDurationMultiplier` | Scale the default 120-second day and 72-second night, respectively. |
+| `fuelConsumptionMultiplier` | Scale the coal cost for campfire recipes. The total cost rounds up. |
+| `coldHungerPerSecond` | Extra fullness lost each second during a blizzard when outside a heat source's range. The default is 0. |
+| `hungerRateMultiplier` | Scale ongoing fullness loss. The default is 0.30 points per second while idle and 0.42 while moving. |
+| `spawnFrequency`, `spawnDensity` | Scale the number of night raid waves and the base number of enemies per wave, respectively. |
+| `resourceDensity`, `resourceRefreshMultiplier` | Scale the density of resource tiles and the rate at which wild resources regrow, respectively. |
+| `startingSupplyMultiplier` | Scale the starting inventory for a new world. |
 
-字段类型和取值范围见 `src/frontend/public/survival-balance.schema.json`。倍率默认 1，昼夜时长和资源再生速率倍率必须大于 0。
+See `src/frontend/public/survival-balance.schema.json` for field types and valid ranges. Multipliers default to 1. Day and night duration multipliers and the resource regrowth multiplier must be greater than 0.
 
-### 光照与刷怪
+### Lighting and enemy spawns
 
-冒险夜袭、永恒战斗和独立生存页共用双环选点规则。配置位于 `balance.json` 的 `survival` 段。独立生存页也读取 `public/survival-balance.json`，允许仅覆写一个分类上限。
+Adventure night raids, Eternal combat, and standalone Survival use the same two-ring spawn rules. Configure these under `survival` in `balance.json`. Standalone Survival also reads `public/survival-balance.json`, where you can override a single category cap.
 
-| 配置 | 默认值 | 含义 |
+| Setting | Default | Meaning |
 | --- | --- | --- |
-| minSpawnRadius | 15 格 | 实际近环至少比当前视口半对角线多一格 |
-| maxSpawnRadius | 22 格 | 候选点距玩家的最远距离 |
-| despawnRadius | 30 格 | 每游戏秒回收超距普通敌人 |
-| categoryCap | hostile 12、elite 4、neutral 12 | 普通敌对、精英和野生中立动物各自的数量上限，0 表示停止生成该类 |
+| `minSpawnRadius` | 15 tiles | The inner ring extends at least one tile beyond half the current viewport diagonal. |
+| `maxSpawnRadius` | 22 tiles | Maximum distance from the player for a spawn candidate. |
+| `despawnRadius` | 30 tiles | Normal enemies beyond this range are removed once per in-game second. |
+| `categoryCap` | hostile 12, elite 4, neutral 12 | Limits regular hostiles, elites, and neutral wildlife separately. A value of 0 disables spawns for that category. |
 
-半径必须满足近环 < 外环 < 回收距离。普通夜怪需要天空光 ≤ 7、方块光 ≤ 2，煤影与暗影猞猁需要天空光 ≤ 7、方块光为 0。无合法位置时本次生成跳过。冒险剧情常驻敌人按原图预置，固定夜袭优先尝试原入口。永恒模式开战后进入夜间，选点失败会保留刷怪预算。
+The inner radius must be smaller than the outer radius, which must be smaller than the despawn radius. Normal night enemies require skylight of 7 or less and block light of 2 or less. Coal Shades and Shadow Lynxes require skylight of 7 or less and no block light. The game skips a spawn attempt when it finds no valid location. Adventure story enemies use their preset map locations, and scripted night raids try their original entrances first. Eternal Mode switches to night when combat begins and keeps its spawn budget when no valid location is available.
 
-开发版进入游戏后打开 DEV，勾选「显示安全光区与刷怪环」。小图中金色为普通夜怪安全区，暗紫色为仅能阻止暗影怪的微光，青色与橙色分别为近环和外环，白框为实际视口。
+In a development build, open DEV while playing and enable **Show safe lighting and spawn rings**. Gold shows areas protected from normal night enemies, dark purple shows dim light that blocks only shadow enemies, cyan and orange mark the inner and outer spawn rings, and the white outline shows the current viewport.

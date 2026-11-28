@@ -38,7 +38,7 @@ const steps = [
   [-1, 0],
 ];
 
-it("旧存档的初始盆地、路径、锚点及负坐标区块保留重构前的布局", () => {
+it("The old archived initial basin, path, anchor and negative coordinate blocks retain pre-reconstructed layouts", () => {
   const { tiles, regions, sites, trail } = generateLegacyTerrain(42);
   const outer = getOrCreateSurvivalChunk(new Map(), -32, 16, 42);
   assert.equal(
@@ -47,7 +47,7 @@ it("旧存档的初始盆地、路径、锚点及负坐标区块保留重构前�
   );
 });
 
-it("五个 Pass 可单独重复执行，后续步骤不会改写上一步的数据", () => {
+it("Five iv can be repeated separately and the next step will not rewrite the previous step", () => {
   const t = terrainPass(614, 1, 0),
     th = digest(t);
   const b = biomePass(t),
@@ -72,7 +72,7 @@ it("五个 Pass 可单独重复执行，后续步骤不会改写上一步的数�
   assert.ok(s.anchors.some((anchor) => anchor.kind === "nest"));
 });
 
-it("独立区块的 JSON SHA-256 与加载顺序、缓存淘汰无关", () => {
+it("The stand-alone block of Json Xi-256 is not connected with loading order, cache phase-out", () => {
   const positions = [
     [-2, -3],
     [0, 0],
@@ -106,7 +106,7 @@ it("独立区块的 JSON SHA-256 与加载顺序、缓存淘汰无关", () => {
   );
 });
 
-it("从真实出生格四向寻路可到水井、初始补给和九个相邻区域的全部地标", () => {
+it("The search for roads from the real birth stage can reach wells, initial supplies and all the landmarks of the nine adjacent areas", () => {
   const size = 96,
     min = -32;
   for (const seed of [0, 42, 2026, 0xffffffff]) {
@@ -159,7 +159,7 @@ it("从真实出生格四向寻路可到水井、初始补给和九个相邻区�
               assert.equal(
                 visited[index(x, y)],
                 1,
-                `seed=${seed} 地标 ${x},${y}`,
+                `seed=${seed} The landmark ${x},${y}`,
               );
               assert.equal(
                 world.getTileMeta(x, y).reservation,
@@ -180,7 +180,7 @@ it("从真实出生格四向寻路可到水井、初始补给和九个相邻区�
   }
 });
 
-it("营地三通道平滑衰减，相邻群系统计覆盖九类且无冻原与焦土直接拼接", (t) => {
+it("The camp's three corridors were smooth and decayed, with adjacent group systems covering nine categories and a direct combination of tundra and combing with the burnt earth", (t) => {
   const counts = new Set<number>();
   let edges = 0,
     changes = 0,
@@ -223,7 +223,7 @@ it("营地三通道平滑衰减，相邻群系统计覆盖九类且无冻原与�
       }
   }
   t.diagnostic(
-    `群系 ${counts.size} 种；${edges} 对相邻格中 ${changes} 对跨群系，极端拼接 ${extremes}；跨区块最大通道差 ${maxDelta.toFixed(4)}`,
+    `Group ${counts.size} Kind of; ${edges} In the adjacent grid ${changes} For the cross-group, extreme synthesizing ${extremes}; The largest passage across blocks is poor ${maxDelta.toFixed(4)}`,
   );
   assert.equal(counts.size, SURVIVAL_BIOMES.length);
   assert.equal(extremes, 0);
@@ -231,7 +231,7 @@ it("营地三通道平滑衰减，相邻群系统计覆盖九类且无冻原与�
   assert.ok(maxDelta < 0.14);
 });
 
-it("全域抖动网格在区块边缘保持间距，巢穴、地标和自然地物互不占位", () => {
+it("The entire divulge grid maintains a distance at the edge of the block, with no place for nests, landmarks and natural features", () => {
   const world = createSurvivalWorld(739, 2),
     seen = new Set<number>();
   for (let cy = -3; cy < 3; cy++)
@@ -263,7 +263,7 @@ it("全域抖动网格在区块边缘保持间距，巢穴、地标和自然地�
   assert.equal(seen.size, Object.keys(FEATURE).length - 1);
 });
 
-it("地图查看器和初始地图逐格复用同一地表、群系与碰撞，脚印读取实际雪深", () => {
+it("Map viewers and initial maps repeat the same surface, band and collisions, and footprints read the actual snow depth", () => {
   const world = createSurvivalWorld(42),
     snapshot = buildSurvivalSnapshot("42"),
     core = generateSurvivalTerrain(42);
@@ -293,7 +293,7 @@ it("地图查看器和初始地图逐格复用同一地表、群系与碰撞，�
   assert.ok(snapshot.objects.some((a) => a.id.startsWith("encounter_")));
 });
 
-it("移动系统按脚下瓦片坐标读取雪地减速，薄雪与水面不留脚印", () => {
+it("The mobile system reads snow slow at the bottom tiles coordinates, with no footprints on the thin snow and water", () => {
   const systems = getTestSystems(),
     dry = createTestRun({ seed: 2 }),
     snow = createTestRun({ seed: 2 });
@@ -330,7 +330,7 @@ it("移动系统按脚下瓦片坐标读取雪地减速，薄雪与水面不留�
   assert.ok(!supportsSnowFootprint({ ...meta, material: "water" }));
 });
 
-it("100×100 地图完整生成与缓存查询计时", (t) => {
+it("100x100 Complete map generation and cache queries count", (t) => {
   const cold: number[] = [],
     warm: number[] = [];
   for (let round = 0; round < 5; round++) {
@@ -353,7 +353,7 @@ it("100×100 地图完整生成与缓存查询计时", (t) => {
   }
   const median = (values: number[]) => values.slice().sort((a, b) => a - b)[2];
   t.diagnostic(
-    `100×100，64 个区块，5 轮中位数：首次 ${median(cold).toFixed(2)} ms，缓存 ${median(warm).toFixed(2)} ms`,
+    `100 x 10-10/64 blocks, median of 5 wheels: first time ${median(cold).toFixed(2)} -Ms, cache ${median(warm).toFixed(2)} ms`,
   );
-  assert.ok(median(cold) < 2000, "100×100 冷生成超过两秒");
+  assert.ok(median(cold) < 2000, "100 x 100 cold generation in excess of two seconds");
 });

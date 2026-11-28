@@ -42,7 +42,7 @@ function errorDetails(error: unknown, message: string) {
     const detail = error === undefined ? message : String(error);
     return { detail, stack: detail };
   } catch {
-    return { detail: message, stack: "无法读取异常内容" };
+    return { detail: message, stack: "Could not read the exception details" };
   }
 }
 
@@ -51,12 +51,12 @@ export function captureDiagnostic(
   error?: unknown,
   snapshot?: object,
 ): DiagnosticReport {
-  let summary = "暂无活动存档";
+  let summary = "No active save";
   try {
     const current = snapshot ?? readSnapshot?.();
     if (current) summary = JSON.stringify(current, null, 2);
   } catch {
-    summary = "无法读取当前快照";
+    summary = "Could not read the current save snapshot";
   }
   const recent = Array.from(
     { length: count },
@@ -66,25 +66,25 @@ export function captureDiagnostic(
   const { detail, stack } = errorDetails(error, message);
   return {
     message,
-    title: `[游戏报错] ${[...detail.replace(/\s+/g, " ")].slice(0, 80).join("")}`,
+    title: `[Game error] ${[...detail.replace(/\s+/g, " ")].slice(0, 80).join("")}`,
     context: [
-      "## 报错",
+      "## Error",
       codeBlock(`${message}\n${detail}`),
-      "## 构建与浏览器",
+      "## Build and browser",
       codeBlock(
-        `commit: ${import.meta.env.VITE_COMMIT_SHA || "本地构建"}\nUA: ${navigator.userAgent}\n页面: ${location.pathname}`,
+        `commit: ${import.meta.env.VITE_COMMIT_SHA || "Local build"}\nUA: ${navigator.userAgent}\nPage: ${location.pathname}`,
       ),
-      "## 当前快照摘要",
+      "## Current save snapshot",
       codeBlock(summary),
-      "## 最近面包屑",
-      codeBlock(recent.join("\n") || "暂无记录"),
+      "## Recent breadcrumbs",
+      codeBlock(recent.join("\n") || "No recent entries"),
     ].join("\n\n"),
     stack,
   };
 }
 
 export function diagnosticMarkdown(report: DiagnosticReport): string {
-  return `${report.context}\n\n## 堆栈\n\n${codeBlock(report.stack)}`;
+  return `${report.context}\n\n## Stack trace\n\n${codeBlock(report.stack)}`;
 }
 
 export function issueUrl(report: DiagnosticReport): string {
@@ -101,7 +101,7 @@ export function issueUrl(report: DiagnosticReport): string {
   const setExcerpt = (length: number) => {
     url.searchParams.set(
       "body",
-      `${chars.slice(0, length).join("").trimEnd()}\n\n（已截断。完整现场可从游戏内复制。）`,
+      `${chars.slice(0, length).join("").trimEnd()}\n\n(Truncated. Copy the complete report in the game.)`,
     );
   };
   while (low < high) {

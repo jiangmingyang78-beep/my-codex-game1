@@ -17,4 +17,4 @@ installDiagnosticListeners((report) => {
   };
   void import("../../index.css").then(render, render);
 });
-breadcrumb("入口 生存");
+breadcrumb("The entrance to survival");

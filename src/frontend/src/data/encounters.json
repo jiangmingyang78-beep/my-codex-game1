@@ -2,7 +2,7 @@
   "setPieces": [
     {
       "id": "frozen_lumber_camp",
-      "name": "冻僵的伐木营",
+      "name": "Frozen Logging Camp",
       "allowedBiomes": [0, 1, 5],
       "minDistanceFromCamp": 18,
       "minSpacingSameId": 64,
@@ -55,7 +55,7 @@
       ],
       "triggerEvent": {
         "kind": "cache",
-        "message": "木楔松动，冻木下露出伐木人的冬储。"
+        "message": "The wood slurry is loose and the wood below the freeze reveals the logger's winter reserves."
       },
       "rotate": true,
       "mirror": true,
@@ -64,7 +64,7 @@
     },
     {
       "id": "cold_furnace",
-      "name": "熄灭的古炉坛",
+      "name": "Cold Furnace",
       "allowedBiomes": [3, 6, 0],
       "minDistanceFromCamp": 30,
       "minSpacingSameId": 64,
@@ -110,7 +110,7 @@
       ],
       "triggerEvent": {
         "kind": "cache",
-        "message": "掀开封炉石，冷灰里还有一块温热的余烬。"
+        "message": "The seal is lifted and a warm residual remains is left in the cold ash."
       },
       "rotate": true,
       "mirror": true,
@@ -119,7 +119,7 @@
     },
     {
       "id": "snare_grove",
-      "name": "猎人捕兽夹林地",
+      "name": "Hunter's Snare Grove",
       "allowedBiomes": [1, 5, 7],
       "minDistanceFromCamp": 25,
       "minSpacingSameId": 64,
@@ -172,7 +172,7 @@
       ],
       "triggerEvent": {
         "kind": "trap",
-        "message": "枯叶下的兽夹突然合拢，旧猎袋从枝头跌落。"
+        "message": "The traps under the dead leaves suddenly converged and the old hunting bag fell from the branch."
       },
       "rotate": true,
       "mirror": true,
@@ -181,7 +181,7 @@
     },
     {
       "id": "collapsed_kiln",
-      "name": "倒塌的炭窑",
+      "name": "Collapsed Kiln",
       "allowedBiomes": [3, 6, 1],
       "minDistanceFromCamp": 32,
       "minSpacingSameId": 64,
@@ -227,7 +227,7 @@
       ],
       "triggerEvent": {
         "kind": "cache",
-        "message": "松动的窑砖后藏着封存的树脂。"
+        "message": "The loose kiln bricks hide sealed resin."
       },
       "rotate": true,
       "mirror": true,
@@ -236,7 +236,7 @@
     },
     {
       "id": "ice_sled",
-      "name": "冰封物资雪橇",
+      "name": "Frozen Supply Sled",
       "allowedBiomes": [4, 5, 0],
       "minDistanceFromCamp": 20,
       "minSpacingSameId": 64,
@@ -282,7 +282,7 @@
       ],
       "triggerEvent": {
         "kind": "cache",
-        "message": "割断结霜的捆绳，雪橇上还剩一袋补给。"
+        "message": "Cut the frost-foiled ropes and a bag of supplies left on the sleigh."
       },
       "rotate": true,
       "mirror": true,
@@ -292,7 +292,7 @@
     },
     {
       "id": "keeper_bivouac",
-      "name": "守火人遗骸营",
+      "name": "Firekeeper's Abandoned Camp",
       "allowedBiomes": [0, 4, 5],
       "minDistanceFromCamp": 28,
       "minSpacingSameId": 64,
@@ -345,7 +345,7 @@
       ],
       "triggerEvent": {
         "kind": "cache",
-        "message": "灯罩下压着守火人的最后一卷药布。"
+        "message": "The lamp mask was under the last roll of the fire watchman."
       },
       "rotate": true,
       "mirror": true,
@@ -354,7 +354,7 @@
     },
     {
       "id": "shade_circle",
-      "name": "暗影侵蚀石阵",
+      "name": "Shadowed Stone Circle",
       "allowedBiomes": [8, 6, 2],
       "minDistanceFromCamp": 42,
       "minSpacingSameId": 64,
@@ -413,7 +413,7 @@
       ],
       "triggerEvent": {
         "kind": "ambush",
-        "message": "石阵的刻痕亮起，暗影猞猁从裂隙中跃出。"
+        "message": "The engraved marks of the stone arrays are brightened, shadows are stomping out of the cracks."
       },
       "rotate": true,
       "mirror": true,
@@ -422,7 +422,7 @@
     },
     {
       "id": "spring_ruins",
-      "name": "温泉残迹",
+      "name": "Hot Spring Ruins",
       "allowedBiomes": [2, 7, 0],
       "minDistanceFromCamp": 32,
       "minSpacingSameId": 64,
@@ -475,7 +475,7 @@
       ],
       "triggerEvent": {
         "kind": "heal",
-        "message": "拨开池口的碎石，暖泉涌出，恢复两点生命。"
+        "message": "The stones that opened the pool were poured out and two points of life were restored."
       },
       "rotate": true,
       "mirror": true,

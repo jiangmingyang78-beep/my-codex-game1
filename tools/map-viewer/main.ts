@@ -71,7 +71,7 @@ async function boot() {
     monitor(s);
     s.draw();
     updateActions();
-    id("mapMeta").textContent = s.map.width + " × " + s.map.height + " 格";
+    id("mapMeta").textContent = s.map.width + " × " + s.map.height + " tiles";
   }
   s.refresh = () => {
     if (s.tab !== "map") s.tool = 1;
@@ -107,13 +107,13 @@ async function boot() {
     legend.replaceChildren();
     for (const [color, label] of [
       ...Object.values(s.map.palette).map((p) => [p.color, p.name]),
-      [OBJ_COLOR.campfire, "营火"],
-      [OBJ_COLOR.ore, "矿物"],
-      [OBJ_COLOR.herb, "植被"],
-      ["#4ade80", "英雄"],
-      ["#fb923c", "常驻怪物"],
-      ["#c084fc", "夜怪"],
-      ["#ff3b5c", "首领"],
+      [OBJ_COLOR.campfire, "Campfire"],
+      [OBJ_COLOR.ore, "Minerals"],
+      [OBJ_COLOR.herb, "Vegetation"],
+      ["#4ade80", "Hero"],
+      ["#fb923c", "Stay with the monster"],
+      ["#c084fc", "Night Monster"],
+      ["#ff3b5c", "Boss"],
     ]) {
       const r = el("div", "", "legend-row"),
         chip = el("i", "", "chip");
@@ -148,6 +148,6 @@ async function boot() {
 }
 boot().catch((e) => {
   id("validation").hidden = false;
-  id("validation").textContent = "控制台加载失败 · " + e.message;
-  id("diskState").textContent = "连接失败";
+  id("validation").textContent = "Failed to load the control table  ·  " + e.message;
+  id("diskState").textContent = "Connection failed";
 });

@@ -53,10 +53,10 @@ export const TOTAL_CYCLE_SEC = SEASON_DURATION_SEC * 4;
 export const SEASONS: readonly SeasonMeta[] = [
   {
     id: "spring",
-    shortLabel: "春",
-    title: "春 · 融雪樱雨",
-    weatherLabel: "落英微雨",
-    timeLabel: "晨光",
+    shortLabel: "Spring",
+    title: "Spring Thaw",
+    weatherLabel: "Light rain",
+    timeLabel: "Morning light",
     palette: {
       skyTop: [72, 128, 196],
       skyMid: [134, 186, 224],
@@ -92,10 +92,10 @@ export const SEASONS: readonly SeasonMeta[] = [
   },
   {
     id: "summer",
-    shortLabel: "夏",
-    title: "夏 · 暖风萤夜",
-    weatherLabel: "晴暖萤火",
-    timeLabel: "薄暮",
+    shortLabel: "Summer",
+    title: "Summer Nights",
+    weatherLabel: "Fireflies",
+    timeLabel: "Pine Twilight",
     palette: {
       skyTop: [36, 74, 148],
       skyMid: [76, 128, 188],
@@ -131,10 +131,10 @@ export const SEASONS: readonly SeasonMeta[] = [
   },
   {
     id: "autumn",
-    shortLabel: "秋",
-    title: "秋 · 霜枫雾岚",
-    weatherLabel: "秋风落叶",
-    timeLabel: "日暮",
+    shortLabel: "Autumn",
+    title: "Autumn Mist",
+    weatherLabel: "Falling leaves",
+    timeLabel: "Dusk",
     palette: {
       skyTop: [54, 48, 98],
       skyMid: [152, 86, 102],
@@ -170,10 +170,10 @@ export const SEASONS: readonly SeasonMeta[] = [
   },
   {
     id: "winter",
-    shortLabel: "冬",
-    title: "冬 · 雪夜孤火",
-    weatherLabel: "细雪暴风",
-    timeLabel: "星夜",
+    shortLabel: "Winter",
+    title: "Winter Snow",
+    weatherLabel: "Snowstorm",
+    timeLabel: "Starlight",
     palette: {
       skyTop: [16, 22, 46],
       skyMid: [30, 42, 78],

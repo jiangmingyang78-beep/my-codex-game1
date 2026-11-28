@@ -8,7 +8,7 @@ function formatDuration(sec: number): string {
   const total = Math.max(0, Math.floor(sec));
   const m = Math.floor(total / 60);
   const s = total % 60;
-  return `${m} 分 ${String(s).padStart(2, "0")} 秒`;
+  return `${m} m ${String(s).padStart(2, "0")} s`;
 }
 
 function causeText(session: RunSession): string {
@@ -16,18 +16,21 @@ function causeText(session: RunSession): string {
   if (state.status === "won") return "";
   if (state.status === "storm_lost") {
     const minutes = Math.round(sys.data.balance.clock.runLimitSec / 60);
-    return `${minutes} 分钟过去了，烽台仍未点燃，风暴吞没了余烬林。`;
+    return `${minutes} minutes passed without lighting the beacon. The storm swallowed Emberwood.`;
   }
   const cause = session.lastCause;
-  if (cause === "hunger") return "饥饿难耐，你倒在了雪地里。";
-  if (cause === "darkness") return "火炬熄灭，你被黑暗吞没了。";
-  if (cause === "projectile") return "被远处飞来的丝弹击倒了。";
+  if (cause === "hunger")
+    return "Hunger overcame you, and you collapsed in the snow.";
+  if (cause === "darkness")
+    return "Your torch went out and the darkness swallowed you.";
+  if (cause === "projectile")
+    return "A silk projectile knocked you down from afar.";
   const enemy = cause ? sys.data.enemies.get(cause) : undefined;
-  if (enemy) return `被${enemy.name}击倒了。`;
-  return "你倒在了雪夜里。";
+  if (enemy) return `You were defeated by ${enemy.name}.`;
+  return "You fell in the snow.";
 }
 
-/** Chinese end-of-run summary for the result screen. */
+/** End-of-run summary for the result screen. */
 export function buildResultView(session: RunSession): ResultView {
   const { state, sys } = session;
   if (session.eternal)
@@ -40,14 +43,14 @@ export function buildResultView(session: RunSession): ResultView {
     epilogue,
     cause: causeText(session),
     stats: [
-      { label: "存活时间", value: formatDuration(state.elapsedSec) },
-      { label: "到达天数", value: `第 ${state.day} 天` },
-      { label: "营火等级", value: `Lv.${state.campLevel}` },
+      { label: "Time survived", value: formatDuration(state.elapsedSec) },
+      { label: "Days reached", value: `Day ${state.day}` },
+      { label: "Campfire level", value: `Lv.${state.campLevel}` },
       {
-        label: "炉印",
+        label: "Ember Seals",
         value: `${countBeaconSeals(state)} / ${BEACON_SEAL_IDS.length}`,
       },
-      { label: "本次击败", value: `${session.enemiesDefeated}` },
+      { label: "Enemies defeated", value: `${session.enemiesDefeated}` },
     ],
     notes: session.meta.notes.map((id) => CAMP_NOTE_TEXT[id]?.title ?? id),
   };
