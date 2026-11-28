@@ -1,37 +1,34 @@
-# 84 敌人 GC 首轮优化交接
+# pnpm 安全告警修复交接
 
 ## 1. 工具与改动文件
 
-Codex。括号为当前行数，⚠ 表示至少 240 行。
-- src/frontend/src/entities/EnemyEntity.ts（65）
-- src/frontend/src/game/feedback/TelegraphDrawing.ts（221，新增）
-- src/frontend/src/game/feedback/TelegraphLayer.ts（270 ⚠）
-- src/frontend/src/game/ui/EquipmentRingRail.tsx（179）
-- src/frontend/src/game/ui/Hud.tsx（203）
-- src/frontend/src/game/ui/QuickSlots.tsx（75）
-- src/frontend/src/game/world/EntityViews.ts（287 ⚠）
-- docs/SPATIAL_RUNTIME.md（152）
-- docs/HANDOFF.md（37）
+Codex。括号内为当前行数，⚠ 表示至少 240 行。
+
+- `.github/dependabot.yml`（18，新增）
+- `package.json`（37）和 `src/frontend/package.json`（94）
+- `pnpm-lock.yaml`（5299 ⚠）
+- `docs/AI_HANDOFF.md`（136）和 `docs/HANDOFF.md`（34）
 
 ## 2. 已验证项
 
-- pnpm typecheck、fix、check、build、全量单测 159/159。生产 E2E 5/5，冒险完整回归 1/1。
-- WebGL 和 Canvas 像素对照覆盖充能进度、普通与末段顺序、直向及斜向预警、清屏、复用和销毁。浏览器实测快捷消耗、圆盾冷却与就绪、静音、暂停和继续。
-- 同场景三轮估算分配量 193.80→94.19 MiB。独立三轮 GC 30→16 次，累计 33.555→25.833 ms，各轮最长暂停的中位数 4.496→0.790 ms。逐轮和补测指标见 SPATIAL_RUNTIME.md。
+- `pnpm install` 更新锁文件，冻结复装通过。全量审计 23 → 6，生产审计 14 → 3，两者 Critical/High 均为 0。全量审计仍因低、中危返回 1，生产高危阈值审计返回 0。
+- `pnpm typecheck`、`pnpm check`、`pnpm fix`、`pnpm build` 通过。Biome 未改写源码。
+- 单测 159/159，生产浏览器冒烟 5/5，开发版冒险完整回归 1/1。
+- Windows 加载 Sharp 0.35.5 预编译包，确认 librsvg 2.63.2、libheif 1.23.5。肖像脚本在缓存目录生成 5 张 512×512 PNG。
 
 ## 3. 未验证与已知风险
 
-- 主对比最长 GC 9.045→16.881 ms，渲染 CPU P95 2.2→2.8 ms，帧间隔 P95 64.5→69.3 ms。后补三轮 15 次 MinorGC，最大 0.898 ms，峰值来源待复现。
-- 低端硬件 GPU、超出 32×32 流场窗口的封闭地形以及 Caffeine 云端回放待验证。
+- 本地审计已确认，高危告警在 GitHub 默认分支上的状态待复核。仓库告警 API 返回 401。
+- 剩余 `quill`、`fflate` 和 `postcss-selector-parser` 告警的修复目标与 Dismiss 建议见 `docs/AI_HANDOFF.md`。
+- 84 敌人场景的 GC 峰值与低端 GPU 表现仍待复测。数据见 `docs/SPATIAL_RUNTIME.md`。
 
 ## 4. 锁定接口与约束
 
-- TelegraphLayer.syncFromState 与 destroy 负责场景预警。WebGL 纹理和视图池归场景所有，Canvas 使用原路径几何。普通预警先画，末段预警随后画。
-- 敌人位置、移动碰撞与伤害由玩法层负责，视图负责渲染和归还。HUD 等值比较受快捷栏、装备显示字段约束，添加字段时同步更新。
-- FlowField.compute 完整求解，update 同格修复受影响路径。WorldContext 的光照与导航缓存只在内存。ISpawnDirector.hasRoom 和 allowsLocation 可以按批调用，accepts 组合执行。
-- 死亡钩子在敌人归还前运行。遵循 VFX 公开接口、渲染深度、存档和 CI 诊断契约。开发版 Alt+Shift+R 重读已校验的空间平衡参数。
+- `pnpm.overrides` 只约束 Recharts 2.x、`react-quill-new` 和 Quill 2.0.3 到 Lodash 4.18.1 或同主版本的更新。父包提高安全下限或移除相关依赖后可清理对应覆写。
+- 仓库体检入口继续从自身位置定位项目根目录，运行 `pnpm check:all` 并传播退出码。上一轮验证过桌面入口和缺少根清单时的错误提示，移动仓库时需更新桌面入口路径。
+- 保留 VFX、渲染深度、存档与 CI 诊断契约。空间运行时交接见提交 `6739014` 中的 `docs/HANDOFF.md`。
 
 ## 5. 下一棒任务
 
-1. 前后版本交错复测 84 敌人场景，保存每次 GC 的事件类型、墙钟和线程 CPU 时间。
-2. 在低端硬件 GPU 上复现，核对精灵批处理、VFX 和纹理上传字节数。
+1. 修复进入默认分支后，复核 GitHub 告警和首次 Dependabot 分组运行，并跟进剩余中危。
+2. 前后版本交错复测 84 敌人场景的 GC 峰值，同时在低端 GPU 核对精灵批处理、VFX 和纹理上传。
